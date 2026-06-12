@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,12 +18,12 @@ const Navbar = () => {
   const mobileMenuRef = useRef(null);
 
   const navItems = [
-    { id: 1, name: "How it Works", path: "how-it-works" },
-    { id: 2, name: "Plan", path: "plans" },
-    { id: 3, name: "Goal", path: "goals" },
-    { id: 4, name: "About Us", path: "about-us" },
-    { id: 5, name: "Q&A", path: "faq" },
-    { id: 6, name: "Contact", path: "contact" },
+    { id: 1, name: "How it Works", path: "/how-it-works" },
+    { id: 2, name: "Plan", path: "/plans" },
+    { id: 3, name: "Goal", path: "/goals" },
+    { id: 4, name: "About Us", path: "/about-us" },
+    { id: 5, name: "Q&A", path: "/faq" },
+    { id: 6, name: "Contact", path: "/contact" },
   ];
 
   useEffect(() => {
@@ -94,7 +95,11 @@ const Navbar = () => {
     if (path === "/") {
       return pathname === path;
     }
-    return pathname.startsWith(path);
+    // Remove leading slash for comparison if needed
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return (
+      pathname === normalizedPath || pathname.startsWith(`${normalizedPath}/`)
+    );
   };
 
   return (
@@ -124,21 +129,30 @@ const Navbar = () => {
               {navItems.map((item) => {
                 const isActive = isActivePath(item.path);
                 return (
-                  <li key={item.id}>
+                  <li key={item.id} className="relative">
                     <Link
                       href={item.path}
-                      className={`text-sm font-semibold transition duration-300 relative group ${
+                      className={`text-sm font-semibold transition duration-300 relative py-2 ${
                         isActive
                           ? "text-primary"
                           : "text-foreground/80 hover:text-primary"
                       }`}
                     >
                       {item.name}
-                      <span
-                        className={`absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300 ${
-                          isActive ? "w-full" : "w-0 group-hover:w-full"
-                        }`}
-                      ></span>
+                      {/* Animated underline on hover */}
+                      <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-primary transition-all duration-300 ease-out group-hover:w-full" />
+                      {/* Active indicator */}
+                      {isActive && (
+                        <motion.span
+                          layoutId="activeUnderline"
+                          className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"
+                          transition={{
+                            type: "spring",
+                            stiffness: 380,
+                            damping: 30,
+                          }}
+                        />
+                      )}
                     </Link>
                   </li>
                 );
@@ -188,15 +202,12 @@ const Navbar = () => {
             {/* Auth Buttons for Desktop - Only when not logged in */}
             {!isLoggedIn && (
               <div className="hidden md:flex items-center gap-2">
-                {/* Log In button - Left side */}
                 <Link
                   href="/login"
                   className="rounded-xl border border-border px-4 py-1.5 text-sm font-medium transition hover:bg-card shrink-0"
                 >
                   Log In
                 </Link>
-
-                {/* Start Savings Button - Right side */}
                 <Link
                   href="/register"
                   className="rounded-xl bg-linear-to-r from-primary to-primary-hover px-5 py-1.5 text-sm font-semibold text-white transition hover:shadow-lg hover:scale-105 shrink-0"
@@ -218,7 +229,13 @@ const Navbar = () => {
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute right-0 mt-2 sm:mt-3 w-48 sm:w-56 rounded-2xl border border-border bg-card p-1 shadow-xl z-50">
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute right-0 mt-2 sm:mt-3 w-48 sm:w-56 rounded-2xl border border-border bg-card p-1 shadow-xl z-50"
+                  >
                     <Link
                       href="/profile"
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-background hover:text-primary ${
@@ -230,7 +247,6 @@ const Navbar = () => {
                     >
                       Profile
                     </Link>
-
                     <Link
                       href="/dashboard"
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-background hover:text-primary ${
@@ -242,7 +258,6 @@ const Navbar = () => {
                     >
                       Dashboard
                     </Link>
-
                     <Link
                       href="/settings"
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-background hover:text-primary ${
@@ -254,16 +269,14 @@ const Navbar = () => {
                     >
                       Settings
                     </Link>
-
                     <div className="my-1 border-t border-border" />
-
                     <button
                       onClick={logout}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-red-500 transition hover:bg-background"
                     >
                       Logout
                     </button>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             )}
@@ -292,84 +305,88 @@ const Navbar = () => {
         </div>
       </header>
 
-      {/* Mobile Drawer - Smooth Animation from Right */}
-      <div
-        className={`fixed inset-0 z-100 md:hidden transition-all duration-300 ${
-          isOpen ? "visible" : "invisible"
-        }`}
-      >
-        {/* Overlay */}
-        <div
-          onClick={() => setIsOpen(false)}
-          className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-all duration-300 ${
-            isOpen ? "opacity-100" : "opacity-0"
-          }`}
-        />
-
-        {/* Drawer - comes from right */}
-        <div
-          ref={mobileMenuRef}
-          className={`absolute right-0 top-0 h-full w-70 sm:w-[320px] bg-card shadow-2xl transition-all duration-300 ease-in-out ${
-            isOpen ? "translate-x-0" : "translate-x-full"
-          }`}
-        >
-          {/* Drawer Header */}
-          <div className="flex items-center justify-between border-b border-border p-5">
-            <h2 className="text-lg font-semibold text-primary">Menu</h2>
-            <button
+      {/* Mobile Drawer - Smooth Animation from Right (Slide from right) */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Overlay */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
               onClick={() => setIsOpen(false)}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition hover:bg-background"
-              aria-label="Close menu"
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-100 md:hidden"
+            />
+
+            {/* Drawer - Slides from right */}
+            <motion.div
+              ref={mobileMenuRef}
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 h-full w-70 sm:w-[320px] bg-card shadow-2xl z-101 md:hidden"
             >
-              ✕
-            </button>
-          </div>
-
-          {/* Mobile Navigation Items */}
-          <nav className="p-4">
-            <ul className="space-y-1">
-              {navItems.map((item) => {
-                const isActive = isActivePath(item.path);
-                return (
-                  <li key={item.id}>
-                    <Link
-                      href={item.path}
-                      onClick={() => setIsOpen(false)}
-                      className={`block rounded-xl px-4 py-3 text-base font-medium transition duration-200 ${
-                        isActive
-                          ? "bg-primary/10 text-primary"
-                          : "hover:bg-background hover:text-primary"
-                      }`}
-                    >
-                      {item.name}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-
-            {/* Buttons for Mobile - Only for non-logged in users */}
-            {!isLoggedIn && (
-              <div className="mt-6 space-y-2 pt-4 border-t border-border">
-                <Link
-                  href="/login"
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between border-b border-border p-5">
+                <h2 className="text-lg font-semibold text-primary">Menu</h2>
+                <button
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center rounded-xl border border-border px-4 py-3 text-base font-medium transition hover:bg-background w-full"
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition hover:bg-background"
+                  aria-label="Close menu"
                 >
-                  Log In
-                </Link>
-                <Link
-                  href="/register"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center rounded-xl bg-linear-to-r from-primary to-primary-hover px-4 py-3 text-base font-semibold text-white transition hover:shadow-lg w-full"
-                >
-                  Start Savings
-                </Link>
+                  ✕
+                </button>
               </div>
-            )}
-          </nav>
-        </div>
-      </div>
+
+              {/* Mobile Navigation Items */}
+              <nav className="p-4">
+                <ul className="space-y-1">
+                  {navItems.map((item) => {
+                    const isActive = isActivePath(item.path);
+                    return (
+                      <li key={item.id}>
+                        <Link
+                          href={item.path}
+                          onClick={() => setIsOpen(false)}
+                          className={`block rounded-xl px-4 py-3 text-base font-medium transition duration-200 ${
+                            isActive
+                              ? "bg-primary/10 text-primary"
+                              : "hover:bg-background hover:text-primary"
+                          }`}
+                        >
+                          {item.name}
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                {/* Buttons for Mobile - Only for non-logged in users */}
+                {!isLoggedIn && (
+                  <div className="mt-6 space-y-2 pt-4 border-t border-border">
+                    <Link
+                      href="/login"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center justify-center rounded-xl border border-border px-4 py-3 text-base font-medium transition hover:bg-background w-full"
+                    >
+                      Log In
+                    </Link>
+                    <Link
+                      href="/register"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center justify-center rounded-xl bg-linear-to-r from-primary to-primary-hover px-4 py-3 text-base font-semibold text-white transition hover:shadow-lg w-full"
+                    >
+                      Start Savings
+                    </Link>
+                  </div>
+                )}
+              </nav>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 };
