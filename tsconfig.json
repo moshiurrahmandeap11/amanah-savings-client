@@ -30,7 +30,7 @@
     "**/*.mts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/app/(userDashboard)/layout.jsx"  ],
   "exclude": [
     "node_modules"
   ]

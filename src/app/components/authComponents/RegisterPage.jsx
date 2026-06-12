@@ -4,22 +4,23 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Check, Shield } from "lucide-react";
+import Swal from "sweetalert2";
+import axiosInstance from "../shared/AxiosInstance/AxiosInstance";
+import useAuth from "../../hooks/useAuth";
+
 
 const RegisterPage = () => {
+  const { register: registerUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
-    // Step 1
     firstName: "",
     lastName: "",
     phone: "",
     email: "",
     password: "",
     confirmPassword: "",
-    // Step 2
     phoneOtp: ["", "", "", "", "", ""],
-    // Step 3
     emailOtp: ["", "", "", "", "", ""],
-    // Step 4
     dob: "",
     gender: "",
     division: "",
@@ -31,27 +32,22 @@ const RegisterPage = () => {
     village: "",
     postOffice: "",
     postCode: "",
-    // Step 5
     nomineeFirstName: "",
     nomineeLastName: "",
     nomineeRelation: "",
     nomineePhone: "",
     nomineeNid: "",
     nomineeShare: "100",
-    // Step 6
     selectedPlan: "silver",
     goalType: "",
     targetAmount: "",
     monthlyDeposit: "",
     duration: "",
-    // Step 7
     pin: "",
     confirmPin: "",
-    // Step 8
     nidNumber: "",
     kycConsent: false,
     islamicMode: false,
-    // Step 9
     paymentMethod: "",
     walletNumber: "",
     walletName: "",
@@ -75,6 +71,7 @@ const RegisterPage = () => {
   const [phoneVerified, setPhoneVerified] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [pinStep, setPinStep] = useState(1);
+  const [registrationData, setRegistrationData] = useState(null);
 
   const districts = {
     Dhaka: [
@@ -176,11 +173,22 @@ const RegisterPage = () => {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
+  const showAlert = (title, message, type = "success") => {
+    Swal.fire({
+      title: title,
+      text: message,
+      icon: type,
+      confirmButtonColor: "#059669",
+      confirmButtonText: type === "error" ? "Try Again" : "Continue",
+    });
+  };
+
   const validateStep1 = () => {
     const newErrors = {};
     if (!formData.firstName) newErrors.firstName = "First name is required";
     if (!formData.phone || formData.phone.length < 10)
       newErrors.phone = "Valid phone number required";
+    if (!formData.password) newErrors.password = "Password is required";
     if (formData.password.length < 8)
       newErrors.password = "Password must be at least 8 characters";
     if (formData.password !== formData.confirmPassword)
@@ -188,7 +196,6 @@ const RegisterPage = () => {
     if (!formData.terms) newErrors.terms = "You must agree to the terms";
     if (!formData.withdrawalPolicy)
       newErrors.withdrawalPolicy = "You must agree to the withdrawal policy";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -223,15 +230,29 @@ const RegisterPage = () => {
 
   const validateStep9 = () => {
     const newErrors = {};
-    if (!formData.paymentMethod)
+    if (!formData.paymentMethod) {
       newErrors.paymentMethod = "Please select a payment method";
-    if (formData.paymentMethod === "bank") {
-      if (!formData.bankName) newErrors.bankName = "Bank name required";
-      if (!formData.bankAccNum)
+    } else if (
+      formData.paymentMethod === "bkash" ||
+      formData.paymentMethod === "nagad" ||
+      formData.paymentMethod === "rocket"
+    ) {
+      if (!formData.walletNumber || formData.walletNumber.length < 11) {
+        newErrors.walletNumber = "Valid wallet number required (11 digits)";
+      }
+      if (!formData.walletName) {
+        newErrors.walletName = "Account holder name required";
+      }
+    } else if (formData.paymentMethod === "bank") {
+      if (!formData.bankName) {
+        newErrors.bankName = "Bank name required";
+      }
+      if (!formData.bankAccNum) {
         newErrors.bankAccNum = "Account number required";
-    } else if (formData.paymentMethod) {
-      if (!formData.walletNumber || formData.walletNumber.length < 11)
-        newErrors.walletNumber = "Valid wallet number required";
+      }
+      if (!formData.bankAccName) {
+        newErrors.bankAccName = "Account holder name required";
+      }
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -248,6 +269,12 @@ const RegisterPage = () => {
     if (isValid && currentStep < totalSteps) {
       setCurrentStep((prev) => prev + 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (!isValid) {
+      showAlert(
+        "Validation Error",
+        "Please fill all required fields correctly",
+        "error",
+      );
     }
   };
 
@@ -258,21 +285,111 @@ const RegisterPage = () => {
     }
   };
 
-  const verifyPhoneOtp = () => {
-    if (formData.phoneOtp.every((d) => d)) {
-      setPhoneVerified(true);
-      handleNext();
-    } else {
-      setErrors({ phoneOtp: "Please enter all 6 digits" });
+  const handleSendPhoneOtp = async () => {
+    if (!formData.phone || formData.phone.length < 10) {
+      showAlert("Invalid Phone", "Please enter a valid phone number", "error");
+      return;
+    }
+    try {
+      const response = await axiosInstance.post("/users/send-phone-otp", {
+        phone: formData.phone,
+      });
+      if (response.data.success) {
+        setPhoneOtpTimer(60);
+        const receivedOtp = response.data.otp;
+        if (receivedOtp) {
+          showAlert("OTP Sent!", `Your OTP is: ${receivedOtp}`, "info");
+        } else {
+          showAlert(
+            "OTP Sent!",
+            "Please check your phone for the verification code",
+            "success",
+          );
+        }
+      }
+    } catch (error) {
+      showAlert("Failed", "Could not send OTP. Please try again.", "error");
     }
   };
 
-  const verifyEmailOtp = () => {
-    if (formData.emailOtp.every((d) => d)) {
-      setEmailVerified(true);
-      handleNext();
-    } else {
-      setErrors({ emailOtp: "Please enter all 6 digits" });
+  const handleVerifyPhoneOtp = async () => {
+    const otp = formData.phoneOtp.join("");
+    if (otp.length !== 6) {
+      showAlert("Invalid OTP", "Please enter all 6 digits", "error");
+      return;
+    }
+    try {
+      const response = await axiosInstance.post("/users/verify-phone-otp", {
+        phone: formData.phone,
+        otp: otp,
+      });
+      if (response.data.success) {
+        setPhoneVerified(true);
+        showAlert("Success!", "Phone number verified successfully", "success");
+        handleNext();
+      }
+    } catch (error) {
+      showAlert(
+        "Verification Failed",
+        "Invalid or expired OTP. Please try again.",
+        "error",
+      );
+    }
+  };
+
+  const handleSendEmailOtp = async () => {
+    if (!formData.email) {
+      showAlert("Invalid Email", "Please enter your email address", "error");
+      return;
+    }
+    try {
+      const response = await axiosInstance.post("/users/send-email-otp", {
+        email: formData.email,
+      });
+      if (response.data.success) {
+        setEmailOtpTimer(60);
+        const receivedOtp = response.data.otp;
+        if (receivedOtp) {
+          showAlert("OTP Sent!", `Your Email OTP is: ${receivedOtp}`, "info");
+        } else {
+          showAlert(
+            "OTP Sent!",
+            "Please check your email for the verification code",
+            "success",
+          );
+        }
+      }
+    } catch (error) {
+      showAlert(
+        "Failed",
+        "Could not send OTP to email. Please try again.",
+        "error",
+      );
+    }
+  };
+
+  const handleVerifyEmailOtp = async () => {
+    const otp = formData.emailOtp.join("");
+    if (otp.length !== 6) {
+      showAlert("Invalid OTP", "Please enter all 6 digits", "error");
+      return;
+    }
+    try {
+      const response = await axiosInstance.post("/users/verify-email-otp", {
+        email: formData.email,
+        otp: otp,
+      });
+      if (response.data.success) {
+        setEmailVerified(true);
+        showAlert("Success!", "Email verified successfully", "success");
+        handleNext();
+      }
+    } catch (error) {
+      showAlert(
+        "Verification Failed",
+        "Invalid or expired OTP. Please try again.",
+        "error",
+      );
     }
   };
 
@@ -297,19 +414,138 @@ const RegisterPage = () => {
       handleNext();
     } else {
       setErrors({ pin: "PINs do not match" });
+      showAlert(
+        "PIN Mismatch",
+        "Your PINs do not match. Please try again.",
+        "error",
+      );
       setPinStep(1);
       updateField("pin", "");
       updateField("confirmPin", "");
     }
   };
 
-  const handleSubmit = () => {
-    if (!validateStep9()) return;
+  const handleSubmit = async () => {
+    if (!validateStep9()) {
+      showAlert("Validation Error", "Please fill all required fields", "error");
+      return;
+    }
+
+    if (!phoneVerified) {
+      showAlert(
+        "Phone Not Verified",
+        "Please verify your phone number first",
+        "warning",
+      );
+      setCurrentStep(2);
+      return;
+    }
+
+    if (formData.email && !emailVerified) {
+      showAlert(
+        "Email Not Verified",
+        "Please verify your email address first",
+        "warning",
+      );
+      setCurrentStep(3);
+      return;
+    }
+
     setIsLoading(true);
-    setTimeout(() => {
+    try {
+      const requestData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName || null,
+        phone: formData.phone,
+        email: formData.email || null,
+        password: formData.password,
+        dob: formData.dob,
+        gender: formData.gender || null,
+        division: formData.division || null,
+        district: formData.district || null,
+        upazila: formData.upazila || null,
+        occupation: formData.occupation,
+        income: formData.income,
+        referralCode: formData.referralCode || null,
+        village: formData.village || null,
+        postOffice: formData.postOffice || null,
+        postCode: formData.postCode || null,
+        nomineeFirstName: formData.nomineeFirstName,
+        nomineeLastName: formData.nomineeLastName || null,
+        nomineeRelation: formData.nomineeRelation,
+        nomineePhone: formData.nomineePhone,
+        nomineeNid: formData.nomineeNid || null,
+        nomineeShare: parseInt(formData.nomineeShare) || 100,
+        selectedPlan: formData.selectedPlan,
+        goalType: formData.goalType || null,
+        targetAmount: formData.targetAmount
+          ? parseInt(formData.targetAmount)
+          : null,
+        monthlyDeposit: formData.monthlyDeposit
+          ? parseInt(formData.monthlyDeposit)
+          : null,
+        duration: formData.duration ? parseInt(formData.duration) : null,
+        pin: formData.pin,
+        nidNumber: formData.nidNumber,
+        islamicMode: formData.islamicMode,
+        paymentMethod: formData.paymentMethod,
+        walletNumber: formData.walletNumber || null,
+        walletName: formData.walletName || null,
+        bankName: formData.bankName || null,
+        bankAccNum: formData.bankAccNum || null,
+        bankAccName: formData.bankAccName || null,
+        bankBranch: formData.bankBranch || null,
+        bankRouting: formData.bankRouting || null,
+        terms: formData.terms,
+        withdrawalPolicy: formData.withdrawalPolicy,
+        marketing: formData.marketing,
+        kycConsent: formData.kycConsent,
+      };
+
+      const result = await registerUser(requestData);
+
+      if (result.success) {
+        setRegistrationData(result.user);
+        Swal.fire({
+          title: "Registration Successful! 🎉",
+          html: `
+            <div style="text-align: left;">
+              <p><strong>${formData.firstName}</strong>, your account has been successfully created!</p>
+              <br>
+              <p>📋 <strong>What's next?</strong></p>
+              <ul style="margin-left: 20px;">
+                <li>✅ Account created</li>
+                <li>⏳ KYC under review (up to 4 hours)</li>
+                <li>📱 You'll receive SMS upon approval</li>
+              </ul>
+              <br>
+              <p>🎁 <strong>Referral Bonus:</strong> Share your code and earn ৳500!</p>
+              <p style="background: #f0fdf4; padding: 8px; border-radius: 8px; font-family: monospace;">${result.user.referralCode}</p>
+            </div>
+          `,
+          icon: "success",
+          confirmButtonColor: "#059669",
+          confirmButtonText: "Go to Dashboard",
+          allowOutsideClick: false,
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location.href = "/dashboard";
+          }
+        });
+        setIsRegistered(true);
+      } else {
+        showAlert("Registration Failed", result.message, "error");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      let errorMessage = "Registration failed. Please try again.";
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      }
+      showAlert("Registration Failed", errorMessage, "error");
+    } finally {
       setIsLoading(false);
-      setIsRegistered(true);
-    }, 2000);
+    }
   };
 
   const getStrengthColor = () => {
@@ -334,6 +570,7 @@ const RegisterPage = () => {
           animate={{ opacity: 1, scale: 1 }}
           className="bg-card border border-border rounded-2xl p-8 max-w-md w-full text-center"
         >
+          <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold text-foreground mb-2">
             Welcome to Amanah!
           </h2>
@@ -347,37 +584,55 @@ const RegisterPage = () => {
             </p>
             <div className="space-y-2 text-sm text-foreground/60">
               <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                   ✓
                 </div>{" "}
                 Account created
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-yellow-500/20 flex items-center justify-center"></div>{" "}
+                <div className="w-6 h-6 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500">
+                  ⏳
+                </div>{" "}
                 KYC under review (up to 4 hours)
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center"></div>{" "}
+                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+                  📱
+                </div>{" "}
                 You&apos;ll receive SMS upon approval
               </div>
             </div>
           </div>
-          <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-6">
-            <p className="text-sm font-semibold mb-2">
-              Refer a friend — Get ৳500 bonus!
-            </p>
-            <div className="flex gap-2">
-              <div className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-primary font-mono text-sm">
-                AMANAH2024
+          {registrationData && (
+            <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-6">
+              <p className="text-sm font-semibold mb-2">
+                Refer a friend — Get ৳500 bonus!
+              </p>
+              <div className="flex gap-2">
+                <div className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-primary font-mono text-sm">
+                  {registrationData.referralCode}
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      registrationData.referralCode,
+                    );
+                    showAlert(
+                      "Copied!",
+                      "Referral code copied to clipboard",
+                      "success",
+                    );
+                  }}
+                  className="px-4 py-2 bg-primary text-white rounded-lg font-semibold"
+                >
+                  Copy
+                </button>
               </div>
-              <button className="px-4 py-2 bg-primary text-white rounded-lg font-semibold">
-                Copy
-              </button>
             </div>
-          </div>
+          )}
           <Link
             href="/dashboard"
-            className="block w-full py-3 bg-primary text-white rounded-xl font-semibold mb-3"
+            className="block w-full py-3 bg-primary text-white rounded-xl font-semibold mb-3 text-center"
           >
             Go to Dashboard
           </Link>
@@ -391,29 +646,18 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Progress Bar */}
       <div className="fixed top-0 left-0 right-0 h-1 bg-primary/20 z-50">
         <div
           className="h-full bg-linear-to-r from-primary to-primary-light transition-all duration-300"
           style={{ width: `${stepProgress[currentStep]}%` }}
         />
       </div>
-
-      {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Stepper */}
         <div className="flex justify-between mb-8 overflow-x-auto pb-2">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((step) => (
             <div key={step} className="flex flex-col items-center min-w-12.5">
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all
-                ${
-                  currentStep === step
-                    ? "bg-primary text-white ring-4 ring-primary/20"
-                    : currentStep > step
-                      ? "bg-primary text-white"
-                      : "bg-card border border-border text-foreground/50"
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${currentStep === step ? "bg-primary text-white ring-4 ring-primary/20" : currentStep > step ? "bg-primary text-white" : "bg-card border border-border text-foreground/50"}`}
               >
                 {currentStep > step ? "✓" : step}
               </div>
@@ -432,7 +676,7 @@ const RegisterPage = () => {
           ))}
         </div>
 
-        {/* Step 1 - Account Creation */}
+        {/* Step 1 */}
         {currentStep === 1 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -592,7 +836,6 @@ const RegisterPage = () => {
               )}
             </div>
 
-            {/* Islamic Mode Toggle */}
             <div
               className="flex items-center justify-between p-4 bg-primary/5 border border-primary/20 rounded-xl mb-4 cursor-pointer"
               onClick={() => updateField("islamicMode", !formData.islamicMode)}
@@ -614,7 +857,6 @@ const RegisterPage = () => {
               </div>
             </div>
 
-            {/* Checkboxes */}
             <label className="flex items-start gap-3 mb-3 cursor-pointer">
               <input
                 type="checkbox"
@@ -680,7 +922,7 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 2 - Phone Verification */}
+        {/* Step 2 */}
         {currentStep === 2 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -697,6 +939,14 @@ const RegisterPage = () => {
               A 6-digit OTP has been sent to{" "}
               <strong>+880 {formData.phone}</strong>
             </p>
+            {phoneOtpTimer === 0 && !phoneVerified && (
+              <button
+                onClick={handleSendPhoneOtp}
+                className="w-full py-2 bg-primary/10 text-primary rounded-xl font-semibold mb-3 text-sm"
+              >
+                Send OTP to +880{formData.phone}
+              </button>
+            )}
             <div className="flex justify-center gap-2 mb-4">
               {formData.phoneOtp.map((digit, idx) => (
                 <input
@@ -717,29 +967,26 @@ const RegisterPage = () => {
                   }}
                   id={`phoneOtp-${idx}`}
                   className="w-12 h-12 text-center text-xl font-bold rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
+                  disabled={phoneVerified}
                 />
               ))}
             </div>
-            {errors.phoneOtp && (
-              <p className="text-xs text-red-500 mb-3">{errors.phoneOtp}</p>
-            )}
             <p className="text-sm text-foreground/50 mb-4">
               Didn&apos;t receive OTP?{" "}
               <button
                 className="text-primary font-semibold"
-                disabled={phoneOtpTimer > 0}
-                onClick={() => {
-                  setPhoneOtpTimer(60);
-                }}
+                disabled={phoneOtpTimer > 0 || phoneVerified}
+                onClick={handleSendPhoneOtp}
               >
                 Resend {phoneOtpTimer > 0 && `(${phoneOtpTimer}s)`}
               </button>
             </p>
             <button
-              onClick={verifyPhoneOtp}
-              className="w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold mb-3"
+              onClick={handleVerifyPhoneOtp}
+              disabled={phoneVerified}
+              className={`w-full py-3 rounded-xl font-semibold mb-3 ${phoneVerified ? "bg-green-500 text-white" : "bg-linear-to-r from-primary to-primary-light text-white"}`}
             >
-              Verify Phone ✓
+              {phoneVerified ? "✓ Phone Verified" : "Verify Phone"}
             </button>
             <button
               onClick={handleBack}
@@ -750,7 +997,7 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 3 - Email Verification */}
+        {/* Step 3 */}
         {currentStep === 3 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -767,6 +1014,14 @@ const RegisterPage = () => {
               A 6-digit code has been sent to{" "}
               <strong>{formData.email || "your email"}</strong>
             </p>
+            {emailOtpTimer === 0 && !emailVerified && formData.email && (
+              <button
+                onClick={handleSendEmailOtp}
+                className="w-full py-2 bg-primary/10 text-primary rounded-xl font-semibold mb-3 text-sm"
+              >
+                Send OTP to {formData.email}
+              </button>
+            )}
             <div className="flex justify-center gap-2 mb-4">
               {formData.emailOtp.map((digit, idx) => (
                 <input
@@ -787,6 +1042,7 @@ const RegisterPage = () => {
                   }}
                   id={`emailOtp-${idx}`}
                   className="w-12 h-12 text-center text-xl font-bold rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
+                  disabled={emailVerified}
                 />
               ))}
             </div>
@@ -794,19 +1050,18 @@ const RegisterPage = () => {
               Didn&apos;t receive code?{" "}
               <button
                 className="text-primary font-semibold"
-                disabled={emailOtpTimer > 0}
-                onClick={() => {
-                  setEmailOtpTimer(60);
-                }}
+                disabled={emailOtpTimer > 0 || emailVerified || !formData.email}
+                onClick={handleSendEmailOtp}
               >
                 Resend {emailOtpTimer > 0 && `(${emailOtpTimer}s)`}
               </button>
             </p>
             <button
-              onClick={verifyEmailOtp}
-              className="w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold mb-3"
+              onClick={handleVerifyEmailOtp}
+              disabled={emailVerified || !formData.email}
+              className={`w-full py-3 rounded-xl font-semibold mb-3 ${emailVerified ? "bg-green-500 text-white" : "bg-linear-to-r from-primary to-primary-light text-white"}`}
             >
-              Verify Email ✓
+              {emailVerified ? "✓ Email Verified" : "Verify Email"}
             </button>
             <button
               onClick={handleBack}
@@ -817,7 +1072,7 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 4 - Personal Info */}
+        {/* Step 4 */}
         {currentStep === 4 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -1031,7 +1286,7 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 5 - Nominee */}
+        {/* Step 5 */}
         {currentStep === 5 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -1173,7 +1428,7 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 6 - Plan Selection */}
+        {/* Step 6 */}
         {currentStep === 6 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -1192,41 +1447,23 @@ const RegisterPage = () => {
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {[
-                {
-                  id: "bronze",
-                  name: "Bronze",
-                  range: "৳500–৳2,000/mo",
-                  emoji: "",
-                },
-                {
-                  id: "silver",
-                  name: "Silver",
-                  range: "৳2,000–৳10,000/mo",
-                  emoji: "",
-                },
-                {
-                  id: "gold",
-                  name: "Gold ",
-                  range: "৳10,000–৳50,000/mo",
-                  emoji: "",
-                },
-                {
-                  id: "platinum",
-                  name: "Platinum",
-                  range: "৳50,000+/mo",
-                  emoji: "",
-                },
-              ].map((plan) => (
+              {["bronze", "silver", "gold", "platinum"].map((plan) => (
                 <div
-                  key={plan.id}
-                  onClick={() => updateField("selectedPlan", plan.id)}
-                  className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all ${formData.selectedPlan === plan.id ? "border-primary bg-primary/5" : "border-border"}`}
+                  key={plan}
+                  onClick={() => updateField("selectedPlan", plan)}
+                  className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all ${formData.selectedPlan === plan ? "border-primary bg-primary/5" : "border-border"}`}
                 >
-                  <div className="text-2xl mb-1">{plan.emoji}</div>
-                  <div className="font-bold">{plan.name}</div>
-                  <div className="text-xs text-foreground/50">{plan.range}</div>
-                  {formData.selectedPlan === plan.id && (
+                  <div className="font-bold capitalize">{plan}</div>
+                  <div className="text-xs text-foreground/50">
+                    {plan === "bronze"
+                      ? "৳500–৳2,000/mo"
+                      : plan === "silver"
+                        ? "৳2,000–৳10,000/mo"
+                        : plan === "gold"
+                          ? "৳10,000–৳50,000/mo"
+                          : "৳50,000+/mo"}
+                  </div>
+                  {formData.selectedPlan === plan && (
                     <div className="text-primary text-xs mt-1">✓ Selected</div>
                   )}
                 </div>
@@ -1237,7 +1474,6 @@ const RegisterPage = () => {
               <h3 className="text-sm font-bold text-foreground/70 mb-3">
                 Set Your First Savings Goal
               </h3>
-
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-foreground/70 mb-1">
                   Goal Type
@@ -1261,7 +1497,6 @@ const RegisterPage = () => {
                   <option>Custom Goal</option>
                 </select>
               </div>
-
               <div className="mb-4">
                 <label className="block text-sm font-semibold text-foreground/70 mb-1">
                   Target Amount (BDT)
@@ -1319,7 +1554,7 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 7 - PIN Setup */}
+        {/* Step 7 */}
         {currentStep === 7 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -1336,7 +1571,6 @@ const RegisterPage = () => {
               This 6-digit PIN is required for every deposit & withdrawal. Do
               not share it.
             </p>
-
             <div className="flex justify-center gap-3 mb-6">
               {[...Array(6)].map((_, i) => (
                 <div
@@ -1345,16 +1579,14 @@ const RegisterPage = () => {
                 />
               ))}
             </div>
-
             <p className="text-sm text-foreground/60 mb-4">
               {pinStep === 1 ? "Enter new PIN" : "Confirm PIN"}
             </p>
-
             <div className="grid grid-cols-3 gap-3 max-w-xs mx-auto mb-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((num) => (
                 <button
                   key={num}
-                  onClick={() => handlePinInput(num.toString())}
+                  onClick={() => handlePinInput(num)}
                   className="p-4 rounded-xl border border-border text-xl font-bold hover:border-primary hover:bg-primary/5 transition"
                 >
                   {num}
@@ -1374,11 +1606,9 @@ const RegisterPage = () => {
                 ⌫
               </button>
             </div>
-
             {errors.pin && (
               <p className="text-sm text-red-500 mb-4">{errors.pin}</p>
             )}
-
             {pinStep === 2 && (
               <button
                 onClick={handlePinConfirm}
@@ -1394,6 +1624,11 @@ const RegisterPage = () => {
                     setPinStep(2);
                   } else {
                     setErrors({ pin: "Please enter 6-digit PIN" });
+                    showAlert(
+                      "Invalid PIN",
+                      "Please enter 6-digit PIN",
+                      "error",
+                    );
                     setTimeout(() => setErrors({}), 2000);
                   }
                 }}
@@ -1411,7 +1646,7 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 8 - KYC */}
+        {/* Step 8 */}
         {currentStep === 8 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -1493,7 +1728,7 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 9 - Payment Info */}
+        {/* Step 9 */}
         {currentStep === 9 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -1511,47 +1746,21 @@ const RegisterPage = () => {
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {[
-                {
-                  id: "bkash",
-                  name: "bKash",
-                  color: "text-pink-600",
-                  bg: "bg-pink-50",
-                },
-                {
-                  id: "nagad",
-                  name: "Nagad",
-                  color: "text-orange-500",
-                  bg: "bg-orange-50",
-                },
-                {
-                  id: "rocket",
-                  name: "Rocket",
-                  color: "text-purple-600",
-                  bg: "bg-purple-50",
-                },
-                {
-                  id: "bank",
-                  name: "Bank",
-                  color: "text-blue-500",
-                  bg: "bg-blue-50",
-                },
-              ].map((method) => (
+              {["bkash", "nagad", "rocket", "bank"].map((method) => (
                 <div
-                  key={method.id}
-                  onClick={() => updateField("paymentMethod", method.id)}
-                  className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all ${formData.paymentMethod === method.id ? "border-primary bg-primary/5" : "border-border"}`}
+                  key={method}
+                  onClick={() => updateField("paymentMethod", method)}
+                  className={`p-4 rounded-xl border-2 text-center cursor-pointer transition-all ${formData.paymentMethod === method ? "border-primary bg-primary/5" : "border-border"}`}
                 >
-                  <div className={`text-2xl ${method.color}`}>
-                    {method.name === "bKash"
-                      ? ""
-                      : method.name === "Nagad"
-                        ? ""
-                        : method.name === "Rocket"
-                          ? ""
-                          : ""}
+                  <div className="font-semibold capitalize">
+                    {method === "bkash"
+                      ? "bKash"
+                      : method === "nagad"
+                        ? "Nagad"
+                        : method === "rocket"
+                          ? "Rocket"
+                          : "Bank"}
                   </div>
-                  <div className="font-semibold">{method.name}</div>
                 </div>
               ))}
             </div>
@@ -1583,6 +1792,11 @@ const RegisterPage = () => {
                       className="flex-1 p-3 rounded-r-xl border border-border bg-background text-foreground outline-none focus:border-primary"
                     />
                   </div>
+                  {errors.walletNumber && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.walletNumber}
+                    </p>
+                  )}
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
@@ -1594,99 +1808,104 @@ const RegisterPage = () => {
                     onChange={(e) => updateField("walletName", e.target.value)}
                     className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
                   />
+                  {errors.walletName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.walletName}
+                    </p>
+                  )}
                 </div>
               </div>
-            ) : (
-              formData.paymentMethod === "bank" && (
-                <div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                      Bank Name *
-                    </label>
-                    <select
-                      value={formData.bankName}
-                      onChange={(e) => updateField("bankName", e.target.value)}
-                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                    >
-                      <option value="">Select Bank</option>
-                      <option>Dutch-Bangla Bank (DBBL)</option>
-                      <option>BRAC Bank</option>
-                      <option>Islami Bank Bangladesh</option>
-                      <option>Sonali Bank</option>
-                      <option>Janata Bank</option>
-                      <option>Agrani Bank</option>
-                      <option>Rupali Bank</option>
-                      <option>Pubali Bank</option>
-                      <option>Uttara Bank</option>
-                      <option>Mutual Trust Bank</option>
-                      <option>Dhaka Bank</option>
-                      <option>Eastern Bank</option>
-                      <option>City Bank</option>
-                      <option>Prime Bank</option>
-                      <option>Trust Bank</option>
-                      <option>Other</option>
-                    </select>
-                    {errors.bankName && (
-                      <p className="text-xs text-red-500 mt-1">
-                        {errors.bankName}
-                      </p>
-                    )}
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                      Account Number *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.bankAccNum}
-                      onChange={(e) =>
-                        updateField("bankAccNum", e.target.value)
-                      }
-                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                      Account Holder Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.bankAccName}
-                      onChange={(e) =>
-                        updateField("bankAccName", e.target.value)
-                      }
-                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                      Branch Name
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.bankBranch}
-                      onChange={(e) =>
-                        updateField("bankBranch", e.target.value)
-                      }
-                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                      Routing Number (Optional)
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.bankRouting}
-                      onChange={(e) =>
-                        updateField("bankRouting", e.target.value)
-                      }
-                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                    />
-                  </div>
+            ) : formData.paymentMethod === "bank" ? (
+              <div>
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                    Bank Name *
+                  </label>
+                  <select
+                    value={formData.bankName}
+                    onChange={(e) => updateField("bankName", e.target.value)}
+                    className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
+                  >
+                    <option value="">Select Bank</option>
+                    <option>Dutch-Bangla Bank (DBBL)</option>
+                    <option>BRAC Bank</option>
+                    <option>Islami Bank Bangladesh</option>
+                    <option>Sonali Bank</option>
+                    <option>Janata Bank</option>
+                    <option>Agrani Bank</option>
+                    <option>Rupali Bank</option>
+                    <option>Pubali Bank</option>
+                    <option>Uttara Bank</option>
+                    <option>Mutual Trust Bank</option>
+                    <option>Dhaka Bank</option>
+                    <option>Eastern Bank</option>
+                    <option>City Bank</option>
+                    <option>Prime Bank</option>
+                    <option>Trust Bank</option>
+                    <option>Other</option>
+                  </select>
+                  {errors.bankName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.bankName}
+                    </p>
+                  )}
                 </div>
-              )
-            )}
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                    Account Number *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bankAccNum}
+                    onChange={(e) => updateField("bankAccNum", e.target.value)}
+                    className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
+                  />
+                  {errors.bankAccNum && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.bankAccNum}
+                    </p>
+                  )}
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                    Account Holder Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bankAccName}
+                    onChange={(e) => updateField("bankAccName", e.target.value)}
+                    className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
+                  />
+                  {errors.bankAccName && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.bankAccName}
+                    </p>
+                  )}
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                    Branch Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bankBranch}
+                    onChange={(e) => updateField("bankBranch", e.target.value)}
+                    className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                    Routing Number (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.bankRouting}
+                    onChange={(e) => updateField("bankRouting", e.target.value)}
+                    className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+            ) : null}
 
             <button
               onClick={handleSubmit}
@@ -1699,7 +1918,7 @@ const RegisterPage = () => {
                   Creating account...
                 </span>
               ) : (
-                " Create Account"
+                "🚀 Create Account"
               )}
             </button>
             <button
