@@ -10,13 +10,13 @@ const FaqPage = () => {
   const [openFaq, setOpenFaq] = useState(null);
 
   const categories = [
-    { id: "all", label: "All", icon: "📌" },
-    { id: "account", label: "Account", icon: "🪪" },
-    { id: "savings", label: "Savings", icon: "💰" },
-    { id: "plans", label: "Plans", icon: "💎" },
-    { id: "circles", label: "Circles", icon: "👥" },
-    { id: "islamic", label: "Islamic", icon: "☪️" },
-    { id: "security", label: "Security", icon: "🔐" },
+    { id: "all", label: "All", icon: "" },
+    { id: "account", label: "Account", icon: "" },
+    { id: "savings", label: "Savings", icon: "" },
+    { id: "plans", label: "Plans", icon: "" },
+    { id: "circles", label: "Circles", icon: "" },
+    { id: "islamic", label: "Islamic", icon: "" },
+    { id: "security", label: "Security", icon: "" },
   ];
 
   const faqs = [
@@ -190,7 +190,7 @@ const FaqPage = () => {
       <section className="relative bg-linear-to-r from-primary to-primary-light pt-20 pb-16 text-center overflow-hidden">
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-white text-sm mb-6">
-            ❓ Frequently Asked Questions
+            Frequently Asked Questions
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
             Find Answers to Everything
@@ -305,12 +305,12 @@ const FaqPage = () => {
                           <span
                             className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full mt-3 ${getTagColor(faq.tag)}`}
                           >
-                            {faq.tag === "Account" && "🪪"}
-                            {faq.tag === "Savings" && "💰"}
-                            {faq.tag === "Plans" && "💎"}
-                            {faq.tag === "Circles" && "👥"}
-                            {faq.tag === "Islamic" && "☪️"}
-                            {faq.tag === "Security" && "🔐"} {faq.tag}
+                            {faq.tag === "Account" && ""}
+                            {faq.tag === "Savings" && ""}
+                            {faq.tag === "Plans" && ""}
+                            {faq.tag === "Circles" && ""}
+                            {faq.tag === "Islamic" && ""}
+                            {faq.tag === "Security" && ""} {faq.tag}
                           </span>
                         </div>
                       </motion.div>
@@ -341,65 +341,20 @@ const FaqPage = () => {
                 rel="noopener noreferrer"
                 className="px-6 py-3 bg-[#25D366] text-white rounded-xl font-semibold hover:opacity-90 transition"
               >
-                💬 Chat on WhatsApp
+                Chat on WhatsApp
               </a>
               <Link
                 href="/contact"
                 className="px-6 py-3 bg-white/20 border border-white/30 text-white rounded-xl font-semibold hover:bg-white/30 transition"
               >
-                📧 Send a Message
+                Send a Message
               </Link>
             </div>
           </motion.div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-background border-t border-border py-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex flex-wrap justify-center gap-4 text-sm mb-4">
-            <Link href="/" className="text-foreground/50 hover:text-primary">
-              Home
-            </Link>
-            <Link
-              href="/plans"
-              className="text-foreground/50 hover:text-primary"
-            >
-              Plans
-            </Link>
-            <Link
-              href="/goals"
-              className="text-foreground/50 hover:text-primary"
-            >
-              Goals
-            </Link>
-            <Link
-              href="/about"
-              className="text-foreground/50 hover:text-primary"
-            >
-              About
-            </Link>
-            <Link href="/faq" className="text-foreground/50 hover:text-primary">
-              FAQ
-            </Link>
-            <Link
-              href="/contact"
-              className="text-foreground/50 hover:text-primary"
-            >
-              Contact
-            </Link>
-            <Link
-              href="/privacy"
-              className="text-foreground/50 hover:text-primary"
-            >
-              Privacy
-            </Link>
-          </div>
-          <p className="text-xs text-foreground/40">
-            © 2026 Amanah Savings Community. All rights reserved. Bangladesh.
-          </p>
-        </div>
-      </footer>
+
     </div>
   );
 };

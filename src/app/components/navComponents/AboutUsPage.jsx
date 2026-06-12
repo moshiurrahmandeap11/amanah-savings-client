@@ -395,52 +395,7 @@ const AboutUsPage = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-background border-t border-border py-8">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="flex flex-wrap justify-center gap-4 text-sm mb-4">
-            <Link href="/" className="text-foreground/50 hover:text-primary">
-              Home
-            </Link>
-            <Link
-              href="/plans"
-              className="text-foreground/50 hover:text-primary"
-            >
-              Plans
-            </Link>
-            <Link
-              href="/goals"
-              className="text-foreground/50 hover:text-primary"
-            >
-              Goals
-            </Link>
-            <Link
-              href="/about"
-              className="text-foreground/50 hover:text-primary"
-            >
-              About
-            </Link>
-            <Link href="/faq" className="text-foreground/50 hover:text-primary">
-              FAQ
-            </Link>
-            <Link
-              href="/contact"
-              className="text-foreground/50 hover:text-primary"
-            >
-              Contact
-            </Link>
-            <Link
-              href="/privacy"
-              className="text-foreground/50 hover:text-primary"
-            >
-              Privacy
-            </Link>
-          </div>
-          <p className="text-xs text-foreground/40">
-            © 2026 Amanah Savings Community. All rights reserved. Bangladesh.
-          </p>
-        </div>
-      </footer>
+
     </div>
   );
 };
