@@ -2,15 +2,18 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import useAuth from "../../../hooks/useAuth";
 
 const Navbar = () => {
+  const { user, isAuthenticated, logout: logoutUser, isLoading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -27,12 +30,12 @@ const Navbar = () => {
   ];
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    setIsLoggedIn(!!user);
-
     // dark mode
     const darkMode = localStorage.getItem("theme") === "dark";
-    setIsDark(darkMode);
+    const tryCall = async () => {
+      setIsDark(darkMode);
+    };
+    tryCall()
     if (darkMode) {
       document.documentElement.classList.add("dark");
     }
@@ -83,11 +86,10 @@ const Navbar = () => {
     document.documentElement.classList.toggle("dark", newTheme);
   };
 
-  const logout = () => {
-    localStorage.removeItem("user");
-    setIsLoggedIn(false);
-    router.push("/");
+  const handleLogout = async () => {
+    await logoutUser(true);
     setDropdownOpen(false);
+    router.push("/");
   };
 
   // Helper function to check if a path is active
@@ -95,11 +97,43 @@ const Navbar = () => {
     if (path === "/") {
       return pathname === path;
     }
-    // Remove leading slash for comparison if needed
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     return (
       pathname === normalizedPath || pathname.startsWith(`${normalizedPath}/`)
     );
+  };
+
+  // Get user initial for avatar (fallback)
+  const getUserInitial = () => {
+    if (user?.firstName) {
+      return user.firstName[0].toUpperCase();
+    }
+    if (user?.fullName) {
+      return user.fullName[0].toUpperCase();
+    }
+    if (user?.email) {
+      return user.email[0].toUpperCase();
+    }
+    return "U";
+  };
+
+  // Get user display name
+  const getUserDisplayName = () => {
+    if (user?.firstName) {
+      return user.firstName;
+    }
+    if (user?.fullName) {
+      return user.fullName.split(" ")[0];
+    }
+    return "User";
+  };
+
+  // Get profile picture URL with validation
+  const getProfilePictureUrl = () => {
+    if (user?.profilePicture && !imageError) {
+      return user.profilePicture;
+    }
+    return null;
   };
 
   return (
@@ -129,7 +163,7 @@ const Navbar = () => {
               {navItems.map((item) => {
                 const isActive = isActivePath(item.path);
                 return (
-                  <li key={item.id} className="relative">
+                  <li key={item.id} className="relative group">
                     <Link
                       href={item.path}
                       className={`text-sm font-semibold transition duration-300 relative py-2 ${
@@ -184,7 +218,7 @@ const Navbar = () => {
                 </svg>
               ) : (
                 <svg
-                  className="h-4 w-4 sm:h-5 sm:w-5 text-slate-700"
+                  className="h-4 w-4 sm:h-5 sm:w-5 text-slate-700 dark:text-slate-400"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -200,7 +234,7 @@ const Navbar = () => {
             </button>
 
             {/* Auth Buttons for Desktop - Only when not logged in */}
-            {!isLoggedIn && (
+            {!isAuthenticated && !isLoading && (
               <div className="hidden md:flex items-center gap-2">
                 <Link
                   href="/login"
@@ -217,15 +251,54 @@ const Navbar = () => {
               </div>
             )}
 
+            {/* Loading State */}
+            {isLoading && (
+              <div className="hidden md:flex items-center">
+                <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></div>
+              </div>
+            )}
+
             {/* User Section for Logged In */}
-            {isLoggedIn && (
+            {isAuthenticated && user && (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-linear-to-r from-primary to-primary-hover text-white transition hover:shadow-lg shrink-0"
+                  className="flex items-center gap-2 rounded-full bg-linear-to-r from-primary to-primary-hover text-white transition hover:shadow-lg shrink-0 pl-2 pr-3 py-1"
                   aria-label="User menu"
                 >
-                  👤
+                  {/* Profile Picture or Initial */}
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold overflow-hidden">
+                    {getProfilePictureUrl() ? (
+                      <Image
+                        src={getProfilePictureUrl()}
+                        alt={getUserDisplayName()}
+                        width={100}
+                        height={100}
+                        className="w-full h-full object-cover"
+                        onError={() => setImageError(true)}
+                      />
+                    ) : (
+                      getUserInitial()
+                    )}
+                  </div>
+                  <span className="hidden sm:inline text-sm font-medium">
+                    {getUserDisplayName()}
+                  </span>
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      dropdownOpen ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </button>
 
                 {dropdownOpen && (
@@ -234,46 +307,138 @@ const Navbar = () => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 sm:mt-3 w-48 sm:w-56 rounded-2xl border border-border bg-card p-1 shadow-xl z-50"
+                    className="absolute right-0 mt-2 sm:mt-3 w-56 rounded-2xl border border-border bg-card p-1 shadow-xl z-50"
                   >
+                    {/* User Info with Profile Picture */}
+                    <div className="px-3 py-2 border-b border-border mb-1">
+                      <div className="flex items-center gap-3">
+                        {/* Profile Picture in dropdown */}
+                        <div className="w-10 h-10 rounded-full bg-linear-to-r from-primary to-primary-hover flex items-center justify-center text-white font-bold overflow-hidden">
+                          {getProfilePictureUrl() ? (
+                            <Image
+                              src={getProfilePictureUrl()}
+                              alt={getUserDisplayName()}
+                              width={100}
+                              height={100}
+                              className="w-full h-full object-cover"
+                              onError={() => setImageError(true)}
+                            />
+                          ) : (
+                            <span className="text-sm">{getUserInitial()}</span>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-foreground">
+                            {user.fullName ||
+                              `${user.firstName} ${user.lastName || ""}`}
+                          </p>
+                          <p className="text-xs text-foreground/60 truncate">
+                            {user.email || user.phone}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
                     <Link
                       href="/profile"
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-background hover:text-primary ${
                         isActivePath("/profile")
                           ? "text-primary bg-background"
-                          : ""
+                          : "text-foreground/80"
                       }`}
                       onClick={() => setDropdownOpen(false)}
                     >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
                       Profile
                     </Link>
+
                     <Link
                       href="/dashboard"
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-background hover:text-primary ${
                         isActivePath("/dashboard")
                           ? "text-primary bg-background"
-                          : ""
+                          : "text-foreground/80"
                       }`}
                       onClick={() => setDropdownOpen(false)}
                     >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                        />
+                      </svg>
                       Dashboard
                     </Link>
+
                     <Link
                       href="/settings"
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-background hover:text-primary ${
                         isActivePath("/settings")
                           ? "text-primary bg-background"
-                          : ""
+                          : "text-foreground/80"
                       }`}
                       onClick={() => setDropdownOpen(false)}
                     >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                        />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                        />
+                      </svg>
                       Settings
                     </Link>
+
                     <div className="my-1 border-t border-border" />
+
                     <button
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left text-sm text-red-500 transition hover:bg-background"
                     >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                        />
+                      </svg>
                       Logout
                     </button>
                   </motion.div>
@@ -305,7 +470,7 @@ const Navbar = () => {
         </div>
       </header>
 
-      {/* Mobile Drawer - Smooth Animation from Right (Slide from right) */}
+      {/* Mobile Drawer - Smooth Animation from Right */}
       <AnimatePresence>
         {isOpen && (
           <>
@@ -340,6 +505,38 @@ const Navbar = () => {
                 </button>
               </div>
 
+              {/* User Info in Mobile Menu when logged in */}
+              {isAuthenticated && user && (
+                <div className="p-4 border-b border-border">
+                  <div className="flex items-center gap-3">
+                    {/* Profile Picture in Mobile Menu */}
+                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-primary to-primary-hover flex items-center justify-center text-white text-lg font-bold overflow-hidden">
+                      {getProfilePictureUrl() ? (
+                        <Image
+                          src={getProfilePictureUrl()}
+                          alt={getUserDisplayName()}
+                          width={100}
+                          height={100}
+                          className="w-full h-full object-cover"
+                          onError={() => setImageError(true)}
+                        />
+                      ) : (
+                        getUserInitial()
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground">
+                        {user.fullName ||
+                          `${user.firstName} ${user.lastName || ""}`}
+                      </p>
+                      <p className="text-xs text-foreground/60 truncate">
+                        {user.email || user.phone}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Mobile Navigation Items */}
               <nav className="p-4">
                 <ul className="space-y-1">
@@ -363,8 +560,8 @@ const Navbar = () => {
                   })}
                 </ul>
 
-                {/* Buttons for Mobile - Only for non-logged in users */}
-                {!isLoggedIn && (
+                {/* Buttons for Mobile */}
+                {!isAuthenticated && !isLoading ? (
                   <div className="mt-6 space-y-2 pt-4 border-t border-border">
                     <Link
                       href="/login"
@@ -381,6 +578,96 @@ const Navbar = () => {
                       Start Savings
                     </Link>
                   </div>
+                ) : (
+                  isAuthenticated && (
+                    <div className="mt-6 space-y-2 pt-4 border-t border-border">
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-4 py-3 text-base font-medium hover:bg-background hover:text-primary transition w-full"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                          />
+                        </svg>
+                        Profile
+                      </Link>
+                      <Link
+                        href="/dashboard"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-4 py-3 text-base font-medium hover:bg-background hover:text-primary transition w-full"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                          />
+                        </svg>
+                        Dashboard
+                      </Link>
+                      <Link
+                        href="/settings"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-2 rounded-xl px-4 py-3 text-base font-medium hover:bg-background hover:text-primary transition w-full"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        Settings
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-2 rounded-xl px-4 py-3 text-base font-medium text-red-500 hover:bg-background transition w-full"
+                      >
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                          />
+                        </svg>
+                        Logout
+                      </button>
+                    </div>
+                  )
                 )}
               </nav>
             </motion.div>
