@@ -1,149 +1,147 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
   Settings,
   CheckCircle,
   Bell,
-  DollarSign,
-  Flame,
-  Calendar,
-  Gift,
-  Award,
+  Loader2,
+  Trash2,
 } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
+import Swal from "sweetalert2";
 
 const NotificationsPage = () => {
   const [activeTab, setActiveTab] = useState("all");
-  const [notifications, setNotifications] = useState([
-    {
-      id: 1,
-      type: "deposit",
-      icon: "💳",
-      title: "Deposit Confirmed!",
-      message:
-        "Your <strong>৳10,000</strong> has been verified and deposited to Wedding Fund.",
-      time: "2 hours ago",
-      color: "bg-primary/15",
-      timeColor: "text-primary",
-      badge: "Deposit",
-      unread: true,
-    },
-    {
-      id: 2,
-      type: "streak",
-      icon: "🔥",
-      title: "90-Day Streak Achieved!",
-      message:
-        "Congratulations! You've maintained a <strong>90 day</strong> savings streak. Only 10 more days for the 100-day badge!",
-      time: "1 day ago",
-      color: "bg-red-500/15",
-      timeColor: "text-red-500",
-      badge: "Streak",
-      unread: true,
-    },
-    {
-      id: 3,
-      type: "reminder",
-      icon: "⏰",
-      title: "Payment Reminder",
-      message:
-        "<strong>Wedding Fund</strong> deposit of ৳10,000 is due in 3 days (May 27).",
-      time: "2 days ago",
-      color: "bg-amber-500/15",
-      timeColor: "text-amber-500",
-      badge: "Reminder",
-      unread: true,
-      action: true,
-    },
-    {
-      id: 4,
-      type: "bonus",
-      icon: "🤝",
-      title: "Referral Bonus!",
-      message:
-        "Your friend <strong>Amina Khatun</strong> joined Amanah. <strong>৳500 bonus</strong> has been credited to your account!",
-      time: "5 days ago",
-      color: "bg-cyan-500/15",
-      timeColor: "text-cyan-500",
-      badge: "Bonus",
-      unread: false,
-    },
-    {
-      id: 5,
-      type: "streak",
-      icon: "🏆",
-      title: "New Achievement Unlocked!",
-      message:
-        "You've unlocked the <strong>'Super Saver'</strong> badge by reaching ৳2,00,000 in savings!",
-      time: "1 week ago",
-      color: "bg-purple-500/15",
-      timeColor: "text-purple-500",
-      badge: "Achievement",
-      unread: false,
-    },
-    {
-      id: 6,
-      type: "deposit",
-      icon: "✅",
-      title: "Hajj Fund Goal 50% Complete!",
-      message:
-        "Your Hajj fund goal is halfway complete. Only ৳2,70,000 remaining!",
-      time: "2 weeks ago",
-      color: "bg-primary/15",
-      timeColor: "text-primary",
-      badge: "Milestone",
-      unread: false,
-    },
-  ]);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [counts, setCounts] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
+
+  // Fetch notifications
+  const fetchNotifications = async (page = 1) => {
+    setLoading(true);
+    try {
+      const url = `/notifications?page=${page}&limit=20${activeTab !== "all" ? `&type=${activeTab}` : ""}`;
+      const response = await axiosInstance.get(url);
+      if (response.data.success) {
+        setNotifications(response.data.data.notifications);
+        setUnreadCount(response.data.data.unreadCount);
+        setCounts(response.data.data.counts);
+        setPagination(response.data.data.pagination);
+      }
+    } catch (error) {
+      console.error("Fetch notifications error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, [activeTab]);
+
+  const markAsRead = async (id) => {
+    try {
+      await axiosInstance.put(`/notifications/${id}/read`);
+      fetchNotifications(pagination.currentPage);
+    } catch (error) {
+      console.error("Mark as read error:", error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const result = await Swal.fire({
+        title: "Mark all as read?",
+        text: "This will mark all your notifications as read.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#059669",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, mark all",
+      });
+
+      if (result.isConfirmed) {
+        await axiosInstance.put("/notifications/read-all");
+        Swal.fire({
+          title: "Success!",
+          text: "All notifications marked as read",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        fetchNotifications();
+      }
+    } catch (error) {
+      console.error("Mark all as read error:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to mark notifications as read",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    }
+  };
+
+  const deleteNotification = async (id, e) => {
+    e.stopPropagation();
+    try {
+      const result = await Swal.fire({
+        title: "Delete notification?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        cancelButtonColor: "#6c757d",
+        confirmButtonText: "Yes, delete",
+      });
+
+      if (result.isConfirmed) {
+        await axiosInstance.delete(`/notifications/${id}`);
+        Swal.fire({
+          title: "Deleted!",
+          text: "Notification deleted",
+          icon: "success",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        fetchNotifications();
+      }
+    } catch (error) {
+      console.error("Delete notification error:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to delete notification",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    }
+  };
 
   const tabs = [
-    { id: "all", label: "All", count: notifications.length },
-    {
-      id: "deposit",
-      label: "Deposit",
-      count: notifications.filter((n) => n.type === "deposit").length,
-    },
-    {
-      id: "streak",
-      label: "Streak",
-      count: notifications.filter((n) => n.type === "streak").length,
-    },
-    {
-      id: "reminder",
-      label: "Reminder",
-      count: notifications.filter((n) => n.type === "reminder").length,
-    },
-    {
-      id: "bonus",
-      label: "Bonus",
-      count: notifications.filter((n) => n.type === "bonus").length,
-    },
+    { id: "all", label: "All", count: counts.all || 0 },
+    { id: "deposit", label: "Deposit", count: counts.deposit || 0 },
+    { id: "streak", label: "Streak", count: counts.streak || 0 },
+    { id: "reminder", label: "Reminder", count: counts.reminder || 0 },
+    { id: "bonus", label: "Bonus", count: counts.bonus || 0 },
+    { id: "achievement", label: "Achievement", count: counts.achievement || 0 },
   ];
 
-  const getUnreadCount = () => {
-    return notifications.filter((n) => n.unread).length;
-  };
-
-  const markAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === id ? { ...notif, unread: false } : notif,
-      ),
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
     );
-  };
-
-  const markAllAsRead = () => {
-    setNotifications((prev) =>
-      prev.map((notif) => ({ ...notif, unread: false })),
-    );
-  };
-
-  const filteredNotifications = notifications.filter((notif) => {
-    if (activeTab === "all") return true;
-    return notif.type === activeTab;
-  });
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -151,6 +149,11 @@ const NotificationsPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
           <Bell size={24} /> Notifications
+          {unreadCount > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-primary text-white text-xs">
+              {unreadCount} new
+            </span>
+          )}
         </h2>
         <div className="flex gap-3">
           <Link
@@ -159,12 +162,14 @@ const NotificationsPage = () => {
           >
             <Settings size={14} /> Settings
           </Link>
-          <button
-            onClick={markAllAsRead}
-            className="px-4 py-2 rounded-lg bg-primary/15 text-primary border border-primary/30 text-sm font-semibold hover:bg-primary/25 transition flex items-center gap-2"
-          >
-            <CheckCircle size={14} /> Mark all as read
-          </button>
+          {unreadCount > 0 && (
+            <button
+              onClick={markAllAsRead}
+              className="px-4 py-2 rounded-lg bg-primary/15 text-primary border border-primary/30 text-sm font-semibold hover:bg-primary/25 transition flex items-center gap-2"
+            >
+              <CheckCircle size={14} /> Mark all as read
+            </button>
+          )}
         </div>
       </div>
 
@@ -176,18 +181,15 @@ const NotificationsPage = () => {
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2 rounded-lg text-sm font-semibold transition whitespace-nowrap ${
               activeTab === tab.id
-                ? "bg-linear-to-r from-primary to-primary-light text-white shadow-md"
+                ? "bg-gradient-to-r from-primary to-primary-light text-white shadow-md"
                 : "text-foreground/60 hover:text-primary"
             }`}
           >
             {tab.label}
-            {tab.count > 0 && activeTab !== tab.id && (
-              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-primary/20 text-primary text-[10px]">
-                {tab.count}
-              </span>
-            )}
-            {activeTab === tab.id && tab.count > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px]">
+            {tab.count > 0 && (
+              <span className={`ml-1 px-1.5 py-0.5 rounded-full text-[10px] ${
+                activeTab === tab.id ? "bg-white/20 text-white" : "bg-primary/20 text-primary"
+              }`}>
                 {tab.count}
               </span>
             )}
@@ -198,64 +200,92 @@ const NotificationsPage = () => {
       {/* Notifications List */}
       <div className="space-y-3">
         <AnimatePresence>
-          {filteredNotifications.map((notif, idx) => (
-            <motion.div
-              key={notif.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              transition={{ delay: idx * 0.05 }}
-              onClick={() => markAsRead(notif.id)}
-              className={`rounded-xl p-4 cursor-pointer transition-all ${
-                notif.unread
-                  ? "bg-card border-l-4 border-primary border "
-                  : "bg-card border border-border"
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div
-                  className={`w-11 h-11 rounded-xl ${notif.color} flex items-center justify-center text-xl shrink-0`}
-                >
-                  {notif.icon}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-foreground mb-1">
-                    {notif.title}
-                  </div>
+          {notifications.length === 0 ? (
+            <div className="text-center py-12 bg-card rounded-xl border border-border">
+              <div className="text-6xl mb-3">🔔</div>
+              <div className="font-bold text-foreground mb-1">No notifications</div>
+              <div className="text-sm text-foreground/50">
+                You're all caught up!
+              </div>
+            </div>
+          ) : (
+            notifications.map((notif, idx) => (
+              <motion.div
+                key={notif._id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ delay: idx * 0.05 }}
+                onClick={() => !notif.read && markAsRead(notif._id)}
+                className={`rounded-xl p-4 cursor-pointer transition-all ${
+                  !notif.read
+                    ? "bg-card border-l-4 border-primary border"
+                    : "bg-card border border-border"
+                }`}
+              >
+                <div className="flex items-start gap-3">
                   <div
-                    className="text-sm text-foreground/60 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: notif.message }}
-                  />
-                  {notif.action && (
-                    <div className="mt-2">
-                      <button className="px-3 py-1.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold">
-                        Deposit Now
+                    className={`w-11 h-11 rounded-xl ${notif.color || "bg-primary/15"} flex items-center justify-center text-xl shrink-0`}
+                  >
+                    {notif.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-foreground mb-1">
+                      {notif.title}
+                    </div>
+                    <div
+                      className="text-sm text-foreground/60 leading-relaxed"
+                      dangerouslySetInnerHTML={{ __html: notif.message }}
+                    />
+                    {notif.actionType && (
+                      <div className="mt-2">
+                        <button className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white text-xs font-semibold">
+                          {notif.actionType === "deposit" ? "Deposit Now" : "View Details"}
+                        </button>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between mt-2">
+                      <div className={`text-xs font-semibold ${notif.timeColor || "text-primary"}`}>
+                        {notif.icon} {notif.badge} · {notif.timeAgo}
+                      </div>
+                      <button
+                        onClick={(e) => deleteNotification(notif._id, e)}
+                        className="text-foreground/30 hover:text-red-500 transition"
+                      >
+                        <Trash2 size={14} />
                       </button>
                     </div>
-                  )}
-                  <div
-                    className={`text-xs mt-2 font-semibold ${notif.timeColor}`}
-                  >
-                    {notif.icon} {notif.badge} · {notif.time}
                   </div>
+                  {!notif.read && (
+                    <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2" />
+                  )}
                 </div>
-                {notif.unread && (
-                  <div className="w-2 h-2 rounded-full bg-primary shrink-0 mt-2" />
-                )}
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))
+          )}
         </AnimatePresence>
       </div>
 
-      {/* Empty State */}
-      {filteredNotifications.length === 0 && (
-        <div className="text-center py-12">
-          <div className="text-6xl mb-3">🔔</div>
-          <div className="font-bold text-foreground mb-1">No notifications</div>
-          <div className="text-sm text-foreground/50">
-            You&apos;re all caught up!
-          </div>
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            onClick={() => fetchNotifications(pagination.currentPage - 1)}
+            disabled={pagination.currentPage === 1}
+            className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
+          >
+            Previous
+          </button>
+          <span className="px-4 py-2 text-foreground">
+            Page {pagination.currentPage} of {pagination.totalPages}
+          </span>
+          <button
+            onClick={() => fetchNotifications(pagination.currentPage + 1)}
+            disabled={pagination.currentPage === pagination.totalPages}
+            className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
+          >
+            Next
+          </button>
         </div>
       )}
     </div>

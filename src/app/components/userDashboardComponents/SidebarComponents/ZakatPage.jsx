@@ -2,17 +2,20 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Moon, Sun } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
+import Swal from "sweetalert2";
 
 const ZakatPage = () => {
   const router = useRouter();
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
+  const [loading, setLoading] = useState(false);
   const [goldRate, setGoldRate] = useState(11000);
   const [assets, setAssets] = useState({
     cash: 0,
-    amanah: 58900,
+    amanah: 0,
     mobile: 0,
     invest: 0,
     gold_g: 0,
@@ -33,7 +36,7 @@ const ZakatPage = () => {
     aboveNisab: false,
   });
   const [showShareModal, setShowShareModal] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [saving, setSaving] = useState(false);
 
   const SILVER_RATE_PER_G = 130;
   const ZAKAT_RATE = 0.025;
@@ -42,6 +45,15 @@ const ZakatPage = () => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
+    
+    // Load saved calculation from localStorage
+    const savedCalculation = localStorage.getItem("zakatCalculation");
+    if (savedCalculation) {
+      const data = JSON.parse(savedCalculation);
+      setAssets(data.assets || assets);
+      setLiabilities(data.liabilities || liabilities);
+      setGoldRate(data.goldRate || 11000);
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -51,35 +63,59 @@ const ZakatPage = () => {
     document.documentElement.classList.toggle("dark", newTheme);
   };
 
-  const showToastMessage = useCallback((message) => {
-    setToast({ show: true, message });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
-  }, []);
+  const showToast = (message, type = "success") => {
+    Swal.fire({
+      title: type === "success" ? "Success!" : "Error!",
+      text: message,
+      icon: type,
+      timer: 2000,
+      showConfirmButton: false,
+      position: "top-end",
+      toast: true,
+    });
+  };
 
   const getNisab = useCallback(() => {
     return goldRate * 85;
   }, [goldRate]);
 
-  const calculateZakat = useCallback(() => {
-    const totalAssets =
-      assets.cash +
-      assets.amanah +
-      assets.mobile +
-      assets.invest +
-      assets.gold_g * goldRate +
-      assets.silver_g * SILVER_RATE_PER_G +
-      assets.stock +
-      assets.recv;
-
-    const totalLiabilities =
-      liabilities.loan + liabilities.bills + liabilities.other;
-    const net = Math.max(0, totalAssets - totalLiabilities);
-    const nisab = getNisab();
-    const aboveNisab = net >= nisab;
-    const zakat = aboveNisab ? net * ZAKAT_RATE : 0;
-
-    setResult({ totalAssets, totalLiabilities, net, zakat, aboveNisab });
-  }, [assets, liabilities, goldRate, getNisab]);
+  const calculateZakat = useCallback(async () => {
+    setLoading(true);
+    
+    try {
+      const response = await axiosInstance.post("/zakat/calculate", {
+        goldRate,
+        assets,
+        liabilities,
+      });
+      
+      if (response.data.success) {
+        setResult(response.data.data);
+        
+        // Save to localStorage
+        localStorage.setItem("zakatCalculation", JSON.stringify({
+          assets,
+          liabilities,
+          goldRate,
+          result: response.data.data,
+          timestamp: new Date().toISOString(),
+        }));
+        
+        // Auto-save to backend
+        await axiosInstance.post("/zakat/save", {
+          goldRate,
+          assets,
+          liabilities,
+          ...response.data.data,
+        });
+      }
+    } catch (error) {
+      console.error("Calculate zakat error:", error);
+      showToast(error.response?.data?.message || "Failed to calculate zakat", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [goldRate, assets, liabilities]);
 
   const updateAsset = useCallback((field, value) => {
     setAssets((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
@@ -102,8 +138,57 @@ const ZakatPage = () => {
     });
     setLiabilities({ loan: 0, bills: 0, other: 0 });
     setGoldRate(11000);
-    showToastMessage(lang === "bn" ? "🔄 রিসেট হয়েছে" : "🔄 Reset done");
-  }, [lang, showToastMessage]);
+    setResult({
+      totalAssets: 0,
+      totalLiabilities: 0,
+      net: 0,
+      zakat: 0,
+      aboveNisab: false,
+    });
+    showToast(lang === "bn" ? "🔄 রিসেট হয়েছে" : "🔄 Reset done", "success");
+  }, [lang]);
+
+  const createZakatGoal = async () => {
+    if (result.zakat <= 0) {
+      showToast(
+        lang === "bn" 
+          ? "যাকাতের পরিমাণ শূন্য থাকলে লক্ষ্য তৈরি করা যাবে না" 
+          : "Cannot create goal when zakat amount is zero",
+        "error"
+      );
+      return;
+    }
+    
+    setSaving(true);
+    
+    try {
+      const response = await axiosInstance.post("/zakat/create-goal", {
+        zakatAmount: result.zakat,
+        description: `Zakat savings for ${new Date().getFullYear()}`,
+      });
+      
+      if (response.data.success) {
+        Swal.fire({
+          title: lang === "bn" ? "🎯 যাকাত লক্ষ্য তৈরি!" : "🎯 Zakat Goal Created!",
+          html: lang === "bn"
+            ? `আপনার যাকাতের টাকা আলাদা রাখার জন্য একটি নতুন লক্ষ্য তৈরি করা হয়েছে।<br/><strong>পরিমাণ: ৳${result.zakat.toLocaleString()}</strong>`
+            : `A new goal has been created to save your zakat separately.<br/><strong>Amount: ৳${result.zakat.toLocaleString()}</strong>`,
+          icon: "success",
+          confirmButtonColor: "#059669",
+          confirmButtonText: lang === "bn" ? "ড্যাশবোর্ডে যান" : "Go to Dashboard",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            router.push("/dashboard/goals");
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Create zakat goal error:", error);
+      showToast(error.response?.data?.message || "Failed to create zakat goal", "error");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const openShareModal = useCallback(() => {
     setShowShareModal(true);
@@ -118,28 +203,29 @@ const ZakatPage = () => {
       const amt = Math.round(result.zakat).toLocaleString("en-IN");
       const msg =
         lang === "bn"
-          ? `আমার এই বছরের যাকাত: ৳${amt}\n\nAmanah যাকাত ক্যালকুলেটর দিয়ে হিসাব করুন 👉 amanahsavings.com.bd`
-          : `My Zakat this year: ৳${amt}\n\nCalculate yours with Amanah 👉 amanahsavings.com.bd`;
+          ? `আমার এই বছরের যাকাত: ৳${amt}\n\nAmanah যাকাত ক্যালকুলেটর দিয়ে হিসাব করুন`
+          : `My Zakat this year: ৳${amt}\n\nCalculate yours with Amanah`;
 
       if (type === "copy") {
         navigator.clipboard.writeText(msg);
-        showToastMessage(lang === "bn" ? "📋 কপি হয়েছে" : "📋 Copied!");
+        showToast(lang === "bn" ? "📋 কপি হয়েছে" : "📋 Copied!", "success");
       } else if (type === "whatsapp") {
         window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
       } else {
-        showToastMessage(
+        showToast(
           lang === "bn" ? "📸 স্ক্রিনশট নিন" : "📸 Take a screenshot",
+          "info"
         );
       }
       closeShareModal();
     },
-    [result.zakat, lang, showToastMessage, closeShareModal],
+    [result.zakat, lang, showToast, closeShareModal],
   );
 
-  // Calculate when dependencies change
+  // Auto-calculate on mount
   useEffect(() => {
     calculateZakat();
-  }, [calculateZakat]);
+  }, []);
 
   const nisab = getNisab();
 
@@ -309,7 +395,7 @@ const ZakatPage = () => {
         </div>
       </div>
 
-      <div className="px-4 py-5 pb-32 max-w-4xl mx-auto">
+      <div className="px-4 py-5 pb-32 max-w-full mx-auto">
         {/* Nisab Banner */}
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-xl p-4 mb-4">
           <div className="flex justify-between items-center">
@@ -555,7 +641,11 @@ const ZakatPage = () => {
         </div>
 
         {/* Result Section */}
-        {result.aboveNisab ? (
+        {loading ? (
+          <div className="bg-card border border-border rounded-xl p-6 text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+          </div>
+        ) : result.aboveNisab ? (
           <div className="bg-linear-to-r from-primary to-amber-600 rounded-xl p-6 text-center relative overflow-hidden mb-3">
             <div className="absolute right-0 top-0 text-8xl opacity-10 pointer-events-none">
               ☪️
@@ -634,25 +724,25 @@ const ZakatPage = () => {
         </div>
 
         {/* Action Buttons */}
-        {result.aboveNisab && (
-          <div className="flex gap-3 mb-3">
-            <button
-              onClick={resetCalculator}
-              className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-bold hover:border-primary hover:text-primary transition"
-            >
-              {getText("btnReset")}
-            </button>
+        <div className="flex gap-3 mb-3">
+          <button
+            onClick={resetCalculator}
+            className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-bold hover:border-primary hover:text-primary transition"
+          >
+            {getText("btnReset")}
+          </button>
+          {result.aboveNisab && (
             <button
               onClick={openShareModal}
               className="flex-1 py-3 rounded-xl bg-linear-to-r from-primary to-amber-600 text-white font-bold"
             >
               {getText("btnShare")}
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Save to Goal Prompt */}
-        {result.aboveNisab && (
+        {result.aboveNisab && result.zakat > 0 && (
           <div className="bg-primary/5 border border-primary/30 rounded-xl p-4">
             <div className="flex items-center gap-3">
               <div className="text-3xl">🎯</div>
@@ -664,8 +754,12 @@ const ZakatPage = () => {
                   {getText("goalPromptSub")}
                 </div>
               </div>
-              <button className="px-4 py-2 bg-linear-to-r from-primary to-amber-600 text-white rounded-lg text-xs font-bold whitespace-nowrap">
-                {getText("goalPromptBtn")}
+              <button
+                onClick={createZakatGoal}
+                disabled={saving}
+                className="px-4 py-2 bg-linear-to-r from-primary to-amber-600 text-white rounded-lg text-xs font-bold whitespace-nowrap disabled:opacity-50"
+              >
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : getText("goalPromptBtn")}
               </button>
             </div>
           </div>
@@ -676,9 +770,10 @@ const ZakatPage = () => {
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t border-border z-50">
         <button
           onClick={calculateZakat}
-          className="w-full max-w-4xl mx-auto block py-4 bg-linear-to-r from-primary to-amber-600 text-white rounded-xl font-bold text-base"
+          disabled={loading}
+          className="w-full max-w-4xl mx-auto block py-4 bg-linear-to-r from-primary to-amber-600 text-white rounded-xl font-bold text-base disabled:opacity-50"
         >
-          {getText("btnCalc")}
+          {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : getText("btnCalc")}
         </button>
       </div>
 
@@ -739,20 +834,6 @@ const ZakatPage = () => {
               </button>
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
-
-      {/* Toast */}
-      <AnimatePresence>
-        {toast.show && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white px-5 py-3 rounded-full text-sm whitespace-nowrap"
-          >
-            {toast.message}
-          </motion.div>
         )}
       </AnimatePresence>
     </div>

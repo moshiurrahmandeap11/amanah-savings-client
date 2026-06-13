@@ -1,67 +1,108 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Copy, Check, Share2, Users, Gift, TrendingUp } from "lucide-react";
+import { Copy, Check, Share2, Users, Gift, TrendingUp, Loader2 } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
+import Swal from "sweetalert2";
 
 const ReferralPage = () => {
   const [copied, setCopied] = useState(false);
-  const referralLink = "amanah.bd/ref/FATEMA24";
-  const fullLink = "https://amanahsavings.com.bd/?ref=FATEMA24";
+  const [loading, setLoading] = useState(true);
+  const [referralData, setReferralData] = useState({
+    referralCode: "",
+    referralLink: "",
+    stats: {
+      totalReferrals: 0,
+      activeReferrals: 0,
+      pendingReferrals: 0,
+      totalBonusEarned: 0,
+      thisMonthBonus: 0,
+    },
+  });
+  const [history, setHistory] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
 
-  const stats = [
-    { value: "7", label: "Friends Referred", change: null },
-    { value: "৳3,500", label: "Total Bonus Earned", change: null },
-    { value: "5", label: "Active Referrals", change: null },
-    { value: "৳2,500", label: "This Month", change: null },
-  ];
+  // Fetch referral stats
+  const fetchReferralStats = async () => {
+    try {
+      const response = await axiosInstance.get("/referrals/stats");
+      if (response.data.success) {
+        setReferralData(response.data.data);
+      }
+    } catch (error) {
+      console.error("Fetch stats error:", error);
+    }
+  };
 
-  const referralHistory = [
-    {
-      name: "Amina Begum joined",
-      date: "April 15, 2026 · First deposit made",
-      amount: "+৳500",
-      status: "bonus",
-      badge: "Bonus Deposited",
-    },
-    {
-      name: "Rahim Khan joined",
-      date: "March 2, 2026 · First deposit made",
-      amount: "+৳500",
-      status: "bonus",
-      badge: "Bonus Deposited",
-    },
-    {
-      name: "Sadia Akter registered",
-      date: "May 20, 2026 · Waiting for deposit",
-      amount: "৳500",
-      status: "pending",
-      badge: "Pending",
-    },
-  ];
+  // Fetch referral history
+  const fetchReferralHistory = async (page = 1) => {
+    try {
+      const response = await axiosInstance.get(`/referrals/history?page=${page}&limit=10`);
+      if (response.data.success) {
+        setHistory(response.data.data.history);
+        setPagination(response.data.data.pagination);
+      }
+    } catch (error) {
+      console.error("Fetch history error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReferralStats();
+    fetchReferralHistory();
+  }, []);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(fullLink);
+    navigator.clipboard.writeText(referralData.referralLink);
     setCopied(true);
+    Swal.fire({
+      title: "Copied!",
+      text: "Referral link copied to clipboard",
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
     setTimeout(() => setCopied(false), 2000);
   };
 
   const shareOnWhatsApp = () => {
-    const message = `আমি Amanah Savings-এ সঞ্চয় করছি! তুমিও যোগ দাও: ${fullLink}`;
+    const message = `আমি Amanah Savings-এ সঞ্চয় করছি! তুমিও যোগ দাও: ${referralData.referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
   };
 
   const shareOnFacebook = () => {
     window.open(
-      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullLink)}`,
+      `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralData.referralLink)}`,
       "_blank",
     );
   };
 
   const shareOnSMS = () => {
-    const message = `Amanah Savings-এ আমার সাথে সঞ্চয় শুরু করো: ${fullLink}`;
+    const message = `Amanah Savings-এ আমার সাথে সঞ্চয় শুরু করো: ${referralData.referralLink}`;
     window.location.href = `sms:?body=${encodeURIComponent(message)}`;
   };
+
+  const stats = [
+    { value: referralData.stats.totalReferrals, label: "Friends Referred" },
+    { value: `৳${referralData.stats.totalBonusEarned.toLocaleString()}`, label: "Total Bonus Earned" },
+    { value: referralData.stats.activeReferrals, label: "Active Referrals" },
+    { value: `৳${referralData.stats.thisMonthBonus.toLocaleString()}`, label: "This Month" },
+  ];
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -74,12 +115,12 @@ const ReferralPage = () => {
         <div className="text-xl font-bold mb-1">Invite Friends, Get ৳500!</div>
         <div className="text-sm text-white/80 mb-4">
           Both you and your friend get ৳500 bonus when they join and make their
-          first deposit.
+          first deposit of at least ৳500.
         </div>
 
         <div className="flex items-center justify-between bg-white/15 rounded-lg p-3 mb-4">
           <span className="font-mono text-sm flex-1 truncate">
-            {referralLink}
+            {referralData.referralLink?.replace("https://", "") || "Loading..."}
           </span>
           <button
             onClick={copyToClipboard}
@@ -126,45 +167,80 @@ const ReferralPage = () => {
         <div className="font-bold text-foreground mb-4 flex items-center gap-2">
           📋 Referral History
         </div>
-        <div className="space-y-3">
-          {referralHistory.map((item, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: idx * 0.1 }}
-              className="flex items-center gap-3 pb-3 border-b border-border last:border-0"
-            >
-              <div
-                className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                  item.status === "bonus" ? "bg-primary/10" : "bg-amber-500/10"
-                }`}
+        {history.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="text-4xl mb-2">🤝</div>
+            <p className="text-foreground/50">No referrals yet</p>
+            <p className="text-xs text-foreground/40 mt-1">
+              Share your referral link to start earning bonuses!
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {history.map((item, idx) => (
+              <motion.div
+                key={item.id || idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-center gap-3 pb-3 border-b border-border last:border-0"
               >
-                {item.status === "bonus" ? "👤" : "⏳"}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-foreground">
-                  {item.name}
-                </div>
-                <div className="text-xs text-foreground/50">{item.date}</div>
-                <span
-                  className={`text-xs px-2 py-0.5 rounded-full ${
-                    item.status === "bonus"
-                      ? "bg-primary/10 text-primary"
-                      : "bg-amber-500/10 text-amber-500"
+                <div
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                    item.status === "bonus" ? "bg-primary/10" : "bg-amber-500/10"
                   }`}
                 >
-                  {item.badge}
-                </span>
-              </div>
-              <div
-                className={`font-bold text-sm ${item.status === "bonus" ? "text-primary" : "text-foreground/50"}`}
-              >
-                {item.amount}
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                  {item.status === "bonus" ? "👤" : "⏳"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-sm text-foreground">
+                    {item.name}
+                  </div>
+                  <div className="text-xs text-foreground/50">{item.date}</div>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded-full ${
+                      item.status === "bonus"
+                        ? "bg-primary/10 text-primary"
+                        : "bg-amber-500/10 text-amber-500"
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                </div>
+                <div
+                  className={`font-bold text-sm ${
+                    item.status === "bonus" ? "text-primary" : "text-foreground/50"
+                  }`}
+                >
+                  {item.amount}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="flex justify-center gap-2 mt-4 pt-3 border-t border-border">
+            <button
+              onClick={() => fetchReferralHistory(pagination.currentPage - 1)}
+              disabled={pagination.currentPage === 1}
+              className="px-3 py-1 rounded-lg border border-border text-foreground/70 text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
+            >
+              Previous
+            </button>
+            <span className="px-3 py-1 text-xs text-foreground">
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => fetchReferralHistory(pagination.currentPage + 1)}
+              disabled={pagination.currentPage === pagination.totalPages}
+              className="px-3 py-1 rounded-lg border border-border text-foreground/70 text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Info Note */}
@@ -177,6 +253,25 @@ const ReferralPage = () => {
             their first deposit of at least ৳500, both of you get ৳500 bonus
             credited to your savings account. No limit on referrals!
           </div>
+        </div>
+      </div>
+
+      {/* Referral Leaderboard Link */}
+      <div className="mt-4 p-4 bg-card border border-border rounded-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <TrendingUp size={20} className="text-primary" />
+            <div>
+              <div className="font-semibold text-foreground text-sm">Top Referrers</div>
+              <div className="text-xs text-foreground/50">See who's leading the referral leaderboard</div>
+            </div>
+          </div>
+          <button
+            onClick={() => window.open("/dashboard/referral-leaderboard", "_blank")}
+            className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition"
+          >
+            View Leaderboard →
+          </button>
         </div>
       </div>
     </div>

@@ -1,10 +1,11 @@
-import ProfilePage from '../../../components/userDashboardComponents/SidebarComponents/ProfilePage';
+
+import UserProfilePage from '../../../components/generalComponents/UserProfilePage';
 import React from 'react';
 
 const Profile = () => {
     return (
         <div>
-            <ProfilePage />
+            <UserProfilePage />
         </div>
     );
 };

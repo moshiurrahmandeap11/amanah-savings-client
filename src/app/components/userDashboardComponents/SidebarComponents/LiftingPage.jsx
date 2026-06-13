@@ -1,23 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { AlertCircle, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
+import Swal from "sweetalert2";
 
 const LiftingPage = () => {
-  const [selectedGoal, setSelectedGoal] = useState("wedding");
+  const [goals, setGoals] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedGoal, setSelectedGoal] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [reason, setReason] = useState("medical");
   const [paymentMethod, setPaymentMethod] = useState("bkash");
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountHolderName, setAccountHolderName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [toast, setToast] = useState({ show: false, message: "" });
-
-  const goals = [
-    { id: "wedding", emoji: "", name: "Wedding Fund", saved: "৳1,80,000", maturity: "November 2026", amount: 180000 },
-    { id: "hajj", emoji: "", name: "Hajj Fund", saved: "৳39,000", maturity: "June 2028", amount: 39000 },
-    { id: "education", emoji: "", name: "Education Fund", saved: "৳18,000", maturity: "March 2027", amount: 18000 },
-  ];
+  const [toast, setToast] = useState({ show: false, message: "", type: "" });
 
   const reasons = [
     { value: "medical", label: "Medical Emergency" },
@@ -27,40 +28,176 @@ const LiftingPage = () => {
   ];
 
   const paymentMethods = [
-    { id: "bkash", name: "bKash", icon: "" },
-    { id: "nagad", name: "Nagad", icon: "" },
-    { id: "bank", name: "Bank", icon: "" },
+    { id: "bkash", name: "bKash", icon: "💜" },
+    { id: "nagad", name: "Nagad", icon: "🟠" },
+    { id: "bank", name: "Bank", icon: "🏦" },
   ];
 
-  const showToast = (message, duration = 4000) => {
-    setToast({ show: true, message });
-    setTimeout(() => setToast({ show: false, message: "" }), duration);
+  // Fetch user's goals
+  const fetchGoals = async () => {
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get("/goals?status=active");
+      if (response.data.success) {
+        const activeGoals = response.data.data.goals.filter(
+          goal => goal.status === "active" && goal.currentSaved > 0
+        );
+        setGoals(activeGoals);
+        if (activeGoals.length > 0) {
+          setSelectedGoal(activeGoals[0]._id);
+        }
+      }
+    } catch (error) {
+      console.error("Fetch goals error:", error);
+      if (error.response?.status === 401) {
+        window.location.href = "/login";
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    fetchGoals();
+  }, []);
+
+  const showToast = (message, type = "error") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 4000);
+  };
+
+  const handleSubmit = async () => {
     const amount = parseFloat(withdrawAmount);
-    const phone = phoneNumber.trim();
+    const selectedGoalData = goals.find(g => g._id === selectedGoal);
+
+    // Validation
+    if (!selectedGoal) {
+      showToast("⚠️ Please select a goal");
+      return;
+    }
 
     if (!withdrawAmount || amount < 100) {
       showToast("⚠️ Please withdraw at least ৳100");
       return;
     }
 
-    if (!phone || phone.length < 11) {
-      showToast("⚠️ Please enter a valid phone number");
+    if (amount > selectedGoalData?.currentSaved) {
+      showToast(`⚠️ Amount exceeds your saved balance of ৳${selectedGoalData.currentSaved.toLocaleString()}`);
       return;
     }
 
+    if (!reason) {
+      showToast("⚠️ Please select a reason");
+      return;
+    }
+
+    if (paymentMethod === "bkash" || paymentMethod === "nagad") {
+      if (!phoneNumber || phoneNumber.length !== 10) {
+        showToast(`⚠️ Please enter a valid ${paymentMethod === "bkash" ? "bKash" : "Nagad"} number`);
+        return;
+      }
+    }
+
+    if (paymentMethod === "bank") {
+      if (!bankName) {
+        showToast("⚠️ Please select a bank");
+        return;
+      }
+      if (!accountNumber) {
+        showToast("⚠️ Please enter account number");
+        return;
+      }
+      if (!accountHolderName) {
+        showToast("⚠️ Please enter account holder name");
+        return;
+      }
+    }
+
     setIsSubmitting(true);
-    setTimeout(() => {
+
+    try {
+      const requestData = {
+        goalId: selectedGoal,
+        withdrawalAmount: amount,
+        reason,
+        paymentMethod,
+      };
+
+      // Add payment method specific fields
+      if (paymentMethod === "bkash" || paymentMethod === "nagad") {
+        requestData.phoneNumber = phoneNumber;
+      }
+
+      if (paymentMethod === "bank") {
+        requestData.bankName = bankName;
+        requestData.accountNumber = accountNumber;
+        requestData.accountHolderName = accountHolderName;
+      }
+
+      const response = await axiosInstance.post("/withdrawals", requestData);
+
+      if (response.data.success) {
+        Swal.fire({
+          title: "Request Submitted!",
+          text: "Your withdrawal request has been submitted. Admin will review within 5-7 working days.",
+          icon: "success",
+          confirmButtonColor: "#059669",
+          confirmButtonText: "OK",
+        }).then(() => {
+          // Reset form
+          setWithdrawAmount("");
+          setPhoneNumber("");
+          setBankName("");
+          setAccountNumber("");
+          setAccountHolderName("");
+          setReason("medical");
+        });
+      }
+    } catch (error) {
+      console.error("Submit withdrawal error:", error);
+      Swal.fire({
+        title: "Error!",
+        text: error.response?.data?.message || "Failed to submit withdrawal request",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    } finally {
       setIsSubmitting(false);
-      showToast(" Withdrawal request sent. Admin will review it.", 4000);
-      setWithdrawAmount("");
-      setPhoneNumber("");
-    }, 1000);
+    }
   };
 
-  const selectedGoalData = goals.find(g => g.id === selectedGoal);
+  const selectedGoalData = goals.find(g => g._id === selectedGoal);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-foreground/60">Loading your goals...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (goals.length === 0) {
+    return (
+      <div className="max-w-3xl">
+        <div className="bg-card border border-border rounded-xl p-12 text-center">
+          <div className="text-6xl mb-4">💰</div>
+          <h3 className="text-xl font-bold text-foreground mb-2">No Active Goals</h3>
+          <p className="text-foreground/60 mb-4">
+            You don't have any active savings goals with funds to withdraw.
+          </p>
+          <button
+            onClick={() => window.location.href = "/dashboard/goals"}
+            className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition"
+          >
+            Create a Goal
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -84,14 +221,14 @@ const LiftingPage = () => {
           <div className="space-y-3">
             {goals.map((goal) => (
               <div
-                key={goal.id}
+                key={goal._id}
                 className="p-3 bg-background rounded-lg border border-border flex items-center gap-3"
               >
-                <span className="text-2xl">{goal.emoji}</span>
+                <span className="text-2xl">{goal.goalType === "wedding" ? "💒" : goal.goalType === "education" ? "📚" : "🎯"}</span>
                 <div className="flex-1">
-                  <div className="font-semibold text-sm text-foreground">{goal.name}</div>
+                  <div className="font-semibold text-sm text-foreground">{goal.goalName}</div>
                   <div className="text-xs text-foreground/50">
-                    Saved: {goal.saved} · Maturity: {goal.maturity}
+                    Saved: ৳{goal.currentSaved.toLocaleString()} · Target: ৳{goal.targetAmount.toLocaleString()}
                   </div>
                 </div>
                 <span className="text-xs px-2 py-1 bg-amber-500/10 text-amber-500 rounded-md font-semibold">
@@ -117,8 +254,8 @@ const LiftingPage = () => {
               className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
             >
               {goals.map((goal) => (
-                <option key={goal.id} value={goal.id}>
-                  {goal.emoji} {goal.name} — {goal.saved}
+                <option key={goal._id} value={goal._id}>
+                  🎯 {goal.goalName} — ৳{goal.currentSaved.toLocaleString()} saved
                 </option>
               ))}
             </select>
@@ -134,12 +271,18 @@ const LiftingPage = () => {
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
               min="100"
+              max={selectedGoalData?.currentSaved}
               placeholder="Enter amount"
               className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
             />
-            {selectedGoalData && withdrawAmount > selectedGoalData.amount && (
+            {selectedGoalData && withdrawAmount > selectedGoalData.currentSaved && (
               <p className="text-xs text-red-500 mt-1">
-                Amount exceeds your saved balance of {selectedGoalData.saved}
+                Amount exceeds your saved balance of ৳{selectedGoalData.currentSaved.toLocaleString()}
+              </p>
+            )}
+            {selectedGoalData && (
+              <p className="text-xs text-foreground/50 mt-1">
+                Available balance: ৳{selectedGoalData.currentSaved.toLocaleString()}
               </p>
             )}
           </div>
@@ -205,22 +348,29 @@ const LiftingPage = () => {
                   className="flex-1 p-3 rounded-r-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 />
               </div>
+              <p className="text-xs text-foreground/50 mt-1">Enter 11-digit number (e.g., 1712345678)</p>
             </div>
           )}
 
-          {/* Bank Fields (if bank selected) */}
+          {/* Bank Fields */}
           {paymentMethod === "bank" && (
             <div className="mb-5 space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
                   Bank Name
                 </label>
-                <select className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition">
-                  <option>Dutch-Bangla Bank (DBBL)</option>
-                  <option>BRAC Bank</option>
-                  <option>Islami Bank Bangladesh</option>
-                  <option>Sonali Bank</option>
-                  <option>Janata Bank</option>
+                <select
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
+                >
+                  <option value="">Select Bank</option>
+                  <option value="DBBL">Dutch-Bangla Bank (DBBL)</option>
+                  <option value="BRAC">BRAC Bank</option>
+                  <option value="Islami">Islami Bank Bangladesh</option>
+                  <option value="Sonali">Sonali Bank</option>
+                  <option value="Janata">Janata Bank</option>
+                  <option value="Other">Other</option>
                 </select>
               </div>
               <div>
@@ -229,6 +379,8 @@ const LiftingPage = () => {
                 </label>
                 <input
                   type="text"
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
                   placeholder="Enter account number"
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 />
@@ -239,6 +391,8 @@ const LiftingPage = () => {
                 </label>
                 <input
                   type="text"
+                  value={accountHolderName}
+                  onChange={(e) => setAccountHolderName(e.target.value)}
                   placeholder="Enter account holder name"
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 />
@@ -254,8 +408,8 @@ const LiftingPage = () => {
           >
             {isSubmitting ? (
               <span className="flex items-center justify-center gap-2">
-                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Sending...
+                <Loader2 size={18} className="animate-spin" />
+                Submitting...
               </span>
             ) : (
               "Send Withdrawal Request"
@@ -270,11 +424,16 @@ const LiftingPage = () => {
 
       {/* Toast Notification */}
       {toast.show && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-300">
-          <div className="bg-card border border-border rounded-xl px-5 py-3 shadow-lg">
-            <p className="text-sm text-foreground">{toast.message}</p>
-          </div>
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg shadow-lg text-sm ${
+            toast.type === "error" ? "bg-red-500" : "bg-green-500"
+          } text-white`}
+        >
+          {toast.message}
+        </motion.div>
       )}
     </>
   );

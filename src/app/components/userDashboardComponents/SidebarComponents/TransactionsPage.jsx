@@ -1,50 +1,224 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 const TransactionsPage = () => {
   const [activeTab, setActiveTab] = useState("all");
+  const [loading, setLoading] = useState(true);
+  const [deposits, setDeposits] = useState([]);
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [depositStats, setDepositStats] = useState({
+    totalDeposited: 0,
+    totalDeposits: 0,
+  });
+  const [withdrawalStats, setWithdrawalStats] = useState({
+    totalWithdrawn: 0,
+    totalWithdrawals: 0,
+  });
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 10,
+  });
+
+  // Fetch deposits
+  const fetchDeposits = async (page = 1) => {
+    try {
+      const response = await axiosInstance.get(`/deposits?page=${page}&limit=10`);
+      if (response.data.success) {
+        setDeposits(response.data.data.deposits);
+        setDepositStats(response.data.data.summary);
+        setPagination(response.data.data.pagination);
+      }
+    } catch (error) {
+      console.error("Error fetching deposits:", error);
+    }
+  };
+
+  // Fetch withdrawals
+  const fetchWithdrawals = async () => {
+    try {
+      const response = await axiosInstance.get("/withdrawals");
+      if (response.data.success) {
+        setWithdrawals(response.data.data.withdrawals);
+        setWithdrawalStats(response.data.data.summary);
+      }
+    } catch (error) {
+      console.error("Error fetching withdrawals:", error);
+      // Don't let withdrawal fetch failure break the page
+      setWithdrawals([]);
+      setWithdrawalStats({ totalWithdrawn: 0, totalWithdrawals: 0 });
+    }
+  };
+
+  useEffect(() => {
+    const fetchAllData = async () => {
+      setLoading(true);
+      await Promise.all([
+        fetchDeposits(),
+        fetchWithdrawals(),
+      ]);
+      setLoading(false);
+    };
+    fetchAllData();
+  }, []);
+
+  const getStatusBadge = (status, type = "deposit") => {
+    switch(status) {
+      case "approved":
+        return { text: "✅ Approved", class: "bg-green-500/10 text-green-500" };
+      case "pending":
+        return { text: "⏳ Pending", class: "bg-amber-500/10 text-amber-500" };
+      case "rejected":
+        return { text: "❌ Rejected", class: "bg-red-500/10 text-red-500" };
+      case "completed":
+        return { text: "✅ Completed", class: "bg-blue-500/10 text-blue-500" };
+      default:
+        return { text: status || "Unknown", class: "bg-primary/10 text-primary" };
+    }
+  };
+
+  const formatAmount = (amount) => {
+    if (!amount && amount !== 0) return "৳0";
+    return new Intl.NumberFormat('en-BD', {
+      style: 'currency',
+      currency: 'BDT',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount).replace('BDT', '৳');
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+  };
+
+  const getPaymentIcon = (method) => {
+    const icons = {
+      bkash: "💜",
+      nagad: "🟠",
+      bank: "🏦",
+      rocket: "🚀",
+    };
+    return icons[method?.toLowerCase()] || "💰";
+  };
+
+  const getGoalIcon = (goalType) => {
+    const icons = {
+      wedding: "💒",
+      education: "📚",
+      travel: "✈️",
+      hajj: "🕌",
+      home: "🏠",
+      business: "💼",
+      emergency: "🚨",
+      other: "🎯",
+    };
+    return icons[goalType?.toLowerCase()] || "🎯";
+  };
+
+  // Get all approved deposits for net calculation
+  const getApprovedDepositsTotal = () => {
+    return deposits
+      .filter(d => d.status === "approved")
+      .reduce((sum, d) => sum + (d.depositAmount || 0), 0);
+  };
+
+  const getApprovedWithdrawalsTotal = () => {
+    return withdrawals
+      .filter(w => w.status === "completed" || w.status === "approved")
+      .reduce((sum, w) => sum + (w.withdrawalAmount || 0), 0);
+  };
+
+  // Combine all transactions
+  const getAllTransactions = () => {
+    const depositTransactions = deposits.map(deposit => ({
+      id: deposit._id,
+      type: "deposit",
+      icon: getPaymentIcon(deposit.paymentMethod),
+      iconBg: deposit.status === "pending" ? "pending" : "deposit",
+      name: `${getGoalIcon(deposit.goalType)} ${deposit.goalName} — ${deposit.paymentMethod?.toUpperCase() || "N/A"}`,
+      date: deposit.createdAt,
+      amount: deposit.depositAmount,
+      amountFormatted: `+${formatAmount(deposit.depositAmount)}`,
+      status: deposit.status,
+      badge: getStatusBadge(deposit.status).text,
+      badgeClass: getStatusBadge(deposit.status).class,
+      transactionId: deposit.transactionReference,
+      screenshot: deposit.screenshot?.url,
+    }));
+
+    const withdrawalTransactions = withdrawals.map(withdrawal => ({
+      id: withdrawal._id,
+      type: "withdrawal",
+      icon: "🏧",
+      iconBg: withdrawal.status === "pending" ? "pending" : "withdrawal",
+      name: `${getGoalIcon(withdrawal.goalType)} ${withdrawal.goalName} — ${withdrawal.paymentMethod?.toUpperCase() || "N/A"}`,
+      date: withdrawal.createdAt,
+      amount: withdrawal.withdrawalAmount,
+      amountFormatted: `-${formatAmount(withdrawal.withdrawalAmount)}`,
+      status: withdrawal.status,
+      badge: getStatusBadge(withdrawal.status, "withdrawal").text,
+      badgeClass: getStatusBadge(withdrawal.status, "withdrawal").class,
+      transactionId: withdrawal.transactionId || withdrawal.transactionReference,
+      reason: withdrawal.reason,
+    }));
+
+    // Combine and sort by date (newest first)
+    const all = [...depositTransactions, ...withdrawalTransactions];
+    return all.sort((a, b) => new Date(b.date) - new Date(a.date));
+  };
+
+  const filteredTransactions = () => {
+    const all = getAllTransactions();
+    if (activeTab === "all") return all;
+    if (activeTab === "deposit") return all.filter(t => t.type === "deposit");
+    if (activeTab === "withdrawal") return all.filter(t => t.type === "withdrawal");
+    return all;
+  };
+
+  // Calculate real-time stats
+  const pendingDeposits = deposits.filter(d => d.status === "pending").length;
+  const totalDeposited = depositStats.totalDeposited;
+  const totalDepositCount = depositStats.totalDeposits;
+  const totalWithdrawn = withdrawalStats.totalWithdrawn;
+  const totalWithdrawalCount = withdrawalStats.totalWithdrawals;
+  const netSaved = totalDeposited - totalWithdrawn;
 
   const stats = [
-    { icon: "💰", value: "৳2,45,500", label: "Total Deposit", color: "green" },
-    { icon: "📊", value: "28", label: "Total Transactions", color: "blue" },
-    { icon: "⏳", value: "1", label: "Pending", color: "warning" },
-    { icon: "🤝", value: "৳3,500", label: "Bonus Earned", color: "info" },
+    { 
+      icon: "💰", 
+      value: formatAmount(totalDeposited), 
+      label: "Total Deposit", 
+      color: "green" 
+    },
+    { 
+      icon: "📊", 
+      value: totalDepositCount.toString(), 
+      label: "Total Deposits", 
+      color: "blue" 
+    },
+    { 
+      icon: "⏳", 
+      value: pendingDeposits.toString(), 
+      label: "Pending Deposits", 
+      color: "warning" 
+    },
+    { 
+      icon: "🏧", 
+      value: formatAmount(totalWithdrawn), 
+      label: "Total Withdrawn", 
+      color: "info" 
+    },
   ];
-
-  const transactions = [
-    { type: "deposit", icon: "💚", iconBg: "deposit", name: "Wedding Fund — bKash", date: "May 24, 2026", amount: "+৳10,000", status: "confirmed", badge: "Confirmed" },
-    { type: "deposit", icon: "💚", iconBg: "deposit", name: "Hajj Fund — Nagad", date: "May 20, 2026", amount: "+৳5,000", status: "confirmed", badge: "Confirmed" },
-    { type: "deposit", icon: "⏳", iconBg: "pending", name: "Education Fund — Bank Transfer", date: "May 18, 2026", amount: "+৳3,000", status: "pending", badge: "Pending Review" },
-    { type: "deposit", icon: "💚", iconBg: "deposit", name: "Wedding Fund — bKash", date: "April 24, 2026", amount: "+৳10,000", status: "confirmed", badge: "Confirmed" },
-    { type: "bonus", icon: "🤝", iconBg: "bonus", name: "Referral Bonus — Amina joined", date: "April 15, 2026", amount: "+৳500", status: "bonus", badge: "Deposited", amountColor: "text-amber-500" },
-    { type: "deposit", icon: "💚", iconBg: "deposit", name: "Hajj Fund — bKash", date: "March 20, 2026", amount: "+৳5,000", status: "confirmed", badge: "Confirmed" },
-    { type: "bonus", icon: "🎖️", iconBg: "bonus", name: "Achievement Bonus — 60 Day Streak", date: "March 10, 2026", amount: "+৳250", status: "bonus", badge: "Deposited", amountColor: "text-amber-500" },
-    { type: "deposit", icon: "💚", iconBg: "deposit", name: "Wedding Fund — Nagad", date: "February 24, 2026", amount: "+৳10,000", status: "confirmed", badge: "Confirmed" },
-  ];
-
-  const filteredTransactions = activeTab === "all" 
-    ? transactions 
-    : transactions.filter(t => t.type === activeTab);
-
-  const getIconBgColor = (iconBg) => {
-    switch(iconBg) {
-      case "deposit": return "bg-primary/10";
-      case "pending": return "bg-amber-500/10";
-      case "bonus": return "bg-amber-500/10";
-      default: return "bg-primary/10";
-    }
-  };
-
-  const getBadgeClass = (status) => {
-    switch(status) {
-      case "confirmed": return "bg-primary/10 text-primary";
-      case "pending": return "bg-amber-500/10 text-amber-500";
-      case "bonus": return "bg-primary/10 text-primary";
-      default: return "bg-primary/10 text-primary";
-    }
-  };
 
   const getStatColor = (color) => {
     switch(color) {
@@ -65,6 +239,28 @@ const TransactionsPage = () => {
       default: return "bg-primary/10";
     }
   };
+
+  const getIconBgColor = (iconBg) => {
+    switch(iconBg) {
+      case "deposit": return "bg-primary/10";
+      case "pending": return "bg-amber-500/10";
+      case "withdrawal": return "bg-red-500/10";
+      default: return "bg-primary/10";
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto flex items-center justify-center h-96">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-foreground/60">Loading transactions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const transactions = filteredTransactions();
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -92,11 +288,11 @@ const TransactionsPage = () => {
       {/* Transactions Card */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {/* Tabs */}
-        <div className="flex gap-1 p-4 pb-0 border-b border-border">
+        <div className="flex gap-1 p-4 pb-0 border-b border-border flex-wrap">
           {[
-            { id: "all", label: "All" },
-            { id: "deposit", label: "Deposit" },
-            { id: "bonus", label: "Bonus" },
+            { id: "all", label: `All (${getAllTransactions().length})` },
+            { id: "deposit", label: `Deposit (${getAllTransactions().filter(t => t.type === "deposit").length})` },
+            { id: "withdrawal", label: `Withdrawal (${getAllTransactions().filter(t => t.type === "withdrawal").length})` },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -114,30 +310,133 @@ const TransactionsPage = () => {
 
         {/* Transactions List */}
         <div className="p-4">
-          <div className="space-y-3">
-            {filteredTransactions.map((txn, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="flex items-center gap-3 pb-3 border-b border-border last:border-0"
-              >
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getIconBgColor(txn.iconBg)}`}>
-                  {txn.icon}
-                </div>
-                <div className="flex-1">
-                  <div className="font-semibold text-sm text-foreground">{txn.name}</div>
-                  <div className="text-xs text-foreground/50">{txn.date}</div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${getBadgeClass(txn.status)}`}>
-                    {txn.badge}
-                  </span>
-                </div>
-                <div className={`font-bold text-sm ${txn.amountColor === "text-amber-500" ? "text-amber-500" : "text-primary"}`}>
-                  {txn.amount}
-                </div>
-              </motion.div>
-            ))}
+          {transactions.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-3">📭</div>
+              <div className="text-foreground/50">No transactions found</div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {transactions.map((txn, idx) => (
+                <motion.div
+                  key={`${txn.id}-${idx}`}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="flex items-start gap-3 pb-3 border-b border-border last:border-0"
+                >
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getIconBgColor(txn.iconBg)}`}>
+                    {txn.icon}
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-sm text-foreground">{txn.name}</div>
+                    <div className="text-xs text-foreground/50">{formatDate(txn.date)}</div>
+                    {txn.transactionId && (
+                      <div className="text-[10px] text-foreground/30 font-mono mt-0.5">
+                        ID: {txn.transactionId}
+                      </div>
+                    )}
+                    {txn.reason && (
+                      <div className="text-[10px] text-foreground/40 mt-0.5">
+                        Reason: {txn.reason}
+                      </div>
+                    )}
+                    <span className={`text-xs px-2 py-0.5 rounded-full inline-block mt-1 ${txn.badgeClass}`}>
+                      {txn.badge}
+                    </span>
+                  </div>
+                  <div className={`font-bold text-sm ${
+                    txn.type === "deposit" 
+                      ? "text-primary" 
+                      : "text-red-500"
+                  }`}>
+                    {txn.amountFormatted}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Pagination for deposits */}
+        {activeTab === "deposit" && pagination.totalPages > 1 && (
+          <div className="flex justify-center gap-2 p-4 border-t border-border">
+            <button
+              onClick={() => {
+                fetchDeposits(pagination.currentPage - 1);
+                setPagination({ ...pagination, currentPage: pagination.currentPage - 1 });
+              }}
+              disabled={pagination.currentPage === 1}
+              className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
+            >
+              Previous
+            </button>
+            <span className="px-4 py-2 text-foreground">
+              Page {pagination.currentPage} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => {
+                fetchDeposits(pagination.currentPage + 1);
+                setPagination({ ...pagination, currentPage: pagination.currentPage + 1 });
+              }}
+              disabled={pagination.currentPage === pagination.totalPages}
+              className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Summary Section */}
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-card border border-border rounded-xl p-4">
+          <h3 className="font-semibold text-foreground mb-3">📈 Deposit Summary</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Total Deposits:</span>
+              <span className="font-semibold text-primary">{totalDepositCount}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Total Amount:</span>
+              <span className="font-semibold text-primary">{formatAmount(totalDeposited)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Average Deposit:</span>
+              <span className="font-semibold">
+                {totalDepositCount > 0 
+                  ? formatAmount(totalDeposited / totalDepositCount)
+                  : formatAmount(0)}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Pending Approval:</span>
+              <span className="font-semibold text-amber-500">{pendingDeposits}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-xl p-4">
+          <h3 className="font-semibold text-foreground mb-3">📉 Withdrawal Summary</h3>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Total Withdrawals:</span>
+              <span className="font-semibold text-red-500">{totalWithdrawalCount}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Total Amount:</span>
+              <span className="font-semibold text-red-500">{formatAmount(totalWithdrawn)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">Pending Withdrawals:</span>
+              <span className="font-semibold text-amber-500">
+                {withdrawals.filter(w => w.status === "pending").length}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm border-t border-border pt-2 mt-2">
+              <span className="text-foreground/60 font-semibold">Net Saved:</span>
+              <span className="font-semibold text-primary text-base">{formatAmount(netSaved)}</span>
+            </div>
           </div>
         </div>
       </div>
