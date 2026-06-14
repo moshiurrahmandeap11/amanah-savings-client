@@ -15,8 +15,15 @@ const UserDashboardHeader = ({ openSidebar }) => {
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(false);
   const [currentDate, setCurrentDate] = useState("");
-  const [streak] = useState(90);
+  const [streak, setStreak] = useState(0);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // Sync user streak from auth context
+  useEffect(() => {
+    if (user?.streak) {
+      setStreak(user.streak);
+    }
+  }, [user?.streak]);
 
   // Sync socket unread count
   useEffect(() => {

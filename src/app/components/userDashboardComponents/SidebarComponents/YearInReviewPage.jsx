@@ -7,80 +7,82 @@ import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
-  Flame,
-  Trophy,
-  Award,
-  Gift,
-  Share2,
-  Download,
-  Camera,
 } from "lucide-react";
+import useAuth from "../../../hooks/useAuth";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 const YearInReviewPage = () => {
+  const { user } = useAuth();
   const [currentSlide, setCurrentSlide] = useState(1);
   const [isDark, setIsDark] = useState(false);
   const [counterValue, setCounterValue] = useState(0);
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [goals, setGoals] = useState([]);
+  const [badges, setBadges] = useState([]);
+  const [loading, setLoading] = useState(true);
   const totalSlides = 6;
   const canvasRef = useRef(null);
 
-  const goals = [
-    {
-      icon: "💒",
-      name: "Wedding Fund",
-      progress: 100,
-      saved: "৳3,00,000",
-      target: "৳3,00,000",
-      status: "Completed ✓",
-    },
-    {
-      icon: "🛡️",
-      name: "Emergency Fund",
-      progress: 100,
-      saved: "৳50,000",
-      target: "৳50,000",
-      status: "Completed ✓",
-    },
-    {
-      icon: "🕌",
-      name: "Hajj Savings",
-      progress: 73,
-      saved: "৳1,09,500",
-      target: "৳1,50,000",
-      status: "In Progress",
-    },
-    {
-      icon: "📱",
-      name: "New Phone",
-      progress: 100,
-      saved: "৳35,000",
-      target: "৳35,000",
-      status: "Purchased!",
-    },
-  ];
+  // Derived real data (fallback to 0 / generic)
+  const userName = user?.name || user?.fullName || "Saver";
+  const totalSaved = user?.totalSaved || user?.goal?.currentSaved || 0;
+  const streak = user?.streak || 0;
+  const depositsCount = user?.depositsCount || user?.totalDeposits || 0;
+  const goalsCompleted = goals.filter((g) => (g.progress || 0) >= 100).length;
+  const badgesCount = badges.length;
 
-  const badges = [
-    "🥇 First Goal",
-    "🔥 30-Day Streak",
-    "💎 Diamond Saver",
-    "🕌 Hajj Saver",
-    "💒 Wedding Fund",
-    "🛡️ Emergency Fund",
-    "⭐ Top 5%",
-    "🚀 Goal Crusher",
-    "💪 Consistency",
-    "🌟 Community Star",
-    "📈 Big Saver",
-    "❤️ 1 Year Member",
-  ];
-
+  // Fetch real data on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
 
-    // Start counter animation
-    const target = 87500;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [goalsRes, achievementsRes] = await Promise.all([
+          axiosInstance.get("/goals").catch(() => ({ data: { success: false } })),
+          axiosInstance.get("/achievements").catch(() => ({ data: { success: false } })),
+        ]);
+
+        if (goalsRes.data.success) {
+          const rawGoals = goalsRes.data.data?.goals || goalsRes.data.data || [];
+          setGoals(
+            rawGoals.map((g) => ({
+              icon: getGoalEmoji(g.goalType || g.type || "other"),
+              name: g.goalName || g.name || "Goal",
+              progress: g.progress || Math.round(((g.currentSaved || 0) / (g.targetAmount || 1)) * 100) || 0,
+              saved: `৳${(g.currentSaved || 0).toLocaleString()}`,
+              target: `৳${(g.targetAmount || 0).toLocaleString()}`,
+              status: g.status === "completed" || (g.progress || 0) >= 100 ? "Completed ✓" : "In Progress",
+            }))
+          );
+        }
+
+        if (achievementsRes.data.success) {
+          const earned = achievementsRes.data.data?.earnedBadges || [];
+          setBadges(
+            earned.map((b) => `${b.emoji || "🏅"} ${b.name || "Badge"}`)
+          );
+        }
+      } catch (error) {
+        console.error("Year in Review fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Counter animation using real totalSaved
+  useEffect(() => {
+    if (loading) return;
+    const target = totalSaved;
+    if (target <= 0) {
+      setCounterValue(0);
+      return;
+    }
     const step = target / 60;
     let current = 0;
     const interval = setInterval(() => {
@@ -90,7 +92,24 @@ const YearInReviewPage = () => {
     }, 20);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [loading, totalSaved]);
+
+  const getGoalEmoji = (type) => {
+    const map = {
+      wedding: "💒",
+      emergency: "🛡️",
+      hajj: "🕌",
+      phone: "📱",
+      education: "📚",
+      travel: "✈️",
+      business: "💼",
+      home: "🏠",
+      car: "🚗",
+      health: "🏥",
+      other: "🎯",
+    };
+    return map[type?.toLowerCase()] || "🎯";
+  };
 
   const showToast = (message) => {
     setToast({ show: true, message });
@@ -115,7 +134,7 @@ const YearInReviewPage = () => {
 
   const shareOnWhatsApp = () => {
     const text = encodeURIComponent(
-      "আমি এই বছর Amanah Savings-এ ৳87,500 জমিয়েছি! 🎉 আপনিও শুরু করুন: amanahsavings.com.bd",
+      `আমি এই বছর Amanah Savings-এ ৳${totalSaved.toLocaleString()} জমিয়েছি! 🎉 আপনিও শুরু করুন: amanahsavings.com.bd`,
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
@@ -199,7 +218,7 @@ const YearInReviewPage = () => {
         this year!
       </h1>
       <p className="text-sm text-foreground/60 mb-8">
-        <span className="text-primary-light font-semibold">Rahima Apu</span>,
+        <span className="text-primary-light font-semibold">{userName}</span>,
         see your savings journey summary for 2024.
       </p>
       <div className="bg-linear-to-r from-primary to-primary-light rounded-2xl p-6 w-full mb-5">
@@ -208,29 +227,29 @@ const YearInReviewPage = () => {
           ৳{counterValue.toLocaleString()}
         </div>
         <div className="text-xs text-white/70 mt-1">
-          87.5% of your goal achieved
+          {totalSaved > 0 ? "Keep up the great work!" : "Start your savings journey today!"}
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 w-full">
         <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
           <div className="text-2xl mb-1">📅</div>
-          <div className="text-xl font-bold">287</div>
+          <div className="text-xl font-bold">{streak}</div>
           <div className="text-xs text-foreground/50">Day Streak</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
           <div className="text-2xl mb-1">🎯</div>
-          <div className="text-xl font-bold">3 Goals</div>
+          <div className="text-xl font-bold">{goalsCompleted} Goals</div>
           <div className="text-xs text-foreground/50">Completed</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
           <div className="text-2xl mb-1">💳</div>
-          <div className="text-xl font-bold">34 Times</div>
+          <div className="text-xl font-bold">{depositsCount} Times</div>
           <div className="text-xs text-foreground/50">Deposits</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-center">
           <div className="text-2xl mb-1">🏆</div>
-          <div className="text-xl font-bold">Top 5%</div>
-          <div className="text-xs text-foreground/50">Best Saver</div>
+          <div className="text-xl font-bold">{badgesCount} Badges</div>
+          <div className="text-xs text-foreground/50">Earned</div>
         </div>
       </div>
     </div>,
@@ -241,39 +260,46 @@ const YearInReviewPage = () => {
         Your Savings Goals
       </div>
       <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-        3 <span className="text-primary-light">Goals</span> Completed!
+        {goalsCompleted}{" "}<span className="text-primary-light">Goals</span> Completed!
       </h1>
       <p className="text-sm text-foreground/60 mb-5">
         See how far you&apos;ve progressed in each goal
       </p>
       <div className="w-full space-y-4">
-        {goals.map((goal, idx) => (
-          <div
-            key={idx}
-            className="bg-white/5 border border-white/10 rounded-xl p-4"
-          >
-            <div className="flex justify-between items-center mb-2">
-              <div className="flex items-center gap-2 text-sm font-semibold">
-                <span>{goal.icon}</span> {goal.name}
+        {goals.length > 0 ? (
+          goals.map((goal, idx) => (
+            <div
+              key={idx}
+              className="bg-white/5 border border-white/10 rounded-xl p-4"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <div className="flex items-center gap-2 text-sm font-semibold">
+                  <span>{goal.icon}</span> {goal.name}
+                </div>
+                <div className="text-sm font-bold text-primary-light">
+                  {goal.progress}% {goal.progress === 100 && "✓"}
+                </div>
               </div>
-              <div className="text-sm font-bold text-primary-light">
-                {goal.progress}% {goal.progress === 100 && "✓"}
+              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-linear-to-r from-primary to-primary-light"
+                  style={{ width: `${goal.progress}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-xs text-foreground/50 mt-2">
+                <span>{goal.saved}</span>
+                <span>
+                  {goal.progress === 100 ? goal.status : `Target: ${goal.target}`}
+                </span>
               </div>
             </div>
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full bg-linear-to-r from-primary to-primary-light"
-                style={{ width: `${goal.progress}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-foreground/50 mt-2">
-              <span>{goal.saved}</span>
-              <span>
-                {goal.progress === 100 ? goal.status : `Target: ${goal.target}`}
-              </span>
-            </div>
+          ))
+        ) : (
+          <div className="bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+            <div className="text-3xl mb-2">🎯</div>
+            <p className="text-sm text-foreground/60">No goals yet. Create your first goal to start tracking!</p>
           </div>
-        ))}
+        )}
       </div>
     </div>,
 
@@ -288,36 +314,37 @@ const YearInReviewPage = () => {
       <div className="bg-linear-to-r from-purple-600 to-primary-light rounded-2xl p-5 flex items-center gap-4 w-full mb-5 text-left">
         <div className="text-6xl animate-pulse">🔥</div>
         <div>
-          <div className="text-5xl font-bold text-white">287</div>
+          <div className="text-5xl font-bold text-white">{streak}</div>
           <div className="text-sm text-white/80">Day Savings Streak</div>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 w-full mb-5">
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
           <div className="text-xl mb-1">📆</div>
-          <div className="font-bold">January</div>
-          <div className="text-xs text-foreground/50">Streak Started</div>
+          <div className="font-bold">{streak > 0 ? "Active" : "Start Now"}</div>
+          <div className="text-xs text-foreground/50">Streak Status</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
           <div className="text-xl mb-1">🏆</div>
-          <div className="font-bold">#346</div>
-          <div className="text-xs text-foreground/50">National Rank</div>
+          <div className="font-bold">{goalsCompleted}</div>
+          <div className="text-xs text-foreground/50">Goals Done</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
           <div className="text-xl mb-1">✅</div>
-          <div className="font-bold">34 Times</div>
+          <div className="font-bold">{depositsCount} Times</div>
           <div className="text-xs text-foreground/50">Deposits</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
           <div className="text-xl mb-1">❌</div>
-          <div className="font-bold">Only 3</div>
-          <div className="text-xs text-foreground/50">Days Missed</div>
+          <div className="font-bold">Keep Going</div>
+          <div className="text-xs text-foreground/50">Never Give Up</div>
         </div>
       </div>
       <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 w-full">
         <p className="text-sm text-amber-400 text-center">
-          🎖️ You earned &quot;Diamond Saver&quot; badge — only top 5% members
-          get this!
+          {badgesCount > 0
+            ? `🎖️ You earned ${badgesCount} badge${badgesCount !== 1 ? "s" : ""} this year!`
+            : "🎖️ Start saving consistently to earn your first badge!"}
         </p>
       </div>
     </div>,
@@ -328,69 +355,76 @@ const YearInReviewPage = () => {
         Badges Earned
       </div>
       <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-        Earned <span className="text-purple-400">12 Badges</span> This Year!
+        Earned <span className="text-purple-400">{badgesCount} Badge{badgesCount !== 1 ? "s" : ""}</span> This Year!
       </h1>
       <p className="text-sm text-foreground/60 mb-5">
         Each badge is recognition of your effort
       </p>
       <div className="grid grid-cols-4 gap-3 w-full">
-        {badges.map((badge, idx) => (
-          <div
-            key={idx}
-            className="bg-white/5 border border-white/10 rounded-xl p-3 text-center hover:scale-105 transition transform"
-          >
-            <div className="text-2xl mb-1">{badge[0]}</div>
-            <div className="text-[9px] font-medium text-foreground/60">
-              {badge.slice(2)}
+        {badges.length > 0 ? (
+          badges.map((badge, idx) => (
+            <div
+              key={idx}
+              className="bg-white/5 border border-white/10 rounded-xl p-3 text-center hover:scale-105 transition transform"
+            >
+              <div className="text-2xl mb-1">{badge[0]}</div>
+              <div className="text-[9px] font-medium text-foreground/60">
+                {badge.slice(2)}
+              </div>
             </div>
+          ))
+        ) : (
+          <div className="col-span-4 bg-white/5 border border-white/10 rounded-xl p-6 text-center">
+            <div className="text-3xl mb-2">🏅</div>
+            <p className="text-sm text-foreground/60">No badges earned yet. Keep saving to unlock badges!</p>
           </div>
-        ))}
+        )}
       </div>
     </div>,
 
     // Slide 5 - Rank
     <div key={5} className="flex flex-col items-center text-center">
       <div className="text-xs font-bold text-primary uppercase tracking-wider mb-3">
-        Your Position in Bangladesh
+        Your Position
       </div>
       <h1 className="text-2xl sm:text-3xl font-bold mb-2">
-        You are <span className="text-amber-400">Top 5%</span> Saver!
+        You are a <span className="text-amber-400">Dedicated</span> Saver!
       </h1>
       <div className="bg-linear-to-r from-amber-500/20 to-amber-600/10 border-2 border-amber-500/40 rounded-2xl p-5 flex items-center gap-4 w-full mb-5 text-left">
         <div className="text-6xl">🏆</div>
         <div>
-          <div className="text-4xl font-bold text-amber-400">Top 5%</div>
-          <div className="text-sm text-white/75">Among 47,000+ members</div>
+          <div className="text-4xl font-bold text-amber-400">{badgesCount > 0 ? "Top Saver" : "Rising Star"}</div>
+          <div className="text-sm text-white/75">Among Amanah Savings members</div>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 w-full mb-5">
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
           <div className="text-xl mb-1">🇧🇩</div>
-          <div className="font-bold">#346</div>
-          <div className="text-xs text-foreground/50">National Rank</div>
+          <div className="font-bold">{goalsCompleted}</div>
+          <div className="text-xs text-foreground/50">Goals Completed</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
           <div className="text-xl mb-1">🏙️</div>
-          <div className="font-bold">#23</div>
-          <div className="text-xs text-foreground/50">Dhaka Rank</div>
+          <div className="font-bold">{streak}</div>
+          <div className="text-xs text-foreground/50">Day Streak</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
           <div className="text-xl mb-1">👥</div>
-          <div className="font-bold">5</div>
-          <div className="text-xs text-foreground/50">Friends Invited</div>
+          <div className="font-bold">{depositsCount}</div>
+          <div className="text-xs text-foreground/50">Total Deposits</div>
         </div>
         <div className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
           <div className="text-xl mb-1">💫</div>
-          <div className="font-bold">Gold</div>
-          <div className="text-xs text-foreground/50">Current Level</div>
+          <div className="font-bold">{badgesCount > 0 ? "Active" : "New"}</div>
+          <div className="text-xs text-foreground/50">Saver Status</div>
         </div>
       </div>
       <div className="bg-primary/20 border border-primary/30 rounded-xl p-4 text-center w-full">
         <p className="text-sm text-foreground/60 mb-1">
-          Upgrade to Platinum in 2025
+          Keep saving in 2025
         </p>
         <p className="text-sm font-bold text-primary-light">
-          Save ৳47,500 more to reach 🚀
+          Save more to reach your goals 🚀
         </p>
       </div>
     </div>,
@@ -410,20 +444,20 @@ const YearInReviewPage = () => {
             2024 Summary
           </div>
         </div>
-        <div className="text-lg font-bold mb-1">Rahima Begum</div>
-        <div className="text-3xl font-bold mb-2">৳87,500</div>
-        <div className="text-xs mb-4">Saved this year 💪 — Top 5% Saver!</div>
+        <div className="text-lg font-bold mb-1">{userName}</div>
+        <div className="text-3xl font-bold mb-2">৳{totalSaved.toLocaleString()}</div>
+        <div className="text-xs mb-4">Saved this year 💪 — Keep it up!</div>
         <div className="flex gap-3">
           <div className="flex-1 bg-white/15 rounded-lg p-2 text-center">
-            <div className="text-base font-bold">287</div>
+            <div className="text-base font-bold">{streak}</div>
             <div className="text-[9px] opacity-75">Day Streak</div>
           </div>
           <div className="flex-1 bg-white/15 rounded-lg p-2 text-center">
-            <div className="text-base font-bold">3</div>
+            <div className="text-base font-bold">{goalsCompleted}</div>
             <div className="text-[9px] opacity-75">Goals Complete</div>
           </div>
           <div className="flex-1 bg-white/15 rounded-lg p-2 text-center">
-            <div className="text-base font-bold">12</div>
+            <div className="text-base font-bold">{badgesCount}</div>
             <div className="text-[9px] opacity-75">Badges</div>
           </div>
         </div>

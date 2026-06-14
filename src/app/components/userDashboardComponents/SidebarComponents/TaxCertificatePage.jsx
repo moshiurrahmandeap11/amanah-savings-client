@@ -4,24 +4,62 @@ import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft, Moon, Sun, Download, Share2, Camera } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
+import useAuth from "../../../hooks/useAuth";
 
 const TaxCertificatePage = () => {
   const [isDark, setIsDark] = useState(false);
   const [year, setYear] = useState(2025);
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [loading, setLoading] = useState(true);
+  const [goals, setGoals] = useState([]);
+  const [deposits, setDeposits] = useState([]);
+  const [streak, setStreak] = useState(0);
+  const [depositCount, setDepositCount] = useState(0);
+  const [tier, setTier] = useState("—");
   const certificateRef = useRef(null);
 
-  const goals = [
-    { icon: "🏠", name: "Home Purchase", amount: "৳26,950", percent: 70 },
-    { icon: "📱", name: "New Phone", amount: "৳8,470", percent: 22 },
-    { icon: "✈️", name: "Travel Fund", amount: "৳3,080", percent: 8 },
-  ];
+  const { user } = useAuth();
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
   }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+        }
+
+        const [goalsRes, depositsRes, userRes] = await Promise.all([
+          axiosInstance.get("/goals").catch(() => ({ data: { success: false, data: [] } })),
+          axiosInstance.get("/deposits").catch(() => ({ data: { success: false, data: [] } })),
+          axiosInstance.get("/users/me").catch(() => ({ data: { success: false, data: {} } })),
+        ]);
+
+        const goalsData = goalsRes.data.success ? goalsRes.data.data : [];
+        const depositsData = depositsRes.data.success ? depositsRes.data.data : [];
+        const userData = userRes.data.success ? userRes.data.data : {};
+
+        setGoals(goalsData);
+        setDeposits(depositsData);
+        setStreak(userData.streak || 0);
+        setDepositCount(depositsData.length || 0);
+        setTier(userData.tier || "—");
+      } catch (error) {
+        console.error("Error fetching certificate data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [year]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -64,6 +102,52 @@ const TaxCertificatePage = () => {
   const nextYear = year + 1;
   const banglaYear = toBangla(currentYear);
   const banglaNextYear = toBangla(nextYear);
+
+  const financialYearStart = `July ${currentYear}`;
+  const financialYearEnd = `June ${nextYear}`;
+
+  const startDate = new Date(`${currentYear}-07-01T00:00:00`);
+  const endDate = new Date(`${nextYear}-06-30T23:59:59`);
+
+  const yearDeposits = deposits.filter((d) => {
+    const date = new Date(d.createdAt || d.date);
+    return date >= startDate && date <= endDate;
+  });
+
+  const totalAnnualSavings = yearDeposits.reduce(
+    (sum, d) => sum + (parseFloat(d.amount) || 0),
+    0
+  );
+
+  const hasData = yearDeposits.length > 0;
+
+  const userName = user?.name || "—";
+  const userId = user?._id || user?.id || "UNKNOWN";
+  const certificateNumber = `AMN-CERT-${currentYear}-${userId.toString().slice(-6).toUpperCase()}`;
+  const issueDate = new Date().toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  const goalSavings = goals.map((goal) => {
+    const goalDeposits = yearDeposits.filter((d) => d.goalId === goal._id || d.goal === goal._id);
+    const amount = goalDeposits.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
+    return {
+      icon: goal.icon || "🎯",
+      name: goal.name || "Goal",
+      amount,
+    };
+  });
+
+  const activeGoals = goalSavings.filter((g) => g.amount > 0);
+  const displayGoals = activeGoals.length > 0 ? activeGoals : goalSavings;
+  const maxGoalAmount = Math.max(...displayGoals.map((g) => g.amount), 1);
+
+  const formatBDT = (amount) => {
+    if (!amount || amount === 0) return "৳0";
+    return `৳${amount.toLocaleString("en-IN")}`;
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -148,7 +232,7 @@ const TaxCertificatePage = () => {
               This certificate is presented to
             </div>
             <div className="text-2xl font-bold text-primary text-center mb-1 italic">
-              Rahela Begum
+              {userName}
             </div>
             <div className="text-xs text-foreground/60 text-center leading-relaxed mb-5">
               In recognition of consistent savings during the financial year{" "}
@@ -159,26 +243,33 @@ const TaxCertificatePage = () => {
               <div className="text-[10px] text-foreground/60 mb-1">
                 Total Annual Savings
               </div>
-              <div className="text-3xl font-bold text-primary">৳38,500</div>
-              <div className="text-xs text-foreground/60 mt-1">
-                July 2025 — June 2026
+              <div className="text-3xl font-bold text-primary">
+                {formatBDT(totalAnnualSavings)}
               </div>
+              <div className="text-xs text-foreground/60 mt-1">
+                {financialYearStart} — {financialYearEnd}
+              </div>
+              {!hasData && (
+                <div className="text-xs text-foreground/40 mt-2">
+                  No savings data for this year
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-3 gap-2 mb-5">
               <div className="bg-background rounded-lg p-2 text-center border border-border">
-                <div className="text-base font-bold text-foreground">96</div>
+                <div className="text-base font-bold text-foreground">{streak}</div>
                 <div className="text-[9px] text-foreground/50">Max Streak</div>
               </div>
               <div className="bg-background rounded-lg p-2 text-center border border-border">
-                <div className="text-base font-bold text-foreground">48</div>
+                <div className="text-base font-bold text-foreground">{depositCount}</div>
                 <div className="text-[9px] text-foreground/50">
                   Total Deposits
                 </div>
               </div>
               <div className="bg-background rounded-lg p-2 text-center border border-border">
-                <div className="text-base font-bold text-foreground">🥈</div>
-                <div className="text-[9px] text-foreground/50">Silver Tier</div>
+                <div className="text-base font-bold text-foreground">{tier}</div>
+                <div className="text-[9px] text-foreground/50">Tier</div>
               </div>
             </div>
 
@@ -186,28 +277,34 @@ const TaxCertificatePage = () => {
               <div className="text-xs font-bold text-foreground/60 uppercase tracking-wider mb-2">
                 Savings by Goal
               </div>
-              {goals.map((goal, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 py-2 border-b border-border last:border-0"
-                >
-                  <span className="text-base">{goal.icon}</span>
-                  <div className="flex-1">
-                    <div className="text-xs font-semibold text-foreground">
-                      {goal.name}
-                    </div>
-                    <div className="h-1 bg-border rounded-full mt-1 overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-linear-to-r from-primary to-primary-light"
-                        style={{ width: `${goal.percent}%` }}
-                      />
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-primary">
-                    {goal.amount}
-                  </span>
+              {displayGoals.length === 0 ? (
+                <div className="text-xs text-foreground/40 text-center py-4">
+                  No goals found
                 </div>
-              ))}
+              ) : (
+                displayGoals.map((goal, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center gap-2 py-2 border-b border-border last:border-0"
+                  >
+                    <span className="text-base">{goal.icon}</span>
+                    <div className="flex-1">
+                      <div className="text-xs font-semibold text-foreground">
+                        {goal.name}
+                      </div>
+                      <div className="h-1 bg-border rounded-full mt-1 overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-linear-to-r from-primary to-primary-light"
+                          style={{ width: `${(goal.amount / maxGoalAmount) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-primary">
+                      {formatBDT(goal.amount)}
+                    </span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -224,7 +321,7 @@ const TaxCertificatePage = () => {
             </div>
             <div className="text-center">
               <div className="font-mono text-[9px] text-foreground/50">
-                AMN-CERT-2026-001234
+                {certificateNumber}
               </div>
               <div className="text-[8px] text-foreground/50">
                 Certificate No.
@@ -232,7 +329,7 @@ const TaxCertificatePage = () => {
             </div>
             <div className="text-center">
               <div className="w-16 h-px bg-foreground/50 mx-auto mb-1" />
-              <div className="text-[9px] text-foreground/50">30 June 2026</div>
+              <div className="text-[9px] text-foreground/50">{issueDate}</div>
               <div className="text-[8px] text-foreground/50">Issue Date</div>
             </div>
           </div>

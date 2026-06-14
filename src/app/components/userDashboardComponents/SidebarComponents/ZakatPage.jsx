@@ -13,6 +13,7 @@ const ZakatPage = () => {
   const [lang, setLang] = useState("bn");
   const [loading, setLoading] = useState(false);
   const [goldRate, setGoldRate] = useState(11000);
+  const [silverRate, setSilverRate] = useState(130);
   const [assets, setAssets] = useState({
     cash: 0,
     amanah: 0,
@@ -38,7 +39,6 @@ const ZakatPage = () => {
   const [showShareModal, setShowShareModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const SILVER_RATE_PER_G = 130;
   const ZAKAT_RATE = 0.025;
 
   useEffect(() => {
@@ -53,8 +53,20 @@ const ZakatPage = () => {
       setAssets(data.assets || assets);
       setLiabilities(data.liabilities || liabilities);
       setGoldRate(data.goldRate || 11000);
+      setSilverRate(data.silverRate || 130);
     }
   }, []);
+
+  // Save rates to localStorage whenever they change
+  useEffect(() => {
+    const savedCalculation = localStorage.getItem("zakatCalculation");
+    const data = savedCalculation ? JSON.parse(savedCalculation) : {};
+    localStorage.setItem("zakatCalculation", JSON.stringify({
+      ...data,
+      goldRate,
+      silverRate,
+    }));
+  }, [goldRate, silverRate]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -85,6 +97,7 @@ const ZakatPage = () => {
     try {
       const response = await axiosInstance.post("/zakat/calculate", {
         goldRate,
+        silverRate,
         assets,
         liabilities,
       });
@@ -97,6 +110,7 @@ const ZakatPage = () => {
           assets,
           liabilities,
           goldRate,
+          silverRate,
           result: response.data.data,
           timestamp: new Date().toISOString(),
         }));
@@ -104,6 +118,7 @@ const ZakatPage = () => {
         // Auto-save to backend
         await axiosInstance.post("/zakat/save", {
           goldRate,
+          silverRate,
           assets,
           liabilities,
           ...response.data.data,
@@ -115,7 +130,7 @@ const ZakatPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [goldRate, assets, liabilities]);
+  }, [goldRate, silverRate, assets, liabilities]);
 
   const updateAsset = useCallback((field, value) => {
     setAssets((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
@@ -138,6 +153,7 @@ const ZakatPage = () => {
     });
     setLiabilities({ loan: 0, bills: 0, other: 0 });
     setGoldRate(11000);
+    setSilverRate(130);
     setResult({
       totalAssets: 0,
       totalLiabilities: 0,
@@ -238,9 +254,9 @@ const ZakatPage = () => {
           heroSub:
             "ইসলামিক শরিয়াহ অনুযায়ী আপনার বার্ষিক যাকাতের সঠিক পরিমাণ জানুন",
           nisabLabel: "নিসাব (স্বর্ণ ৮৫গ্রাম)",
-          nisabRate: "স্বর্ণের দর (প্রতি গ্রাম)",
-          nisabNote:
-            "* স্বর্ণের দর পরিবর্তনশীল। সঠিক তথ্যের জন্য বাজার দর যাচাই করুন।",
+          goldRateLabel: "আজকের স্বর্ণের দর (প্রতি গ্রাম):",
+          silverRateLabel: "আজকের রুপার দর (প্রতি গ্রাম):",
+          rateNote: "* দর ব্যবহারকারী দ্বারা প্রদত্ত। বর্তমান বাজার দর যাচাই করুন।",
           secAssets: "সম্পদ (Assets)",
           secLiabilities: "দেনা (Liabilities)",
           ctSavings: "🏦 নগদ ও সঞ্চয়",
@@ -296,9 +312,9 @@ const ZakatPage = () => {
           heroTitle: "Calculate Your Zakat",
           heroSub: "Find your annual Zakat amount according to Islamic Shariah",
           nisabLabel: "Nisab (Gold 85g)",
-          nisabRate: "Gold rate (per gram)",
-          nisabNote:
-            "* Gold rates fluctuate. Please verify current market rates.",
+          goldRateLabel: "Today's Gold Rate (per gram):",
+          silverRateLabel: "Today's Silver Rate (per gram):",
+          rateNote: "* Rates are user-provided. Please check current market rates.",
           secAssets: "Assets",
           secLiabilities: "Liabilities",
           ctSavings: "🏦 Cash & Savings",
@@ -396,6 +412,43 @@ const ZakatPage = () => {
       </div>
 
       <div className="px-4 py-5 pb-32 max-w-full mx-auto">
+        {/* Rate Inputs Section */}
+        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-xl p-4 mb-4">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-foreground font-medium">
+                {getText("goldRateLabel")}
+              </div>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  value={goldRate}
+                  onChange={(e) => setGoldRate(parseFloat(e.target.value) || 0)}
+                  className="w-24 p-1.5 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-primary"
+                />
+                <span className="text-sm font-semibold">৳/গ্রাম</span>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-foreground font-medium">
+                {getText("silverRateLabel")}
+              </div>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  value={silverRate}
+                  onChange={(e) => setSilverRate(parseFloat(e.target.value) || 0)}
+                  className="w-24 p-1.5 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-primary"
+                />
+                <span className="text-sm font-semibold">৳/গ্রাম</span>
+              </div>
+            </div>
+          </div>
+          <div className="text-xs text-foreground/50 mt-3 pt-2 border-t border-amber-200 dark:border-amber-800">
+            {getText("rateNote")}
+          </div>
+        </div>
+
         {/* Nisab Banner */}
         <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-xl p-4 mb-4">
           <div className="flex justify-between items-center">
@@ -407,23 +460,6 @@ const ZakatPage = () => {
                 ৳ {nisab.toLocaleString()}
               </div>
             </div>
-            <div className="text-right">
-              <div className="text-xs text-foreground/60">
-                {getText("nisabRate")}
-              </div>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  value={goldRate}
-                  onChange={(e) => setGoldRate(parseFloat(e.target.value) || 0)}
-                  className="w-20 p-1 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-primary"
-                />
-                <span className="text-sm font-semibold">৳/গ্রাম</span>
-              </div>
-            </div>
-          </div>
-          <div className="text-xs text-foreground/50 mt-2">
-            {getText("nisabNote")}
           </div>
         </div>
 

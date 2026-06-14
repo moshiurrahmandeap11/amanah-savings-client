@@ -5,30 +5,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Chart from "chart.js/auto";
 import useAuth from "../../../hooks/useAuth";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 const DashboardPage = () => {
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const [greeting, setGreeting] = useState("");
   const [aiMessage, setAiMessage] = useState("");
-  const [aiMessages, setAiMessages] = useState([
-    {
-      text: "Save an extra ৳500 per week to complete your goal 2 months early!",
-      isBot: true,
-      isHighlight: true,
-    },
-    {
-      text: "You've maintained a 90-day streak! You're in the top 5% of savers this month.",
-      isBot: true,
-      isHighlight: false,
-    },
-    {
-      text: "You saved 28% more consistently this month compared to last month.",
-      isBot: true,
-      isHighlight: false,
-    },
-  ]);
+  const [aiMessages, setAiMessages] = useState([]);
   const [chartPeriod, setChartPeriod] = useState("6m");
+  const [userGoals, setUserGoals] = useState([]);
+  const [insights, setInsights] = useState([]);
+  const [loadingGoals, setLoadingGoals] = useState(true);
   const chartRef = useRef(null);
   let savingsChart = useRef(null);
 
@@ -39,33 +27,122 @@ const DashboardPage = () => {
     }
   }, [user, isLoading, router]);
 
-  // Dynamic stats based on user data
+  // Fetch user goals and insights
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?._id && !user?.id) return;
+      try {
+        const [goalsRes, insightsRes] = await Promise.all([
+          axiosInstance.get("/goals").catch(() => ({ data: { success: false } })),
+          axiosInstance.get("/users/insights").catch(() => ({ data: { success: false } })),
+        ]);
+
+        if (goalsRes.data.success) {
+          const goals = goalsRes.data.data?.goals || goalsRes.data.data || [];
+          setUserGoals(goals.map((g) => ({
+            emoji: getGoalEmoji(g.goalType || g.type || "other"),
+            name: g.goalName || g.name || "Goal",
+            status: g.status || "active",
+            monthly: `৳${(g.monthlyDeposit || 0).toLocaleString()}/month`,
+            timeLeft: g.duration
+              ? `${g.duration} months left`
+              : g.targetDate
+                ? `${Math.max(0, Math.ceil((new Date(g.targetDate) - new Date()) / (1000 * 60 * 60 * 24 * 30)))} months left`
+                : "In progress",
+            saved: `৳${(g.currentSaved || 0).toLocaleString()}`,
+            target: `৳${(g.targetAmount || 0).toLocaleString()}`,
+            progress: g.progress || Math.round(((g.currentSaved || 0) / (g.targetAmount || 1)) * 100) || 0,
+            color: getGoalColor(g.goalType || g.type || "other"),
+          })));
+        }
+
+        if (insightsRes.data.success && insightsRes.data.data?.insights) {
+          setInsights(insightsRes.data.data.insights.map((i) => ({
+            text: i.message || i.text,
+            isBot: true,
+            isHighlight: i.type === "highlight" || i.priority === "high",
+          })));
+        } else {
+          // Fallback to simple dynamic insights based on user data
+          const fallbackInsights = generateFallbackInsights(user);
+          setInsights(fallbackInsights);
+        }
+      } catch (err) {
+        console.error("Dashboard data error:", err);
+        setInsights(generateFallbackInsights(user));
+      } finally {
+        setLoadingGoals(false);
+      }
+    };
+
+    if (user) fetchData();
+  }, [user]);
+
+  const generateFallbackInsights = (userData) => {
+    const insights = [];
+    const streak = userData?.streak || 0;
+    const totalSaved = userData?.goal?.currentSaved || 0;
+    const monthlyDeposit = userData?.goal?.monthlyDeposit || 0;
+
+    if (monthlyDeposit > 0) {
+      insights.push({
+        text: `Your monthly commitment is ৳${monthlyDeposit.toLocaleString()}. Keep it up!`,
+        isBot: true,
+        isHighlight: false,
+      });
+    }
+    if (streak > 0) {
+      insights.push({
+        text: `You've maintained a ${streak}-day streak! ${streak >= 30 ? "Amazing consistency!" : "Keep going!"}`,
+        isBot: true,
+        isHighlight: streak >= 30,
+      });
+    }
+    if (totalSaved > 0) {
+      insights.push({
+        text: `Total saved so far: ৳${totalSaved.toLocaleString()}. You're building your future!`,
+        isBot: true,
+        isHighlight: false,
+      });
+    }
+    if (insights.length === 0) {
+      insights.push({
+        text: "Welcome to Amanah! Set your first savings goal to get started.",
+        isBot: true,
+        isHighlight: true,
+      });
+    }
+    return insights;
+  };
+
+  // Dynamic stats based on user data (NO hardcoded fallbacks)
   const getStats = () => {
-    const totalSaved = user?.goal?.currentSaved || 245500;
-    const monthlySaved = user?.goal?.monthlyDeposit || 15000;
-    const streak = user?.streak || 90;
-    const level = user?.level || 7;
+    const totalSaved = user?.goal?.currentSaved || 0;
+    const monthlySaved = user?.goal?.monthlyDeposit || 0;
+    const streak = user?.streak || 0;
+    const level = user?.level || 1;
+    const circlesCount = user?.circles?.length || 0;
 
     return [
       {
         icon: "💰",
-        value: `৳${totalSaved.toLocaleString()}`,
+        value: totalSaved > 0 ? `৳${totalSaved.toLocaleString()}` : "৳0",
         label: "Total Savings",
-        change: `+৳${monthlySaved.toLocaleString()} this month`,
+        change: monthlySaved > 0 ? `+৳${monthlySaved.toLocaleString()} this month` : "Start saving today!",
         color: "green",
       },
       {
         icon: "⭕",
-        value: user?.circles?.length || "4",
+        value: circlesCount > 0 ? circlesCount : "0",
         label: "Active Circles",
-        change: "↑ Goals on track",
+        change: circlesCount > 0 ? "↑ Goals on track" : "Join a circle!",
         color: "blue",
       },
       {
         icon: "🔥",
-        value: streak,
+        value: streak > 0 ? streak : "0",
         label: "Day Streak",
-        change: streak >= 90 ? "Top 5% saver!" : "Keep going!",
+        change: streak >= 30 ? "Top saver!" : streak > 0 ? "Keep going!" : "Start your streak!",
         color: "warning",
       },
       {
@@ -76,65 +153,6 @@ const DashboardPage = () => {
           ? `${user.selectedPlan.charAt(0).toUpperCase() + user.selectedPlan.slice(1)} Saver`
           : "Member",
         color: "info",
-      },
-    ];
-  };
-
-  // Get user goals from API or use default
-  const getUserGoals = () => {
-    if (user?.goal?.type) {
-      return [
-        {
-          emoji: getGoalEmoji(user.goal.type),
-          name: user.goal.type,
-          status: "active",
-          monthly: `৳${(user.goal.monthlyDeposit || 0).toLocaleString()}/month`,
-          timeLeft: user.goal.duration
-            ? `${user.goal.duration} months left`
-            : "In progress",
-          saved: `৳${(user.goal.currentSaved || 0).toLocaleString()}`,
-          target: `৳${(user.goal.targetAmount || 0).toLocaleString()}`,
-          progress: user.goal.progress || 0,
-          color: "from-primary to-primary-light",
-        },
-        // Add more goals if available from API
-      ];
-    }
-
-    // Fallback goals
-    return [
-      {
-        emoji: "💍",
-        name: "Wedding Fund",
-        status: "active",
-        monthly: "৳10,000/month",
-        timeLeft: "6 months left",
-        saved: "৳1,80,000",
-        target: "৳2,50,000",
-        progress: 72,
-        color: "from-primary to-primary-light",
-      },
-      {
-        emoji: "🕌",
-        name: "Hajj Fund",
-        status: "active",
-        monthly: "৳5,000/month",
-        timeLeft: "30 months left",
-        saved: "৳39,000",
-        target: "৳1,50,000",
-        progress: 26,
-        color: "from-amber-500 to-orange-500",
-      },
-      {
-        emoji: "🎓",
-        name: "Education Fund",
-        status: "active",
-        monthly: "৳3,000/month",
-        timeLeft: "10 months left",
-        saved: "৳18,000",
-        target: "৳36,000",
-        progress: 50,
-        color: "from-purple-500 to-indigo-500",
       },
     ];
   };
@@ -151,8 +169,40 @@ const DashboardPage = () => {
       "Business Fund": "💼",
       "Travel Fund": "✈️",
       "Custom Goal": "🎯",
+      home: "🏠",
+      wedding: "💍",
+      hajj: "🕌",
+      education: "🎓",
+      emergency: "🛡️",
+      gadget: "📱",
+      car: "🚗",
+      business: "💼",
+      travel: "✈️",
+      other: "🎯",
     };
     return emojiMap[goalType] || "🎯";
+  };
+
+  const getGoalColor = (type) => {
+    const map = {
+      home: "from-primary to-primary-light",
+      wedding: "from-pink-500 to-rose-500",
+      hajj: "from-amber-500 to-orange-500",
+      education: "from-purple-500 to-indigo-500",
+      emergency: "from-red-500 to-orange-500",
+      gadget: "from-blue-500 to-cyan-500",
+      car: "from-cyan-500 to-teal-500",
+      business: "from-emerald-500 to-green-500",
+      travel: "from-amber-500 to-yellow-500",
+      other: "from-primary to-primary-light",
+    };
+    return map[type?.toLowerCase()] || "from-primary to-primary-light";
+  };
+
+  const getUserGoals = () => {
+    if (userGoals.length > 0) return userGoals;
+    // If no goals from API, return empty (no fake fallback)
+    return [];
   };
 
   // Get user display name
@@ -162,10 +212,14 @@ const DashboardPage = () => {
     return "User";
   };
 
-  // Get next deposit due date (mock data - replace with API)
+  // Get next deposit due date from user data
   const getNextDueDays = () => {
-    // This should come from API
-    return 3;
+    if (user?.nextDepositDate) {
+      const due = new Date(user.nextDepositDate);
+      const diff = Math.ceil((due - new Date()) / (1000 * 60 * 60 * 24));
+      return Math.max(0, diff);
+    }
+    return 7; // Default weekly reminder
   };
 
   useEffect(() => {
@@ -174,7 +228,6 @@ const DashboardPage = () => {
     else if (hour < 17) setGreeting("Good Afternoon");
     else setGreeting("Good Evening");
 
-    // Initialize chart
     if (typeof window !== "undefined") {
       initChart();
     }
@@ -226,11 +279,11 @@ const DashboardPage = () => {
   };
 
   const getChartData = () => {
-    // Use real user data if available
-    const currentSavings = user?.goal?.currentSaved || 245500;
+    const currentSavings = user?.goal?.currentSaved || 0;
 
-    // Generate realistic chart data based on current savings
-    const generateData = (months, startValue) => {
+    // Generate chart data based on real current savings
+    const generateData = (months) => {
+      if (currentSavings <= 0) return new Array(months).fill(0);
       const step = currentSavings / months;
       return Array.from({ length: months }, (_, i) =>
         Math.round(step * (i + 1)),
@@ -240,41 +293,22 @@ const DashboardPage = () => {
     const data = {
       "6m": {
         labels: ["Dec", "Jan", "Feb", "Mar", "Apr", "May"],
-        values: generateData(6, currentSavings - 150000),
+        values: generateData(6),
       },
       "1y": {
         labels: [
-          "Jun",
-          "Jul",
-          "Aug",
-          "Sep",
-          "Oct",
-          "Nov",
-          "Dec",
-          "Jan",
-          "Feb",
-          "Mar",
-          "Apr",
-          "May",
+          "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
+          "Dec", "Jan", "Feb", "Mar", "Apr", "May",
         ],
-        values: generateData(12, currentSavings - 220000),
+        values: generateData(12),
       },
       all: {
         labels: [
-          "2024",
-          "Q1",
-          "Q2",
-          "Q3",
-          "Q4",
-          "2025",
-          "Q1",
-          "Q2",
-          "Q3",
-          "Q4",
-          "2026",
-          "May",
+          "2024", "Q1", "Q2", "Q3", "Q4",
+          "2025", "Q1", "Q2", "Q3", "Q4",
+          "2026", "May",
         ],
-        values: generateData(12, currentSavings - 245000),
+        values: generateData(12),
       },
     };
 
@@ -309,17 +343,17 @@ const DashboardPage = () => {
 
   const sendAiMessage = () => {
     if (!aiMessage.trim()) return;
-    setAiMessages([
-      ...aiMessages,
+    setAiMessages((prev) => [
+      ...prev,
       { text: aiMessage, isBot: false, isHighlight: false },
     ]);
     setAiMessage("");
     setTimeout(() => {
       const responses = [
-        "At your current savings rate, increasing by ৳500/week would help you reach your goal faster!",
-        "Your savings consistency score is 94% — excellent!",
-        `Your ${user?.goal?.type || "savings"} goal is on track to be completed soon!`,
-        "Keep your streak alive! Only 10 more days until the 100-day badge!",
+        "At your current savings rate, you're doing great! Keep it up!",
+        "Your savings consistency is improving!",
+        `Your ${user?.goal?.type || "savings"} goal is on track!`,
+        "Keep your streak alive! Every deposit counts!",
       ];
       setAiMessages((prev) => [
         ...prev,
@@ -336,9 +370,9 @@ const DashboardPage = () => {
   const goals = getUserGoals();
   const userName = getUserDisplayName();
   const nextDueDays = getNextDueDays();
-  const totalSaved = user?.goal?.currentSaved || 245500;
-  const targetAmount = user?.goal?.targetAmount || 500000;
-  const progressPercent = Math.round((totalSaved / targetAmount) * 100) || 49;
+  const totalSaved = user?.goal?.currentSaved || 0;
+  const targetAmount = user?.goal?.targetAmount || 0;
+  const progressPercent = targetAmount > 0 ? Math.round((totalSaved / targetAmount) * 100) : 0;
 
   if (isLoading) {
     return (
@@ -376,30 +410,10 @@ const DashboardPage = () => {
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          {
-            icon: "💳",
-            label: "Deposit",
-            href: "/dashboard/submit",
-            primary: true,
-          },
-          {
-            icon: "🏧",
-            label: "Withdraw",
-            href: "/dashboard/lifting",
-            primary: false,
-          },
-          {
-            icon: "🔄",
-            label: "Transfer",
-            href: "/dashboard/transfer",
-            primary: false,
-          },
-          {
-            icon: "⚡",
-            label: "Auto-Save",
-            href: "/dashboard/auto-save",
-            primary: false,
-          },
+          { icon: "💳", label: "Deposit", href: "/dashboard/submit", primary: true },
+          { icon: "🏧", label: "Withdraw", href: "/dashboard/lifting", primary: false },
+          { icon: "🔄", label: "Transfer", href: "/dashboard/transfer", primary: false },
+          { icon: "⚡", label: "Auto-Save", href: "/dashboard/auto-save", primary: false },
         ].map((action) => (
           <Link
             key={action.label}
@@ -456,19 +470,19 @@ const DashboardPage = () => {
             <div className="h-2 bg-white/20 rounded-full mb-2">
               <div
                 className="h-full bg-white rounded-full"
-                style={{ width: `${progressPercent}%` }}
+                style={{ width: `${Math.min(progressPercent, 100)}%` }}
               />
             </div>
             <div className="flex justify-between text-xs opacity-75 mb-4">
               <span>৳{totalSaved.toLocaleString()} Saved</span>
               <span>
-                ৳{(targetAmount - totalSaved).toLocaleString()} Remaining
+                ৳{Math.max(0, targetAmount - totalSaved).toLocaleString()} Remaining
               </span>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white/15 rounded-lg p-2 text-center">
                 <div className="text-lg font-bold">
-                  ৳{user?.goal?.monthlyDeposit?.toLocaleString() || 15000}
+                  ৳{(user?.goal?.monthlyDeposit || 0).toLocaleString()}
                 </div>
                 <div className="text-xs opacity-75">This Month</div>
               </div>
@@ -479,7 +493,7 @@ const DashboardPage = () => {
                 <div className="text-xs opacity-75">Total Saved</div>
               </div>
               <div className="bg-white/15 rounded-lg p-2 text-center">
-                <div className="text-lg font-bold">{user?.streak || 90}</div>
+                <div className="text-lg font-bold">{user?.streak || 0}</div>
                 <div className="text-xs opacity-75">Day Streak</div>
               </div>
             </div>
@@ -519,39 +533,58 @@ const DashboardPage = () => {
                 View all →
               </Link>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {goals.map((goal, idx) => (
-                <div
-                  key={idx}
-                  className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-primary transition"
+            {loadingGoals ? (
+              <div className="text-center py-8">
+                <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-2"></div>
+                <p className="text-foreground/50 text-sm">Loading goals...</p>
+              </div>
+            ) : goals.length === 0 ? (
+              <div className="bg-card border border-border rounded-xl p-8 text-center">
+                <div className="text-4xl mb-2">🎯</div>
+                <div className="text-foreground font-semibold mb-1">No goals yet</div>
+                <div className="text-foreground/50 text-sm mb-4">Create your first savings goal to get started</div>
+                <Link
+                  href="/dashboard/goals"
+                  className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition"
                 >
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="text-3xl">{goal.emoji}</span>
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full ${goal.status === "active" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-500"}`}
-                    >
-                      {goal.status === "active" ? "Active" : "Paused"}
-                    </span>
+                  Create Goal
+                </Link>
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-4">
+                {goals.map((goal, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-primary transition"
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className="text-3xl">{goal.emoji}</span>
+                      <span
+                        className={`text-xs font-semibold px-2 py-1 rounded-full ${goal.status === "active" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-500"}`}
+                      >
+                        {goal.status === "active" ? "Active" : "Paused"}
+                      </span>
+                    </div>
+                    <div className="font-bold text-foreground">{goal.name}</div>
+                    <div className="text-xs text-foreground/50 mb-2">
+                      {goal.monthly} · {goal.timeLeft}
+                    </div>
+                    <div className="h-1.5 bg-border rounded-full mb-2 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full bg-linear-to-r ${goal.color}`}
+                        style={{ width: `${Math.min(goal.progress, 100)}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-primary font-semibold">
+                        {goal.saved}
+                      </span>
+                      <span className="text-foreground/50">/ {goal.target}</span>
+                    </div>
                   </div>
-                  <div className="font-bold text-foreground">{goal.name}</div>
-                  <div className="text-xs text-foreground/50 mb-2">
-                    {goal.monthly} · {goal.timeLeft}
-                  </div>
-                  <div className="h-1.5 bg-border rounded-full mb-2 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full bg-linear-to-r ${goal.color}`}
-                      style={{ width: `${goal.progress}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-primary font-semibold">
-                      {goal.saved}
-                    </span>
-                    <span className="text-foreground/50">/ {goal.target}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -573,14 +606,20 @@ const DashboardPage = () => {
               </span>
             </div>
             <div className="space-y-3 mb-4 max-h-64 overflow-y-auto">
-              {aiMessages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`p-3 rounded-xl text-sm ${msg.isHighlight ? "bg-primary/5 border border-primary/15 text-foreground" : msg.isBot ? "bg-card border border-border text-foreground/80" : "bg-linear-to-r from-primary to-primary-light text-white ml-auto max-w-[85%]"}`}
-                >
-                  {msg.text}
+              {insights.length === 0 ? (
+                <div className="text-sm text-foreground/50 text-center py-4">
+                  Loading insights...
                 </div>
-              ))}
+              ) : (
+                insights.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-3 rounded-xl text-sm ${msg.isHighlight ? "bg-primary/5 border border-primary/15 text-foreground" : msg.isBot ? "bg-card border border-border text-foreground/80" : "bg-linear-to-r from-primary to-primary-light text-white ml-auto max-w-[85%]"}`}
+                  >
+                    {msg.text}
+                  </div>
+                ))
+              )}
             </div>
             <div className="flex gap-2">
               <input
@@ -608,52 +647,58 @@ const DashboardPage = () => {
                 Details
               </Link>
             </div>
-            <div className="space-y-4">
-              {goals.slice(0, 3).map((goal, idx) => (
-                <div key={idx} className="flex items-center gap-4">
-                  <div className="relative w-16 h-16 shrink-0">
-                    <svg className="w-16 h-16 -rotate-90" viewBox="0 0 72 72">
-                      <circle
-                        cx="36"
-                        cy="36"
-                        r="30"
-                        fill="none"
-                        stroke="#e2e8f0"
-                        strokeWidth="6"
-                      />
-                      <circle
-                        cx="36"
-                        cy="36"
-                        r="30"
-                        fill="none"
-                        stroke={
-                          goal.color.includes("primary")
-                            ? "#059669"
-                            : goal.color.includes("amber")
-                              ? "#f59e0b"
-                              : "#8b5cf6"
-                        }
-                        strokeWidth="6"
-                        strokeDasharray="188.4"
-                        strokeDashoffset={188.4 * (1 - goal.progress / 100)}
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-foreground">
-                      {goal.progress}%
+            {goals.length === 0 ? (
+              <div className="text-center py-4 text-foreground/50 text-sm">
+                No goals yet. Create one to see progress!
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {goals.slice(0, 3).map((goal, idx) => (
+                  <div key={idx} className="flex items-center gap-4">
+                    <div className="relative w-16 h-16 shrink-0">
+                      <svg className="w-16 h-16 -rotate-90" viewBox="0 0 72 72">
+                        <circle
+                          cx="36"
+                          cy="36"
+                          r="30"
+                          fill="none"
+                          stroke="#e2e8f0"
+                          strokeWidth="6"
+                        />
+                        <circle
+                          cx="36"
+                          cy="36"
+                          r="30"
+                          fill="none"
+                          stroke={
+                            goal.color.includes("primary")
+                              ? "#059669"
+                              : goal.color.includes("amber")
+                                ? "#f59e0b"
+                                : "#8b5cf6"
+                          }
+                          strokeWidth="6"
+                          strokeDasharray="188.4"
+                          strokeDashoffset={188.4 * (1 - Math.min(goal.progress, 100) / 100)}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-foreground">
+                        {Math.min(goal.progress, 100)}%
+                      </div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground">
+                        {goal.name}
+                      </div>
+                      <div className="text-xs text-foreground/50">
+                        {goal.saved} / {goal.target}
+                      </div>
                     </div>
                   </div>
-                  <div>
-                    <div className="font-semibold text-foreground">
-                      {goal.name}
-                    </div>
-                    <div className="text-xs text-foreground/50">
-                      {goal.saved} / {goal.target}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* KYC Status - Dynamic from user */}
@@ -763,7 +808,7 @@ const DashboardPage = () => {
             <div className="flex justify-between items-center p-3 bg-background rounded-lg">
               <span className="text-foreground">Monthly Commitment</span>
               <span className="font-bold text-primary">
-                ৳{user?.goal?.monthlyDeposit?.toLocaleString() || 5000}
+                ৳{(user?.goal?.monthlyDeposit || 0).toLocaleString()}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-background rounded-lg">

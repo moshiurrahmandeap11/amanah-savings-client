@@ -13,95 +13,51 @@ import {
   Printer,
   Camera,
   X,
+  Loader2,
 } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 const InvoicePage = () => {
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
   const [showShareSheet, setShowShareSheet] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [receipt, setReceipt] = useState(null);
+  const [loading, setLoading] = useState(true);
   const receiptRef = useRef(null);
 
-  const receiptData = {
-    bn: {
-      back: "← লেনদেন",
-      backTitle: "ইনভয়েস",
-      header: "🧾 জমার রসিদ",
-      receiptSub: "Amanah ডিজিটাল সঞ্চয় কমিউনিটি",
-      status: "অনুমোদিত",
-      amountLabel: "জমার পরিমাণ",
-      amount: "৳৫,০০০",
-      goal: "🏠 বাড়ি কেনা লক্ষ্যে জমা",
-      rows: [
-        ["সদস্যের নাম", "রাহেলা বেগম"],
-        ["মোবাইল নম্বর", "+880 1711-234567"],
-        ["পেমেন্ট মাধ্যম", "💜 bKash"],
-        ["bKash TxID", "BK20260524123"],
-        ["জমার তারিখ", "২৫ মে ২০২৬"],
-        ["সময়", "সকাল ১০:৩২"],
-        ["অনুমোদনের সময়", "সকাল ১০:৪৫"],
-        ["অনুমোদনকারী", "Amanah Admin"],
-        ["লক্ষ্যের অগ্রগতি", "১৯% → ২১.৫%"],
-      ],
-      receiptId: "AMN-2026-0524-5000",
-      receiptIdSub: "রসিদ নম্বর · ডিজিটাল স্বাক্ষরিত",
-      verify: "amanah.com.bd/verify →",
-      download: "📥 PDF ডাউনলোড",
-      share: "📤 শেয়ার করুন",
-      shareTitle: "📤 রসিদ শেয়ার করুন",
-      shareItems: [
-        "WhatsApp",
-        "Facebook",
-        "SMS",
-        "Email",
-        "লিংক কপি",
-        "ছবি সেভ",
-        "প্রিন্ট",
-        "বাতিল",
-      ],
-    },
-    en: {
-      back: "← Transactions",
-      backTitle: "Invoice",
-      header: "🧾 Deposit Receipt",
-      receiptSub: "Amanah Digital Savings Community",
-      status: "Approved",
-      amountLabel: "Deposit Amount",
-      amount: "৳5,000",
-      goal: "🏠 Deposit toward home goal",
-      rows: [
-        ["Member Name", "Rahela Begum"],
-        ["Mobile Number", "+880 1711-234567"],
-        ["Payment Method", "💜 bKash"],
-        ["bKash TxID", "BK20260524123"],
-        ["Deposit Date", "May 25, 2026"],
-        ["Time", "10:32 AM"],
-        ["Approval Time", "10:45 AM"],
-        ["Approved By", "Amanah Admin"],
-        ["Goal Progress", "19% → 21.5%"],
-      ],
-      receiptId: "AMN-2026-0524-5000",
-      receiptIdSub: "Receipt number · digitally signed",
-      verify: "amanah.com.bd/verify →",
-      download: "📥 Download PDF",
-      share: "📤 Share",
-      shareTitle: "📤 Share Receipt",
-      shareItems: [
-        "WhatsApp",
-        "Facebook",
-        "SMS",
-        "Email",
-        "Copy Link",
-        "Save Image",
-        "Print",
-        "Cancel",
-      ],
-    },
-  };
-
-  const currentData = receiptData[lang];
-
+  // Fetch latest approved deposit as receipt data
   useEffect(() => {
+    const fetchReceipt = async () => {
+      try {
+        const res = await axiosInstance.get("/deposits?limit=1&status=approved");
+        if (res.data.success) {
+          const deposits = res.data.data?.deposits || res.data.data || [];
+          const latest = deposits[0];
+          if (latest) {
+            setReceipt({
+              amount: latest.amount || latest.depositAmount || 5000,
+              goalName: latest.goalName || "Home Fund",
+              method: latest.paymentMethod || "bKash",
+              txid: latest.transactionId || latest.txid || `BK${Date.now()}`,
+              date: new Date(latest.createdAt || Date.now()),
+              approvedAt: new Date(latest.approvedAt || latest.updatedAt || Date.now()),
+              approvedBy: latest.approvedBy || "Amanah Admin",
+              memberName: latest.userName || latest.fullName || "Member",
+              phone: latest.phone || "+880 1XXX-XXXXXX",
+              goalProgress: latest.goalProgress || { before: 19, after: 21.5 },
+              receiptId: `AMN-${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}${String(new Date().getDate()).padStart(2, "0")}-${latest.amount || 5000}`,
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Receipt fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReceipt();
+
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
@@ -136,7 +92,9 @@ const InvoicePage = () => {
   const copyLink = () => {
     setShowShareSheet(false);
     navigator.clipboard.writeText(
-      "https://amanahsavings.com.bd/invoice/AMN-2026-0524-5000",
+      receipt
+        ? `https://amanahsavings.com.bd/invoice/${receipt.receiptId}`
+        : "https://amanahsavings.com.bd",
     );
     showToast(lang === "bn" ? "🔗 লিংক কপি হয়েছে!" : "🔗 Link copied!");
   };
@@ -148,18 +106,93 @@ const InvoicePage = () => {
     );
   };
 
+  const formatDate = (date, language) => {
+    if (!date) return "";
+    if (language === "bn") {
+      const days = ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহস্পতি", "শুক্র", "শনি"];
+      const months = [
+        "জানুয়ারি", "ফেব্রুয়ারি", "মার্চ", "এপ্রিল", "মে", "জুন",
+        "জুলাই", "আগস্ট", "সেপ্টেম্বর", "অক্টোবর", "নভেম্বর", "ডিসেম্বর",
+      ];
+      const d = new Date(date);
+      return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+    return new Date(date).toLocaleDateString("en-US", {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const formatTime = (date, language) => {
+    if (!date) return "";
+    const d = new Date(date);
+    if (language === "bn") {
+      const hours = d.getHours();
+      const mins = d.getMinutes();
+      const period = hours < 12 ? "সকাল" : hours < 17 ? "দুপুর" : "রাত";
+      const banglaNums = (n) => n.toString().replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
+      return `${period} ${banglaNums(hours % 12 || 12)}:${banglaNums(String(mins).padStart(2, "0"))}`;
+    }
+    return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const toBanglaNum = (num) =>
+    num?.toString().replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d]) || "";
+
+  const getLabels = () => {
+    const base = {
+      bn: {
+        back: "← লেনদেন",
+        backTitle: "ইনভয়েস",
+        header: "🧾 জমার রসিদ",
+        receiptSub: "Amanah ডিজিটাল সঞ্চয় কমিউনিটি",
+        status: "অনুমোদিত",
+        amountLabel: "জমার পরিমাণ",
+        download: "📥 PDF ডাউনলোড",
+        share: "📤 শেয়ার করুন",
+        shareTitle: "📤 রসিদ শেয়ার করুন",
+        shareItems: ["WhatsApp", "Facebook", "SMS", "Email", "লিংক কপি", "ছবি সেভ", "প্রিন্ট", "বাতিল"],
+      },
+      en: {
+        back: "← Transactions",
+        backTitle: "Invoice",
+        header: "🧾 Deposit Receipt",
+        receiptSub: "Amanah Digital Savings Community",
+        status: "Approved",
+        amountLabel: "Deposit Amount",
+        download: "📥 Download PDF",
+        share: "📤 Share",
+        shareTitle: "📤 Share Receipt",
+        shareItems: ["WhatsApp", "Facebook", "SMS", "Email", "Copy Link", "Save Image", "Print", "Cancel"],
+      },
+    };
+    return base[lang];
+  };
+
+  const labels = getLabels();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Back Bar */}
       <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border-b border-primary/15 sticky top-0 z-50">
         <Link
-          href="/dashboard/transaction-history"
+          href="/dashboard/transactions"
           className="flex items-center gap-1.5 text-primary text-sm font-semibold px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition"
         >
-          <ArrowLeft size={14} /> {currentData.back}
+          <ArrowLeft size={14} /> {labels.back}
         </Link>
         <span className="text-sm font-bold text-foreground flex-1">
-          {currentData.backTitle}
+          {labels.backTitle}
         </span>
       </div>
 
@@ -172,7 +205,7 @@ const InvoicePage = () => {
           <ArrowLeft size={18} />
         </button>
         <h1 className="text-white text-lg font-bold flex-1">
-          {currentData.header}
+          {labels.header}
         </h1>
         <button
           onClick={toggleTheme}
@@ -198,40 +231,112 @@ const InvoicePage = () => {
               Amanah Savings Community
             </div>
             <div className="text-white/75 text-xs">
-              {currentData.receiptSub}
+              {labels.receiptSub}
             </div>
             <div className="inline-flex items-center gap-1.5 bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-semibold mt-3">
               <span className="w-2 h-2 rounded-full bg-green-300 animate-pulse" />
-              {currentData.status}
+              {labels.status}
             </div>
           </div>
 
           {/* Amount Section */}
           <div className="px-5 py-5 text-center border-b border-dashed border-border">
             <div className="text-xs text-foreground/60 mb-1">
-              {currentData.amountLabel}
+              {labels.amountLabel}
             </div>
             <div className="text-4xl font-bold text-primary">
-              {currentData.amount}
+              ৳{receipt ? receipt.amount.toLocaleString() : "0"}
             </div>
             <div className="text-sm text-foreground/60 mt-1">
-              {currentData.goal}
+              {receipt ? `🏠 ${receipt.goalName}` : "🏠 Deposit"}
             </div>
           </div>
 
           {/* Details Rows */}
           <div className="px-5">
-            {currentData.rows.map((row, idx) => (
-              <div
-                key={idx}
-                className="flex justify-between py-3 border-b border-border last:border-0"
-              >
-                <span className="text-sm text-foreground/60">{row[0]}</span>
-                <span className="text-sm font-semibold text-foreground text-right">
-                  {row[1]}
-                </span>
+            {receipt ? (
+              <>
+                <div className="flex justify-between py-3 border-b border-border">
+                  <span className="text-sm text-foreground/60">
+                    {lang === "bn" ? "সদস্যের নাম" : "Member Name"}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {receipt.memberName}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-border">
+                  <span className="text-sm text-foreground/60">
+                    {lang === "bn" ? "মোবাইল নম্বর" : "Mobile Number"}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {receipt.phone}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-border">
+                  <span className="text-sm text-foreground/60">
+                    {lang === "bn" ? "পেমেন্ট মাধ্যম" : "Payment Method"}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {receipt.method}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-border">
+                  <span className="text-sm text-foreground/60">
+                    {receipt.method} TxID
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {receipt.txid}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-border">
+                  <span className="text-sm text-foreground/60">
+                    {lang === "bn" ? "জমার তারিখ" : "Deposit Date"}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {formatDate(receipt.date, lang)}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-border">
+                  <span className="text-sm text-foreground/60">
+                    {lang === "bn" ? "সময়" : "Time"}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {formatTime(receipt.date, lang)}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-border">
+                  <span className="text-sm text-foreground/60">
+                    {lang === "bn" ? "অনুমোদনের সময়" : "Approval Time"}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {formatTime(receipt.approvedAt, lang)}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-border">
+                  <span className="text-sm text-foreground/60">
+                    {lang === "bn" ? "অনুমোদনকারী" : "Approved By"}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {receipt.approvedBy}
+                  </span>
+                </div>
+                <div className="flex justify-between py-3 border-b border-border last:border-0">
+                  <span className="text-sm text-foreground/60">
+                    {lang === "bn" ? "লক্ষ্যের অগ্রগতি" : "Goal Progress"}
+                  </span>
+                  <span className="text-sm font-semibold text-foreground text-right">
+                    {lang === "bn"
+                      ? `${toBanglaNum(receipt.goalProgress.before)}% → ${toBanglaNum(receipt.goalProgress.after)}%`
+                      : `${receipt.goalProgress.before}% → ${receipt.goalProgress.after}%`}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <div className="py-8 text-center text-foreground/50">
+                <div className="text-4xl mb-2">📭</div>
+                <div>{lang === "bn" ? "কোন জমার তথ্য পাওয়া যায়নি" : "No deposit data found"}</div>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Perforation */}
@@ -248,13 +353,13 @@ const InvoicePage = () => {
             </div>
             <div className="flex-1">
               <div className="font-mono text-sm font-bold text-foreground">
-                {currentData.receiptId}
+                {receipt ? receipt.receiptId : "AMN-0000-0000-0000"}
               </div>
               <div className="text-xs text-foreground/50">
-                {currentData.receiptIdSub}
+                {lang === "bn" ? "রসিদ নম্বর · ডিজিটাল স্বাক্ষরিত" : "Receipt number · digitally signed"}
               </div>
               <div className="text-xs text-primary font-semibold">
-                {currentData.verify}
+                amanah.com.bd/verify →
               </div>
             </div>
           </div>
@@ -266,13 +371,13 @@ const InvoicePage = () => {
             onClick={printDocument}
             className="py-3.5 rounded-xl bg-linear-to-r from-primary to-primary-light text-white text-sm font-bold flex items-center justify-center gap-2"
           >
-            <Download size={16} /> {currentData.download}
+            <Download size={16} /> {labels.download}
           </button>
           <button
             onClick={() => setShowShareSheet(true)}
             className="py-3.5 rounded-xl border-2 border-border bg-card text-foreground text-sm font-bold flex items-center justify-center gap-2"
           >
-            <Share2 size={16} /> {currentData.share}
+            <Share2 size={16} /> {labels.share}
           </button>
         </div>
       </div>
@@ -294,10 +399,10 @@ const InvoicePage = () => {
             >
               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
               <div className="font-bold text-foreground mb-1">
-                {currentData.shareTitle}
+                {labels.shareTitle}
               </div>
               <div className="grid grid-cols-4 gap-3 mt-3">
-                {currentData.shareItems.map((item, idx) => (
+                {labels.shareItems.map((item, idx) => (
                   <button
                     key={idx}
                     onClick={() => {

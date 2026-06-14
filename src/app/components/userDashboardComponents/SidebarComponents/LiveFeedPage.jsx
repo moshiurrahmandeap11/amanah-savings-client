@@ -3,6 +3,10 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, TrendingUp, Users, Award, Zap, Play, Pause } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
+import useSocket from "../../../hooks/useSocket";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
 
 const LiveFeedPage = () => {
   const [isDark, setIsDark] = useState(false);
@@ -11,125 +15,155 @@ const LiveFeedPage = () => {
   const [feedItems, setFeedItems] = useState([]);
   const [currentFilter, setCurrentFilter] = useState("all");
   const [stats, setStats] = useState({
-    members: 47284,
-    todayDeposits: 1247,
-    amountToday: 4567890,
-    goalsToday: 89,
-    activeNow: 342,
-    depositHour: 234000,
-    goalsHour: 15,
-    newToday: 38,
+    members: 0,
+    todayDeposits: 0,
+    amountToday: 0,
+    goalsToday: 0,
+    activeNow: 0,
+    depositHour: 0,
+    goalsHour: 0,
+    newToday: 0,
   });
+  const [loading, setLoading] = useState(true);
 
   const intervalRef = useRef(null);
-  let itemId = useRef(0);
 
-  const names = [
-    "Rahima B.",
-    "Kamal H.",
-    "Nasrin A.",
-    "Farhan R.",
-    "Sumaiya I.",
-    "Arif H.",
-    "Fatema K.",
-    "Shakil A.",
-    "Riya C.",
-    "Moshiur R.",
-    "Nusrat J.",
-    "Tanvir H.",
-    "Ayesha S.",
-    "Rahim U.",
-    "Bilkis B.",
-  ];
-  const cities = [
-    { bn: "ঢাকা", en: "Dhaka" },
-    { bn: "চট্টগ্রাম", en: "Chittagong" },
-    { bn: "সিলেট", en: "Sylhet" },
-    { bn: "রাজশাহী", en: "Rajshahi" },
-    { bn: "খুলনা", en: "Khulna" },
-    { bn: "বরিশাল", en: "Barisal" },
-    { bn: "ময়মনসিংহ", en: "Mymensingh" },
-    { bn: "রংপুর", en: "Rangpur" },
-    { bn: "কুমিল্লা", en: "Cumilla" },
-  ];
-  const goals = [
-    { bn: "💒 বিবাহ তহবিল", en: "💒 Wedding Fund" },
-    { bn: "🕌 হজ সঞ্চয়", en: "🕌 Hajj Savings" },
-    { bn: "🎓 শিক্ষা তহবিল", en: "🎓 Education Fund" },
-    { bn: "🛡️ জরুরি তহবিল", en: "🛡️ Emergency Fund" },
-    { bn: "📱 গ্যাজেট লক্ষ্য", en: "📱 Gadget Goal" },
-    { bn: "💼 ব্যবসা শুরু", en: "💼 Business Startup" },
-    { bn: "🏠 বাড়ির তহবিল", en: "🏠 Home Fund" },
-    { bn: "✈️ ভ্রমণ তহবিল", en: "✈️ Travel Fund" },
-  ];
-  const badgeNames = [
-    { bn: "🔥 ৩০ দিনের স্ট্রিক", en: "🔥 30-Day Streak" },
-    { bn: "💎 ডায়মন্ড সেভার", en: "💎 Diamond Saver" },
-    { bn: "🥇 প্রথম লক্ষ্য", en: "🥇 First Goal" },
-    { bn: "🚀 লক্ষ্য চ্যাম্পিয়ন", en: "🚀 Goal Crusher" },
-    { bn: "⭐ সেরা ৫% সেভার", en: "⭐ Top 5% Saver" },
-    { bn: "🕌 হজ সেভার", en: "🕌 Hajj Saver" },
-  ];
-  const amounts = [500, 1000, 1500, 2000, 2500, 3000, 5000, 7500, 10000];
-  const avatarColors = [
-    "#059669",
-    "#0891b2",
-    "#7c3aed",
-    "#f59e0b",
-    "#ef4444",
-    "#ec4899",
-    "#06b6d4",
-    "#84cc16",
-  ];
+  // Get user ID for socket
+  const [userId, setUserId] = useState(null);
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      setUserId(parsed._id || parsed.id);
+    }
+  }, []);
 
-  const randItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
-  const randInt = (min, max) =>
-    Math.floor(Math.random() * (max - min + 1)) + min;
+  // Socket for real-time deposit/goal events
+  const { notifications } = useSocket(userId, "user");
 
-  const generateEvent = useCallback(() => {
-    const types = ["deposit", "goal_complete", "badge", "join", "streak"];
-    const weights = [50, 10, 15, 15, 10];
-    const total = weights.reduce((a, b) => a + b, 0);
-    let r = Math.random() * total;
-    let typeIndex = 0;
-    for (let i = 0; i < types.length; i++) {
-      r -= weights[i];
-      if (r <= 0) {
-        typeIndex = i;
-        break;
+  // Fetch public stats from API
+  const fetchStats = useCallback(async () => {
+    try {
+      const res = await axiosInstance.get("/admin/dashboard");
+      if (res.data.success) {
+        const s = res.data.data.stats || {};
+        setStats({
+          members: s.totalUsers || 0,
+          todayDeposits: s.todayDeposits || 0,
+          amountToday: s.todayDepositsAmount || 0,
+          goalsToday: s.activeGoals || 0,
+          activeNow: s.activeUsers || 0,
+          depositHour: Math.round((s.todayDepositsAmount || 0) / 24),
+          goalsHour: Math.round((s.activeGoals || 0) / 24),
+          newToday: s.newUsersToday || 0,
+        });
+      }
+    } catch (err) {
+      console.error("Live feed stats error:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Fetch recent activity feed
+  const fetchFeed = useCallback(async () => {
+    try {
+      const [depositsRes, goalsRes] = await Promise.all([
+        axiosInstance.get("/deposits?limit=20&status=approved").catch(() => ({ data: { success: false } })),
+        axiosInstance.get("/goals?limit=20").catch(() => ({ data: { success: false } })),
+      ]);
+
+      const items = [];
+
+      if (depositsRes.data.success) {
+        const deposits = depositsRes.data.data?.deposits || depositsRes.data.data || [];
+        deposits.slice(0, 10).forEach((d) => {
+          items.push({
+            id: `dep_${d._id || d.id || Math.random()}`,
+            type: "deposit",
+            name: d.userName || d.fullName || "Member",
+            city: { bn: "বাংলাদেশ", en: "Bangladesh" },
+            goal: { bn: `💰 ${d.goalName || "সঞ্চয়"}`, en: `💰 ${d.goalName || "Savings"}` },
+            amount: d.amount || d.depositAmount || 1000,
+            badgeName: "",
+            days: 0,
+            initial: (d.userName || d.fullName || "M")[0]?.toUpperCase() || "M",
+            color: "#059669",
+            badge: "bg-primary/15 text-primary",
+            ageMin: Math.floor((Date.now() - new Date(d.createdAt || Date.now()).getTime()) / 60000),
+          });
+        });
+      }
+
+      if (goalsRes.data.success) {
+        const goals = goalsRes.data.data?.goals || goalsRes.data.data || [];
+        goals.filter((g) => g.progress >= 100).slice(0, 5).forEach((g) => {
+          items.push({
+            id: `goal_${g._id || g.id || Math.random()}`,
+            type: "goal_complete",
+            name: g.userName || "Member",
+            city: { bn: "বাংলাদেশ", en: "Bangladesh" },
+            goal: { bn: `🎯 ${g.goalName || "লক্ষ্য"}`, en: `🎯 ${g.goalName || "Goal"}` },
+            amount: g.targetAmount || 0,
+            badgeName: "",
+            days: 0,
+            initial: (g.userName || "M")[0]?.toUpperCase() || "M",
+            color: "#f59e0b",
+            badge: "bg-amber-500/15 text-amber-500",
+            ageMin: Math.floor((Date.now() - new Date(g.updatedAt || Date.now()).getTime()) / 60000),
+          });
+        });
+      }
+
+      // Sort by most recent, limit to 30
+      items.sort((a, b) => (a.ageMin || 0) - (b.ageMin || 0));
+      setFeedItems(items.slice(0, 30));
+    } catch (err) {
+      console.error("Live feed fetch error:", err);
+    }
+  }, []);
+
+  // Add real-time socket notification as feed item
+  useEffect(() => {
+    if (notifications.length > 0) {
+      const lastNotif = notifications[notifications.length - 1];
+      if (lastNotif.type === "deposit" || lastNotif.type === "milestone") {
+        const newItem = {
+          id: `socket_${Date.now()}`,
+          type: lastNotif.type === "deposit" ? "deposit" : "goal_complete",
+          name: "Member",
+          city: { bn: "বাংলাদেশ", en: "Bangladesh" },
+          goal: { bn: "💰 সঞ্চয়", en: "💰 Savings" },
+          amount: lastNotif.metadata?.amount || 1000,
+          badgeName: "",
+          days: 0,
+          initial: "M",
+          color: "#059669",
+          badge: "bg-primary/15 text-primary",
+          ageMin: 0,
+        };
+        setFeedItems((prev) => [newItem, ...prev].slice(0, 30));
       }
     }
-    const type = types[typeIndex];
-    const name = randItem(names);
-    const city = randItem(cities);
-    const goal = randItem(goals);
-    const amount = randItem(amounts);
-    const badgeName = randItem(badgeNames);
-    const days = randInt(30, 365);
-    const initial = name[0].toUpperCase();
-    const color = randItem(avatarColors);
-    const badgeClass = {
-      deposit: "bg-primary/15 text-primary",
-      goal_complete: "bg-amber-500/15 text-amber-500",
-      badge: "bg-purple-500/15 text-purple-500",
-      join: "bg-blue-500/15 text-blue-500",
-      streak: "bg-red-500/15 text-red-500",
-    }[type];
-    return {
-      id: ++itemId.current,
-      type,
-      name,
-      city,
-      goal,
-      amount,
-      badgeName,
-      days,
-      initial,
-      color,
-      badge: badgeClass,
-      ageMin: 0,
+  }, [notifications]);
+
+  useEffect(() => {
+    fetchStats();
+    fetchFeed();
+
+    const savedTheme = localStorage.getItem("theme");
+    setIsDark(savedTheme === "dark");
+    if (savedTheme === "dark") document.documentElement.classList.add("dark");
+
+    // Refresh feed every 30 seconds
+    intervalRef.current = setInterval(() => {
+      if (!paused) fetchFeed();
+    }, 30000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [fetchStats, fetchFeed, paused]);
 
   const getText = useCallback(
     (key, params = {}) => {
@@ -164,13 +198,13 @@ const LiveFeedPage = () => {
           },
           eventText: {
             deposit: (item) =>
-              `<strong>${item.name}</strong> (<span class="text-xs text-foreground/50">${item.city[lang]}</span>) - <span class="text-accent font-semibold">${item.goal[lang]}</span>-এ <span class="text-primary font-bold">৳${item.amount.toLocaleString()}</span> জমা দিয়েছেন`,
+              `<strong>${item.name}</strong> - <span class="text-accent font-semibold">${item.goal[lang]}</span>-এ <span class="text-primary font-bold">৳${item.amount.toLocaleString()}</span> জমা দিয়েছেন`,
             goal_complete: (item) =>
               `<strong>${item.name}</strong> তার <span class="text-accent font-semibold">${item.goal[lang]}</span> সম্পন্ন করেছেন! <strong class="text-amber-500">অভিনন্দন! 🎉</strong>`,
             badge: (item) =>
-              `<strong>${item.name}</strong> "<span class="text-purple-600 font-bold">${item.badgeName[lang]}</span>" ব্যাজ অর্জন করেছেন!`,
+              `<strong>${item.name}</strong> "<span class="text-purple-600 font-bold">${item.badgeName}</span>" ব্যাজ অর্জন করেছেন!`,
             join: (item) =>
-              `<strong>${item.name}</strong> (<span class="text-foreground/50">${item.city[lang]}</span>) Amanah-তে <strong>নতুন সদস্য</strong> হিসেবে যোগ দিয়েছেন!`,
+              `<strong>${item.name}</strong> Amanah-তে <strong>নতুন সদস্য</strong> হিসেবে যোগ দিয়েছেন!`,
             streak: (item) =>
               `<strong>${item.name}</strong> টানা <strong class="text-red-500">${item.days} দিনের</strong> সঞ্চয় স্ট্রিক বজায় রাখছেন! 🔥`,
           },
@@ -207,13 +241,13 @@ const LiveFeedPage = () => {
           },
           eventText: {
             deposit: (item) =>
-              `<strong>${item.name}</strong> (<span class="text-xs text-foreground/50">${item.city[lang]}</span>) added <span class="text-primary font-bold">৳${item.amount.toLocaleString()}</span> to <span class="text-accent font-semibold">${item.goal[lang]}</span>`,
+              `<strong>${item.name}</strong> added <span class="text-primary font-bold">৳${item.amount.toLocaleString()}</span> to <span class="text-accent font-semibold">${item.goal[lang]}</span>`,
             goal_complete: (item) =>
               `<strong>${item.name}</strong> completed <span class="text-accent font-semibold">${item.goal[lang]}</span>! <strong class="text-amber-500">Congratulations! 🎉</strong>`,
             badge: (item) =>
-              `<strong>${item.name}</strong> earned the "<span class="text-purple-600 font-bold">${item.badgeName[lang]}</span>" badge!`,
+              `<strong>${item.name}</strong> earned the "<span class="text-purple-600 font-bold">${item.badgeName}</span>" badge!`,
             join: (item) =>
-              `<strong>${item.name}</strong> (<span class="text-foreground/50">${item.city[lang]}</span>) joined Amanah as a <strong>new member</strong>!`,
+              `<strong>${item.name}</strong> joined Amanah as a <strong>new member</strong>!`,
             streak: (item) =>
               `<strong>${item.name}</strong> is keeping a <strong class="text-red-500">${item.days} day</strong> savings streak alive! 🔥`,
           },
@@ -228,7 +262,7 @@ const LiveFeedPage = () => {
   );
 
   const timeLabel = (item) =>
-    item.ageMin
+    item.ageMin > 0
       ? getText("minutesAgo", { n: item.ageMin })
       : getText("timeNow");
 
@@ -242,7 +276,6 @@ const LiveFeedPage = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, x: -20 }}
           className="flex items-center gap-3 p-3 border-b border-border hover:bg-secondary/20 transition cursor-pointer"
-          onClick={() => showNotification(item)}
         >
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0"
@@ -256,7 +289,7 @@ const LiveFeedPage = () => {
               dangerouslySetInnerHTML={{ __html: eventText }}
             />
             <div className="text-xs text-foreground/50 mt-1">
-              📍 {item.city[lang]} · {timeLabel(item)}
+              {timeLabel(item)}
             </div>
           </div>
           <div
@@ -270,62 +303,20 @@ const LiveFeedPage = () => {
     [getText, lang, timeLabel],
   );
 
-  const showNotification = (item) => {
-    const icons = {
-      deposit: "💰",
-      goal_complete: "🎯",
-      badge: "🏆",
-      join: "👋",
-      streak: "🔥",
-    };
-    const plainText = getText("eventText")
-      [item.type](item)
-      .replace(/<[^>]+>/g, "");
-    // Toast notification handled by component state
-    alert(
-      `${icons[item.type]} ${getText("badges")[item.type]}: ${plainText.substring(0, 70)}`,
-    );
-  };
-
-  const addNewEvent = useCallback(() => {
-    if (paused) return;
-    const newEvent = generateEvent();
-    setFeedItems((prev) => {
-      const newItems = [newEvent, ...prev];
-      return newItems.slice(0, 30);
-    });
-    // Update stats
-    setStats((prev) => ({
-      ...prev,
-      members: prev.members + (Math.random() < 0.3 ? 1 : 0),
-      todayDeposits: prev.todayDeposits + 1,
-      amountToday: prev.amountToday + randInt(500, 5000),
-      goalsToday: Math.random() < 0.1 ? prev.goalsToday + 1 : prev.goalsToday,
-      activeNow: Math.max(300, prev.activeNow + randInt(-5, 8)),
-      depositHour: prev.depositHour + randInt(1000, 5000),
-      goalsHour: Math.random() < 0.05 ? prev.goalsHour + 1 : prev.goalsHour,
-      newToday: Math.random() < 0.1 ? prev.newToday + 1 : prev.newToday,
-    }));
-  }, [paused, generateEvent]);
-
-  useEffect(() => {
-    const initialItems = [];
-    for (let i = 0; i < 12; i++) {
-      const item = generateEvent();
-      item.ageMin = randInt(1, 60);
-      initialItems.push(item);
-    }
-    setFeedItems(initialItems);
-
-    intervalRef.current = setInterval(addNewEvent, 2500);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [generateEvent, addNewEvent]);
-
   const filteredItems = feedItems.filter(
     (item) => currentFilter === "all" || item.type === currentFilter,
   );
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-foreground/60">Loading live feed...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -448,11 +439,21 @@ const LiveFeedPage = () => {
         <div className="bg-card border border-border rounded-xl overflow-hidden">
           <div className="divide-y divide-border">
             <AnimatePresence>
-              {filteredItems.map((item) => renderFeedItem(item))}
+              {filteredItems.length === 0 ? (
+                <div className="p-8 text-center text-foreground/50">
+                  <div className="text-4xl mb-2">📭</div>
+                  <div>{lang === "bn" ? "কোন কার্যক্রম পাওয়া যায়নি" : "No activity yet"}</div>
+                </div>
+              ) : (
+                filteredItems.map((item) => renderFeedItem(item))
+              )}
             </AnimatePresence>
           </div>
           <div className="p-4 text-center border-t border-border">
-            <button className="px-6 py-2 rounded-full bg-linear-to-r from-primary to-primary-light text-white text-sm font-bold hover:opacity-90 transition">
+            <button
+              onClick={fetchFeed}
+              className="px-6 py-2 rounded-full bg-linear-to-r from-primary to-primary-light text-white text-sm font-bold hover:opacity-90 transition"
+            >
               {getText("loadMore")}
             </button>
           </div>

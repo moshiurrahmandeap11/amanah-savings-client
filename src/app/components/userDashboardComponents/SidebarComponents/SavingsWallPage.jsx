@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Share2 } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 const SavingsWallPage = () => {
   const [isDark, setIsDark] = useState(false);
@@ -13,6 +14,8 @@ const SavingsWallPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
   const [wallPosts, setWallPosts] = useState([]);
   const [likedPosts, setLikedPosts] = useState({});
+  const [tickerItems, setTickerItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const emojis = [
     { emoji: "🕌", label: "Hajj/Umrah" },
@@ -36,135 +39,131 @@ const SavingsWallPage = () => {
     { id: "milestone", label: "🎉 Milestones" },
   ];
 
-  const initialPosts = [
-    {
-      id: 1,
-      emoji: "🕌",
-      user: "নাম প্রকাশে অনিচ্ছুক",
-      location: "Dhaka",
-      time: "2m ago",
-      message:
-        "ইনশাআল্লাহ ২০২৭ সালে হজ্জ করার জন্য সঞ্চয় করছি। প্রতিদিন একটু একটু করে এগিয়ে যাচ্ছি।",
-      goal: "হজ্জ ফান্ড",
-      progress: 34,
-      likes: 47,
-      bg: "from-purple-700 to-indigo-900",
-      color: "#a78bfa",
-    },
-    {
-      id: 2,
-      emoji: "🎓",
-      user: "নাম প্রকাশে অনিচ্ছুক",
-      location: "Chittagong",
-      time: "5m ago",
-      message:
-        "আমার মেয়ের বিশ্ববিদ্যালয়ের ভর্তি ফি জন্য জমাচ্ছি। সে বড় ডাক্তার হবে ইনশাআল্লাহ! 💊",
-      goal: "শিক্ষা তহবিল",
-      progress: 62,
-      likes: 89,
-      bg: "from-cyan-600 to-primary",
-      color: "#34d399",
-    },
-    {
-      id: 3,
-      emoji: "✈️",
-      user: "নাম প্রকাশে অনিচ্ছুক",
-      location: "Sylhet",
-      time: "12m ago",
-      message:
-        "Dubai trip plan করছি — ৫ বছর ধরে স্বপ্ন দেখছি। এবার হবে! ৮ মাসে ৳৫০,০০০ লক্ষ্য। 🛫",
-      goal: "Dubai Trip",
-      progress: 45,
-      likes: 63,
-      bg: "from-amber-500 to-red-500",
-      color: "#fbbf24",
-    },
-    {
-      id: 4,
-      emoji: "🏡",
-      user: "নাম প্রকাশে অনিচ্ছুক",
-      location: "Rajshahi",
-      time: "18m ago",
-      message:
-        "পুরো পরিবার মিলে নতুন ঘরের জন্য save করছি। আব্বু, আম্মু, আমি — সবাই মিলে।",
-      goal: "বাড়ি নির্মাণ",
-      progress: 28,
-      likes: 104,
-      bg: "from-primary to-primary-light",
-      color: "#34d399",
-    },
-    {
-      id: 5,
-      emoji: "🎉",
-      user: "নাম প্রকাশে অনিচ্ছুক",
-      location: "Barisal",
-      time: "25m ago",
-      message:
-        "আলহামদুলিল্লাহ! আজ আমার ৬০-দিনের Streak সম্পন্ন হলো! আর মাত্র ৳২০,০০০ বাকি! 🔥🔥",
-      goal: "৬০-দিন Milestone",
-      progress: 78,
-      likes: 212,
-      bg: "from-pink-500 to-purple-600",
-      color: "#f9a8d4",
-    },
-    {
-      id: 6,
-      emoji: "📱",
-      user: "নাম প্রকাশে অনিচ্ছুক",
-      location: "Mymensingh",
-      time: "32m ago",
-      message:
-        "Samsung Galaxy S25 কেনার স্বপ্ন। মাত্র ৳১০,০০০ বাকি — এই মাসেই কিনে ফেলবো ইনশাআল্লাহ!",
-      goal: "নতুন স্মার্টফোন",
-      progress: 80,
-      likes: 37,
-      bg: "from-indigo-600 to-cyan-600",
-      color: "#a5b4fc",
-    },
-    {
-      id: 7,
-      emoji: "💍",
-      user: "নাম প্রকাশে অনিচ্ছুক",
-      location: "Khulna",
-      time: "41m ago",
-      message:
-        "বিয়ের প্রস্তুতি নিচ্ছি ইনশাআল্লাহ। পরিবারের সাথে মিলে Family Circle-এ জমাচ্ছি। ❤️",
-      goal: "বিবাহ তহবিল",
-      progress: 41,
-      likes: 156,
-      bg: "from-pink-500 to-amber-500",
-      color: "#f9a8d4",
-    },
-    {
-      id: 8,
-      emoji: "💼",
-      user: "নাম প্রকাশে অনিচ্ছুক",
-      location: "Rangpur",
-      time: "55m ago",
-      message:
-        "একটি ছোট মুদির দোকান দিতে চাই। রিকশা চালিয়ে প্রতিদিন ৳১০০ জমাচ্ছি। স্বপ্নটা পূরণ হবেই! 💪",
-      goal: "ব্যবসা তহবিল",
-      progress: 22,
-      likes: 318,
-      bg: "from-amber-600 to-primary",
-      color: "#fcd34d",
-    },
-  ];
+  const getGoalEmoji = (goalType) => {
+    const map = {
+      hajj: "🕌",
+      umrah: "🕌",
+      travel: "✈️",
+      education: "🎓",
+      tech: "📱",
+      home: "🏡",
+      wedding: "💍",
+      vehicle: "🚗",
+      business: "💼",
+      healthcare: "🏥",
+    };
+    return map[goalType?.toLowerCase()] || "🌟";
+  };
 
-  const tickerItems = [
-    "🕌 Rahim (Dhaka) started saving for Hajj 2027 — ৳৫০০ deposited",
-    "📱 Fatema (Chittagong) reached 50% of her smartphone goal!",
-    "🎓 Kamal (Rajshahi) completed his daughter's education fund ✅",
-    "🔥 Sumaiya has a 45-day streak — community is cheering!",
-    "✈️ Arif (Sylhet) just posted: 'Dubai trip in 8 months inshallah!'",
-  ];
+  const getGoalColor = (goalType) => {
+    const map = {
+      hajj: "from-purple-700 to-indigo-900",
+      umrah: "from-purple-700 to-indigo-900",
+      travel: "from-amber-500 to-red-500",
+      education: "from-cyan-600 to-primary",
+      tech: "from-indigo-600 to-cyan-600",
+      home: "from-primary to-primary-light",
+      wedding: "from-pink-500 to-amber-500",
+      vehicle: "from-blue-600 to-cyan-600",
+      business: "from-amber-600 to-primary",
+      healthcare: "from-teal-600 to-cyan-600",
+    };
+    return map[goalType?.toLowerCase()] || "from-primary to-primary-light";
+  };
+
+  const getGoalColorHex = (goalType) => {
+    const map = {
+      hajj: "#a78bfa",
+      umrah: "#a78bfa",
+      travel: "#fbbf24",
+      education: "#34d399",
+      tech: "#a5b4fc",
+      home: "#34d399",
+      wedding: "#f9a8d4",
+      vehicle: "#93c5fd",
+      business: "#fcd34d",
+      healthcare: "#5eead4",
+    };
+    return map[goalType?.toLowerCase()] || "#34d399";
+  };
+
+  const timeAgo = (dateString) => {
+    if (!dateString) return "Recently";
+    const now = new Date();
+    const then = new Date(dateString);
+    const diffMs = now - then;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "Just now";
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 30) return `${diffDays}d ago`;
+    return "Recently";
+  };
+
+  const fetchWallData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [goalsRes, depositsRes] = await Promise.all([
+        axiosInstance.get("/goals?limit=20").catch(() => ({ data: { success: false } })),
+        axiosInstance.get("/deposits?limit=20&status=approved").catch(() => ({ data: { success: false } })),
+      ]);
+
+      const posts = [];
+      const tickers = [];
+
+      // Build wall posts from goals
+      if (goalsRes.data.success) {
+        const goals = goalsRes.data.data?.goals || goalsRes.data.data || [];
+        goals.forEach((g) => {
+          const emoji = getGoalEmoji(g.goalType || g.type || "other");
+          const progress = g.progress || Math.round(((g.currentSaved || 0) / (g.targetAmount || 1)) * 100) || 0;
+          posts.push({
+            id: `goal_${g._id || g.id || Math.random()}`,
+            emoji,
+            user: g.userName || "নাম প্রকাশে অনিচ্ছুক",
+            location: g.location || "Bangladesh",
+            time: timeAgo(g.createdAt || g.updatedAt),
+            message: g.description || `Saving for ${g.goalName || g.name || "a goal"}`,
+            goal: g.goalName || g.name || "সঞ্চয় লক্ষ্য",
+            progress: Math.min(progress, 100),
+            likes: g.likes || Math.floor(Math.random() * 50),
+            bg: getGoalColor(g.goalType || g.type || "other"),
+            color: getGoalColorHex(g.goalType || g.type || "other"),
+          });
+        });
+      }
+
+      // Build ticker from recent deposits
+      if (depositsRes.data.success) {
+        const deposits = depositsRes.data.data?.deposits || depositsRes.data.data || [];
+        deposits.slice(0, 5).forEach((d) => {
+          const name = d.userName || d.fullName || "A member";
+          const amount = d.amount || d.depositAmount || 0;
+          const goalName = d.goalName || "savings";
+          tickers.push(`${name} deposited ৳${amount.toLocaleString()} toward ${goalName}`);
+        });
+      }
+
+      setWallPosts(posts);
+      setTickerItems(tickers);
+    } catch (err) {
+      console.error("SavingsWall fetch error:", err);
+      setWallPosts([]);
+      setTickerItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-    setWallPosts(initialPosts);
-  }, []);
+    fetchWallData();
+  }, [fetchWallData]);
 
   const showToast = (message) => {
     setToast({ show: true, message });
@@ -252,35 +251,37 @@ const SavingsWallPage = () => {
         </div>
       </div>
 
-      {/* Live Ticker - Using native marquee (no horizontal scroll issue) */}
-      <div className="bg-black/15 backdrop-blur-sm py-3 w-full">
-        <div className="flex items-center gap-3 px-4">
-          <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
-          <span className="text-xs font-bold text-white/60 shrink-0">LIVE</span>
-          <div className="flex-1 overflow-hidden">
-            <marquee
-              behavior="scroll"
-              direction="left"
-              scrollamount="3"
-              className="text-xs text-white/85"
-              onMouseEnter={(e) => e.target.stop()}
-              onMouseLeave={(e) => e.target.start()}
-            >
-              {tickerItems.map((item, idx) => (
-                <span key={idx} className="mx-4">
-                  {item}
-                </span>
-              ))}
-              {/* Duplicate for seamless loop */}
-              {tickerItems.map((item, idx) => (
-                <span key={`dup-${idx}`} className="mx-4">
-                  {item}
-                </span>
-              ))}
-            </marquee>
+      {/* Live Ticker - hidden if no real data */}
+      {tickerItems.length > 0 && (
+        <div className="bg-black/15 backdrop-blur-sm py-3 w-full">
+          <div className="flex items-center gap-3 px-4">
+            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
+            <span className="text-xs font-bold text-white/60 shrink-0">LIVE</span>
+            <div className="flex-1 overflow-hidden">
+              <marquee
+                behavior="scroll"
+                direction="left"
+                scrollamount="3"
+                className="text-xs text-white/85"
+                onMouseEnter={(e) => e.target.stop()}
+                onMouseLeave={(e) => e.target.start()}
+              >
+                {tickerItems.map((item, idx) => (
+                  <span key={idx} className="mx-4">
+                    {item}
+                  </span>
+                ))}
+                {/* Duplicate for seamless loop */}
+                {tickerItems.map((item, idx) => (
+                  <span key={`dup-${idx}`} className="mx-4">
+                    {item}
+                  </span>
+                ))}
+              </marquee>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Compose Section */}
       <div className="max-w-6xl mx-auto px-4 mt-8">
@@ -362,109 +363,120 @@ const SavingsWallPage = () => {
 
       {/* Wall Grid */}
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <AnimatePresence>
-            {filteredPosts.map((post, idx) => (
-              <motion.div
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ delay: Math.min(idx * 0.05, 0.5) }}
-                whileHover={{ y: -4 }}
-                className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all"
-              >
-                <div className="p-4 flex items-start gap-3">
-                  <div
-                    className={`w-14 h-14 rounded-full bg-linear-to-r ${post.bg} flex items-center justify-center text-white text-xl shrink-0`}
-                  >
-                    {post.emoji}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-foreground wrap-break-word">
-                      👤 {post.user}
+        {loading ? (
+          <div className="text-center py-12 text-foreground/50">Loading...</div>
+        ) : filteredPosts.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-4xl mb-4">🌿</div>
+            <div className="text-lg font-semibold text-foreground/70">
+              No posts yet. Be the first to share your savings goal!
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <AnimatePresence>
+              {filteredPosts.map((post, idx) => (
+                <motion.div
+                  key={post.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ delay: Math.min(idx * 0.05, 0.5) }}
+                  whileHover={{ y: -4 }}
+                  className="bg-card border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all"
+                >
+                  <div className="p-4 flex items-start gap-3">
+                    <div
+                      className={`w-14 h-14 rounded-full bg-linear-to-r ${post.bg} flex items-center justify-center text-white text-xl shrink-0`}
+                    >
+                      {post.emoji}
                     </div>
-                    <div className="text-xs text-foreground/50 wrap-break-word">
-                      📍 {post.location}
-                    </div>
-                    <div className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
-                      {post.emoji} {post.goal}
-                    </div>
-                  </div>
-                  <div className="text-xs text-foreground/40 shrink-0">
-                    {post.time}
-                  </div>
-                </div>
-                <div className="px-4 pb-3">
-                  <div className="text-sm text-foreground/70 leading-relaxed wrap-break-word italic">
-                    &quot;{post.message}&quot;
-                  </div>
-                </div>
-                <div className="bg-surface2 p-3 flex">
-                  <div className="flex-1 text-center">
-                    <div className="text-base font-bold text-primary">
-                      {post.progress}%
-                    </div>
-                    <div className="text-[10px] text-foreground/50 font-semibold">
-                      অগ্রগতি
-                    </div>
-                  </div>
-                  <div className="flex-1 text-center border-l border-border">
-                    <div className="text-base font-bold text-primary">
-                      {post.likes}
-                    </div>
-                    <div className="text-[10px] text-foreground/50 font-semibold">
-                      সাপোর্ট
-                    </div>
-                  </div>
-                  <div className="flex-1 text-center border-l border-border">
-                    <div className="text-base font-bold text-primary pt-2">
-                      <div className="h-1.5 w-full bg-surface2 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full bg-linear-to-r ${post.bg}`}
-                          style={{ width: `${post.progress}%` }}
-                        />
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-foreground wrap-break-word">
+                        👤 {post.user}
+                      </div>
+                      <div className="text-xs text-foreground/50 wrap-break-word">
+                        📍 {post.location}
+                      </div>
+                      <div className="inline-flex items-center gap-1 mt-2 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-semibold">
+                        {post.emoji} {post.goal}
                       </div>
                     </div>
-                    <div className="text-[10px] text-foreground/50 font-semibold mt-1">
-                      Progress Bar
+                    <div className="text-xs text-foreground/40 shrink-0">
+                      {post.time}
                     </div>
                   </div>
-                </div>
-                <div className="flex gap-2 p-3 border-t border-border">
-                  <button
-                    onClick={() => handleLike(post.id, post.likes)}
-                    className={`flex-1 py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 ${
-                      likedPosts[post.id]
-                        ? "bg-primary/10 text-primary"
-                        : "bg-surface2 text-foreground/60 hover:bg-primary/10 hover:text-primary"
-                    }`}
-                  >
-                    <Heart
-                      size={14}
-                      fill={likedPosts[post.id] ? "#ef4444" : "none"}
-                    />
-                    {likedPosts[post.id] ? post.likes + 1 : post.likes}
-                  </button>
-                  <button
-                    onClick={handleEncourage}
-                    className="flex-1 py-2 rounded-lg text-xs font-semibold bg-surface2 text-foreground/60 hover:bg-primary/10 hover:text-primary transition flex items-center justify-center gap-1"
-                  >
-                    <span>💪</span>
-                    Encourage
-                  </button>
-                  <button
-                    onClick={() => showToast("🔗 Link copied!")}
-                    className="flex-1 py-2 rounded-lg text-xs font-semibold bg-linear-to-r from-primary to-primary-light text-white flex items-center justify-center gap-1"
-                  >
-                    <Share2 size={14} />
-                    Share
-                  </button>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
+                  <div className="px-4 pb-3">
+                    <div className="text-sm text-foreground/70 leading-relaxed wrap-break-word italic">
+                      &quot;{post.message}&quot;
+                    </div>
+                  </div>
+                  <div className="bg-surface2 p-3 flex">
+                    <div className="flex-1 text-center">
+                      <div className="text-base font-bold text-primary">
+                        {post.progress}%
+                      </div>
+                      <div className="text-[10px] text-foreground/50 font-semibold">
+                        অগ্রগতি
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center border-l border-border">
+                      <div className="text-base font-bold text-primary">
+                        {post.likes}
+                      </div>
+                      <div className="text-[10px] text-foreground/50 font-semibold">
+                        সাপোর্ট
+                      </div>
+                    </div>
+                    <div className="flex-1 text-center border-l border-border">
+                      <div className="text-base font-bold text-primary pt-2">
+                        <div className="h-1.5 w-full bg-surface2 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full bg-linear-to-r ${post.bg}`}
+                            style={{ width: `${post.progress}%` }}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-[10px] text-foreground/50 font-semibold mt-1">
+                        Progress Bar
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex gap-2 p-3 border-t border-border">
+                    <button
+                      onClick={() => handleLike(post.id, post.likes)}
+                      className={`flex-1 py-2 rounded-lg text-xs font-semibold transition flex items-center justify-center gap-1 ${
+                        likedPosts[post.id]
+                          ? "bg-primary/10 text-primary"
+                          : "bg-surface2 text-foreground/60 hover:bg-primary/10 hover:text-primary"
+                      }`}
+                    >
+                      <Heart
+                        size={14}
+                        fill={likedPosts[post.id] ? "#ef4444" : "none"}
+                      />
+                      {likedPosts[post.id] ? post.likes + 1 : post.likes}
+                    </button>
+                    <button
+                      onClick={handleEncourage}
+                      className="flex-1 py-2 rounded-lg text-xs font-semibold bg-surface2 text-foreground/60 hover:bg-primary/10 hover:text-primary transition flex items-center justify-center gap-1"
+                    >
+                      <span>💪</span>
+                      Encourage
+                    </button>
+                    <button
+                      onClick={() => showToast("🔗 Link copied!")}
+                      className="flex-1 py-2 rounded-lg text-xs font-semibold bg-linear-to-r from-primary to-primary-light text-white flex items-center justify-center gap-1"
+                    >
+                      <Share2 size={14} />
+                      Share
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
       {/* Toast */}

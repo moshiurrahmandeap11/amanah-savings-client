@@ -8,7 +8,30 @@ import useSocket from "../../../hooks/useSocket";
 const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [currentLang, setCurrentLang] = useState("en");
-  const [fraudCount] = useState(5);
+  const [fraudCount, setFraudCount] = useState(0);
+  
+  // Fetch real fraud count from API
+  useEffect(() => {
+    const fetchFraudCount = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        const res = await fetch("https://server-amanah-savings.onrender.com/api/admin/security", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.success && data.data?.securityEvents) {
+          const count = data.data.securityEvents.filter(
+            (e) => e.severity === "high" || e.severity === "critical"
+          ).length;
+          setFraudCount(count);
+        }
+      } catch (err) {
+        console.error("Fraud count fetch error:", err);
+      }
+    };
+    fetchFraudCount();
+  }, []);
   
   // Admin socket for real-time alerts (admin role, no specific userId needed for admin room)
   const { notifications: adminNotifications, isConnected } = useSocket("admin", "admin");

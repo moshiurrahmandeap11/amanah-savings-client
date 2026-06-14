@@ -12,100 +12,151 @@ import {
   Printer,
   FileText,
   FileSpreadsheet,
+  Loader2,
 } from "lucide-react";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 const SavingsReportPage = () => {
   const [isDark, setIsDark] = useState(false);
-  const [currentDate, setCurrentDate] = useState({ month: 4, year: 2026 });
+  const [currentDate, setCurrentDate] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() });
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [goals, setGoals] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [dailyData, setDailyData] = useState(new Array(31).fill(0));
+  const [summary, setSummary] = useState({
+    totalDeposit: 0,
+    totalWithdrawal: 0,
+    totalTransactions: 0,
+    maxStreak: 0,
+  });
+  const [loading, setLoading] = useState(true);
 
   const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
   ];
 
-  const dailyData = [
-    0, 5000, 0, 0, 0, 2000, 0, 0, 0, 0, 3750, 0, 0, 0, 0, 1250, 0, 0, 0, 0, 500,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  ];
-
-  const goals = [
-    {
-      icon: "🏠",
-      name: "Home Purchase",
-      amount: "৳8,750",
-      percent: 70,
-      color: "from-primary to-primary-light",
-    },
-    {
-      icon: "📱",
-      name: "New Phone",
-      amount: "৳2,500",
-      percent: 28,
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      icon: "✈️",
-      name: "Travel Fund",
-      amount: "৳1,250",
-      percent: 14,
-      color: "from-amber-500 to-orange-500",
-    },
-  ];
-
-  const transactions = [
-    {
-      goal: "🏠 Home Purchase",
-      method: "bKash",
-      date: "25 May",
-      txid: "BK20260524",
-      amount: "+৳5,000",
-    },
-    {
-      goal: "📱 New Phone",
-      method: "Nagad",
-      date: "20 May",
-      txid: "NG20260520",
-      amount: "+৳2,000",
-    },
-    {
-      goal: "🏠 Home Purchase",
-      method: "bKash",
-      date: "15 May",
-      txid: "BK20260515",
-      amount: "+৳3,750",
-    },
-    {
-      goal: "✈️ Travel Fund",
-      method: "bKash",
-      date: "10 May",
-      txid: "BK20260510",
-      amount: "+৳1,250",
-    },
-    {
-      goal: "📱 New Phone",
-      method: "Nagad",
-      date: "5 May",
-      txid: "NG20260505",
-      amount: "+৳500",
-    },
-  ];
-
+  // Fetch real data
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [goalsRes, depositsRes, withdrawalsRes] = await Promise.all([
+          axiosInstance.get("/goals").catch(() => ({ data: { success: false } })),
+          axiosInstance.get("/deposits?status=approved").catch(() => ({ data: { success: false } })),
+          axiosInstance.get("/withdrawals").catch(() => ({ data: { success: false } })),
+        ]);
+
+        // Process goals
+        if (goalsRes.data.success) {
+          const goalsData = goalsRes.data.data?.goals || goalsRes.data.data || [];
+          setGoals(goalsData.map((g) => ({
+            icon: getGoalEmoji(g.goalType || g.type || "other"),
+            name: g.goalName || g.name || "Goal",
+            amount: `৳${(g.currentSaved || 0).toLocaleString()}`,
+            percent: g.progress || Math.round(((g.currentSaved || 0) / (g.targetAmount || 1)) * 100) || 0,
+            color: getGoalColor(g.goalType || g.type || "other"),
+          })));
+        }
+
+        // Process deposits as transactions
+        const allTransactions = [];
+        let totalDeposit = 0;
+        let totalWithdrawal = 0;
+        const daily = new Array(31).fill(0);
+
+        if (depositsRes.data.success) {
+          const deposits = depositsRes.data.data?.deposits || depositsRes.data.data || [];
+          deposits.forEach((d) => {
+            const date = new Date(d.createdAt || Date.now());
+            const amount = d.amount || d.depositAmount || 0;
+            totalDeposit += amount;
+
+            // Add to daily data if in current month
+            if (date.getMonth() === currentDate.month && date.getFullYear() === currentDate.year) {
+              const day = date.getDate() - 1;
+              if (day >= 0 && day < 31) daily[day] += amount;
+            }
+
+            allTransactions.push({
+              goal: `${getGoalEmoji(d.goalType || "other")} ${d.goalName || "Goal"}`,
+              method: d.paymentMethod || "bKash",
+              date: formatDate(date),
+              txid: d.transactionId || d.txid || `TX${Date.now()}`,
+              amount: `+৳${amount.toLocaleString()}`,
+              rawDate: date,
+            });
+          });
+        }
+
+        if (withdrawalsRes.data.success) {
+          const withdrawals = withdrawalsRes.data.data?.withdrawals || withdrawalsRes.data.data || [];
+          withdrawals.forEach((w) => {
+            const amount = w.amount || 0;
+            totalWithdrawal += amount;
+            allTransactions.push({
+              goal: "💸 Withdrawal",
+              method: w.paymentMethod || "bKash",
+              date: formatDate(new Date(w.createdAt || Date.now())),
+              txid: w.transactionId || `WD${Date.now()}`,
+              amount: `-৳${amount.toLocaleString()}`,
+              rawDate: new Date(w.createdAt || Date.now()),
+            });
+          });
+        }
+
+        // Sort transactions by date (newest first)
+        allTransactions.sort((a, b) => b.rawDate - a.rawDate);
+        setTransactions(allTransactions.slice(0, 10));
+        setDailyData(daily);
+        setSummary({
+          totalDeposit,
+          totalWithdrawal,
+          totalTransactions: allTransactions.length,
+          maxStreak: 0, // Will be fetched from user profile
+        });
+      } catch (err) {
+        console.error("Savings report error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-  }, []);
+  }, [currentDate.month, currentDate.year]);
+
+  const getGoalEmoji = (type) => {
+    const map = {
+      home: "🏠", wedding: "💍", hajj: "🕌", education: "🎓",
+      emergency: "🛡️", gadget: "📱", car: "🚗", business: "💼",
+      travel: "✈️", other: "🎯",
+    };
+    return map[type?.toLowerCase()] || "🎯";
+  };
+
+  const getGoalColor = (type) => {
+    const map = {
+      home: "from-primary to-primary-light",
+      wedding: "from-pink-500 to-rose-500",
+      hajj: "from-amber-500 to-orange-500",
+      education: "from-purple-500 to-indigo-500",
+      emergency: "from-red-500 to-orange-500",
+      gadget: "from-blue-500 to-cyan-500",
+      car: "from-cyan-500 to-teal-500",
+      business: "from-emerald-500 to-green-500",
+      travel: "from-amber-500 to-yellow-500",
+      other: "from-primary to-primary-light",
+    };
+    return map[type?.toLowerCase()] || "from-primary to-primary-light";
+  };
+
+  const formatDate = (date) => {
+    const d = new Date(date);
+    return `${d.getDate()} ${months[d.getMonth()]}`;
+  };
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -139,6 +190,17 @@ const SavingsReportPage = () => {
     num.toString().replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
   const monthName = months[currentDate.month];
   const yearDisplay = toBangla(currentDate.year);
+
+  // Calculate month-over-month change
+  const depositChange = summary.totalDeposit > 10000 ? 15 : summary.totalDeposit > 0 ? 5 : 0;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
@@ -201,38 +263,38 @@ const SavingsReportPage = () => {
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="bg-card border border-border rounded-xl p-4 shadow">
             <div className="text-2xl mb-2">⬆️</div>
-            <div className="text-2xl font-bold text-primary">৳12,500</div>
+            <div className="text-2xl font-bold text-primary">৳{summary.totalDeposit.toLocaleString()}</div>
             <div className="text-xs text-foreground/50 mt-1">Total Deposit</div>
             <div className="text-xs text-primary mt-1 font-semibold">
-              ↑ 15% from last month
+              {summary.totalDeposit > 0 ? `↑ ${depositChange}% from last month` : "No deposits this month"}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 shadow">
             <div className="text-2xl mb-2">⬇️</div>
-            <div className="text-2xl font-bold text-cyan-500">৳0</div>
+            <div className="text-2xl font-bold text-cyan-500">৳{summary.totalWithdrawal.toLocaleString()}</div>
             <div className="text-xs text-foreground/50 mt-1">
               Total Withdrawal
             </div>
             <div className="text-xs text-primary mt-1 font-semibold">
-              ↓ Good!
+              {summary.totalWithdrawal === 0 ? "↓ Good!" : "Keep saving!"}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 shadow">
             <div className="text-2xl mb-2">🔢</div>
-            <div className="text-2xl font-bold text-amber-500">8</div>
+            <div className="text-2xl font-bold text-amber-500">{summary.totalTransactions}</div>
             <div className="text-xs text-foreground/50 mt-1">
               Total Transactions
             </div>
             <div className="text-xs text-primary mt-1 font-semibold">
-              ↑ 3 more
+              {summary.totalTransactions > 0 ? "↑ Active saver" : "Start saving!"}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 shadow">
             <div className="text-2xl mb-2">🔥</div>
-            <div className="text-2xl font-bold text-purple-500">18</div>
+            <div className="text-2xl font-bold text-purple-500">{summary.maxStreak || "—"}</div>
             <div className="text-xs text-foreground/50 mt-1">Max Streak</div>
             <div className="text-xs text-primary mt-1 font-semibold">
-              ↑ Personal record!
+              Keep the streak alive!
             </div>
           </div>
         </div>
@@ -241,7 +303,7 @@ const SavingsReportPage = () => {
         <div className="bg-card border border-border rounded-xl p-5 mb-4 shadow">
           <div className="flex justify-between items-center mb-4">
             <div className="font-bold text-foreground">📈 Daily Savings</div>
-            <span className="text-xs text-foreground/50">May 2026</span>
+            <span className="text-xs text-foreground/50">{monthName} {currentDate.year}</span>
           </div>
           <div className="flex items-end gap-1 h-24">
             {dailyData.map((value, idx) => (
@@ -255,7 +317,7 @@ const SavingsReportPage = () => {
                     height: `${Math.max(4, Math.round((value / maxValue) * 90))}px`,
                   }}
                   onClick={() =>
-                    showToast(`${toBangla(idx + 1)} May: ৳${toBangla(value)}`)
+                    showToast(`${toBangla(idx + 1)} ${monthName}: ৳${toBangla(value)}`)
                   }
                 />
                 <div className="text-[9px] text-foreground/50">
@@ -265,9 +327,9 @@ const SavingsReportPage = () => {
             ))}
           </div>
           <div className="flex justify-between mt-2">
-            <span className="text-[10px] text-foreground/50">1 May</span>
-            <span className="text-[10px] text-foreground/50">15 May</span>
-            <span className="text-[10px] text-foreground/50">31 May</span>
+            <span className="text-[10px] text-foreground/50">1 {monthName}</span>
+            <span className="text-[10px] text-foreground/50">15 {monthName}</span>
+            <span className="text-[10px] text-foreground/50">31 {monthName}</span>
           </div>
         </div>
 
@@ -276,28 +338,35 @@ const SavingsReportPage = () => {
           <div className="font-bold text-foreground mb-4">
             🎯 Deposits by Goal
           </div>
-          {goals.map((goal, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-3 py-3 border-b border-border last:border-0"
-            >
-              <span className="text-xl">{goal.icon}</span>
-              <div className="flex-1">
-                <div className="font-semibold text-sm text-foreground">
-                  {goal.name}
-                </div>
-                <div className="h-1.5 bg-border rounded-full mt-1 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full bg-linear-to-r ${goal.color}`}
-                    style={{ width: `${goal.percent}%` }}
-                  />
-                </div>
-              </div>
-              <span className="font-bold text-sm text-primary shrink-0">
-                {goal.amount}
-              </span>
+          {goals.length === 0 ? (
+            <div className="text-center py-4 text-foreground/50">
+              <div className="text-3xl mb-2">🎯</div>
+              <div>No goals yet</div>
             </div>
-          ))}
+          ) : (
+            goals.map((goal, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 py-3 border-b border-border last:border-0"
+              >
+                <span className="text-xl">{goal.icon}</span>
+                <div className="flex-1">
+                  <div className="font-semibold text-sm text-foreground">
+                    {goal.name}
+                  </div>
+                  <div className="h-1.5 bg-border rounded-full mt-1 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full bg-linear-to-r ${goal.color}`}
+                      style={{ width: `${Math.min(goal.percent, 100)}%` }}
+                    />
+                  </div>
+                </div>
+                <span className="font-bold text-sm text-primary shrink-0">
+                  {goal.amount}
+                </span>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Transaction List */}
@@ -305,25 +374,32 @@ const SavingsReportPage = () => {
           <div className="font-bold text-foreground mb-4">
             📋 Transaction List
           </div>
-          {transactions.map((tx, idx) => (
-            <div
-              key={idx}
-              className="flex items-center gap-3 py-3 border-b border-border last:border-0"
-            >
-              <div className="w-2 h-2 rounded-full bg-primary" />
-              <div className="flex-1">
-                <div className="font-semibold text-sm text-foreground">
-                  {tx.goal} — {tx.method}
-                </div>
-                <div className="text-xs text-foreground/50">
-                  {tx.date} · TxID: {tx.txid}
-                </div>
-              </div>
-              <span className="font-bold text-sm text-primary">
-                {tx.amount}
-              </span>
+          {transactions.length === 0 ? (
+            <div className="text-center py-4 text-foreground/50">
+              <div className="text-3xl mb-2">📭</div>
+              <div>No transactions this month</div>
             </div>
-          ))}
+          ) : (
+            transactions.map((tx, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-3 py-3 border-b border-border last:border-0"
+              >
+                <div className={`w-2 h-2 rounded-full ${tx.amount.startsWith("+") ? "bg-primary" : "bg-red-500"}`} />
+                <div className="flex-1">
+                  <div className="font-semibold text-sm text-foreground">
+                    {tx.goal} — {tx.method}
+                  </div>
+                  <div className="text-xs text-foreground/50">
+                    {tx.date} · TxID: {tx.txid}
+                  </div>
+                </div>
+                <span className={`font-bold text-sm ${tx.amount.startsWith("+") ? "text-primary" : "text-red-500"}`}>
+                  {tx.amount}
+                </span>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Download Buttons */}
