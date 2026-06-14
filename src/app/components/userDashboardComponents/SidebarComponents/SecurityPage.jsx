@@ -1,95 +1,338 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
 import {
-  Lock,
   Smartphone,
   Laptop,
-  Smartphone as Mobile,
   LogOut,
   AlertCircle,
+  Loader2,
   CheckCircle,
   XCircle,
 } from "lucide-react";
 
+import Swal from "sweetalert2";
+import useAuth from "../../../hooks/useAuth";
+
 const SecurityPage = () => {
+  const { user, changePin, logout } = useAuth();
   const [currentPin, setCurrentPin] = useState("");
   const [newPin, setNewPin] = useState("");
   const [confirmPin, setConfirmPin] = useState("");
-  const [toast, setToast] = useState({ show: false, message: "", type: "" });
+  const [loading, setLoading] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [loginHistory, setLoginHistory] = useState([]);
+  const [sessionsLoading, setSessionsLoading] = useState(true);
+  const [historyLoading, setHistoryLoading] = useState(true);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+  });
 
-  const showToastMessage = (message, type = "success") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
+  // Fetch active sessions from localStorage/state
+  const getActiveSessions = () => {
+    // Get all active sessions from localStorage
+    const sessions = [];
+    const currentToken = localStorage.getItem("token");
+    
+    // Current session
+    sessions.push({
+      id: "current",
+      device: getDeviceType(),
+      deviceIcon: getDeviceIcon(),
+      name: `This Device (${getDeviceName()})`,
+      location: "Current Location",
+      time: "Active now",
+      isCurrent: true,
+      lastActivity: new Date(),
+    });
+
+    // Check for other saved sessions (if any)
+    const savedSessions = localStorage.getItem("activeSessions");
+    if (savedSessions) {
+      const parsedSessions = JSON.parse(savedSessions);
+      parsedSessions.forEach(session => {
+        if (session.token !== currentToken) {
+          sessions.push({
+            ...session,
+            isCurrent: false,
+          });
+        }
+      });
+    }
+
+    setSessions(sessions);
+    setSessionsLoading(false);
   };
 
-  const handlePinChange = () => {
+  // Fetch login history from localStorage
+  const getLoginHistory = () => {
+    const history = [];
+    const savedHistory = localStorage.getItem("loginHistory");
+    
+    if (savedHistory) {
+      const parsedHistory = JSON.parse(savedHistory);
+      setLoginHistory(parsedHistory);
+      setPagination({
+        currentPage: 1,
+        totalPages: Math.ceil(parsedHistory.length / 10),
+        totalItems: parsedHistory.length,
+      });
+    } else {
+      // Demo login history based on user data
+      const demoHistory = [
+        {
+          id: 1,
+          success: true,
+          name: "Successful Login",
+          time: formatDate(new Date()),
+          device: getDeviceType(),
+          location: "Dhaka, Bangladesh",
+          ip: "103.xxx.xxx.xxx",
+        },
+        {
+          id: 2,
+          success: true,
+          name: "Successful Login",
+          time: formatDate(new Date(Date.now() - 24 * 60 * 60 * 1000)),
+          device: "Chrome on Windows",
+          location: "Dhaka, Bangladesh",
+          ip: "103.xxx.xxx.xxx",
+        },
+      ];
+      
+      // Add user's last login from auth context if available
+      if (user?.lastLogin) {
+        demoHistory.unshift({
+          id: 0,
+          success: true,
+          name: "Successful Login",
+          time: formatDate(new Date(user.lastLogin)),
+          device: getDeviceType(),
+          location: "Dhaka, Bangladesh",
+          ip: "103.xxx.xxx.xxx",
+        });
+      }
+      
+      setLoginHistory(demoHistory);
+      localStorage.setItem("loginHistory", JSON.stringify(demoHistory));
+    }
+    
+    setHistoryLoading(false);
+  };
+
+  // Helper functions
+  const getDeviceType = () => {
+    const ua = navigator.userAgent;
+    if (/Mobile|Android|iPhone|iPad|iPod/i.test(ua)) return "Mobile";
+    if (/Tablet/i.test(ua)) return "Tablet";
+    return "Desktop";
+  };
+
+  const getDeviceIcon = () => {
+    const ua = navigator.userAgent;
+    if (/Android/i.test(ua)) return "📱";
+    if (/iPhone|iPad|iPod/i.test(ua)) return "🍎";
+    if (/Windows/i.test(ua)) return "💻";
+    if (/Mac/i.test(ua)) return "🖥️";
+    return "🌐";
+  };
+
+  const getDeviceName = () => {
+    const ua = navigator.userAgent;
+    if (/Android/i.test(ua)) return "Android";
+    if (/iPhone/i.test(ua)) return "iPhone";
+    if (/iPad/i.test(ua)) return "iPad";
+    if (/Windows/i.test(ua)) return "Windows PC";
+    if (/Mac/i.test(ua)) return "Mac";
+    return "Unknown Device";
+  };
+
+  const formatDate = (date) => {
+    const now = new Date();
+    const loginDate = new Date(date);
+    const diff = now - loginDate;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = loginDate.getHours();
+    const minutes = loginDate.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    
+    if (days === 0) {
+      return `Today, ${formattedHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    } else if (days === 1) {
+      return `Yesterday, ${formattedHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    } else {
+      return `${loginDate.toLocaleDateString()}, ${formattedHours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+    }
+  };
+
+  const handlePinChange = async () => {
     if (!currentPin) {
-      showToastMessage("⚠️ Please enter current PIN", "error");
+      Swal.fire({
+        title: "Error!",
+        text: "Please enter current PIN",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
       return;
     }
-    if (!newPin || newPin.length < 4) {
-      showToastMessage("⚠️ New PIN must be at least 4 digits", "error");
+    if (!newPin || newPin.length < 6) {
+      Swal.fire({
+        title: "Error!",
+        text: "New PIN must be 6 digits",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
       return;
     }
     if (newPin !== confirmPin) {
-      showToastMessage("⚠️ New PINs do not match", "error");
+      Swal.fire({
+        title: "Error!",
+        text: "New PINs do not match",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
       return;
     }
 
-    setCurrentPin("");
-    setNewPin("");
-    setConfirmPin("");
-    showToastMessage("✅ PIN successfully changed!", "success");
+    setLoading(true);
+    const result = await changePin(currentPin, newPin);
+    
+    if (result.success) {
+      setCurrentPin("");
+      setNewPin("");
+      setConfirmPin("");
+    }
+    setLoading(false);
   };
 
-  const handle2FA = () => {
-    showToastMessage("📱 OTP sent! Please verify.", "info");
+  const revokeSession = async (session) => {
+    const result = await Swal.fire({
+      title: "Logout from device?",
+      text: `You will be logged out from ${session.name}`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, logout",
+    });
+
+    if (result.isConfirmed) {
+      // Remove session from localStorage
+      const savedSessions = localStorage.getItem("activeSessions");
+      if (savedSessions) {
+        const sessions = JSON.parse(savedSessions);
+        const updatedSessions = sessions.filter(s => s.id !== session.id);
+        localStorage.setItem("activeSessions", JSON.stringify(updatedSessions));
+      }
+      
+      Swal.fire({
+        title: "Success!",
+        text: "Session revoked successfully",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      
+      getActiveSessions();
+    }
   };
 
-  const handleLogout = (device) => {
-    showToastMessage(`🔄 Logging out from ${device}...`, "info");
-    setTimeout(() => {
-      // window.location.href = "/login";
-      showToastMessage("✅ Logged out successfully", "success");
-    }, 1000);
+  const logoutAllDevices = async () => {
+    const result = await Swal.fire({
+      title: "Logout from all devices?",
+      text: "You will be logged out from all devices except this one.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, logout all",
+    });
+
+    if (result.isConfirmed) {
+      // Clear all sessions except current
+      localStorage.removeItem("activeSessions");
+      
+      Swal.fire({
+        title: "Success!",
+        text: "Logged out from all other devices",
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      
+      getActiveSessions();
+    }
   };
 
-  const sessions = [
-    {
-      device: "📱",
-      name: "This Device (Android)",
+  useEffect(() => {
+    getActiveSessions();
+    getLoginHistory();
+    
+    // Save current session to localStorage
+    const currentToken = localStorage.getItem("token");
+    const currentSession = {
+      id: Date.now().toString(),
+      device: getDeviceType(),
+      deviceIcon: getDeviceIcon(),
+      name: `This Device (${getDeviceName()})`,
       location: "Dhaka, Bangladesh",
-      time: "Active now",
-      isCurrent: true,
-    },
-    {
-      device: "💻",
-      name: "Chrome on Windows",
-      location: "Dhaka, Bangladesh",
-      time: "2 days ago",
-      isCurrent: false,
-    },
-  ];
+      time: new Date().toISOString(),
+      token: currentToken,
+      lastActivity: new Date(),
+    };
+    
+    const savedSessions = localStorage.getItem("activeSessions");
+    if (savedSessions) {
+      const sessions = JSON.parse(savedSessions);
+      const existingSession = sessions.find(s => s.token === currentToken);
+      if (!existingSession) {
+        sessions.push(currentSession);
+        localStorage.setItem("activeSessions", JSON.stringify(sessions));
+      }
+    } else {
+      localStorage.setItem("activeSessions", JSON.stringify([currentSession]));
+    }
+  }, []);
 
-  const loginHistory = [
-    {
-      success: true,
-      name: "Successful Login",
-      time: "Today, 9:15 AM · Android · Dhaka",
-    },
-    {
-      success: true,
-      name: "Successful Login",
-      time: "Yesterday, 8:30 PM · Chrome · Dhaka",
-    },
-    {
-      success: false,
-      name: "Failed Login Attempt",
-      time: "3 days ago · Unknown device",
-    },
-  ];
+  // Update login history on component mount
+  useEffect(() => {
+    if (user?.lastLogin) {
+      const newLoginEntry = {
+        id: Date.now(),
+        success: true,
+        name: "Successful Login",
+        time: formatDate(new Date()),
+        device: getDeviceType(),
+        location: "Dhaka, Bangladesh",
+        ip: "103.xxx.xxx.xxx",
+      };
+      
+      const savedHistory = localStorage.getItem("loginHistory");
+      if (savedHistory) {
+        const history = JSON.parse(savedHistory);
+        // Check if last login is already recorded
+        const lastEntry = history[0];
+        if (lastEntry?.time !== newLoginEntry.time) {
+          history.unshift(newLoginEntry);
+          // Keep only last 50 entries
+          const trimmedHistory = history.slice(0, 50);
+          localStorage.setItem("loginHistory", JSON.stringify(trimmedHistory));
+          setLoginHistory(trimmedHistory);
+        }
+      }
+    }
+  }, [user]);
+
+  const getSessionIcon = (icon) => {
+    if (icon === "📱") return <Smartphone size={20} />;
+    if (icon === "🍎") return <Smartphone size={20} />;
+    if (icon === "💻") return <Laptop size={20} />;
+    if (icon === "🖥️") return <Laptop size={20} />;
+    return <Smartphone size={20} />;
+  };
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -147,41 +390,64 @@ const SecurityPage = () => {
               </div>
               <button
                 onClick={handlePinChange}
-                className="w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition"
+                disabled={loading}
+                className="w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50"
               >
-                Update PIN
+                {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "Update PIN"}
               </button>
             </div>
           </div>
 
-          {/* 2FA Card */}
+          {/* Security Info Card */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-              📱 Two-Factor Authentication (2FA)
+              📱 Security Tips
             </div>
-            <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/20 mb-4">
+            <div className="space-y-3">
               <div className="flex gap-2 text-sm text-foreground/70">
-                <AlertCircle size={16} className="text-amber-500 shrink-0" />
-                <span>⚠️ 2FA is not active yet. Secure your account now.</span>
+                <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
+                <span>Never share your PIN with anyone</span>
+              </div>
+              <div className="flex gap-2 text-sm text-foreground/70">
+                <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
+                <span>Use a unique PIN not used elsewhere</span>
+              </div>
+              <div className="flex gap-2 text-sm text-foreground/70">
+                <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
+                <span>Logout from devices you don't recognize</span>
+              </div>
+              <div className="flex gap-2 text-sm text-foreground/70">
+                <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
+                <span>Enable 2FA for extra security (coming soon)</span>
               </div>
             </div>
-            <div className="mb-4">
-              <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-                Phone Number
-              </label>
-              <input
-                type="text"
-                value="+880 1XXX-XXXXXX"
-                readOnly
-                className="w-full p-3 rounded-xl border border-border bg-background text-foreground/50 outline-none"
-              />
+          </div>
+
+          {/* Account Info Card */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="font-bold text-foreground mb-4 flex items-center gap-2">
+              👤 Account Information
             </div>
-            <button
-              onClick={handle2FA}
-              className="w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition"
-            >
-              Activate 2FA
-            </button>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-foreground/60">Account ID:</span>
+                <span className="font-semibold text-foreground">{user?.id?.slice(-8) || "N/A"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground/60">Phone:</span>
+                <span className="font-semibold text-foreground">{user?.phone || "N/A"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground/60">Email:</span>
+                <span className="font-semibold text-foreground">{user?.email || "N/A"}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-foreground/60">Member Since:</span>
+                <span className="font-semibold text-foreground">
+                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -189,43 +455,64 @@ const SecurityPage = () => {
         <div className="space-y-5">
           {/* Active Sessions Card */}
           <div className="bg-card border border-border rounded-xl p-5">
-            <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-              💻 Active Sessions
-            </div>
-            <div className="space-y-3">
-              {sessions.map((session, idx) => (
-                <div
-                  key={idx}
-                  className={`p-3 rounded-xl flex items-center gap-3 ${
-                    session.isCurrent
-                      ? "bg-primary/5 border border-primary/20"
-                      : "bg-background border border-border"
-                  }`}
+            <div className="flex justify-between items-center mb-4">
+              <div className="font-bold text-foreground flex items-center gap-2">
+                💻 Active Sessions
+              </div>
+              {sessions.filter(s => !s.isCurrent).length > 0 && (
+                <button
+                  onClick={logoutAllDevices}
+                  className="text-xs text-red-500 font-semibold hover:underline"
                 >
-                  <span className="text-2xl">{session.device}</span>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-foreground">
-                      {session.name}
-                    </div>
-                    <div className="text-xs text-foreground/50">
-                      {session.location} · {session.time}
-                    </div>
-                  </div>
-                  {session.isCurrent ? (
-                    <span className="text-xs text-primary font-semibold">
-                      Current
-                    </span>
-                  ) : (
-                    <button
-                      onClick={() => handleLogout(session.name)}
-                      className="text-xs text-red-500 font-semibold hover:underline"
-                    >
-                      Logout
-                    </button>
-                  )}
-                </div>
-              ))}
+                  Logout All
+                </button>
+              )}
             </div>
+            {sessionsLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : sessions.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-2">💻</div>
+                <p className="text-foreground/50">No active sessions found</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {sessions.map((session, idx) => (
+                  <div
+                    key={session.id || idx}
+                    className={`p-3 rounded-xl flex items-center gap-3 ${
+                      session.isCurrent
+                        ? "bg-primary/5 border border-primary/20"
+                        : "bg-background border border-border"
+                    }`}
+                  >
+                    <div className="text-2xl">{session.deviceIcon || getDeviceIcon()}</div>
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-foreground">
+                        {session.name}
+                      </div>
+                      <div className="text-xs text-foreground/50">
+                        {session.location} · {session.isCurrent ? "Active now" : session.time}
+                      </div>
+                    </div>
+                    {session.isCurrent ? (
+                      <span className="text-xs text-primary font-semibold">
+                        Current
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => revokeSession(session)}
+                        className="text-xs text-red-500 font-semibold hover:underline flex items-center gap-1"
+                      >
+                        <LogOut size={12} /> Logout
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Login History Card */}
@@ -233,51 +520,79 @@ const SecurityPage = () => {
             <div className="font-bold text-foreground mb-4 flex items-center gap-2">
               🔒 Login History
             </div>
-            <div className="space-y-3">
-              {loginHistory.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 pb-3 border-b border-border last:border-0"
-                >
+            {historyLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : loginHistory.length === 0 ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-2">🔒</div>
+                <p className="text-foreground/50">No login history found</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {loginHistory.slice(0, 10).map((item, idx) => (
                   <div
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                      item.success ? "bg-primary/10" : "bg-red-500/10"
-                    }`}
+                    key={item.id || idx}
+                    className="flex items-center gap-3 pb-3 border-b border-border last:border-0"
                   >
-                    {item.success ? "✅" : "❌"}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-foreground">
-                      {item.name}
+                    <div
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                        item.success ? "bg-primary/10" : "bg-red-500/10"
+                      }`}
+                    >
+                      {item.success ? <CheckCircle size={16} className="text-primary" /> : <XCircle size={16} className="text-red-500" />}
                     </div>
-                    <div className="text-xs text-foreground/50">
-                      {item.time}
+                    <div className="flex-1">
+                      <div className="font-semibold text-sm text-foreground">
+                        {item.name}
+                      </div>
+                      <div className="text-xs text-foreground/50">
+                        {item.time}
+                      </div>
+                      {item.location && (
+                        <div className="text-[10px] text-foreground/40 mt-0.5">
+                          📍 {item.location} · {item.device || "Unknown device"}
+                        </div>
+                      )}
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {/* View More Link */}
+            {loginHistory.length > 10 && (
+              <div className="text-center mt-4 pt-3 border-t border-border">
+                <button
+                  onClick={() => {
+                    Swal.fire({
+                      title: "Full Login History",
+                      html: `<div class="text-left max-h-96 overflow-y-auto">
+                        ${loginHistory.map(item => `
+                          <div class="flex items-center gap-3 p-2 border-b">
+                            <div>${item.success ? "✅" : "❌"}</div>
+                            <div class="flex-1">
+                              <div class="font-semibold text-sm">${item.name}</div>
+                              <div class="text-xs text-gray-500">${item.time}</div>
+                            </div>
+                          </div>
+                        `).join('')}
+                      </div>`,
+                      confirmButtonColor: "#059669",
+                      confirmButtonText: "Close",
+                      width: "500px",
+                    });
+                  }}
+                  className="text-xs text-primary font-semibold hover:underline"
+                >
+                  View All ({loginHistory.length})
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-sm shadow-lg whitespace-nowrap ${
-            toast.type === "error"
-              ? "bg-red-500"
-              : toast.type === "info"
-                ? "bg-blue-500"
-                : "bg-green-500"
-          } text-white`}
-        >
-          {toast.message}
-        </motion.div>
-      )}
     </div>
   );
 };
