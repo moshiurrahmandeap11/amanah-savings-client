@@ -13,10 +13,13 @@ import {
   ThumbsUp,
   ThumbsDown,
   Loader2,
+  MessageCircle,
+  Send,
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
+import useSocket from "../../../hooks/useSocket";
 
 const HelpPage = () => {
   const router = useRouter();
@@ -32,7 +35,54 @@ const HelpPage = () => {
   const [popularArticles, setPopularArticles] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searching, setSearching] = useState(false);
-
+  
+  // Messaging state
+  const [showChat, setShowChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatInput, setChatInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const chatEndRef = useRef(null);
+  
+  // Fetch user for socket
+  const [currentUserId, setCurrentUserId] = useState(null);
+  
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const parsed = JSON.parse(storedUser);
+      setCurrentUserId(parsed._id || parsed.id);
+    }
+  }, []);
+  
+  // Socket hook for messaging
+  const { sendMessage, messages: socketMessages, typingUser, isConnected } = useSocket(currentUserId, "user");
+  
+  // Sync socket messages to chat
+  useEffect(() => {
+    if (socketMessages.length > 0) {
+      const lastMsg = socketMessages[socketMessages.length - 1];
+      setChatMessages((prev) => {
+        const exists = prev.find((m) => m._id === lastMsg._id);
+        if (exists) return prev;
+        return [...prev, { ...lastMsg, sender: lastMsg.senderRole === "admin" ? "admin" : "user" }];
+      });
+    }
+  }, [socketMessages]);
+  
+  // Typing indicator
+  useEffect(() => {
+    if (typingUser) {
+      setIsTyping(true);
+      const timer = setTimeout(() => setIsTyping(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [typingUser]);
+  
+  // Scroll to bottom of chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages, isTyping]);
+  
   // Fetch all articles
   const fetchArticles = async () => {
     try {
@@ -173,6 +223,33 @@ const HelpPage = () => {
     document.body.style.overflow = "auto";
   };
 
+  // Send chat message
+  const handleSendMessage = () => {
+    if (!chatInput.trim() || !currentUserId) return;
+    
+    // Send to admin (receiverId "admin" - server will route to admin room)
+    sendMessage("admin", chatInput.trim(), "user");
+    
+    // Add to local chat immediately for UX
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        _id: Date.now().toString(),
+        message: chatInput.trim(),
+        sender: "user",
+        createdAt: new Date(),
+      },
+    ]);
+    setChatInput("");
+  };
+  
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+  
   const markHelpful = (helpful) => {
     if (selectedArticle) {
       submitFeedback(selectedArticle.articleId, helpful);
@@ -492,20 +569,130 @@ const HelpPage = () => {
               {lang === "bn" ? "শনি–বৃহস্পতি, সকাল ৯টা–রাত ৯টা" : "Sat–Thu, 9am–9pm"}
             </div>
           </a>
-          <a
-            href="https://wa.me/8801700000000"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => setShowChat(true)}
             className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary transition"
           >
             <div className="text-3xl mb-1">💬</div>
-            <div className="font-bold text-sm text-foreground">WhatsApp</div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn" ? "দ্রুত সহায়তার জন্য" : "For quick help"}
+            <div className="font-bold text-sm text-foreground">
+              {lang === "bn" ? "লাইভ চ্যাট" : "Live Chat"}
             </div>
-          </a>
+            <div className="text-xs text-foreground/50">
+              {isConnected 
+                ? (lang === "bn" ? "অনলাইন — এখনই চ্যাট করুন" : "Online — Chat now")
+                : (lang === "bn" ? "অফলাইন — টিকেট পাঠান" : "Offline — Send ticket")
+              }
+            </div>
+          </button>
         </div>
       </div>
+
+      {/* Live Chat Modal */}
+      <AnimatePresence>
+        {showChat && (
+          <div
+            className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center"
+            onClick={() => setShowChat(false)}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="bg-card rounded-t-2xl md:rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Chat Header */}
+              <div className="sticky top-0 bg-primary border-b border-primary/20 p-4 flex items-center gap-3 rounded-t-2xl md:rounded-t-2xl">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">
+                  🌿
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-white text-sm">
+                    {lang === "bn" ? "Amanah সাপোর্ট" : "Amanah Support"}
+                  </div>
+                  <div className="text-white/70 text-xs flex items-center gap-1">
+                    <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-400" : "bg-gray-400"}`} />
+                    {isConnected 
+                      ? (lang === "bn" ? "অনলাইন" : "Online") 
+                      : (lang === "bn" ? "অফলাইন" : "Offline")
+                    }
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowChat(false)}
+                  className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-[300px] max-h-[400px]">
+                {chatMessages.length === 0 && (
+                  <div className="text-center py-8">
+                    <div className="text-4xl mb-2">👋</div>
+                    <div className="text-foreground/50 text-sm">
+                      {lang === "bn" 
+                        ? "হ্যালো! আমরা আপনাকে কীভাবে সাহায্য করতে পারি?" 
+                        : "Hello! How can we help you today?"
+                      }
+                    </div>
+                  </div>
+                )}
+                {chatMessages.map((msg, idx) => (
+                  <div
+                    key={msg._id || idx}
+                    className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] px-3 py-2 rounded-xl text-sm ${
+                        msg.sender === "user"
+                          ? "bg-primary text-white rounded-br-none"
+                          : "bg-muted text-foreground rounded-bl-none"
+                      }`}
+                    >
+                      {msg.message}
+                      <div className={`text-[10px] mt-1 ${msg.sender === "user" ? "text-white/60" : "text-foreground/40"}`}>
+                        {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : ""}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                {isTyping && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted px-3 py-2 rounded-xl rounded-bl-none text-sm text-foreground/60">
+                      <span className="animate-pulse">●●●</span> {lang === "bn" ? "টাইপ করছে..." : "typing..."}
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* Chat Input */}
+              <div className="p-3 border-t border-border">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={handleKeyPress}
+                    placeholder={lang === "bn" ? "মেসেজ লিখুন..." : "Type a message..."}
+                    className="flex-1 px-3 py-2 rounded-xl bg-background border border-border text-sm outline-none focus:border-primary"
+                    disabled={!isConnected}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={!chatInput.trim() || !isConnected}
+                    className="w-9 h-9 rounded-xl bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <Send size={16} />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Article Modal */}
       <AnimatePresence>

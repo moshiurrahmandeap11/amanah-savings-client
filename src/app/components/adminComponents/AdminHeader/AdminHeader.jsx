@@ -3,11 +3,22 @@
 import React, { useState, useEffect } from "react";
 import { Menu, Moon, Sun, Bell, AlertTriangle, Globe } from "lucide-react";
 import Link from "next/link";
+import useSocket from "../../../hooks/useSocket";
 
 const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [currentLang, setCurrentLang] = useState("en");
   const [fraudCount] = useState(5);
+  
+  // Admin socket for real-time alerts (admin role, no specific userId needed for admin room)
+  const { notifications: adminNotifications, isConnected } = useSocket("admin", "admin");
+  const [alertCount, setAlertCount] = useState(0);
+
+  useEffect(() => {
+    if (adminNotifications.length > 0) {
+      setAlertCount(adminNotifications.length);
+    }
+  }, [adminNotifications]);
 
   useEffect(() => {
     const now = new Date();
@@ -83,7 +94,11 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
           {/* Notifications Button */}
           <Link href={"/admin/notifications"} className="relative w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition">
             <Bell size={16} />
-            <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
+            {alertCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center">
+                {alertCount > 99 ? "99+" : alertCount}
+              </span>
+            )}
           </Link>
 
           {/* Language Toggle */}

@@ -6,14 +6,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Bell, Search, Moon, Sun, Flame, Sparkles } from "lucide-react";
 import useAuth from "../../../hooks/useAuth";
+import useSocket from "../../../hooks/useSocket";
 import Image from "next/image";
 
 const UserDashboardHeader = ({ openSidebar }) => {
   const { user } = useAuth();
+  const { unreadCount: socketUnreadCount, isConnected } = useSocket(user?._id || user?.id, "user");
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(false);
   const [currentDate, setCurrentDate] = useState("");
   const [streak] = useState(90);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Sync socket unread count
+  useEffect(() => {
+    if (socketUnreadCount > 0) {
+      setUnreadCount(socketUnreadCount);
+    }
+  }, [socketUnreadCount]);
 
   // Dynamic title mapping based on pathname
   const getPageTitle = () => {
@@ -196,9 +206,11 @@ const UserDashboardHeader = ({ openSidebar }) => {
             className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
           >
             <Bell size={16} />
-            <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center">
-              3
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
           </Link>
 
           {/* Theme Toggle */}
