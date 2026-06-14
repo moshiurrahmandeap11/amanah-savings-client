@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -21,7 +21,16 @@ import {
   Share2,
   Save,
   Send,
+  Loader2,
 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const AdminBlogPage = () => {
   const [isDark, setIsDark] = useState(false);
@@ -36,98 +45,64 @@ const AdminBlogPage = () => {
   const [postLanguage, setPostLanguage] = useState("🇧🇩 Bangla");
   const [scheduleDate, setScheduleDate] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
-
-  const stats = [
-    { value: "24", label: "Published", color: "green" },
-    { value: "5", label: "Drafts", color: "yellow" },
-    { value: "3", label: "Scheduled", color: "blue" },
-    { value: "48.2K", label: "Total Views", color: "purple" },
-  ];
-
-  const [posts, setPosts] = useState([
-    {
-      id: "post-1",
-      thumb: "💰",
-      title: "রমজান মাসে সঞ্চয় বাড়ানোর ৭টি উপায়",
-      titleEn: "7 Ways to Increase Savings During Ramadan",
-      author: "Admin",
-      date: "Published Jun 1, 2026",
-      readTime: "5 min read",
-      status: "published",
-      category: "☪️ Islamic Finance",
-      excerpt:
-        "রমজান মাসে খরচ কমিয়ে সঞ্চয় বাড়ানো সম্ভব। এই ব্লগে আমরা ৭টি কার্যকর উপায় আলোচনা করব যা আপনার সঞ্চয় লক্ষ্য পূরণে সাহায্য করবে...",
-      excerptEn:
-        "You can reduce expenses and increase savings during Ramadan. This post covers 7 practical ways to reach your savings goal...",
-      views: "3,241",
-      likes: "187",
-      comments: "24",
-      shares: "56",
-    },
-    {
-      id: "post-2",
-      thumb: "🏠",
-      title: "বাড়ি কেনার আগে যা জানা দরকার — Amanah Guide",
-      titleEn: "What to Know Before Buying a Home — Amanah Guide",
-      author: "Admin",
-      date: "Last edited Jun 4, 2026",
-      status: "draft",
-      category: "💰 Savings Tips",
-      excerpt:
-        "বাংলাদেশে বাড়ি কেনা অনেকের স্বপ্ন। কিন্তু সঠিক পরিকল্পনা ছাড়া এই স্বপ্ন পূরণ করা কঠিন। এই গাইডে আমরা আলোচনা করব...",
-      excerptEn:
-        "Buying a home in Bangladesh is a dream for many. Without proper planning, that dream is hard to reach. In this guide we discuss...",
-      progress: "60%",
-    },
-    {
-      id: "post-3",
-      thumb: "🎓",
-      title: "সন্তানের পড়াশোনার জন্য সঞ্চয় কীভাবে শুরু করবেন",
-      titleEn: "How to Start Saving for Your Child's Education",
-      author: "Admin",
-      date: "Scheduled for Jun 10, 2026 at 9:00 AM",
-      status: "scheduled",
-      category: "💰 Savings Tips",
-      excerpt:
-        "সন্তানের ভবিষ্যৎ শিক্ষার জন্য আজই সঞ্চয় শুরু করুন। এই লেখায় আমরা দেখব কীভাবে মাত্র ৳৫০০ দিয়ে শুরু করে...",
-      excerptEn:
-        "Start saving today for your child's future education. In this article we show how to begin with just ৳500...",
-      publishDate: "Jun 10",
-    },
-    {
-      id: "post-4",
-      thumb: "📢",
-      title: "New Feature: Auto-Save is now live! ⚡",
-      titleEn: "New Feature: Auto-Save is now live! ⚡",
-      author: "Admin",
-      date: "Published May 28, 2026",
-      readTime: "2 min read",
-      status: "published",
-      category: "📢 Announcement",
-      excerpt:
-        "We're excited to announce the launch of Auto-Save — our newest feature that lets you set up automatic recurring deposits to your savings goals...",
-      views: "12,441",
-      likes: "892",
-      comments: "143",
-      shares: "324",
-    },
+  const [posts, setPosts] = useState([]);
+  const [stats, setStats] = useState([
+    { value: "0", label: "Published", color: "green" },
+    { value: "0", label: "Drafts", color: "yellow" },
+    { value: "0", label: "Scheduled", color: "blue" },
+    { value: "0", label: "Total Views", color: "purple" },
   ]);
+  const [loading, setLoading] = useState(false);
 
-  const categories = [
-    "💰 Savings Tips",
-    "☪️ Islamic Finance",
-    "📢 Announcement",
-    "📊 Reports",
-    "🎉 Community",
-  ];
-
-  const languages = ["🇧🇩 Bangla", "🇬🇧 English", "Both"];
+  const fetchPosts = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [articlesRes, statsRes] = await Promise.all([
+        axios.get(`${API_BASE}/help/articles`, { headers: getAuthHeaders() }),
+        axios.get(`${API_BASE}/help/statistics`, { headers: getAuthHeaders() }),
+      ]);
+      if (articlesRes.data.success) {
+        const articles = articlesRes.data.data.articles || [];
+        setPosts(articles.map((a) => ({
+          id: a.id || a._id,
+          thumb: a.thumb || "📝",
+          title: a.title,
+          titleEn: a.titleEn || a.title,
+          author: a.author || "Admin",
+          date: a.publishedAt ? `Published ${new Date(a.publishedAt).toLocaleDateString()}` : "Draft",
+          readTime: a.readTime || "5 min read",
+          status: a.status || "published",
+          category: a.category || "☪️ Islamic Finance",
+          excerpt: a.excerpt || a.content?.slice(0, 120) + "...",
+          excerptEn: a.excerptEn || a.excerpt,
+          views: String(a.views || 0),
+          likes: String(a.likes || 0),
+          comments: String(a.comments || 0),
+          shares: String(a.shares || 0),
+        })));
+      }
+      if (statsRes.data.success) {
+        const s = statsRes.data.data;
+        setStats([
+          { value: String(s.published || 0), label: "Published", color: "green" },
+          { value: String(s.drafts || 0), label: "Drafts", color: "yellow" },
+          { value: String(s.scheduled || 0), label: "Scheduled", color: "blue" },
+          { value: String(s.totalViews || 0), label: "Total Views", color: "purple" },
+        ]);
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to load articles");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-  }, []);
+    fetchPosts();
+  }, [fetchPosts]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -165,44 +140,77 @@ const AdminBlogPage = () => {
     document.body.style.overflow = "auto";
   };
 
-  const saveDraft = () => {
-    closeEditor();
-    showToast(
-      lang === "bn"
-        ? "💾 ড্রাফট সফলভাবে সংরক্ষিত হয়েছে"
-        : "💾 Draft saved successfully",
-    );
+  const saveDraft = async () => {
+    try {
+      const payload = {
+        title: postTitle,
+        content: postContent,
+        category: postCategory,
+        status: "draft",
+      };
+      if (editingPost) {
+        await axios.put(`${API_BASE}/help/admin/articles/${editingPost.id}`, payload, { headers: getAuthHeaders() });
+      } else {
+        await axios.post(`${API_BASE}/help/admin/articles`, payload, { headers: getAuthHeaders() });
+      }
+      closeEditor();
+      showToast(
+        lang === "bn"
+          ? "💾 ড্রাফট সফলভাবে সংরক্ষিত হয়েছে"
+          : "💾 Draft saved successfully",
+      );
+      fetchPosts();
+    } catch (err) {
+      showToast(err.response?.data?.message || "Save failed");
+    }
   };
 
-  const publishPost = () => {
+  const publishPost = async () => {
     if (!postTitle.trim()) {
       showToast(
         lang === "bn" ? "⚠️ অনুগ্রহ করে শিরোনাম দিন" : "⚠️ Please add a title",
       );
       return;
     }
-    closeEditor();
-    showToast(
-      lang === "bn"
-        ? "🚀 পোস্ট সফলভাবে প্রকাশিত হয়েছে!"
-        : "🚀 Post published successfully!",
-    );
+    try {
+      const payload = {
+        title: postTitle,
+        content: postContent,
+        category: postCategory,
+        status: "published",
+      };
+      if (editingPost) {
+        await axios.put(`${API_BASE}/help/admin/articles/${editingPost.id}`, payload, { headers: getAuthHeaders() });
+      } else {
+        await axios.post(`${API_BASE}/help/admin/articles`, payload, { headers: getAuthHeaders() });
+      }
+      closeEditor();
+      showToast(
+        lang === "bn"
+          ? "🚀 পোস্ট সফলভাবে প্রকাশিত হয়েছে!"
+          : "🚀 Post published successfully!",
+      );
+      fetchPosts();
+    } catch (err) {
+      showToast(err.response?.data?.message || "Publish failed");
+    }
   };
 
-  const unpublishPost = (id) => {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === id ? { ...post, status: "draft" } : post,
-      ),
-    );
-    showToast(
-      lang === "bn"
-        ? "⬇️ পোস্ট আনপাবলিশ হয়েছে — ড্রাফটে রাখা হয়েছে"
-        : "⬇️ Post unpublished — moved to drafts",
-    );
+  const unpublishPost = async (id) => {
+    try {
+      await axios.put(`${API_BASE}/help/admin/articles/${id}`, { status: "draft" }, { headers: getAuthHeaders() });
+      showToast(
+        lang === "bn"
+          ? "⬇️ পোস্ট আনপাবলিশ হয়েছে — ড্রাফটে রাখা হয়েছে"
+          : "⬇️ Post unpublished — moved to drafts",
+      );
+      fetchPosts();
+    } catch (err) {
+      showToast(err.response?.data?.message || "Unpublish failed");
+    }
   };
 
-  const deletePost = (id) => {
+  const deletePost = async (id) => {
     if (
       confirm(
         lang === "bn"
@@ -210,10 +218,15 @@ const AdminBlogPage = () => {
           : "Delete this post permanently?",
       )
     ) {
-      setPosts((prev) => prev.filter((post) => post.id !== id));
-      showToast(
-        lang === "bn" ? "🗑️ পোস্ট মুছে ফেলা হয়েছে" : "🗑️ Post deleted",
-      );
+      try {
+        await axios.delete(`${API_BASE}/help/admin/articles/${id}`, { headers: getAuthHeaders() });
+        showToast(
+          lang === "bn" ? "🗑️ পোস্ট মুছে ফেলা হয়েছে" : "🗑️ Post deleted",
+        );
+        fetchPosts();
+      } catch (err) {
+        showToast(err.response?.data?.message || "Delete failed");
+      }
     }
   };
 
@@ -336,6 +349,13 @@ const AdminBlogPage = () => {
         ))}
       </div>
 
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-12 max-w-6xl mx-auto">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      )}
+
       {/* Posts List */}
       <div className="max-w-6xl mx-auto px-4 pb-20 space-y-3">
         {filteredPosts.map((post) => {
@@ -410,7 +430,7 @@ const AdminBlogPage = () => {
                     <div className="text-xs text-foreground/50">
                       ⏱️{" "}
                       <strong className="text-foreground">
-                        {post.progress}
+                        {post.progress || "60%"}
                       </strong>{" "}
                       complete
                     </div>
@@ -421,7 +441,7 @@ const AdminBlogPage = () => {
                     <div className="text-xs text-foreground/50">
                       📅 Publishes{" "}
                       <strong className="text-foreground">
-                        {post.publishDate}
+                        {post.publishDate || "Soon"}
                       </strong>
                     </div>
                     <div className="text-xs text-foreground/50">
@@ -530,7 +550,7 @@ const AdminBlogPage = () => {
                     onChange={(e) => setPostCategory(e.target.value)}
                     className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
                   >
-                    {categories.map((cat) => (
+                    {["💰 Savings Tips", "☪️ Islamic Finance", "📢 Announcement", "📊 Reports", "🎉 Community"].map((cat) => (
                       <option key={cat}>{cat}</option>
                     ))}
                   </select>
@@ -539,7 +559,7 @@ const AdminBlogPage = () => {
                     onChange={(e) => setPostLanguage(e.target.value)}
                     className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
                   >
-                    {languages.map((lang) => (
+                    {["🇧🇩 Bangla", "🇬🇧 English", "Both"].map((lang) => (
                       <option key={lang}>{lang}</option>
                     ))}
                   </select>

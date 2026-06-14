@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Settings,
@@ -19,59 +19,53 @@ import {
   ArrowLeft,
   Moon,
   Sun,
+  Loader2,
 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const AdminSettingsPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
   const [activePanel, setActivePanel] = useState("general");
   const [toast, setToast] = useState({ show: false, message: "" });
-
   const [settings, setSettings] = useState({
-    // General
-    platformName: "Amanah Savings Community",
-    websiteUrl: "https://amanah.freepixa.com",
-    contactEmail: "support@amanah.com",
-    language: "bn",
-    currency: "BDT",
-    newRegistration: true,
-    demoMode: false,
-    // Savings Rules
-    minDeposit: "500",
-    maxSingleDeposit: "1,00,000",
-    dailyDepositLimit: "5,00,000",
-    withdrawalDelay: "24",
-    islamicMode: true,
-    goalLock: true,
-    // Payment Gateway
-    bkashEnabled: true,
-    nagadEnabled: true,
-    rocketEnabled: false,
-    bankEnabled: false,
-    depositFee: "0",
-    withdrawalFee: "0.5",
-    // Notifications
-    emailNotification: true,
-    smsNotification: true,
-    pushNotification: true,
-    monthlyReport: true,
-    marketingEmail: false,
-    // Security
-    twoFactorAuth: true,
-    pinRequired: true,
-    sessionTimeout: "30",
-    maxLoginAttempts: "5",
-    ipLogging: true,
-    // Maintenance
-    maintenanceMode: false,
-    maintenanceMessage: "আমরা সিস্টেম আপগ্রেড করছি। শীঘ্রই ফিরে আসব। ধন্যবাদ।",
+    general: {},
+    savings: {},
+    payments: {},
+    notifications: {},
+    security: {},
+    maintenance: {},
   });
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const fetchSettings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/admin/settings`, { headers: getAuthHeaders() });
+      if (res.data.success) {
+        setSettings(res.data.data);
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to load settings");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-  }, []);
+    fetchSettings();
+  }, [fetchSettings]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -85,20 +79,36 @@ const AdminSettingsPage = () => {
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
-  const handleToggle = (key) => {
-    setSettings((prev) => ({ ...prev, [key]: !prev[key] }));
+  const handleToggle = (section, key) => {
+    setSettings((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], [key]: !prev[section]?.[key] },
+    }));
   };
 
-  const handleInputChange = (key, value) => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+  const handleInputChange = (section, key, value) => {
+    setSettings((prev) => ({
+      ...prev,
+      [section]: { ...prev[section], [key]: value },
+    }));
   };
 
-  const saveSettings = () => {
-    showToast(
-      lang === "bn"
-        ? "✅ সেটিংস সফলভাবে সংরক্ষিত হয়েছে"
-        : "✅ Settings saved successfully",
-    );
+  const saveSettings = async () => {
+    setSaving(true);
+    try {
+      const res = await axios.put(`${API_BASE}/admin/settings`, settings, { headers: getAuthHeaders() });
+      if (res.data.success) {
+        showToast(
+          lang === "bn"
+            ? "✅ সেটিংস সফলভাবে সংরক্ষিত হয়েছে"
+            : "✅ Settings saved successfully",
+        );
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Save failed");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const downloadBackup = () => {
@@ -152,7 +162,7 @@ const AdminSettingsPage = () => {
       labelEn: "Savings Rules",
     },
     {
-      id: "payment",
+      id: "payments",
       label: "পেমেন্ট গেটওয়ে",
       icon: <CreditCard size={16} />,
       labelEn: "Payment Gateway",
@@ -191,73 +201,39 @@ const AdminSettingsPage = () => {
           </p>
         </div>
         <div className="p-4 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "প্ল্যাটফর্মের নাম" : "Platform Name"}
+          {[
+            { key: "platformName", labelBn: "প্ল্যাটফর্মের নাম", labelEn: "Platform Name", descBn: "ব্যবহারকারীরা যা দেখবেন", descEn: "What users will see" },
+            { key: "websiteUrl", labelBn: "ওয়েবসাইট URL", labelEn: "Website URL", descBn: "মূল ডোমেইন ঠিকানা", descEn: "Primary domain address" },
+            { key: "contactEmail", labelBn: "যোগাযোগ ইমেইল", labelEn: "Contact Email", descBn: "সাপোর্ট ইমেইল ঠিকানা", descEn: "Support email address" },
+          ].map((field) => (
+            <div key={field.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="font-medium text-sm text-foreground">
+                  {lang === "bn" ? field.labelBn : field.labelEn}
+                </div>
+                <div className="text-xs text-foreground/50">
+                  {lang === "bn" ? field.descBn : field.descEn}
+                </div>
               </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn"
-                  ? "ব্যবহারকারীরা যা দেখবেন"
-                  : "What users will see"}
-              </div>
+              <input
+                value={settings.general?.[field.key] || ""}
+                onChange={(e) => handleInputChange("general", field.key, e.target.value)}
+                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-full sm:w-64"
+              />
             </div>
-            <input
-              value={settings.platformName}
-              onChange={(e) =>
-                handleInputChange("platformName", e.target.value)
-              }
-              className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-full sm:w-64"
-            />
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "ওয়েবসাইট URL" : "Website URL"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn" ? "মূল ডোমেইন ঠিকানা" : "Primary domain address"}
-              </div>
-            </div>
-            <input
-              value={settings.websiteUrl}
-              onChange={(e) => handleInputChange("websiteUrl", e.target.value)}
-              className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-full sm:w-64"
-            />
-          </div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "যোগাযোগ ইমেইল" : "Contact Email"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn"
-                  ? "সাপোর্ট ইমেইল ঠিকানা"
-                  : "Support email address"}
-              </div>
-            </div>
-            <input
-              value={settings.contactEmail}
-              onChange={(e) =>
-                handleInputChange("contactEmail", e.target.value)
-              }
-              className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-full sm:w-64"
-            />
-          </div>
+          ))}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="font-medium text-sm text-foreground">
                 {lang === "bn" ? "ভাষা" : "Language"}
               </div>
               <div className="text-xs text-foreground/50">
-                {lang === "bn"
-                  ? "ডিফল্ট প্ল্যাটফর্ম ভাষা"
-                  : "Default platform language"}
+                {lang === "bn" ? "ডিফল্ট প্ল্যাটফর্ম ভাষা" : "Default platform language"}
               </div>
             </div>
             <select
-              value={settings.language}
-              onChange={(e) => handleInputChange("language", e.target.value)}
+              value={settings.general?.language || "bn"}
+              onChange={(e) => handleInputChange("general", "language", e.target.value)}
               className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
             >
               <option value="bn">বাংলা (BD)</option>
@@ -274,8 +250,8 @@ const AdminSettingsPage = () => {
               </div>
             </div>
             <select
-              value={settings.currency}
-              onChange={(e) => handleInputChange("currency", e.target.value)}
+              value={settings.general?.currency || "BDT"}
+              onChange={(e) => handleInputChange("general", "currency", e.target.value)}
               className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
             >
               <option value="BDT">BDT (৳)</option>
@@ -290,46 +266,29 @@ const AdminSettingsPage = () => {
           </h3>
         </div>
         <div className="p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "নতুন নিবন্ধন" : "New Registration"}
+          {[
+            { key: "newRegistration", labelBn: "নতুন নিবন্ধন", labelEn: "New Registration", descBn: "নতুন সদস্য যোগ দিতে পারবে", descEn: "New members can join" },
+            { key: "demoMode", labelBn: "ডেমো মোড", labelEn: "Demo Mode", descBn: "পরীক্ষামূলক মোড সক্রিয়", descEn: "Experimental mode active" },
+          ].map((field) => (
+            <div key={field.key} className="flex items-center justify-between">
+              <div>
+                <div className="font-medium text-sm text-foreground">
+                  {lang === "bn" ? field.labelBn : field.labelEn}
+                </div>
+                <div className="text-xs text-foreground/50">
+                  {lang === "bn" ? field.descBn : field.descEn}
+                </div>
               </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn"
-                  ? "নতুন সদস্য যোগ দিতে পারবে"
-                  : "New members can join"}
-              </div>
+              <button
+                onClick={() => handleToggle("general", field.key)}
+                className={`relative w-12 h-6 rounded-full transition ${settings.general?.[field.key] ? "bg-primary" : "bg-border"}`}
+              >
+                <div
+                  className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.general?.[field.key] ? "right-0.5" : "left-0.5"}`}
+                />
+              </button>
             </div>
-            <button
-              onClick={() => handleToggle("newRegistration")}
-              className={`relative w-12 h-6 rounded-full transition ${settings.newRegistration ? "bg-primary" : "bg-border"}`}
-            >
-              <div
-                className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.newRegistration ? "right-0.5" : "left-0.5"}`}
-              />
-            </button>
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "ডেমো মোড" : "Demo Mode"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn"
-                  ? "পরীক্ষামূলক মোড সক্রিয়"
-                  : "Experimental mode active"}
-              </div>
-            </div>
-            <button
-              onClick={() => handleToggle("demoMode")}
-              className={`relative w-12 h-6 rounded-full transition ${settings.demoMode ? "bg-primary" : "bg-border"}`}
-            >
-              <div
-                className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.demoMode ? "right-0.5" : "left-0.5"}`}
-              />
-            </button>
-          </div>
+          ))}
         </div>
       </div>
     </div>
@@ -348,124 +307,51 @@ const AdminSettingsPage = () => {
         </p>
       </div>
       <div className="p-4 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn"
-                ? "সর্বনিম্ন জমা পরিমাণ"
-                : "Minimum Deposit Amount"}
+        {[
+          { key: "minDeposit", labelBn: "সর্বনিম্ন জমা পরিমাণ", labelEn: "Minimum Deposit Amount", descBn: "প্রতিটি জমার ন্যূনতম টাকা", descEn: "Minimum amount per deposit" },
+          { key: "maxSingleDeposit", labelBn: "সর্বোচ্চ একক জমা", labelEn: "Maximum Single Deposit", descBn: "একবারে সর্বোচ্চ জমা", descEn: "Highest deposit at once" },
+          { key: "dailyDepositLimit", labelBn: "দৈনিক জমা সীমা", labelEn: "Daily Deposit Limit", descBn: "প্রতিদিন সর্বোচ্চ মোট জমা", descEn: "Maximum total deposit per day" },
+          { key: "withdrawalDelay", labelBn: "উত্তোলন বিলম্ব (ঘণ্টা)", labelEn: "Withdrawal Delay (hours)", descBn: "জমার পর উত্তোলনের অপেক্ষা", descEn: "Waiting period after deposit" },
+        ].map((field) => (
+          <div key={field.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="font-medium text-sm text-foreground">
+                {lang === "bn" ? field.labelBn : field.labelEn}
+              </div>
+              <div className="text-xs text-foreground/50">
+                {lang === "bn" ? field.descBn : field.descEn}
+              </div>
             </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "প্রতিটি জমার ন্যূনতম টাকা"
-                : "Minimum amount per deposit"}
-            </div>
-          </div>
-          <input
-            value={settings.minDeposit}
-            onChange={(e) => handleInputChange("minDeposit", e.target.value)}
-            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn" ? "সর্বোচ্চ একক জমা" : "Maximum Single Deposit"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "একবারে সর্বোচ্চ জমা"
-                : "Highest deposit at once"}
-            </div>
-          </div>
-          <input
-            value={settings.maxSingleDeposit}
-            onChange={(e) =>
-              handleInputChange("maxSingleDeposit", e.target.value)
-            }
-            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn" ? "দৈনিক জমা সীমা" : "Daily Deposit Limit"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "প্রতিদিন সর্বোচ্চ মোট জমা"
-                : "Maximum total deposit per day"}
-            </div>
-          </div>
-          <input
-            value={settings.dailyDepositLimit}
-            onChange={(e) =>
-              handleInputChange("dailyDepositLimit", e.target.value)
-            }
-            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
-          />
-        </div>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn"
-                ? "উত্তোলন বিলম্ব (ঘণ্টা)"
-                : "Withdrawal Delay (hours)"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "জমার পর উত্তোলনের অপেক্ষা"
-                : "Waiting period after deposit"}
-            </div>
-          </div>
-          <input
-            value={settings.withdrawalDelay}
-            onChange={(e) =>
-              handleInputChange("withdrawalDelay", e.target.value)
-            }
-            className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn" ? "ইসলামিক মোড" : "Islamic Mode"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "সুদমুক্ত সঞ্চয় বিকল্প চালু"
-                : "Enable interest-free savings option"}
-            </div>
-          </div>
-          <button
-            onClick={() => handleToggle("islamicMode")}
-            className={`relative w-12 h-6 rounded-full transition ${settings.islamicMode ? "bg-primary" : "bg-border"}`}
-          >
-            <div
-              className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.islamicMode ? "right-0.5" : "left-0.5"}`}
+            <input
+              value={settings.savings?.[field.key] || ""}
+              onChange={(e) => handleInputChange("savings", field.key, e.target.value)}
+              className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
             />
-          </button>
-        </div>
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn" ? "লক্ষ্য লক বৈশিষ্ট্য" : "Goal Lock Feature"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "লক্ষ্য পূরণের আগে উত্তোলন বন্ধ"
-                : "Block withdrawals before goal completion"}
-            </div>
           </div>
-          <button
-            onClick={() => handleToggle("goalLock")}
-            className={`relative w-12 h-6 rounded-full transition ${settings.goalLock ? "bg-primary" : "bg-border"}`}
-          >
-            <div
-              className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.goalLock ? "right-0.5" : "left-0.5"}`}
-            />
-          </button>
-        </div>
+        ))}
+        {[
+          { key: "islamicMode", labelBn: "ইসলামিক মোড", labelEn: "Islamic Mode", descBn: "সুদমুক্ত সঞ্চয় বিকল্প চালু", descEn: "Enable interest-free savings option" },
+          { key: "goalLock", labelBn: "লক্ষ্য লক বৈশিষ্ট্য", labelEn: "Goal Lock Feature", descBn: "লক্ষ্য পূরণের আগে উত্তোলন বন্ধ", descEn: "Block withdrawals before goal completion" },
+        ].map((field) => (
+          <div key={field.key} className="flex items-center justify-between">
+            <div>
+              <div className="font-medium text-sm text-foreground">
+                {lang === "bn" ? field.labelBn : field.labelEn}
+              </div>
+              <div className="text-xs text-foreground/50">
+                {lang === "bn" ? field.descBn : field.descEn}
+              </div>
+            </div>
+            <button
+              onClick={() => handleToggle("savings", field.key)}
+              className={`relative w-12 h-6 rounded-full transition ${settings.savings?.[field.key] ? "bg-primary" : "bg-border"}`}
+            >
+              <div
+                className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.savings?.[field.key] ? "right-0.5" : "left-0.5"}`}
+              />
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -485,30 +371,10 @@ const AdminSettingsPage = () => {
         </div>
         <div className="p-4 space-y-4">
           {[
-            {
-              key: "bkashEnabled",
-              label: "bKash",
-              desc: "বিকাশ মোবাইল ব্যাংকিং",
-              connected: true,
-            },
-            {
-              key: "nagadEnabled",
-              label: "Nagad",
-              desc: "নগদ মোবাইল ফিনান্সিয়াল",
-              connected: true,
-            },
-            {
-              key: "rocketEnabled",
-              label: "Rocket",
-              desc: "ডাচ বাংলা রকেট",
-              connected: false,
-            },
-            {
-              key: "bankEnabled",
-              label: "ব্যাংক ট্রান্সফার",
-              desc: "সরাসরি ব্যাংক অ্যাকাউন্ট ট্রান্সফার",
-              connected: false,
-            },
+            { key: "bkashEnabled", label: "bKash", desc: "বিকাশ মোবাইল ব্যাংকিং", connected: true },
+            { key: "nagadEnabled", label: "Nagad", desc: "নগদ মোবাইল ফিনান্সিয়াল", connected: true },
+            { key: "rocketEnabled", label: "Rocket", desc: "ডাচ বাংলা রকেট", connected: false },
+            { key: "bankEnabled", label: "ব্যাংক ট্রান্সফার", desc: "সরাসরি ব্যাংক অ্যাকাউন্ট ট্রান্সফার", connected: false },
           ].map((gateway) => (
             <div
               key={gateway.key}
@@ -528,11 +394,11 @@ const AdminSettingsPage = () => {
                   </span>
                 )}
                 <button
-                  onClick={() => handleToggle(gateway.key)}
-                  className={`relative w-12 h-6 rounded-full transition ${settings[gateway.key] ? "bg-primary" : "bg-border"}`}
+                  onClick={() => handleToggle("payments", gateway.key)}
+                  className={`relative w-12 h-6 rounded-full transition ${settings.payments?.[gateway.key] ? "bg-primary" : "bg-border"}`}
                 >
                   <div
-                    className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings[gateway.key] ? "right-0.5" : "left-0.5"}`}
+                    className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.payments?.[gateway.key] ? "right-0.5" : "left-0.5"}`}
                   />
                 </button>
               </div>
@@ -558,12 +424,14 @@ const AdminSettingsPage = () => {
                   : "Deduction on each deposit (%)"}
               </div>
             </div>
-            <input
-              value={settings.depositFee}
-              onChange={(e) => handleInputChange("depositFee", e.target.value)}
-              className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
-            />{" "}
-            %
+            <div className="flex items-center gap-1">
+              <input
+                value={settings.payments?.depositFee || "0"}
+                onChange={(e) => handleInputChange("payments", "depositFee", e.target.value)}
+                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
+              />{" "}
+              %
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -576,14 +444,14 @@ const AdminSettingsPage = () => {
                   : "Deduction on each withdrawal (%)"}
               </div>
             </div>
-            <input
-              value={settings.withdrawalFee}
-              onChange={(e) =>
-                handleInputChange("withdrawalFee", e.target.value)
-              }
-              className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
-            />{" "}
-            %
+            <div className="flex items-center gap-1">
+              <input
+                value={settings.payments?.withdrawalFee || "0.5"}
+                onChange={(e) => handleInputChange("payments", "withdrawalFee", e.target.value)}
+                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
+              />{" "}
+              %
+            </div>
           </div>
         </div>
       </div>
@@ -599,31 +467,11 @@ const AdminSettingsPage = () => {
       </div>
       <div className="p-4 space-y-4">
         {[
-          {
-            key: "emailNotification",
-            label: "ইমেইল বিজ্ঞপ্তি",
-            desc: "ইমেইলে লেনদেন আপডেট পাঠানো",
-          },
-          {
-            key: "smsNotification",
-            label: "SMS বিজ্ঞপ্তি",
-            desc: "SMS-এ গুরুত্বপূর্ণ আপডেট",
-          },
-          {
-            key: "pushNotification",
-            label: "পুশ নোটিফিকেশন",
-            desc: "অ্যাপ পুশ বিজ্ঞপ্তি",
-          },
-          {
-            key: "monthlyReport",
-            label: "মাসিক রিপোর্ট",
-            desc: "মাসিক সঞ্চয় রিপোর্ট ইমেইল",
-          },
-          {
-            key: "marketingEmail",
-            label: "মার্কেটিং ইমেইল",
-            desc: "অফার ও প্রচারমূলক বার্তা",
-          },
+          { key: "emailNotification", label: "ইমেইল বিজ্ঞপ্তি", desc: "ইমেইলে লেনদেন আপডেট পাঠানো" },
+          { key: "smsNotification", label: "SMS বিজ্ঞপ্তি", desc: "SMS-এ গুরুত্বপূর্ণ আপডেট" },
+          { key: "pushNotification", label: "পুশ নোটিফিকেশন", desc: "অ্যাপ পুশ বিজ্ঞপ্তি" },
+          { key: "monthlyReport", label: "মাসিক রিপোর্ট", desc: "মাসিক সঞ্চয় রিপোর্ট ইমেইল" },
+          { key: "marketingEmail", label: "মার্কেটিং ইমেইল", desc: "অফার ও প্রচারমূলক বার্তা" },
         ].map((notif) => (
           <div key={notif.key} className="flex items-center justify-between">
             <div>
@@ -633,11 +481,11 @@ const AdminSettingsPage = () => {
               <div className="text-xs text-foreground/50">{notif.desc}</div>
             </div>
             <button
-              onClick={() => handleToggle(notif.key)}
-              className={`relative w-12 h-6 rounded-full transition ${settings[notif.key] ? "bg-primary" : "bg-border"}`}
+              onClick={() => handleToggle("notifications", notif.key)}
+              className={`relative w-12 h-6 rounded-full transition ${settings.notifications?.[notif.key] ? "bg-primary" : "bg-border"}`}
             >
               <div
-                className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings[notif.key] ? "right-0.5" : "left-0.5"}`}
+                className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.notifications?.[notif.key] ? "right-0.5" : "left-0.5"}`}
               />
             </button>
           </div>
@@ -668,11 +516,11 @@ const AdminSettingsPage = () => {
             </div>
           </div>
           <button
-            onClick={() => handleToggle("twoFactorAuth")}
-            className={`relative w-12 h-6 rounded-full transition ${settings.twoFactorAuth ? "bg-primary" : "bg-border"}`}
+            onClick={() => handleToggle("security", "twoFactorAuth")}
+            className={`relative w-12 h-6 rounded-full transition ${settings.security?.twoFactorAuth ? "bg-primary" : "bg-border"}`}
           >
             <div
-              className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.twoFactorAuth ? "right-0.5" : "left-0.5"}`}
+              className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.security?.twoFactorAuth ? "right-0.5" : "left-0.5"}`}
             />
           </button>
         </div>
@@ -688,11 +536,11 @@ const AdminSettingsPage = () => {
             </div>
           </div>
           <button
-            onClick={() => handleToggle("pinRequired")}
-            className={`relative w-12 h-6 rounded-full transition ${settings.pinRequired ? "bg-primary" : "bg-border"}`}
+            onClick={() => handleToggle("security", "pinRequired")}
+            className={`relative w-12 h-6 rounded-full transition ${settings.security?.pinRequired ? "bg-primary" : "bg-border"}`}
           >
             <div
-              className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.pinRequired ? "right-0.5" : "left-0.5"}`}
+              className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.security?.pinRequired ? "right-0.5" : "left-0.5"}`}
             />
           </button>
         </div>
@@ -710,10 +558,8 @@ const AdminSettingsPage = () => {
             </div>
           </div>
           <input
-            value={settings.sessionTimeout}
-            onChange={(e) =>
-              handleInputChange("sessionTimeout", e.target.value)
-            }
+            value={settings.security?.sessionTimeout || "30"}
+            onChange={(e) => handleInputChange("security", "sessionTimeout", e.target.value)}
             className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
           />
         </div>
@@ -731,10 +577,8 @@ const AdminSettingsPage = () => {
             </div>
           </div>
           <input
-            value={settings.maxLoginAttempts}
-            onChange={(e) =>
-              handleInputChange("maxLoginAttempts", e.target.value)
-            }
+            value={settings.security?.maxLoginAttempts || "5"}
+            onChange={(e) => handleInputChange("security", "maxLoginAttempts", e.target.value)}
             className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
           />
         </div>
@@ -750,11 +594,11 @@ const AdminSettingsPage = () => {
             </div>
           </div>
           <button
-            onClick={() => handleToggle("ipLogging")}
-            className={`relative w-12 h-6 rounded-full transition ${settings.ipLogging ? "bg-primary" : "bg-border"}`}
+            onClick={() => handleToggle("security", "ipLogging")}
+            className={`relative w-12 h-6 rounded-full transition ${settings.security?.ipLogging ? "bg-primary" : "bg-border"}`}
           >
             <div
-              className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.ipLogging ? "right-0.5" : "left-0.5"}`}
+              className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.security?.ipLogging ? "right-0.5" : "left-0.5"}`}
             />
           </button>
         </div>
@@ -796,11 +640,11 @@ const AdminSettingsPage = () => {
               </div>
             </div>
             <button
-              onClick={() => handleToggle("maintenanceMode")}
-              className={`relative w-12 h-6 rounded-full transition ${settings.maintenanceMode ? "bg-primary" : "bg-border"}`}
+              onClick={() => handleToggle("maintenance", "maintenanceMode")}
+              className={`relative w-12 h-6 rounded-full transition ${settings.maintenance?.maintenanceMode ? "bg-primary" : "bg-border"}`}
             >
               <div
-                className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.maintenanceMode ? "right-0.5" : "left-0.5"}`}
+                className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.maintenance?.maintenanceMode ? "right-0.5" : "left-0.5"}`}
               />
             </button>
           </div>
@@ -809,10 +653,8 @@ const AdminSettingsPage = () => {
               {lang === "bn" ? "রক্ষণাবেক্ষণ বার্তা" : "Maintenance Message"}
             </div>
             <textarea
-              value={settings.maintenanceMessage}
-              onChange={(e) =>
-                handleInputChange("maintenanceMessage", e.target.value)
-              }
+              value={settings.maintenance?.maintenanceMessage || ""}
+              onChange={(e) => handleInputChange("maintenance", "maintenanceMessage", e.target.value)}
               rows={3}
               className="w-full p-3 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary resize-none"
             />
@@ -900,7 +742,7 @@ const AdminSettingsPage = () => {
         return renderGeneralPanel();
       case "savings":
         return renderSavingsPanel();
-      case "payment":
+      case "payments":
         return renderPaymentPanel();
       case "notifications":
         return renderNotificationsPanel();
@@ -947,12 +789,21 @@ const AdminSettingsPage = () => {
           </button>
           <button
             onClick={saveSettings}
-            className="px-3 py-1.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1"
+            disabled={saving}
+            className="px-3 py-1.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
           >
-            <Save size={12} /> {lang === "bn" ? "সংরক্ষণ" : "Save"}
+            {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
+            {lang === "bn" ? "সংরক্ষণ" : "Save"}
           </button>
         </div>
       </div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      )}
 
       {/* Content */}
       <div className="flex flex-col lg:flex-row gap-5 p-4">

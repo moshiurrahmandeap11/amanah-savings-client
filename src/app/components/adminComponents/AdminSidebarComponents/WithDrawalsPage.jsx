@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -12,8 +12,17 @@ import {
   X,
   MessageSquare,
   AlertCircle,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const WithDrawalsPage = () => {
   const [isDark, setIsDark] = useState(false);
@@ -24,92 +33,50 @@ const WithDrawalsPage = () => {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [noteText, setNoteText] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [transactions, setTransactions] = useState([]);
+  const [stats, setStats] = useState({
+    pending: 0,
+    approved: 0,
+    totalDeposits: 0,
+    totalWithdrawals: 0,
+  });
+  const [loading, setLoading] = useState(false);
 
-  const [transactions, setTransactions] = useState([
-    {
-      id: 1,
-      name: "Rahela Begum",
-      avatar: "র",
-      phone: "+8801711234567",
-      type: "deposit",
-      goal: "Home Purchase",
-      method: "bKash",
-      amount: 5000,
-      txid: "BK20260524123",
-      date: "May 25, 2026, 10:32",
-      status: "pending",
-      hasScreenshot: true,
-    },
-    {
-      id: 2,
-      name: "Karim Mia",
-      avatar: "ক",
-      phone: "+8801812345678",
-      type: "deposit",
-      goal: "New Phone",
-      method: "Nagad",
-      amount: 2000,
-      txid: "NG20260524456",
-      date: "May 25, 2026, 09:15",
-      status: "pending",
-      hasScreenshot: true,
-    },
-    {
-      id: 3,
-      name: "Farhan Ahmed",
-      avatar: "ফ",
-      phone: "+8801912345678",
-      type: "withdraw",
-      goal: "Travel Fund",
-      method: "bKash",
-      amount: 5000,
-      txid: "WD20260523789",
-      date: "May 23, 2026, 14:00",
-      status: "pending",
-      hasScreenshot: false,
-    },
-    {
-      id: 4,
-      name: "Sumaiya Khanam",
-      avatar: "স",
-      phone: "+8801611234567",
-      type: "deposit",
-      goal: "Emergency Fund",
-      method: "bKash",
-      amount: 10000,
-      txid: "BK20260522999",
-      date: "May 22, 2026, 11:45",
-      status: "approved",
-      hasScreenshot: true,
-    },
-    {
-      id: 5,
-      name: "Arif Hossain",
-      avatar: "আ",
-      phone: "+8801511234567",
-      type: "deposit",
-      goal: "Car Purchase",
-      method: "Nagad",
-      amount: 3000,
-      txid: "NG20260521111",
-      date: "May 21, 2026, 16:20",
-      status: "rejected",
-      hasScreenshot: true,
-    },
-  ]);
+  const fetchTransactions = useCallback(async () => {
+    setLoading(true);
+    try {
+      let type = "all";
+      if (activeTab === "withdraw") type = "withdrawal";
+      else if (activeTab === "deposit") type = "deposit";
 
-  const stats = [
-    { icon: "⏳", value: "12", label: "Pending", color: "yellow" },
-    { icon: "✅", value: "385", label: "Approved", color: "green" },
-    { icon: "💰", value: "৳38.5L", label: "Total Deposits", color: "blue" },
-    { icon: "⬇️", value: "৳5L", label: "Total Withdrawals", color: "red" },
-  ];
+      const params = new URLSearchParams();
+      params.append("type", type);
+      params.append("status", activeTab === "pending" || activeTab === "approved" || activeTab === "rejected" ? activeTab : "");
+      params.append("page", "1");
+      params.append("limit", "20");
+      if (searchQuery) params.append("search", searchQuery);
+
+      const res = await axios.get(`${API_BASE}/admin/transactions?${params.toString()}`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (res.data.success) {
+        setTransactions(res.data.data.transactions || []);
+        setStats(res.data.data.stats || stats);
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to load transactions");
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, searchQuery]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-  }, []);
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -123,22 +90,36 @@ const WithDrawalsPage = () => {
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
-  const approveTransaction = (id) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status: "approved" } : t)),
-    );
-    showToast(
-      lang === "bn" ? "✅ লেনদেন অনুমোদিত!" : "✅ Transaction approved!",
-    );
+  const approveTransaction = async (id) => {
+    try {
+      const res = await axios.patch(
+        `${API_BASE}/admin/deposits/${id}/approve`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+      if (res.data.success) {
+        showToast(lang === "bn" ? "✅ লেনদেন অনুমোদিত!" : "✅ Transaction approved!");
+        fetchTransactions();
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Approval failed");
+    }
   };
 
-  const rejectTransaction = (id) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status: "rejected" } : t)),
-    );
-    showToast(
-      lang === "bn" ? "❌ লেনদেন বাতিল করা হয়েছে" : "❌ Transaction rejected",
-    );
+  const rejectTransaction = async (id) => {
+    try {
+      const res = await axios.patch(
+        `${API_BASE}/admin/deposits/${id}/reject`,
+        {},
+        { headers: getAuthHeaders() }
+      );
+      if (res.data.success) {
+        showToast(lang === "bn" ? "❌ লেনদেন বাতিল করা হয়েছে" : "❌ Transaction rejected");
+        fetchTransactions();
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Rejection failed");
+    }
   };
 
   const openNoteSheet = (transaction) => {
@@ -160,7 +141,7 @@ const WithDrawalsPage = () => {
   };
 
   const formatAmount = (amount) => {
-    const formatted = amount.toLocaleString();
+    const formatted = Number(amount || 0).toLocaleString();
     return lang === "bn"
       ? `৳${formatted.replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d])}`
       : `৳${formatted}`;
@@ -182,19 +163,24 @@ const WithDrawalsPage = () => {
     if (activeTab === "pending" && t.status !== "pending") return false;
     if (activeTab === "approved" && t.status !== "approved") return false;
     if (activeTab === "rejected" && t.status !== "rejected") return false;
-    if (activeTab === "withdraw" && t.type !== "withdraw") return false;
+    if (activeTab === "withdraw" && t.type !== "withdrawal") return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       const searchText =
-        `${t.name} ${t.txid} ${t.phone} ${t.goal}`.toLowerCase();
+        `${t.name || ""} ${t.txid || ""} ${t.phone || ""} ${t.goal || ""}`.toLowerCase();
       if (!searchText.includes(query)) return false;
     }
     return true;
   });
 
-  const pendingCount = transactions.filter(
-    (t) => t.status === "pending",
-  ).length;
+  const pendingCount = transactions.filter((t) => t.status === "pending").length;
+
+  const statCards = [
+    { icon: "⏳", value: String(stats.pending || pendingCount), label: "Pending", color: "yellow" },
+    { icon: "✅", value: String(stats.approved || 0), label: "Approved", color: "green" },
+    { icon: "💰", value: `৳${stats.totalDeposits || 0}`, label: "Total Deposits", color: "blue" },
+    { icon: "⬇️", value: `৳${stats.totalWithdrawals || 0}`, label: "Total Withdrawals", color: "red" },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -241,7 +227,7 @@ const WithDrawalsPage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4">
-        {stats.map((stat, idx) => (
+        {statCards.map((stat, idx) => (
           <div
             key={idx}
             className="bg-card border border-border rounded-xl p-3 flex items-center gap-2"
@@ -300,6 +286,7 @@ const WithDrawalsPage = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && fetchTransactions()}
             placeholder={
               lang === "bn"
                 ? "নাম বা TxID দিয়ে খুঁজুন..."
@@ -310,9 +297,16 @@ const WithDrawalsPage = () => {
         </div>
       </div>
 
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      )}
+
       {/* Transactions List */}
       <div className="px-4 pb-20 space-y-3">
-        {filteredTransactions.length === 0 ? (
+        {!loading && filteredTransactions.length === 0 ? (
           <div className="text-center py-12 text-foreground/50">
             📭{" "}
             {lang === "bn"
@@ -330,12 +324,12 @@ const WithDrawalsPage = () => {
               {/* Transaction Header */}
               <div className="p-3 flex items-start gap-2">
                 <div className="w-10 h-10 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  {tx.avatar}
+                  {tx.avatar || (tx.name ? tx.name[0] : "?")}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1 flex-wrap">
                     <span className="font-semibold text-sm text-foreground">
-                      {tx.name}
+                      {tx.name || "Unknown"}
                     </span>
                     <span
                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${getStatusBadge(tx.status)}`}
@@ -344,7 +338,7 @@ const WithDrawalsPage = () => {
                     </span>
                   </div>
                   <div className="text-[10px] text-foreground/50 mt-0.5">
-                    {tx.phone} · {tx.date}
+                    {tx.phone || ""} · {tx.date || new Date(tx.createdAt).toLocaleString()}
                   </div>
                 </div>
                 <div
@@ -362,7 +356,7 @@ const WithDrawalsPage = () => {
                     {lang === "bn" ? "লক্ষ্য" : "Goal"}
                   </div>
                   <div className="text-xs font-semibold text-foreground">
-                    {tx.goal}
+                    {tx.goal || "N/A"}
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">
@@ -370,13 +364,13 @@ const WithDrawalsPage = () => {
                     {lang === "bn" ? "মাধ্যম" : "Method"}
                   </div>
                   <div className="text-xs font-semibold text-foreground">
-                    {tx.method}
+                    {tx.method || "N/A"}
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">
                   <div className="text-[9px] text-foreground/50">TxID</div>
                   <div className="text-[10px] font-mono text-foreground/70">
-                    {tx.txid}
+                    {tx.txid || tx.id}
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">

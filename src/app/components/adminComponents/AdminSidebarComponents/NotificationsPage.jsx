@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, Send, Calendar, Edit, Settings } from "lucide-react";
+import { Bell, Send, Calendar, Edit, Settings, Loader2 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const NotificationsPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
@@ -10,51 +18,54 @@ const NotificationsPage = () => {
   const [message, setMessage] = useState(
     "Dear Members, your monthly savings reminder is due in 3 days. Please ensure timely deposits to maintain your savings streak! 🔥",
   );
-  const [audience, setAudience] = useState("All Members (12,456)");
-  const [notificationType, setNotificationType] = useState(
-    "📢 General Announcement",
-  );
+  const [audience, setAudience] = useState("all");
+  const [notificationType, setNotificationType] = useState("general");
   const [sendVia, setSendVia] = useState({
     inApp: true,
     sms: true,
     email: false,
     push: false,
   });
+  const [recentSends, setRecentSends] = useState([]);
+  const [cmsItems, setCmsItems] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const recentSends = [
-    {
-      title: "Eid Mubarak Message",
-      recipients: "All · 12,456 recipients",
-      openRate: "94% open rate",
-      date: "Apr 10, 2026",
-    },
-    {
-      title: "Payment Reminder — May",
-      recipients: "Overdue · 342 recipients",
-      openRate: "88% open rate",
-      date: "May 20, 2026",
-    },
-    {
-      title: "New Feature: AI Insights",
-      recipients: "All · 12,456 recipients",
-      openRate: "72% open rate",
-      date: "May 15, 2026",
-    },
-  ];
+  const fetchLogs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [logsRes, settingsRes] = await Promise.all([
+        axios.get(`${API_BASE}/admin/notifications/logs`, { headers: getAuthHeaders() }),
+        axios.get(`${API_BASE}/admin/settings`, { headers: getAuthHeaders() }),
+      ]);
+      if (logsRes.data.success) {
+        setRecentSends(logsRes.data.data.logs || []);
+      }
+      if (settingsRes.data.success) {
+        const s = settingsRes.data.data;
+        setCmsItems([
+          { icon: "🏦", label: "Platform Name", value: s.general?.platformName || "Amanah Savings" },
+          { icon: "📞", label: "Support Phone", value: s.general?.supportPhone || "01XXX-XXXXXX" },
+          { icon: "📧", label: "Support Email", value: s.general?.supportEmail || "support@amanah.bd" },
+          { icon: "💰", label: "Min Deposit", value: s.savings?.minDeposit || "৳500" },
+        ]);
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to load data");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const cmsItems = [
-    { icon: "🏦", label: "Platform Name", value: "Amanah Savings" },
-    { icon: "📞", label: "Support Phone", value: "01XXX-XXXXXX" },
-    { icon: "📧", label: "Support Email", value: "support@amanah.bd" },
-    { icon: "💰", label: "Min Deposit", value: "৳500" },
-  ];
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const showToast = (message) => {
     setToast({ show: true, message });
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
-  const sendNotification = () => {
+  const sendNotification = async () => {
     if (!title) {
       showToast("⚠️ Please enter a notification title");
       return;
@@ -63,9 +74,32 @@ const NotificationsPage = () => {
       showToast("⚠️ Please enter a notification message");
       return;
     }
-    showToast("✅ Notification sent successfully!");
-    setTitle("");
-    // Keep message as default
+    try {
+      const channels = [];
+      if (sendVia.inApp) channels.push("inApp");
+      if (sendVia.sms) channels.push("sms");
+      if (sendVia.email) channels.push("email");
+      if (sendVia.push) channels.push("push");
+
+      const res = await axios.post(
+        `${API_BASE}/admin/notifications/send`,
+        {
+          title,
+          message,
+          type: notificationType,
+          audience,
+          sendVia: channels,
+        },
+        { headers: getAuthHeaders() }
+      );
+      if (res.data.success) {
+        showToast("✅ Notification sent successfully!");
+        setTitle("");
+        fetchLogs();
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to send notification");
+    }
   };
 
   const handleCheckboxChange = (type) => {
@@ -83,6 +117,12 @@ const NotificationsPage = () => {
           📢 Send Notifications
         </h2>
       </div>
+
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-5">
         {/* Left Column - Compose Notification */}
@@ -102,12 +142,12 @@ const NotificationsPage = () => {
                 onChange={(e) => setAudience(e.target.value)}
                 className="w-full p-2.5 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
               >
-                <option>All Members (12,456)</option>
-                <option>Gold & Platinum Members</option>
-                <option>Pending KYC Members</option>
-                <option>Members with Overdue Payments</option>
-                <option>Members in Hajj Circles</option>
-                <option>Custom Segment...</option>
+                <option value="all">All Members</option>
+                <option value="gold_platinum">Gold & Platinum Members</option>
+                <option value="pending_kyc">Pending KYC Members</option>
+                <option value="overdue">Members with Overdue Payments</option>
+                <option value="hajj">Members in Hajj Circles</option>
+                <option value="custom">Custom Segment...</option>
               </select>
             </div>
 
@@ -121,11 +161,11 @@ const NotificationsPage = () => {
                 onChange={(e) => setNotificationType(e.target.value)}
                 className="w-full p-2.5 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
               >
-                <option>📢 General Announcement</option>
-                <option>⚠️ Payment Reminder</option>
-                <option>🎉 Celebration / Milestone</option>
-                <option>🚨 Security Alert</option>
-                <option>🌙 Seasonal (Ramadan, Eid)</option>
+                <option value="general">📢 General Announcement</option>
+                <option value="reminder">⚠️ Payment Reminder</option>
+                <option value="milestone">🎉 Celebration / Milestone</option>
+                <option value="security">🚨 Security Alert</option>
+                <option value="seasonal">🌙 Seasonal (Ramadan, Eid)</option>
               </select>
             </div>
 
@@ -228,22 +268,28 @@ const NotificationsPage = () => {
               📊 Recent Sends
             </div>
             <div className="space-y-3">
-              {recentSends.map((send, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 rounded-lg border border-border bg-background"
-                >
-                  <div className="font-semibold text-sm text-foreground">
-                    {send.title}
-                  </div>
-                  <div className="text-xs text-foreground/50 mt-1">
-                    {send.recipients} · {send.openRate}
-                  </div>
-                  <div className="text-xs text-foreground/40 mt-1">
-                    {send.date}
-                  </div>
+              {recentSends.length === 0 ? (
+                <div className="text-sm text-foreground/50 text-center py-4">
+                  No recent notifications
                 </div>
-              ))}
+              ) : (
+                recentSends.map((send, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 rounded-lg border border-border bg-background"
+                  >
+                    <div className="font-semibold text-sm text-foreground">
+                      {send.title}
+                    </div>
+                    <div className="text-xs text-foreground/50 mt-1">
+                      {send.recipients || send.audience || "All"} · {send.openRate || "N/A"}
+                    </div>
+                    <div className="text-xs text-foreground/40 mt-1">
+                      {send.date || new Date(send.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

@@ -19,7 +19,6 @@ const RegisterPage = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    phoneOtp: ["", "", "", "", "", ""],
     emailOtp: ["", "", "", "", "", ""],
     dob: "",
     gender: "",
@@ -66,9 +65,7 @@ const RegisterPage = () => {
   const [isRegistered, setIsRegistered] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [phoneOtpTimer, setPhoneOtpTimer] = useState(0);
   const [emailOtpTimer, setEmailOtpTimer] = useState(0);
-  const [phoneVerified, setPhoneVerified] = useState(false);
   const [emailVerified, setEmailVerified] = useState(false);
   const [pinStep, setPinStep] = useState(1);
   const [registrationData, setRegistrationData] = useState(null);
@@ -139,26 +136,17 @@ const RegisterPage = () => {
     Mymensingh: ["Mymensingh", "Jamalpur", "Netrokona", "Sherpur"],
   };
 
-  const totalSteps = 9;
+  const totalSteps = 8;
   const stepProgress = {
-    1: 11,
-    2: 22,
-    3: 33,
-    4: 44,
-    5: 55,
-    6: 66,
-    7: 77,
-    8: 88,
-    9: 100,
+    1: 12.5,
+    2: 25,
+    3: 37.5,
+    4: 50,
+    5: 62.5,
+    6: 75,
+    7: 87.5,
+    8: 100,
   };
-
-  useEffect(() => {
-    let interval;
-    if (phoneOtpTimer > 0) {
-      interval = setInterval(() => setPhoneOtpTimer((prev) => prev - 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [phoneOtpTimer]);
 
   useEffect(() => {
     let interval;
@@ -200,7 +188,7 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep4 = () => {
+  const validateStep3 = () => {
     const newErrors = {};
     if (!formData.occupation) newErrors.occupation = "Please select occupation";
     if (!formData.income) newErrors.income = "Please select income range";
@@ -208,7 +196,7 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep5 = () => {
+  const validateStep4 = () => {
     const newErrors = {};
     if (!formData.nomineeFirstName)
       newErrors.nomineeFirstName = "Nominee first name required";
@@ -220,7 +208,7 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep8 = () => {
+  const validateStep7 = () => {
     const newErrors = {};
     if (!formData.kycConsent)
       newErrors.kycConsent = "You must consent to KYC verification";
@@ -228,7 +216,7 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const validateStep9 = () => {
+  const validateStep8 = () => {
     const newErrors = {};
     if (!formData.paymentMethod) {
       newErrors.paymentMethod = "Please select a payment method";
@@ -261,10 +249,10 @@ const RegisterPage = () => {
   const handleNext = () => {
     let isValid = true;
     if (currentStep === 1) isValid = validateStep1();
+    else if (currentStep === 3) isValid = validateStep3();
     else if (currentStep === 4) isValid = validateStep4();
-    else if (currentStep === 5) isValid = validateStep5();
+    else if (currentStep === 7) isValid = validateStep7();
     else if (currentStep === 8) isValid = validateStep8();
-    else if (currentStep === 9) isValid = validateStep9();
 
     if (isValid && currentStep < totalSteps) {
       setCurrentStep((prev) => prev + 1);
@@ -282,58 +270,6 @@ const RegisterPage = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  };
-
-  const handleSendPhoneOtp = async () => {
-    if (!formData.phone || formData.phone.length < 10) {
-      showAlert("Invalid Phone", "Please enter a valid phone number", "error");
-      return;
-    }
-    try {
-      const response = await axiosInstance.post("/users/send-phone-otp", {
-        phone: formData.phone,
-      });
-      if (response.data.success) {
-        setPhoneOtpTimer(60);
-        const receivedOtp = response.data.otp;
-        if (receivedOtp) {
-          showAlert("OTP Sent!", `Your OTP is: ${receivedOtp}`, "info");
-        } else {
-          showAlert(
-            "OTP Sent!",
-            "Please check your phone for the verification code",
-            "success",
-          );
-        }
-      }
-    } catch (error) {
-      showAlert("Failed", "Could not send OTP. Please try again.", "error");
-    }
-  };
-
-  const handleVerifyPhoneOtp = async () => {
-    const otp = formData.phoneOtp.join("");
-    if (otp.length !== 6) {
-      showAlert("Invalid OTP", "Please enter all 6 digits", "error");
-      return;
-    }
-    try {
-      const response = await axiosInstance.post("/users/verify-phone-otp", {
-        phone: formData.phone,
-        otp: otp,
-      });
-      if (response.data.success) {
-        setPhoneVerified(true);
-        showAlert("Success!", "Phone number verified successfully", "success");
-        handleNext();
-      }
-    } catch (error) {
-      showAlert(
-        "Verification Failed",
-        "Invalid or expired OTP. Please try again.",
-        "error",
-      );
     }
   };
 
@@ -426,18 +362,8 @@ const RegisterPage = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validateStep9()) {
+    if (!validateStep8()) {
       showAlert("Validation Error", "Please fill all required fields", "error");
-      return;
-    }
-
-    if (!phoneVerified) {
-      showAlert(
-        "Phone Not Verified",
-        "Please verify your phone number first",
-        "warning",
-      );
-      setCurrentStep(2);
       return;
     }
 
@@ -447,7 +373,7 @@ const RegisterPage = () => {
         "Please verify your email address first",
         "warning",
       );
-      setCurrentStep(3);
+      setCurrentStep(2);
       return;
     }
 
@@ -654,7 +580,7 @@ const RegisterPage = () => {
       </div>
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex justify-between mb-8 overflow-x-auto pb-2">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((step) => (
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((step) => (
             <div key={step} className="flex flex-col items-center min-w-12.5">
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${currentStep === step ? "bg-primary text-white ring-4 ring-primary/20" : currentStep > step ? "bg-primary text-white" : "bg-card border border-border text-foreground/50"}`}
@@ -663,14 +589,13 @@ const RegisterPage = () => {
               </div>
               <div className="text-[10px] text-foreground/50 mt-1 whitespace-nowrap">
                 {step === 1 && "Account"}
-                {step === 2 && "Phone"}
-                {step === 3 && "Email"}
-                {step === 4 && "Personal"}
-                {step === 5 && "Nominee"}
-                {step === 6 && "Plan"}
-                {step === 7 && "PIN"}
-                {step === 8 && "KYC"}
-                {step === 9 && "Payment"}
+                {step === 2 && "Email"}
+                {step === 3 && "Personal"}
+                {step === 4 && "Nominee"}
+                {step === 5 && "Plan"}
+                {step === 6 && "PIN"}
+                {step === 7 && "KYC"}
+                {step === 8 && "Payment"}
               </div>
             </div>
           ))}
@@ -684,7 +609,7 @@ const RegisterPage = () => {
             className="bg-card border border-border rounded-2xl p-6"
           >
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 1 / 9
+              Step 1 / 8
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Create Account
@@ -917,7 +842,7 @@ const RegisterPage = () => {
               onClick={handleNext}
               className="w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition"
             >
-              Next — Verify Phone →
+              Next — Verify Email →
             </button>
           </motion.div>
         )}
@@ -930,82 +855,7 @@ const RegisterPage = () => {
             className="bg-card border border-border rounded-2xl p-6 text-center"
           >
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 2 / 9
-            </div>
-            <h2 className="text-2xl font-bold text-foreground mb-2">
-              Verify Phone
-            </h2>
-            <p className="text-foreground/60 mb-2">
-              A 6-digit OTP has been sent to{" "}
-              <strong>+880 {formData.phone}</strong>
-            </p>
-            {phoneOtpTimer === 0 && !phoneVerified && (
-              <button
-                onClick={handleSendPhoneOtp}
-                className="w-full py-2 bg-primary/10 text-primary rounded-xl font-semibold mb-3 text-sm"
-              >
-                Send OTP to +880{formData.phone}
-              </button>
-            )}
-            <div className="flex justify-center gap-2 mb-4">
-              {formData.phoneOtp.map((digit, idx) => (
-                <input
-                  key={idx}
-                  type="text"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => {
-                    const newOtp = [...formData.phoneOtp];
-                    newOtp[idx] = e.target.value.replace(/\D/g, "");
-                    updateField("phoneOtp", newOtp);
-                    if (e.target.value && idx < 5)
-                      document.getElementById(`phoneOtp-${idx + 1}`)?.focus();
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Backspace" && !digit && idx > 0)
-                      document.getElementById(`phoneOtp-${idx - 1}`)?.focus();
-                  }}
-                  id={`phoneOtp-${idx}`}
-                  className="w-12 h-12 text-center text-xl font-bold rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                  disabled={phoneVerified}
-                />
-              ))}
-            </div>
-            <p className="text-sm text-foreground/50 mb-4">
-              Didn&apos;t receive OTP?{" "}
-              <button
-                className="text-primary font-semibold"
-                disabled={phoneOtpTimer > 0 || phoneVerified}
-                onClick={handleSendPhoneOtp}
-              >
-                Resend {phoneOtpTimer > 0 && `(${phoneOtpTimer}s)`}
-              </button>
-            </p>
-            <button
-              onClick={handleVerifyPhoneOtp}
-              disabled={phoneVerified}
-              className={`w-full py-3 rounded-xl font-semibold mb-3 ${phoneVerified ? "bg-green-500 text-white" : "bg-linear-to-r from-primary to-primary-light text-white"}`}
-            >
-              {phoneVerified ? "✓ Phone Verified" : "Verify Phone"}
-            </button>
-            <button
-              onClick={handleBack}
-              className="w-full py-3 border border-border rounded-xl font-semibold text-foreground/70 hover:border-primary transition"
-            >
-              ← Previous
-            </button>
-          </motion.div>
-        )}
-
-        {/* Step 3 */}
-        {currentStep === 3 && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="bg-card border border-border rounded-2xl p-6 text-center"
-          >
-            <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 3 / 9
+              Step 2 / 8
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Verify Email
@@ -1072,15 +922,15 @@ const RegisterPage = () => {
           </motion.div>
         )}
 
-        {/* Step 4 */}
-        {currentStep === 4 && (
+        {/* Step 3 */}
+        {currentStep === 3 && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="bg-card border border-border rounded-2xl p-6"
           >
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 4 / 9
+              Step 3 / 8
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Tell us about you
@@ -1294,7 +1144,7 @@ const RegisterPage = () => {
             className="bg-card border border-border rounded-2xl p-6"
           >
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 5 / 9
+              Step 4 / 8
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Nominee Person
@@ -1436,7 +1286,7 @@ const RegisterPage = () => {
             className="bg-card border border-border rounded-2xl p-6"
           >
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 6 / 9
+              Step 5 / 8
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Choose Savings Plan
@@ -1562,7 +1412,7 @@ const RegisterPage = () => {
             className="bg-card border border-border rounded-2xl p-6 text-center"
           >
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 7 / 9
+              Step 6 / 8
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Set Transaction PIN
@@ -1654,7 +1504,7 @@ const RegisterPage = () => {
             className="bg-card border border-border rounded-2xl p-6"
           >
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 8 / 9
+              Step 7 / 8
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Verify Identity
@@ -1736,7 +1586,7 @@ const RegisterPage = () => {
             className="bg-card border border-border rounded-2xl p-6"
           >
             <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-              Step 9 / 9
+              Step 8 / 8
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
               Payment Details

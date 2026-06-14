@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield,
@@ -9,70 +9,71 @@ import {
   CheckCircle,
   Clock,
   Server,
+  Loader2,
 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const AdminSecurityPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [stats, setStats] = useState([]);
+  const [securityEvents, setSecurityEvents] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const stats = [
-    {
-      icon: "✅",
-      value: "99.9%",
-      label: "Uptime (30d)",
-      trend: "+99.9%",
-      trendUp: true,
-      bg: "bg-primary/10",
-      iconBg: "bg-primary/10",
-    },
-    {
-      icon: "🚫",
-      value: "23",
-      label: "Failed Logins (today)",
-      trend: "-12%",
-      trendUp: false,
-      bg: "bg-red-500/10",
-      iconBg: "bg-red-500/10",
-    },
-    {
-      icon: "⚠️",
-      value: "2",
-      label: "Suspicious IPs",
-      trend: null,
-      bg: "bg-amber-500/10",
-      iconBg: "bg-amber-500/10",
-    },
-  ];
+  const fetchEvents = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/admin/security/events?page=1&limit=50`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.data.success) {
+        setSecurityEvents(res.data.data.events || []);
+        const s = res.data.data.stats || {};
+        setStats([
+          {
+            icon: "✅",
+            value: s.uptime || "99.9%",
+            label: "Uptime (30d)",
+            trend: s.uptimeTrend || "+99.9%",
+            trendUp: true,
+            bg: "bg-primary/10",
+            iconBg: "bg-primary/10",
+          },
+          {
+            icon: "🚫",
+            value: String(s.failedLogins24h || 0),
+            label: "Failed Logins (today)",
+            trend: s.failedLoginsTrend || "-12%",
+            trendUp: false,
+            bg: "bg-red-500/10",
+            iconBg: "bg-red-500/10",
+          },
+          {
+            icon: "⚠️",
+            value: String(s.suspiciousIPs || 0),
+            label: "Suspicious IPs",
+            trend: null,
+            bg: "bg-amber-500/10",
+            iconBg: "bg-amber-500/10",
+          },
+        ]);
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to load security events");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const securityEvents = [
-    {
-      time: "10:42 AM",
-      event: "Failed login — 01712XXXXXX",
-      ip: "103.x.x.x",
-      status: "Blocked",
-      statusColor: "danger",
-    },
-    {
-      time: "09:18 AM",
-      event: "Admin login",
-      ip: "103.x.x.x",
-      status: "Success",
-      statusColor: "success",
-    },
-    {
-      time: "08:55 AM",
-      event: "Password reset",
-      ip: "103.x.x.x",
-      status: "Success",
-      statusColor: "success",
-    },
-    {
-      time: "08:30 AM",
-      event: "Suspicious login attempt",
-      ip: "45.x.x.x",
-      status: "Alert",
-      statusColor: "warning",
-    },
-  ];
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const showToast = (message) => {
     setToast({ show: true, message });
@@ -97,6 +98,12 @@ const AdminSecurityPage = () => {
       <h2 className="text-lg font-bold text-foreground mb-5">
         🔐 Security Logs
       </h2>
+
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
@@ -159,7 +166,7 @@ const AdminSecurityPage = () => {
                   className="border-b border-border last:border-0 hover:bg-primary/5 transition"
                 >
                   <td className="px-4 py-3 text-sm text-foreground">
-                    {event.time}
+                    {event.time || new Date(event.createdAt).toLocaleTimeString()}
                   </td>
                   <td className="px-4 py-3 text-sm text-foreground">
                     {event.event}

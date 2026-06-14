@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TrendingUp,
@@ -17,7 +17,16 @@ import {
   PieChart,
   Award,
   Flame,
+  Loader2,
 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const AdminReportsPage = () => {
   const [isDark, setIsDark] = useState(false);
@@ -26,6 +35,12 @@ const AdminReportsPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
   const [startDate, setStartDate] = useState("2024-05-01");
   const [endDate, setEndDate] = useState("2024-05-31");
+  const [kpis, setKpis] = useState([]);
+  const [deposits, setDeposits] = useState([]);
+  const [withdrawals, setWithdrawals] = useState([]);
+  const [goalCategories, setGoalCategories] = useState([]);
+  const [topSavers, setTopSavers] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const ranges = [
     { id: "7d", labelBn: "৭ দিন", labelEn: "7 days" },
@@ -34,120 +49,33 @@ const AdminReportsPage = () => {
     { id: "1y", labelBn: "১ বছর", labelEn: "1 year" },
   ];
 
-  const kpis = [
-    {
-      icon: <DollarSign size={20} />,
-      value: "৳৩৪.২ লাখ",
-      valueEn: "BDT 34.2 lakh",
-      labelBn: "মোট সঞ্চয় (এই মাস)",
-      labelEn: "Total Savings (This Month)",
-      change: "+18.3%",
-      changeUp: true,
-      color: "primary",
-      bg: "bg-primary/10",
-    },
-    {
-      icon: <Users size={20} />,
-      value: "৪৭ জন",
-      valueEn: "47 members",
-      labelBn: "নতুন সদস্য (এই মাস)",
-      labelEn: "New Members (This Month)",
-      change: "+23.7%",
-      changeUp: true,
-      color: "accent",
-      bg: "bg-cyan-500/10",
-    },
-    {
-      icon: <Activity size={20} />,
-      value: "১,২৮৪ টি",
-      valueEn: "1,284 items",
-      labelBn: "মোট লেনদেন",
-      labelEn: "Total Transactions",
-      change: "+9.1%",
-      changeUp: true,
-      color: "success",
-      bg: "bg-green-500/10",
-    },
-    {
-      icon: <CheckCircle size={20} />,
-      value: "৭৮.৯%",
-      valueEn: "78.9%",
-      labelBn: "KYC সম্পন্নের হার",
-      labelEn: "KYC Completion Rate",
-      change: "+5.2%",
-      changeUp: true,
-      color: "warning",
-      bg: "bg-amber-500/10",
-    },
-  ];
-
-  const deposits = [18, 24, 31, 28, 34, 41];
-  const withdrawals = [8, 10, 12, 9, 14, 16];
-  const months =
-    lang === "bn"
-      ? ["জান", "ফেব", "মার", "এপ্র", "মে", "জুন"]
-      : ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-  const maxVal = Math.max(...deposits, ...withdrawals);
-
-  const goalCategories = [
-    { nameBn: "বাড়ি", nameEn: "Home", percentage: 40, color: "#059669" },
-    { nameBn: "শিক্ষা", nameEn: "Education", percentage: 24, color: "#0891b2" },
-    { nameBn: "বিবাহ", nameEn: "Marriage", percentage: 18, color: "#f59e0b" },
-    { nameBn: "অন্যান্য", nameEn: "Other", percentage: 18, color: "#8b5cf6" },
-  ];
-
-  const topSavers = [
-    {
-      rank: "🥇",
-      nameBn: "নাজমুন নাহার",
-      nameEn: "Nazmun Nahar",
-      phone: "+880 1700-112233",
-      saved: "৳৩,২০,০০০",
-      savedEn: "BDT 320,000",
-      monthly: "↑ ৳২৫,০০০",
-      streak: "24 days",
-      progress: 87,
-    },
-    {
-      rank: "🥈",
-      nameBn: "মোহাম্মদ ইকবাল",
-      nameEn: "Mohammad Iqbal",
-      phone: "+880 1612-3456",
-      saved: "৳২,৩৪,০০০",
-      savedEn: "BDT 234,000",
-      monthly: "↑ ৳১৮,০০০",
-      streak: "18 days",
-      progress: 72,
-    },
-    {
-      rank: "🥉",
-      nameBn: "রাহেলা বেগম",
-      nameEn: "Rahela Begum",
-      phone: "+880 1712-3456",
-      saved: "৳১,২৫,০০০",
-      savedEn: "BDT 125,000",
-      monthly: "↑ ৳১২,৫০০",
-      streak: "15 days",
-      progress: 63,
-    },
-    {
-      rank: "4",
-      nameBn: "করিম সাহেব",
-      nameEn: "Karim Saheb",
-      phone: "+880 1823-4567",
-      saved: "৳৮৭,৫০০",
-      savedEn: "BDT 87,500",
-      monthly: "↓ ৳৩,০০০",
-      streak: "12 days",
-      progress: 51,
-    },
-  ];
+  const fetchReports = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/admin/reports?period=${activeRange}`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.data.success) {
+        const data = res.data.data;
+        setKpis(data.kpis || []);
+        setDeposits(data.periodStats?.deposits || []);
+        setWithdrawals(data.periodStats?.withdrawals || []);
+        setGoalCategories(data.goalCategories || []);
+        setTopSavers(data.topSavers || []);
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to load reports");
+    } finally {
+      setLoading(false);
+    }
+  }, [activeRange]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-  }, []);
+    fetchReports();
+  }, [fetchReports]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -189,8 +117,8 @@ const AdminReportsPage = () => {
     const locale = lang === "bn" ? "bn-BD" : "en-US";
     const csv =
       lang === "bn"
-        ? `রিপোর্ট,মান\nতারিখ,${new Date().toLocaleDateString(locale)}\nমোট সঞ্চয়,৳৩৪.২ লাখ\nনতুন সদস্য,৪৭ জন`
-        : `Report,Value\nDate,${new Date().toLocaleDateString(locale)}\nTotal Savings,BDT 34.2 lakh\nNew Members,47 members`;
+        ? `রিপোর্ট,মান\nতারিখ,${new Date().toLocaleDateString(locale)}\nমোট সঞ্চয়,${kpis[0]?.value || "N/A"}\nনতুন সদস্য,${kpis[1]?.value || "N/A"}`
+        : `Report,Value\nDate,${new Date().toLocaleDateString(locale)}\nTotal Savings,${kpis[0]?.valueEn || "N/A"}\nNew Members,${kpis[1]?.valueEn || "N/A"}`;
     const a = document.createElement("a");
     a.href =
       "data:text/csv;charset=utf-8," + encodeURIComponent("\ufeff" + csv);
@@ -211,6 +139,11 @@ const AdminReportsPage = () => {
     );
   };
 
+  const months =
+    lang === "bn"
+      ? ["জান", "ফেব", "মার", "এপ্র", "মে", "জুন"]
+      : ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+  const maxVal = Math.max(...(deposits.length ? deposits : [1]), ...(withdrawals.length ? withdrawals : [0])) || 1;
   const getBarHeight = (value) => (value / maxVal) * 160;
 
   return (
@@ -271,19 +204,20 @@ const AdminReportsPage = () => {
             className="px-3 py-2 rounded-lg border border-border bg-card text-foreground text-sm outline-none focus:border-primary"
           />
           <button
-            onClick={() =>
-              showToast(
-                lang === "bn"
-                  ? "🔄 ডেটা রিফ্রেশ হচ্ছে..."
-                  : "🔄 Refreshing data...",
-              )
-            }
+            onClick={() => fetchReports()}
             className="p-2 rounded-lg border border-border hover:border-primary transition"
           >
             <RefreshCw size={16} />
           </button>
         </div>
       </div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      )}
 
       {/* KPI Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -307,7 +241,7 @@ const AdminReportsPage = () => {
             />
             <div className="flex justify-between items-start">
               <div
-                className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center`}
+                className={`w-10 h-10 rounded-xl ${kpi.bg || "bg-primary/10"} flex items-center justify-center`}
               >
                 {kpi.icon}
               </div>
@@ -368,13 +302,13 @@ const AdminReportsPage = () => {
                 >
                   <div
                     className="flex-1 rounded-t-sm bg-primary cursor-pointer hover:opacity-80 transition"
-                    style={{ height: `${getBarHeight(deposits[idx])}px` }}
-                    title={`${lang === "bn" ? "জমা" : "Deposits"}: ৳${deposits[idx]} ${lang === "bn" ? "লাখ" : "lakh"}`}
+                    style={{ height: `${getBarHeight(deposits[idx] || 0)}px` }}
+                    title={`${lang === "bn" ? "জমা" : "Deposits"}: ৳${deposits[idx] || 0} ${lang === "bn" ? "লাখ" : "lakh"}`}
                   />
                   <div
                     className="flex-1 rounded-t-sm bg-cyan-500 cursor-pointer hover:opacity-80 transition"
-                    style={{ height: `${getBarHeight(withdrawals[idx])}px` }}
-                    title={`${lang === "bn" ? "উত্তোলন" : "Withdrawals"}: ৳${withdrawals[idx]} ${lang === "bn" ? "লাখ" : "lakh"}`}
+                    style={{ height: `${getBarHeight(withdrawals[idx] || 0)}px` }}
+                    title={`${lang === "bn" ? "উত্তোলন" : "Withdrawals"}: ৳${withdrawals[idx] || 0} ${lang === "bn" ? "লাখ" : "lakh"}`}
                   />
                 </div>
                 <span className="text-[10px] text-foreground/50">{month}</span>
@@ -399,50 +333,26 @@ const AdminReportsPage = () => {
                   stroke="var(--border)"
                   strokeWidth="20"
                 />
-                <circle
-                  cx="70"
-                  cy="70"
-                  r="55"
-                  fill="none"
-                  stroke="#059669"
-                  strokeWidth="20"
-                  strokeDasharray="138 207"
-                  strokeDashoffset="-52"
-                  strokeLinecap="round"
-                />
-                <circle
-                  cx="70"
-                  cy="70"
-                  r="55"
-                  fill="none"
-                  stroke="#0891b2"
-                  strokeWidth="20"
-                  strokeDasharray="83 262"
-                  strokeDashoffset="86"
-                  strokeLinecap="round"
-                />
-                <circle
-                  cx="70"
-                  cy="70"
-                  r="55"
-                  fill="none"
-                  stroke="#f59e0b"
-                  strokeWidth="20"
-                  strokeDasharray="62 283"
-                  strokeDashoffset="-31"
-                  strokeLinecap="round"
-                />
-                <circle
-                  cx="70"
-                  cy="70"
-                  r="55"
-                  fill="none"
-                  stroke="#8b5cf6"
-                  strokeWidth="20"
-                  strokeDasharray="62 283"
-                  strokeDashoffset="-93"
-                  strokeLinecap="round"
-                />
+                {goalCategories.map((cat, idx) => {
+                  const total = goalCategories.reduce((s, c) => s + (c.percentage || 0), 0) || 100;
+                  const offset = goalCategories.slice(0, idx).reduce((s, c) => s + (c.percentage || 0), 0);
+                  const dash = (cat.percentage / total) * 345;
+                  const dashOffset = 345 - (offset / total) * 345;
+                  return (
+                    <circle
+                      key={idx}
+                      cx="70"
+                      cy="70"
+                      r="55"
+                      fill="none"
+                      stroke={cat.color || "#059669"}
+                      strokeWidth="20"
+                      strokeDasharray={`${dash} ${345 - dash}`}
+                      strokeDashoffset={-dashOffset}
+                      strokeLinecap="round"
+                    />
+                  );
+                })}
                 <text
                   x="70"
                   y="66"
@@ -451,7 +361,7 @@ const AdminReportsPage = () => {
                   fontSize="14"
                   fontWeight="700"
                 >
-                  ৩,৮৪১
+                  {goalCategories.reduce((s, c) => s + (c.count || 0), 0) || 0}
                 </text>
                 <text
                   x="70"
@@ -473,7 +383,7 @@ const AdminReportsPage = () => {
                   <div className="flex items-center gap-2">
                     <div
                       className="w-2 h-2 rounded-full"
-                      style={{ background: cat.color }}
+                      style={{ background: cat.color || "#059669" }}
                     />
                     <span className="text-sm text-foreground">
                       {lang === "bn" ? cat.nameBn : cat.nameEn}
@@ -535,22 +445,22 @@ const AdminReportsPage = () => {
                 >
                   <td className="px-4 py-3">
                     <span
-                      className={`font-bold ${saver.rank === "🥇" ? "text-amber-500" : saver.rank === "🥈" ? "text-gray-400" : saver.rank === "🥉" ? "text-amber-600" : "text-foreground/50"}`}
+                      className={`font-bold ${idx === 0 ? "text-amber-500" : idx === 1 ? "text-gray-400" : idx === 2 ? "text-amber-600" : "text-foreground/50"}`}
                     >
-                      {saver.rank}
+                      {idx < 3 ? ["🥇", "🥈", "🥉"][idx] : idx + 1}
                     </span>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm">
-                        {saver.nameBn[0]}
+                        {(saver.nameBn || saver.nameEn || "?")[0]}
                       </div>
                       <div>
                         <div className="font-semibold text-sm text-foreground">
                           {lang === "bn" ? saver.nameBn : saver.nameEn}
                         </div>
                         <div className="text-xs text-foreground/50">
-                          {saver.phone}
+                          {saver.phone || ""}
                         </div>
                       </div>
                     </div>
@@ -559,24 +469,24 @@ const AdminReportsPage = () => {
                     {lang === "bn" ? saver.saved : saver.savedEn}
                   </td>
                   <td
-                    className={`px-4 py-3 text-sm ${saver.monthly.includes("↑") ? "text-green-500" : "text-red-500"}`}
+                    className={`px-4 py-3 text-sm ${(saver.monthly || "").includes("↑") ? "text-green-500" : "text-red-500"}`}
                   >
-                    {saver.monthly}
+                    {saver.monthly || "↑ ৳0"}
                   </td>
                   <td className="px-4 py-3 text-sm">
                     <Flame size={12} className="inline mr-1 text-orange-500" />{" "}
-                    {saver.streak}
+                    {saver.streak || "0 days"}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
                         <div
                           className="h-full rounded-full bg-linear-to-r from-primary to-primary-light"
-                          style={{ width: `${saver.progress}%` }}
+                          style={{ width: `${saver.progress || 0}%` }}
                         />
                       </div>
                       <span className="text-xs font-semibold text-foreground">
-                        {saver.progress}%
+                        {saver.progress || 0}%
                       </span>
                     </div>
                   </td>

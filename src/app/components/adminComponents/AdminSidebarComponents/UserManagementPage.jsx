@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -11,8 +11,11 @@ import {
   Ban,
   CheckCircle,
   XCircle,
-  AlertCircle,
+  Loader2,
 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
 
 const UserManagementPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -20,144 +23,89 @@ const UserManagementPage = () => {
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 20,
+  });
 
   const filters = ["All", "Active", "Pending KYC", "Flagged", "Suspended"];
 
-  const users = [
-    {
-      id: 1,
-      name: "Fatema Akter",
-      email: "fatema@email.com",
-      phone: "+880 1712-XXXXXX",
-      avatar: "F",
-      avatarBg: "from-primary to-primary-light",
-      plan: "Gold",
-      planColor: "warn",
-      saved: "৳2,45,500",
-      kyc: "Verified",
-      kycStatus: "ok",
-      risk: "Low (12)",
-      riskColor: "primary",
-      status: "Active",
-      statusColor: "ok",
-      joined: "Jan 2025",
-      goals: "4 goals",
-      streak: "🔥 90 days",
-      referrals: "12",
-    },
-    {
-      id: 2,
-      name: "Karim Ahmed",
-      email: "karim@email.com",
-      phone: "+880 1855-XXXXXX",
-      avatar: "K",
-      avatarBg: "from-blue-500 to-purple-500",
-      plan: "Silver",
-      planColor: "info",
-      saved: "৳98,500",
-      kyc: "Verified",
-      kycStatus: "ok",
-      risk: "Low (8)",
-      riskColor: "primary",
-      status: "Active",
-      statusColor: "ok",
-      joined: "Mar 2025",
-      goals: "2 goals",
-      streak: "🔥 45 days",
-      referrals: "3",
-    },
-    {
-      id: 3,
-      name: "Unknown User",
-      email: "ID #4821 — No email",
-      phone: "+880 1999-XXXXXX",
-      avatar: "X",
-      avatarBg: "from-red-500 to-orange-500",
-      plan: "Bronze",
-      planColor: "gray",
-      saved: "৳12,000",
-      kyc: "Pending",
-      kycStatus: "warn",
-      risk: "High (92)",
-      riskColor: "danger",
-      status: "Flagged",
-      statusColor: "danger",
-      joined: "May 2026",
-      goals: "1 goal",
-      streak: "0 days",
-      referrals: "0",
-    },
-    {
-      id: 4,
-      name: "Nasrin Khatun",
-      email: "nasrin@email.com",
-      phone: "+880 1677-XXXXXX",
-      avatar: "N",
-      avatarBg: "from-primary to-primary-light",
-      plan: "Gold",
-      planColor: "warn",
-      saved: "৳1,24,000",
-      kyc: "In Review",
-      kycStatus: "info",
-      risk: "Med (44)",
-      riskColor: "warning",
-      status: "KYC Review",
-      statusColor: "info",
-      joined: "Feb 2025",
-      goals: "3 goals",
-      streak: "🔥 22 days",
-      referrals: "5",
-    },
-    {
-      id: 5,
-      name: "Rahim Islam",
-      email: "rahim@email.com",
-      phone: "+880 1911-XXXXXX",
-      avatar: "R",
-      avatarBg: "from-purple-500 to-indigo-500",
-      plan: "Platinum",
-      planColor: "purple",
-      saved: "৳8,40,000",
-      kyc: "Verified",
-      kycStatus: "ok",
-      risk: "Low (5)",
-      riskColor: "primary",
-      status: "Active",
-      statusColor: "ok",
-      joined: "Sep 2024",
-      goals: "6 goals",
-      streak: "🔥 200 days",
-      referrals: "28",
-    },
-  ];
-
-  const getBadgeClass = (type, color) => {
-    const classes = {
-      ok: "bg-green-500/10 text-green-500",
-      warn: "bg-amber-500/10 text-amber-500",
-      info: "bg-blue-500/10 text-blue-500",
-      danger: "bg-red-500/10 text-red-500",
-      primary: "bg-primary/10 text-primary",
-      warning: "bg-amber-500/10 text-amber-500",
-      gray: "bg-gray-500/10 text-gray-500",
-      purple: "bg-purple-500/10 text-purple-500",
-    };
-    return classes[color] || classes.ok;
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phone.includes(searchQuery);
-    const matchesFilter =
-      activeFilter === "All" ||
-      (activeFilter === "Active" && user.status === "Active") ||
-      (activeFilter === "Pending KYC" && user.kyc === "Pending") ||
-      (activeFilter === "Flagged" && user.status === "Flagged") ||
-      (activeFilter === "Suspended" && user.status === "Suspended");
-    return matchesSearch && matchesFilter;
-  });
+  const fetchUsers = useCallback(async (page = 1) => {
+    setLoading(true);
+    try {
+      let status = "";
+      let kycStatus = "";
+      if (activeFilter === "Active") status = "active";
+      else if (activeFilter === "Suspended") status = "suspended";
+      else if (activeFilter === "Flagged") status = "banned";
+      else if (activeFilter === "Pending KYC") kycStatus = "pending";
+
+      const params = new URLSearchParams();
+      params.append("page", page);
+      params.append("limit", pagination.itemsPerPage);
+      if (searchQuery) params.append("search", searchQuery);
+      if (status) params.append("status", status);
+      if (kycStatus) params.append("kycStatus", kycStatus);
+
+      const res = await axios.get(`${API_BASE}/admin/users?${params.toString()}`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (res.data.success) {
+        setUsers(res.data.data.users);
+        setPagination(res.data.data.pagination);
+      }
+    } catch (err) {
+      showToastMessage(err.response?.data?.message || "Failed to fetch users", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, [activeFilter, searchQuery, pagination.itemsPerPage]);
+
+  useEffect(() => {
+    fetchUsers(1);
+  }, [fetchUsers]);
+
+  const updateUserStatus = async (userId, updates) => {
+    try {
+      const res = await axios.patch(
+        `${API_BASE}/admin/users/${userId}/status`,
+        updates,
+        { headers: getAuthHeaders() }
+      );
+      if (res.data.success) {
+        showToastMessage(res.data.message, "success");
+        fetchUsers(pagination.currentPage);
+      }
+    } catch (err) {
+      showToastMessage(err.response?.data?.message || "Action failed", "error");
+    }
+  };
+
+  const approveKyc = async (userId) => {
+    try {
+      const res = await axios.patch(
+        `${API_BASE}/admin/users/${userId}/kyc`,
+        { status: "approved" },
+        { headers: getAuthHeaders() }
+      );
+      if (res.data.success) {
+        showToastMessage(res.data.message, "success");
+        fetchUsers(pagination.currentPage);
+      }
+    } catch (err) {
+      showToastMessage(err.response?.data?.message || "KYC approval failed", "error");
+    }
+  };
 
   const showToastMessage = (message, type = "success") => {
     setToast({ show: true, message, type });
@@ -178,25 +126,88 @@ const UserManagementPage = () => {
 
   const handleAction = (action, user) => {
     if (action === "suspend") {
-      showToastMessage(`⏸️ User ${user.name} suspended`, "warning");
+      if (confirm(`Suspend user ${user.fullName || user.firstName}?`)) {
+        updateUserStatus(user.id, { isSuspended: true });
+      }
     } else if (action === "ban") {
-      if (confirm(`Ban user ${user.name} permanently?`)) {
-        showToastMessage(`🚫 User ${user.name} banned permanently`, "error");
+      if (confirm(`Ban user ${user.fullName || user.firstName} permanently?`)) {
+        updateUserStatus(user.id, { isBanned: true });
       }
     } else if (action === "approveKYC") {
-      showToastMessage(`✅ KYC approved for ${user.name}`, "success");
+      approveKyc(user.id);
     } else if (action === "edit") {
-      showToastMessage(`✏️ Opening edit form for ${user.name}`, "info");
+      showToastMessage(`✏️ Opening edit form for ${user.fullName || user.firstName}`, "info");
     }
+  };
+
+  const getBadgeClass = (type, color) => {
+    const classes = {
+      ok: "bg-green-500/10 text-green-500",
+      warn: "bg-amber-500/10 text-amber-500",
+      info: "bg-blue-500/10 text-blue-500",
+      danger: "bg-red-500/10 text-red-500",
+      primary: "bg-primary/10 text-primary",
+      warning: "bg-amber-500/10 text-amber-500",
+      gray: "bg-gray-500/10 text-gray-500",
+      purple: "bg-purple-500/10 text-purple-500",
+    };
+    return classes[color] || classes.ok;
+  };
+
+  const getKycDisplay = (kycStatus) => {
+    if (kycStatus === "approved") return { label: "✅ Verified", color: "ok" };
+    if (kycStatus === "pending") return { label: "⚠️ Pending", color: "warn" };
+    return { label: "🔄 In Review", color: "info" };
+  };
+
+  const getStatusDisplay = (user) => {
+    if (user.isBanned) return { label: "🚫 Banned", color: "danger" };
+    if (user.isSuspended) return { label: "⏸️ Suspended", color: "warning" };
+    if (!user.accountActive) return { label: "⏳ Inactive", color: "gray" };
+    if (user.kycStatus === "pending") return { label: "KYC Review", color: "info" };
+    return { label: "Active", color: "ok" };
+  };
+
+  const getPlanDisplay = (plan) => {
+    const map = {
+      gold: { emoji: "🥇", label: "Gold", color: "warn" },
+      silver: { emoji: "🥈", label: "Silver", color: "info" },
+      platinum: { emoji: "💎", label: "Platinum", color: "purple" },
+      bronze: { emoji: "🥉", label: "Bronze", color: "gray" },
+    };
+    return map[plan?.toLowerCase()] || map.bronze;
+  };
+
+  const getAvatarBg = (index) => {
+    const colors = [
+      "from-primary to-primary-light",
+      "from-blue-500 to-purple-500",
+      "from-red-500 to-orange-500",
+      "from-purple-500 to-indigo-500",
+      "from-green-500 to-teal-500",
+      "from-pink-500 to-rose-500",
+    ];
+    return colors[index % colors.length];
+  };
+
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const formatCurrency = (amount) => {
+    if (!amount) return "৳0";
+    return `৳${amount.toLocaleString("en-IN")}`;
   };
 
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-        <h2 className="text-lg font-bold text-foreground">
-          👥 User Management
-        </h2>
+        <h2 className="text-lg font-bold text-foreground">👥 User Management</h2>
         <button
           onClick={() => showToastMessage("➕ Opening add user form...")}
           className="px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-sm font-semibold flex items-center gap-2 w-full sm:w-auto justify-center"
@@ -214,6 +225,7 @@ const UserManagementPage = () => {
             placeholder="Search by name, phone, NID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && fetchUsers(1)}
             className="flex-1 bg-transparent outline-none text-sm text-foreground"
           />
         </div>
@@ -221,7 +233,7 @@ const UserManagementPage = () => {
           {filters.map((filter) => (
             <button
               key={filter}
-              onClick={() => setActiveFilter(filter)}
+              onClick={() => { setActiveFilter(filter); fetchUsers(1); }}
               className={`px-4 py-1.5 rounded-lg text-xs font-semibold border transition ${
                 activeFilter === filter
                   ? "bg-primary/10 border-primary text-primary"
@@ -232,11 +244,7 @@ const UserManagementPage = () => {
             </button>
           ))}
           <button
-            onClick={() =>
-              showToastMessage(
-                "⬇️ Exporting CSV... download will start shortly",
-              )
-            }
+            onClick={() => showToastMessage("⬇️ Exporting CSV... download will start shortly")}
             className="px-4 py-1.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1"
           >
             <Download size={12} /> Export
@@ -246,194 +254,152 @@ const UserManagementPage = () => {
 
       {/* Users Table */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-200">
-            <thead>
-              <tr className="border-b border-border bg-background">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Member
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Phone
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Plan
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Total Saved
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  KYC
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Risk Score
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Joined
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="border-b border-border last:border-0 hover:bg-primary/5 transition"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`w-8 h-8 rounded-full bg-linear-to-r ${user.avatarBg} flex items-center justify-center text-white font-bold text-sm`}
-                      >
-                        {user.avatar}
-                      </div>
-                      <div>
-                        <div className="font-semibold text-sm text-foreground">
-                          {user.name}
-                        </div>
-                        <div className="text-xs text-foreground/50">
-                          {user.email}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-foreground">
-                    {user.phone}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(user.plan, user.planColor)}`}
-                    >
-                      {user.plan === "Gold"
-                        ? "🥇 Gold"
-                        : user.plan === "Silver"
-                          ? "🥈 Silver"
-                          : user.plan === "Platinum"
-                            ? "💎 Platinum"
-                            : "🥉 Bronze"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm font-bold text-primary">
-                    {user.saved}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(user.kyc, user.kycStatus)}`}
-                    >
-                      {user.kyc === "Verified"
-                        ? "✅ Verified"
-                        : user.kyc === "Pending"
-                          ? "⚠️ Pending"
-                          : "🔄 In Review"}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-xs font-bold ${user.riskColor === "danger" ? "text-red-500" : user.riskColor === "warning" ? "text-amber-500" : "text-primary"}`}
-                    >
-                      {user.risk}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(user.status, user.statusColor)}`}
-                    >
-                      {user.status === "Flagged"
-                        ? "🚨 Flagged"
-                        : user.status === "KYC Review"
-                          ? "KYC Review"
-                          : user.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-foreground/50">
-                    {user.joined}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openUserModal(user)}
-                        className="p-1.5 rounded-lg border border-border hover:border-primary transition"
-                        title="View"
-                      >
-                        <Eye size={14} />
-                      </button>
-                      <button
-                        onClick={() => handleAction("edit", user)}
-                        className="p-1.5 rounded-lg border border-border hover:border-primary transition"
-                        title="Edit"
-                      >
-                        <Edit size={14} />
-                      </button>
-                      {user.status === "Flagged" ? (
-                        <button
-                          onClick={() => handleAction("ban", user)}
-                          className="p-1.5 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition"
-                          title="Ban"
-                        >
-                          <Ban size={14} />
-                        </button>
-                      ) : user.kyc === "In Review" ? (
-                        <button
-                          onClick={() => handleAction("approveKYC", user)}
-                          className="p-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition"
-                          title="Approve KYC"
-                        >
-                          <CheckCircle size={14} />
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleAction("suspend", user)}
-                          className="p-1.5 rounded-lg border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition"
-                          title="Suspend"
-                        >
-                          <XCircle size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={32} className="animate-spin text-primary" />
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[800px]">
+                <thead>
+                  <tr className="border-b border-border bg-background">
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Member</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Phone</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Plan</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Total Saved</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">KYC</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Joined</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="px-4 py-10 text-center text-sm text-foreground/50">
+                        No users found
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((user, idx) => {
+                      const kyc = getKycDisplay(user.kycStatus);
+                      const status = getStatusDisplay(user);
+                      const plan = getPlanDisplay(user.selectedPlan);
+                      const avatar = user.firstName?.[0]?.toUpperCase() || "?";
+                      return (
+                        <tr key={user.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition">
+                          <td className="px-4 py-3">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-8 h-8 rounded-full bg-linear-to-r ${getAvatarBg(idx)} flex items-center justify-center text-white font-bold text-sm`}>
+                                {avatar}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-sm text-foreground">{user.fullName || `${user.firstName} ${user.lastName || ""}`.trim()}</div>
+                                <div className="text-xs text-foreground/50">{user.email || "No email"}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-foreground">{user.phone}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(plan.label, plan.color)}`}>
+                              {plan.emoji} {plan.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-sm font-bold text-primary">{formatCurrency(user.totalSaved)}</td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(kyc.label, kyc.color)}`}>
+                              {kyc.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(status.label, status.color)}`}>
+                              {status.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-xs text-foreground/50">{formatDate(user.createdAt)}</td>
+                          <td className="px-4 py-3">
+                            <div className="flex gap-2">
+                              <button onClick={() => openUserModal(user)} className="p-1.5 rounded-lg border border-border hover:border-primary transition" title="View">
+                                <Eye size={14} />
+                              </button>
+                              <button onClick={() => handleAction("edit", user)} className="p-1.5 rounded-lg border border-border hover:border-primary transition" title="Edit">
+                                <Edit size={14} />
+                              </button>
+                              {user.isBanned ? (
+                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-green-500/30 text-green-500 hover:bg-green-500/10 transition" title="Unban">
+                                  <CheckCircle size={14} />
+                                </button>
+                              ) : user.kycStatus === "pending" ? (
+                                <button onClick={() => handleAction("approveKYC", user)} className="p-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition" title="Approve KYC">
+                                  <CheckCircle size={14} />
+                                </button>
+                              ) : (
+                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition" title="Suspend">
+                                  <XCircle size={14} />
+                                </button>
+                              )}
+                              {!user.isBanned && (
+                                <button onClick={() => handleAction("ban", user)} className="p-1.5 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition" title="Ban">
+                                  <Ban size={14} />
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-        {/* Pagination */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-t border-border">
-          <div className="text-xs text-foreground/50">
-            Showing {filteredUsers.length} of {users.length} members
-          </div>
-          <div className="flex gap-2">
-            <button className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition">
-              ← Prev
-            </button>
-            <button className="px-3 py-1 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold border-none">
-              1
-            </button>
-            <button className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition">
-              2
-            </button>
-            <button className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition">
-              3
-            </button>
-            <button className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition">
-              Next →
-            </button>
-          </div>
-        </div>
+            {/* Pagination */}
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-t border-border">
+              <div className="text-xs text-foreground/50">
+                Showing {users.length} of {pagination.totalItems} members
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => fetchUsers(pagination.currentPage - 1)}
+                  disabled={pagination.currentPage <= 1}
+                  className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition disabled:opacity-50"
+                >
+                  ← Prev
+                </button>
+                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                  const page = i + 1;
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => fetchUsers(page)}
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                        pagination.currentPage === page
+                          ? "bg-linear-to-r from-primary to-primary-light text-white border-none"
+                          : "border border-border hover:border-primary"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => fetchUsers(pagination.currentPage + 1)}
+                  disabled={pagination.currentPage >= pagination.totalPages}
+                  className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition disabled:opacity-50"
+                >
+                  Next →
+                </button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* User Modal */}
       <AnimatePresence>
         {showUserModal && selectedUser && (
-          <div
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-            onClick={closeUserModal}
-          >
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={closeUserModal}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -441,137 +407,66 @@ const UserManagementPage = () => {
               className="bg-card rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Header */}
               <div className="bg-linear-to-r from-primary to-primary-light p-6 text-white relative">
-                <button
-                  onClick={closeUserModal}
-                  className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition"
-                >
-                  ✕
-                </button>
+                <button onClick={closeUserModal} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition">✕</button>
                 <div className="flex flex-col items-center">
-                  <div
-                    className={`w-16 h-16 rounded-full bg-linear-to-r ${selectedUser.avatarBg} flex items-center justify-center text-white text-2xl font-bold mb-3`}
-                  >
-                    {selectedUser.avatar}
+                  <div className={`w-16 h-16 rounded-full bg-linear-to-r ${getAvatarBg(0)} flex items-center justify-center text-white text-2xl font-bold mb-3`}>
+                    {selectedUser.firstName?.[0]?.toUpperCase() || "?"}
                   </div>
-                  <div className="text-xl font-bold">{selectedUser.name}</div>
-                  <div className="text-sm text-white/80">
-                    {selectedUser.phone} · {selectedUser.email}
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold bg-white/20`}
-                    >
-                      {selectedUser.plan} Member
-                    </span>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold bg-white/20`}
-                    >
-                      {selectedUser.kyc === "Verified"
-                        ? "✅ KYC Verified"
-                        : selectedUser.kyc === "Pending"
-                          ? "⚠️ KYC Pending"
-                          : "🔄 KYC In Review"}
-                    </span>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold bg-white/20`}
-                    >
-                      {selectedUser.status}
-                    </span>
+                  <div className="text-xl font-bold">{selectedUser.fullName || `${selectedUser.firstName} ${selectedUser.lastName || ""}`.trim()}</div>
+                  <div className="text-sm text-white/80">{selectedUser.phone} · {selectedUser.email || "No email"}</div>
+                  <div className="flex gap-2 mt-3 flex-wrap justify-center">
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20">{getPlanDisplay(selectedUser.selectedPlan).label} Member</span>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20">{getKycDisplay(selectedUser.kycStatus).label}</span>
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20">{getStatusDisplay(selectedUser).label}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Modal Body */}
               <div className="p-6">
                 <div className="mb-5">
-                  <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-3">
-                    Savings Overview
-                  </div>
+                  <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-3">Account Overview</div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-background rounded-xl p-3">
-                      <div className="text-[10px] text-foreground/50">
-                        Total Savings
-                      </div>
-                      <div className="text-lg font-bold text-primary">
-                        {selectedUser.saved}
-                      </div>
+                      <div className="text-[10px] text-foreground/50">Total Savings</div>
+                      <div className="text-lg font-bold text-primary">{formatCurrency(selectedUser.totalSaved)}</div>
                     </div>
                     <div className="bg-background rounded-xl p-3">
-                      <div className="text-[10px] text-foreground/50">
-                        Active Goals
-                      </div>
-                      <div className="text-lg font-bold text-foreground">
-                        {selectedUser.goals}
-                      </div>
+                      <div className="text-[10px] text-foreground/50">Total Deposits</div>
+                      <div className="text-lg font-bold text-foreground">{selectedUser.totalDeposits || 0}</div>
                     </div>
                     <div className="bg-background rounded-xl p-3">
-                      <div className="text-[10px] text-foreground/50">
-                        Member Since
-                      </div>
-                      <div className="text-sm font-semibold text-foreground">
-                        {selectedUser.joined}
-                      </div>
+                      <div className="text-[10px] text-foreground/50">Total Withdrawals</div>
+                      <div className="text-lg font-bold text-foreground">{selectedUser.totalWithdrawals || 0}</div>
                     </div>
                     <div className="bg-background rounded-xl p-3">
-                      <div className="text-[10px] text-foreground/50">
-                        Streak
-                      </div>
-                      <div className="text-sm font-semibold text-foreground">
-                        {selectedUser.streak}
-                      </div>
+                      <div className="text-[10px] text-foreground/50">Level</div>
+                      <div className="text-lg font-bold text-foreground">{selectedUser.level || 1}</div>
                     </div>
                     <div className="bg-background rounded-xl p-3">
-                      <div className="text-[10px] text-foreground/50">
-                        Risk Score
-                      </div>
-                      <div
-                        className={`text-sm font-bold ${selectedUser.riskColor === "danger" ? "text-red-500" : selectedUser.riskColor === "warning" ? "text-amber-500" : "text-primary"}`}
-                      >
-                        {selectedUser.risk}
-                      </div>
+                      <div className="text-[10px] text-foreground/50">Member Since</div>
+                      <div className="text-sm font-semibold text-foreground">{formatDate(selectedUser.createdAt)}</div>
                     </div>
                     <div className="bg-background rounded-xl p-3">
-                      <div className="text-[10px] text-foreground/50">
-                        Referrals
-                      </div>
-                      <div className="text-sm font-semibold text-foreground">
-                        {selectedUser.referrals} members
-                      </div>
+                      <div className="text-[10px] text-foreground/50">Last Login</div>
+                      <div className="text-sm font-semibold text-foreground">{formatDate(selectedUser.lastLogin)}</div>
                     </div>
-                  </div>
-                </div>
-
-                <div className="mb-5">
-                  <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-3">
-                    Recent Activity
-                  </div>
-                  <div className="space-y-2">
-                    <div className="p-3 bg-background rounded-lg text-sm text-foreground/70">
-                      💳 Deposit ৳5,000 via bKash · Today 10:32 AM
+                    <div className="bg-background rounded-xl p-3">
+                      <div className="text-[10px] text-foreground/50">Division</div>
+                      <div className="text-sm font-semibold text-foreground">{selectedUser.division || "N/A"}</div>
                     </div>
-                    <div className="p-3 bg-background rounded-lg text-sm text-foreground/70">
-                      🎯 Created new goal: Hajj Fund · 2 days ago
-                    </div>
-                    <div className="p-3 bg-background rounded-lg text-sm text-foreground/70">
-                      ✅ KYC verified · Jan 15, 2025
+                    <div className="bg-background rounded-xl p-3">
+                      <div className="text-[10px] text-foreground/50">Referral Code</div>
+                      <div className="text-sm font-semibold text-foreground">{selectedUser.referralCode || "N/A"}</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Modal Footer */}
               <div className="p-4 border-t border-border flex gap-3">
-                <button className="flex-1 py-3 rounded-xl border-2 border-primary/30 text-primary font-semibold hover:bg-primary/5 transition">
-                  📧 Message
-                </button>
-                <button className="flex-1 py-3 rounded-xl border-2 border-amber-500/30 text-amber-500 font-semibold hover:bg-amber-500/5 transition">
-                  ⏸️ Suspend
-                </button>
-                <button className="flex-1 py-3 rounded-xl border-2 border-red-500/30 text-red-500 font-semibold hover:bg-red-500/5 transition">
-                  🚫 Ban
-                </button>
+                <button className="flex-1 py-3 rounded-xl border-2 border-primary/30 text-primary font-semibold hover:bg-primary/5 transition">📧 Message</button>
+                <button onClick={() => { handleAction("suspend", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl border-2 border-amber-500/30 text-amber-500 font-semibold hover:bg-amber-500/5 transition">⏸️ Suspend</button>
+                <button onClick={() => { handleAction("ban", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl border-2 border-red-500/30 text-red-500 font-semibold hover:bg-red-500/5 transition">🚫 Ban</button>
               </div>
             </motion.div>
           </div>
@@ -586,13 +481,7 @@ const UserManagementPage = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-sm shadow-lg whitespace-nowrap max-w-[90vw] text-center ${
-              toast.type === "error"
-                ? "bg-red-500"
-                : toast.type === "warning"
-                  ? "bg-amber-500"
-                  : toast.type === "info"
-                    ? "bg-blue-500"
-                    : "bg-green-500"
+              toast.type === "error" ? "bg-red-500" : toast.type === "warning" ? "bg-amber-500" : toast.type === "info" ? "bg-blue-500" : "bg-green-500"
             } text-white`}
           >
             {toast.message}

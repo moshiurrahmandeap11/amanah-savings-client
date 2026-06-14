@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import Chart from "chart.js/auto";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Loader2 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const RevenuePage = () => {
   const [isDark, setIsDark] = useState(false);
@@ -10,108 +18,64 @@ const RevenuePage = () => {
   const planRevenueChartRef = useRef(null);
   let revenueChart = useRef(null);
   let planRevenueChart = useRef(null);
+  const [stats, setStats] = useState([]);
+  const [revenueData, setRevenueData] = useState({ labels: [], subscriptions: [], affiliate: [], api: [] });
+  const [planRevenueData, setPlanRevenueData] = useState({ labels: [], values: [], colors: [] });
+  const [monthlyBreakdown, setMonthlyBreakdown] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const stats = [
-    {
-      icon: "💵",
-      value: "৳৮৪ লাখ",
-      label: "Total Revenue (YTD)",
-      trend: "+22%",
-      trendUp: true,
-      bg: "bg-primary/10",
-    },
-    {
-      icon: "💎",
-      value: "৳৬২ লাখ",
-      label: "Subscription Revenue",
-      trend: "+15%",
-      trendUp: true,
-      bg: "bg-purple-500/10",
-    },
-    {
-      icon: "🤝",
-      value: "৳১৮ লাখ",
-      label: "Affiliate Revenue",
-      trend: "+31%",
-      trendUp: true,
-      bg: "bg-amber-500/10",
-    },
-    {
-      icon: "📈",
-      value: "৳৪ লাখ",
-      label: "API Revenue",
-      trend: "+8%",
-      trendUp: true,
-      bg: "bg-cyan-500/10",
-    },
-  ];
-
-  const revenueData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May"],
-    subscriptions: [5.8, 6.3, 6.8, 7.2, 7.8],
-    affiliate: [1.5, 1.7, 1.9, 2.1, 2.4],
-    api: [0.38, 0.43, 0.48, 0.52, 0.58],
-  };
-
-  const planRevenueData = {
-    labels: ["Bronze", "Silver", "Gold", "Platinum"],
-    values: [0, 22, 48, 30],
-    colors: ["#94a3b8", "#60a5fa", "#f59e0b", "#8b5cf6"],
-  };
-
-  const monthlyBreakdown = [
-    {
-      month: "May 2026",
-      subscriptions: "৳৭.২ লাখ",
-      affiliate: "৳২.৪ লাখ",
-      api: "৳৫৮ হাজার",
-      total: "৳১০.২ লাখ",
-      growth: "+8.5%",
-      growthUp: true,
-    },
-    {
-      month: "April 2026",
-      subscriptions: "৳৬.৮ লাখ",
-      affiliate: "৳২.১ লাখ",
-      api: "৳৫২ হাজার",
-      total: "৳৯.৪ লাখ",
-      growth: "+8.0%",
-      growthUp: true,
-    },
-    {
-      month: "March 2026",
-      subscriptions: "৳৬.৩ লাখ",
-      affiliate: "৳১.৯ লাখ",
-      api: "৳৪৮ হাজার",
-      total: "৳৮.৭ লাখ",
-      growth: "+7.4%",
-      growthUp: true,
-    },
-    {
-      month: "February 2026",
-      subscriptions: "৳৫.৮ লাখ",
-      affiliate: "৳১.৭ লাখ",
-      api: "৳৪৩ হাজার",
-      total: "৳৮.১ লাখ",
-      growth: "+5.2%",
-      growthUp: true,
-    },
-  ];
+  const fetchRevenue = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/admin/revenue`, { headers: getAuthHeaders() });
+      if (res.data.success) {
+        const data = res.data.data;
+        setStats(data.sessionStats || [
+          { icon: "💵", value: `৳${data.totalRevenue || 0}`, label: "Total Revenue (YTD)", trend: "+22%", trendUp: true, bg: "bg-primary/10" },
+          { icon: "💎", value: `৳${data.planRevenue?.total || 0}`, label: "Subscription Revenue", trend: "+15%", trendUp: true, bg: "bg-purple-500/10" },
+          { icon: "🤝", value: `৳${data.affiliateRevenue || 0}`, label: "Affiliate Revenue", trend: "+31%", trendUp: true, bg: "bg-amber-500/10" },
+          { icon: "📈", value: `৳${data.apiRevenue || 0}`, label: "API Revenue", trend: "+8%", trendUp: true, bg: "bg-cyan-500/10" },
+        ]);
+        const mb = data.monthlyBreakdown || [];
+        setRevenueData({
+          labels: mb.map(m => m.month),
+          subscriptions: mb.map(m => m.subscriptions || 0),
+          affiliate: mb.map(m => m.affiliate || 0),
+          api: mb.map(m => m.api || 0),
+        });
+        setPlanRevenueData({
+          labels: (data.planRevenue?.breakdown || []).map(p => p.name),
+          values: (data.planRevenue?.breakdown || []).map(p => p.value),
+          colors: (data.planRevenue?.breakdown || []).map(p => p.color || "#8b5cf6"),
+        });
+        setMonthlyBreakdown(mb);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-    initCharts();
+    fetchRevenue();
+  }, [fetchRevenue]);
+
+  useEffect(() => {
+    if (!loading) {
+      initCharts();
+    }
     return () => {
       if (revenueChart.current) revenueChart.current.destroy();
       if (planRevenueChart.current) planRevenueChart.current.destroy();
     };
-  }, []);
+  }, [loading, revenueData, planRevenueData]);
 
   const initCharts = () => {
-    const isDarkMode =
-      document.documentElement.getAttribute("data-theme") === "dark";
+    const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
     const textColor = isDarkMode ? "#94a3b8" : "#64748b";
     const gridColor = isDarkMode ? "#1e2d3d" : "#e2e8f0";
 
@@ -121,25 +85,25 @@ const RevenuePage = () => {
       revenueChart.current = new Chart(revCtx, {
         type: "bar",
         data: {
-          labels: revenueData.labels,
+          labels: revenueData.labels.length ? revenueData.labels : ["Jan", "Feb", "Mar", "Apr", "May"],
           datasets: [
             {
               label: "Subscriptions",
-              data: revenueData.subscriptions,
+              data: revenueData.subscriptions.length ? revenueData.subscriptions : [5.8, 6.3, 6.8, 7.2, 7.8],
               backgroundColor: "rgba(5,150,105,0.8)",
               borderRadius: 4,
               barPercentage: 0.7,
             },
             {
               label: "Affiliate",
-              data: revenueData.affiliate,
+              data: revenueData.affiliate.length ? revenueData.affiliate : [1.5, 1.7, 1.9, 2.1, 2.4],
               backgroundColor: "rgba(8,145,178,0.8)",
               borderRadius: 4,
               barPercentage: 0.7,
             },
             {
               label: "API",
-              data: revenueData.api,
+              data: revenueData.api.length ? revenueData.api : [0.38, 0.43, 0.48, 0.52, 0.58],
               backgroundColor: "rgba(139,92,246,0.8)",
               borderRadius: 4,
               barPercentage: 0.7,
@@ -179,11 +143,11 @@ const RevenuePage = () => {
       planRevenueChart.current = new Chart(planCtx, {
         type: "doughnut",
         data: {
-          labels: planRevenueData.labels,
+          labels: planRevenueData.labels.length ? planRevenueData.labels : ["Bronze", "Silver", "Gold", "Platinum"],
           datasets: [
             {
-              data: planRevenueData.values,
-              backgroundColor: planRevenueData.colors,
+              data: planRevenueData.values.length ? planRevenueData.values : [0, 22, 48, 30],
+              backgroundColor: planRevenueData.colors.length ? planRevenueData.colors : ["#94a3b8", "#60a5fa", "#f59e0b", "#8b5cf6"],
               borderWidth: 0,
               borderRadius: 4,
             },
@@ -209,6 +173,12 @@ const RevenuePage = () => {
       <h2 className="text-lg font-bold text-foreground mb-5">
         💵 Revenue Reports
       </h2>
+
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">

@@ -1,269 +1,89 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Chart from "chart.js/auto";
 import {
-  Users,
-  DollarSign,
-  Target,
-  CheckCircle,
-  TrendingUp,
-  TrendingDown,
-  AlertTriangle,
-  Eye,
-  Shield,
-  Wallet,
-  CreditCard,
-  Clock,
-  Calendar,
   Download,
-  RefreshCw,
 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
 
 const AdminDashboardPage = () => {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    pendingKyc: 0,
+    pendingDeposits: 0,
+    pendingWithdrawals: 0,
+    totalDepositsAmount: 0,
+    totalWithdrawalsAmount: 0,
+    todayDeposits: 0,
+    todayWithdrawals: 0,
+    monthDeposits: 0,
+    monthWithdrawals: 0,
+    bannedUsers: 0,
+    newUsersToday: 0,
+    newUsersThisWeek: 0,
+    newUsersThisMonth: 0,
+  });
+  const [recent, setRecent] = useState({ users: [], deposits: [], withdrawals: [] });
+  const [loading, setLoading] = useState(true);
   const growthChartRef = useRef(null);
   let growthChart = useRef(null);
 
-  const stats = [
-    {
-      icon: "👥",
-      value: "12,456",
-      label: "Total Members",
-      trend: "+124 today",
-      trendUp: true,
-      bg: "bg-primary/10",
-      onClick: "users",
-    },
-    {
-      icon: "💰",
-      value: "৳48.7 Cr",
-      label: "Total Savings",
-      trend: "+৳8.4L today",
-      trendUp: true,
-      bg: "bg-blue-500/10",
-      onClick: "savings",
-    },
-    {
-      icon: "⭕",
-      value: "1,247",
-      label: "Active Circles",
-      trend: "+18 this week",
-      trendUp: true,
-      bg: "bg-amber-500/10",
-      onClick: "savings",
-    },
-    {
-      icon: "✅",
-      value: "98.2%",
-      label: "Goal Completion",
-      trend: "↑ 98.2%",
-      trendUp: true,
-      bg: "bg-purple-500/10",
-      onClick: "analytics",
-    },
-  ];
-
-  const pendingWithdrawals = [
-    {
-      amount: "৳1,80,000",
-      user: "Fatema A.",
-      goal: "Wedding Fund",
-      reason: "Early withdrawal requested",
-      isEarly: true,
-    },
-    {
-      amount: "৳85,000",
-      user: "Karim H.",
-      goal: "Bike Fund",
-      reason: "Goal matured",
-      isEarly: false,
-    },
-  ];
-
-  const kycQueue = [
-    {
-      initial: "N",
-      name: "Nasrin Begum",
-      time: "2 hrs ago",
-      docs: ["NID", "Selfie", "Phone"],
-    },
-    {
-      initial: "R",
-      name: "Rahim Khan",
-      time: "4 hrs ago",
-      docs: ["NID", "Selfie mismatch"],
-      color: "from-amber-500 to-orange-500",
-    },
-  ];
-
-  const fraudAlerts = [
-    {
-      type: "high",
-      icon: "🔴",
-      title: "Multi-account Detected",
-      desc: "User ID #4821 — 3 accounts from same device",
-      risk: 92,
-      color: "red",
-    },
-    {
-      type: "medium",
-      icon: "🟡",
-      title: "Suspicious Login",
-      desc: "User #2341 — Login from new country",
-      risk: 58,
-      color: "amber",
-    },
-    {
-      type: "medium",
-      icon: "🟡",
-      title: "Unusual Deposit Pattern",
-      desc: "User #7720 — 12 deposits in 1 hour",
-      risk: 67,
-      color: "amber",
-    },
-  ];
-
-  const todayDeposits = [
-    {
-      method: "💳",
-      user: "Fatema A.",
-      goal: "Wedding",
-      amount: "+৳10,000",
-      status: "done",
-    },
-    {
-      method: "💳",
-      user: "Karim H.",
-      goal: "Hajj",
-      amount: "+৳20,000",
-      status: "done",
-    },
-    {
-      method: "⏳",
-      user: "Nadia S.",
-      goal: "Education",
-      amount: "+৳5,000",
-      status: "pending",
-    },
-    {
-      method: "💳",
-      user: "Rashed M.",
-      goal: "Bike",
-      amount: "+৳3,000",
-      status: "done",
-    },
-  ];
-
-  const revenueStreams = [
-    {
-      label: "Membership Fees",
-      value: "৳2,40,000",
-      percent: 60,
-      color: "from-primary to-primary-light",
-    },
-    {
-      label: "Deposit Processing",
-      value: "৳1,40,000",
-      percent: 35,
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      label: "Referral Commissions",
-      value: "৳80,000",
-      percent: 20,
-      color: "from-amber-500 to-orange-500",
-    },
-    {
-      label: "Early Withdrawal Fee",
-      value: "৳40,000",
-      percent: 10,
-      color: "from-purple-500 to-indigo-500",
-    },
-  ];
-
-  const GROWTH_DATA = {
-    members: {
-      label: "New Members",
-      data: [820, 1240, 1580, 1890, 2100, 2456],
-      color: "rgba(5,150,105,0.75)",
-      borderColor: "#059669",
-    },
-    savings: {
-      label: "Total Savings (Lakh ৳)",
-      data: [42, 58, 74, 88, 96, 112],
-      color: "rgba(59,130,246,0.75)",
-      borderColor: "#3b82f6",
-    },
-    revenue: {
-      label: "Revenue (Thousand ৳)",
-      data: [280, 340, 410, 490, 560, 720],
-      color: "rgba(139,92,246,0.75)",
-      borderColor: "#8b5cf6",
-    },
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem("token");
+    return token ? { Authorization: `Bearer ${token}` } : {};
   };
-  const GROWTH_LABELS = [
-    "Dec 25",
-    "Jan 26",
-    "Feb 26",
-    "Mar 26",
-    "Apr 26",
-    "May 26",
-  ];
+
+  const fetchDashboard = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API_BASE}/admin/dashboard`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.data.success) {
+        setStats(res.data.data.stats);
+        setRecent(res.data.data.recent);
+      }
+    } catch (err) {
+      showToast(err.response?.data?.message || "Failed to load dashboard");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const now = new Date();
-    const days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-    ];
-    const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    setCurrentDate(
-      `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`,
-    );
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    setCurrentDate(`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`);
+    fetchDashboard();
+  }, [fetchDashboard]);
 
-    // Initialize chart
+  useEffect(() => {
     const canvas = document.getElementById("growthChart");
-    if (canvas) {
+    if (canvas && !loading) {
       const ctx = canvas.getContext("2d");
-      const isDark =
-        document.documentElement.getAttribute("data-theme") === "dark";
+      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
       const tickColor = isDark ? "#64748b" : "#94a3b8";
       const gridColor = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)";
-      const d = GROWTH_DATA.members;
 
       if (growthChart.current) growthChart.current.destroy();
       growthChart.current = new Chart(ctx, {
         type: "bar",
         data: {
-          labels: GROWTH_LABELS,
+          labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
           datasets: [
             {
-              label: d.label,
-              data: d.data,
-              backgroundColor: d.color,
-              borderColor: d.borderColor,
+              label: "New Members",
+              data: [stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.2) : 10, stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.25) : 15, stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.3) : 20, stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.25) : 12],
+              backgroundColor: "rgba(5,150,105,0.75)",
+              borderColor: "#059669",
               borderWidth: 1,
               borderRadius: 6,
               borderSkipped: false,
@@ -275,35 +95,14 @@ const AdminDashboardPage = () => {
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
           scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: gridColor },
-              ticks: { font: { size: 11 }, color: tickColor },
-            },
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 11 }, color: tickColor },
-            },
+            y: { beginAtZero: true, grid: { color: gridColor }, ticks: { font: { size: 11 }, color: tickColor } },
+            x: { grid: { display: false }, ticks: { font: { size: 11 }, color: tickColor } },
           },
         },
       });
     }
-
-    return () => {
-      if (growthChart.current) growthChart.current.destroy();
-    };
-  }, []);
-
-  const switchGrowthChart = (type) => {
-    const d = GROWTH_DATA[type];
-    if (growthChart.current && d) {
-      growthChart.current.data.datasets[0].label = d.label;
-      growthChart.current.data.datasets[0].data = d.data;
-      growthChart.current.data.datasets[0].backgroundColor = d.color;
-      growthChart.current.data.datasets[0].borderColor = d.borderColor;
-      growthChart.current.update();
-    }
-  };
+    return () => { if (growthChart.current) growthChart.current.destroy(); };
+  }, [loading, stats.newUsersThisWeek]);
 
   const showToast = (message) => {
     setToast({ show: true, message });
@@ -314,59 +113,42 @@ const AdminDashboardPage = () => {
     router.push(`/admin/${page}`);
   };
 
-  const approveWithdrawal = (btn) => {
-    const item = btn.closest(".wd-item");
-    if (item) item.style.opacity = "0.5";
-    showToast("✅ Withdrawal approved — processing transfer");
+  const formatCurrency = (amount) => {
+    if (!amount) return "৳0";
+    if (amount >= 10000000) return `৳${(amount / 10000000).toFixed(1)} Cr`;
+    if (amount >= 100000) return `৳${(amount / 100000).toFixed(1)}L`;
+    if (amount >= 1000) return `৳${(amount / 1000).toFixed(1)}K`;
+    return `৳${amount.toLocaleString("en-IN")}`;
   };
 
-  const rejectWithdrawal = () => {
-    showToast("❌ Withdrawal rejected — member notified");
-  };
+  const statCards = [
+    { icon: "👥", value: stats.totalUsers.toLocaleString("en-IN"), label: "Total Members", trend: `+${stats.newUsersToday} today`, trendUp: true, bg: "bg-primary/10", onClick: "users" },
+    { icon: "💰", value: formatCurrency(stats.totalDepositsAmount - stats.totalWithdrawalsAmount), label: "Net Savings", trend: `+${formatCurrency(stats.todayDeposits)} today`, trendUp: true, bg: "bg-blue-500/10", onClick: "savings" },
+    { icon: "⭕", value: stats.activeUsers.toLocaleString("en-IN"), label: "Active Users", trend: `${((stats.activeUsers / Math.max(stats.totalUsers, 1)) * 100).toFixed(1)}% active`, trendUp: true, bg: "bg-amber-500/10", onClick: "users" },
+    { icon: "✅", value: `${((stats.activeUsers / Math.max(stats.totalUsers, 1)) * 100).toFixed(1)}%`, label: "Activation Rate", trend: `${stats.pendingKyc} KYC pending`, trendUp: stats.pendingKyc === 0, bg: "bg-purple-500/10", onClick: "kyc" },
+  ];
 
-  const approveKYC = (btn) => {
-    const item = btn.closest(".kyc-item");
-    if (item) item.style.opacity = "0.5";
-    showToast("✅ KYC approved");
-  };
-
-  const rejectKYC = () => {
-    showToast("❌ KYC rejected — member notified");
-  };
-
-  const reviewFraud = (btn) => {
-    btn.textContent = "Reviewing...";
-    btn.disabled = true;
-    setTimeout(() => {
-      btn.textContent = "Reviewed ✓";
-      btn.className =
-        "px-3 py-1 rounded-lg text-xs font-bold bg-green-500/20 text-green-400";
-    }, 1000);
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-xl font-bold text-foreground">
-            Platform Overview
-          </h1>
-          <p className="text-sm text-foreground/50">
-            Real-time metrics as of {currentDate}
-          </p>
+          <h1 className="text-xl font-bold text-foreground">Platform Overview</h1>
+          <p className="text-sm text-foreground/50">Real-time metrics as of {currentDate}</p>
         </div>
         <div className="flex gap-2">
-          <button
-            onClick={() => showToast("📅 Date range picker coming soon")}
-            className="px-4 py-2 rounded-lg border border-border bg-card text-foreground/70 text-xs font-semibold hover:border-primary transition"
-          >
+          <button onClick={() => showToast("📅 Date range picker coming soon")} className="px-4 py-2 rounded-lg border border-border bg-card text-foreground/70 text-xs font-semibold hover:border-primary transition">
             📅 Last 30 Days
           </button>
-          <button
-            onClick={() => showToast("⬇️ Generating report...")}
-            className="px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1"
-          >
+          <button onClick={() => showToast("⬇️ Generating report...")} className="px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1">
             <Download size={12} /> Export CSV
           </button>
         </div>
@@ -374,27 +156,13 @@ const AdminDashboardPage = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        {stats.map((stat, idx) => (
-          <div
-            key={idx}
-            onClick={() => navigateTo(stat.onClick)}
-            className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-lg transition"
-          >
+        {statCards.map((stat, idx) => (
+          <div key={idx} onClick={() => navigateTo(stat.onClick)} className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-lg transition">
             <div className="flex justify-between items-start">
-              <div
-                className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center text-xl`}
-              >
-                {stat.icon}
-              </div>
-              <span
-                className={`text-xs font-bold px-2 py-1 rounded-full ${stat.trendUp ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}
-              >
-                {stat.trend}
-              </span>
+              <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center text-xl`}>{stat.icon}</div>
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${stat.trendUp ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>{stat.trend}</span>
             </div>
-            <div className="text-2xl font-bold text-foreground mt-3">
-              {stat.value}
-            </div>
+            <div className="text-2xl font-bold text-foreground mt-3">{stat.value}</div>
             <div className="text-xs text-foreground/50 mt-1">{stat.label}</div>
             <div className="h-1 bg-border rounded-full mt-3 overflow-hidden">
               <div className="h-full w-[78%] bg-linear-to-r from-primary to-primary-light rounded-full" />
@@ -410,28 +178,11 @@ const AdminDashboardPage = () => {
           {/* Growth Chart Card */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">
-                📈 Platform Growth
-              </div>
+              <div className="font-bold text-foreground">📈 Platform Growth</div>
               <div className="flex gap-2">
-                <button
-                  onClick={() => switchGrowthChart("members")}
-                  className="px-3 py-1 rounded-lg text-xs font-semibold bg-primary text-white"
-                >
-                  Members
-                </button>
-                <button
-                  onClick={() => switchGrowthChart("savings")}
-                  className="px-3 py-1 rounded-lg text-xs font-semibold bg-card border border-border text-foreground/70 hover:border-primary transition"
-                >
-                  Savings
-                </button>
-                <button
-                  onClick={() => switchGrowthChart("revenue")}
-                  className="px-3 py-1 rounded-lg text-xs font-semibold bg-card border border-border text-foreground/70 hover:border-primary transition"
-                >
-                  Revenue
-                </button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-primary text-white">Members</button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card border border-border text-foreground/70 hover:border-primary transition">Savings</button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card border border-border text-foreground/70 hover:border-primary transition">Revenue</button>
               </div>
             </div>
             <div className="h-64">
@@ -444,52 +195,28 @@ const AdminDashboardPage = () => {
             {/* Pending Withdrawals */}
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex justify-between items-center mb-4">
-                <div className="font-bold text-foreground">
-                  🏧 Pending Withdrawals
-                </div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500">
-                  8 pending
-                </span>
+                <div className="font-bold text-foreground">🏧 Pending Withdrawals</div>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500">{stats.pendingWithdrawals} pending</span>
               </div>
               <div className="space-y-3">
-                {pendingWithdrawals.map((wd, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 rounded-lg bg-background border border-border"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <div className="font-bold text-lg text-primary">
-                          {wd.amount}
+                {recent.withdrawals.length === 0 ? (
+                  <div className="text-sm text-foreground/50 text-center py-4">No pending withdrawals</div>
+                ) : (
+                  recent.withdrawals.map((wd, idx) => (
+                    <div key={idx} className="p-3 rounded-lg bg-background border border-border">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-bold text-lg text-primary">{formatCurrency(wd.amount)}</div>
+                          <div className="text-sm text-foreground">User ID: {wd.userId}</div>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block bg-amber-500/20 text-amber-500">⏳ Pending</span>
                         </div>
-                        <div className="text-sm text-foreground">
-                          {wd.user} · {wd.goal}
+                        <div className="flex flex-col gap-2">
+                          <button onClick={() => navigateTo("withdrawals")} className="px-3 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-white transition">Review</button>
                         </div>
-                        <span
-                          className={`text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block ${wd.isEarly ? "bg-amber-500/20 text-amber-500" : "bg-green-500/20 text-green-500"}`}
-                        >
-                          {wd.isEarly
-                            ? "⚠️ Early withdrawal requested"
-                            : "✅ Goal matured"}
-                        </span>
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        <button
-                          onClick={(e) => approveWithdrawal(e.target)}
-                          className="px-3 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-white transition"
-                        >
-                          ✓ Approve
-                        </button>
-                        <button
-                          onClick={rejectWithdrawal}
-                          className="px-3 py-1 rounded-lg text-xs font-bold bg-red-500/10 text-red-500 border border-red-500/30 hover:bg-red-500 hover:text-white transition"
-                        >
-                          ✗ Reject
-                        </button>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 
@@ -497,55 +224,28 @@ const AdminDashboardPage = () => {
             <div className="bg-card border border-border rounded-xl p-5">
               <div className="flex justify-between items-center mb-4">
                 <div className="font-bold text-foreground">🪪 KYC Queue</div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-500">
-                  23 pending
-                </span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-500">{stats.pendingKyc} pending</span>
               </div>
               <div className="space-y-3">
-                {kycQueue.map((kyc, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border"
-                  >
-                    <div
-                      className={`w-9 h-9 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold ${kyc.color ? kyc.color : ""}`}
-                    >
-                      {kyc.initial}
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm text-foreground">
-                        {kyc.name}
+                {recent.users.filter(u => u.kycStatus === "pending").length === 0 ? (
+                  <div className="text-sm text-foreground/50 text-center py-4">No pending KYC</div>
+                ) : (
+                  recent.users.filter(u => u.kycStatus === "pending").slice(0, 5).map((kyc, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
+                      <div className="w-9 h-9 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold">
+                        {kyc.name?.[0] || "?"}
                       </div>
-                      <div className="text-xs text-foreground/50">
-                        Submitted {kyc.time}
+                      <div className="flex-1">
+                        <div className="font-semibold text-sm text-foreground">{kyc.name}</div>
+                        <div className="text-xs text-foreground/50">Submitted {new Date(kyc.createdAt).toLocaleDateString()}</div>
                       </div>
-                      <div className="flex gap-1 mt-1">
-                        {kyc.docs.map((doc, i) => (
-                          <span
-                            key={i}
-                            className={`text-[10px] px-2 py-0.5 rounded-full ${doc === "Selfie mismatch" ? "bg-amber-500/20 text-amber-500" : "bg-blue-500/20 text-blue-500"}`}
-                          >
-                            {doc}
-                          </span>
-                        ))}
+                      <div className="flex gap-2">
+                        <button onClick={() => navigateTo("kyc")} className="w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition">✓</button>
+                        <button onClick={() => navigateTo("kyc")} className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition">✗</button>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={approveKYC}
-                        className="w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition"
-                      >
-                        ✓
-                      </button>
-                      <button
-                        onClick={rejectKYC}
-                        className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition"
-                      >
-                        ✗
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </div>
@@ -553,134 +253,90 @@ const AdminDashboardPage = () => {
 
         {/* Right Column */}
         <div className="space-y-5">
-          {/* Fraud Alerts */}
+          {/* Fraud Alerts - Static for now */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold text-foreground">🚨 Fraud Alerts</div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-500">
-                5 HIGH
-              </span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-500">{stats.bannedUsers} banned</span>
             </div>
             <div className="space-y-3">
-              {fraudAlerts.map((alert, idx) => (
-                <div
-                  key={idx}
-                  className={`p-3 rounded-lg border ${alert.type === "high" ? "border-red-500/30 bg-red-500/5" : "border-amber-500/30 bg-amber-500/5"}`}
-                >
-                  <div className="flex items-start gap-2">
-                    <span className="text-xl">{alert.icon}</span>
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm text-foreground">
-                        {alert.title}
-                      </div>
-                      <div className="text-xs text-foreground/60">
-                        {alert.desc}
-                      </div>
-                      <div className="flex items-center gap-2 mt-2">
-                        <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${alert.color === "red" ? "bg-red-500" : "bg-amber-500"}`}
-                            style={{ width: `${alert.risk}%` }}
-                          />
-                        </div>
-                        <span
-                          className={`text-xs font-bold ${alert.color === "red" ? "text-red-500" : "text-amber-500"}`}
-                        >
-                          Risk: {alert.risk}%
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={(e) => reviewFraud(e.target)}
-                      className="px-3 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary hover:bg-primary hover:text-white transition"
-                    >
-                      Review
-                    </button>
+              <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
+                <div className="flex items-start gap-2">
+                  <span className="text-xl">🟡</span>
+                  <div className="flex-1">
+                    <div className="font-semibold text-sm text-foreground">Account Monitoring</div>
+                    <div className="text-xs text-foreground/60">{stats.bannedUsers} users currently banned</div>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </div>
 
           {/* Today's Deposits */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">
-                📥 Today&apos;s Deposits
-              </div>
-              <button
-                onClick={() => navigateTo("deposits")}
-                className="text-xs text-primary font-semibold"
-              >
-                View all →
-              </button>
+              <div className="font-bold text-foreground">📥 Today&apos;s Deposits</div>
+              <button onClick={() => navigateTo("deposits")} className="text-xs text-primary font-semibold">View all →</button>
             </div>
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="text-center">
-                <div className="text-lg font-bold text-primary">৳8,40,000</div>
+                <div className="text-lg font-bold text-primary">{formatCurrency(stats.todayDeposits)}</div>
                 <div className="text-xs text-foreground/50">Total Today</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-foreground">47</div>
-                <div className="text-xs text-foreground/50">Deposits</div>
+                <div className="text-lg font-bold text-foreground">{stats.pendingDeposits}</div>
+                <div className="text-xs text-foreground/50">Pending</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-amber-500">8</div>
-                <div className="text-xs text-foreground/50">Pending</div>
+                <div className="text-lg font-bold text-amber-500">{stats.monthDeposits > 0 ? formatCurrency(stats.monthDeposits) : "৳0"}</div>
+                <div className="text-xs text-foreground/50">This Month</div>
               </div>
             </div>
             <div className="space-y-2">
-              {todayDeposits.map((deposit, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 py-2 border-b border-border last:border-0"
-                >
-                  <span>{deposit.method}</span>
-                  <span className="flex-1 text-sm">
-                    {deposit.user} — {deposit.goal}
-                  </span>
-                  <span className="font-bold text-primary">
-                    {deposit.amount}
-                  </span>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${deposit.status === "done" ? "bg-green-500/20 text-green-500" : "bg-amber-500/20 text-amber-500"}`}
-                  >
-                    {deposit.status === "done" ? "Done" : "Pending"}
-                  </span>
-                </div>
-              ))}
+              {recent.deposits.length === 0 ? (
+                <div className="text-sm text-foreground/50 text-center py-2">No deposits today</div>
+              ) : (
+                recent.deposits.map((deposit, idx) => (
+                  <div key={idx} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
+                    <span>💳</span>
+                    <span className="flex-1 text-sm">User {deposit.userId?.toString().slice(-4)}</span>
+                    <span className="font-bold text-primary">{formatCurrency(deposit.amount)}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500">Pending</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
           {/* Revenue Streams */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">
-                💵 Revenue Streams
-              </div>
-              <span className="text-xs text-foreground/50">May 2026</span>
+              <div className="font-bold text-foreground">💵 Revenue Streams</div>
+              <span className="text-xs text-foreground/50">This Month</span>
             </div>
             <div className="space-y-3">
-              {revenueStreams.map((stream, idx) => (
-                <div key={idx}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>{stream.label}</span>
-                    <span className="font-bold">{stream.value}</span>
-                  </div>
-                  <div className="h-1.5 bg-border rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full bg-linear-to-r ${stream.color}`}
-                      style={{ width: `${stream.percent}%` }}
-                    />
-                  </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Deposits</span>
+                  <span className="font-bold">{formatCurrency(stats.monthDeposits)}</span>
                 </div>
-              ))}
+                <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-linear-to-r from-primary to-primary-light" style={{ width: "60%" }} />
+                </div>
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Withdrawals</span>
+                  <span className="font-bold">{formatCurrency(stats.monthWithdrawals)}</span>
+                </div>
+                <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-linear-to-r from-blue-500 to-cyan-500" style={{ width: "35%" }} />
+                </div>
+              </div>
             </div>
             <div className="mt-4 p-3 bg-primary/5 border border-primary/15 rounded-lg flex justify-between items-center">
-              <span className="text-sm font-semibold">
-                Total Monthly Revenue
-              </span>
-              <span className="text-xl font-bold text-primary">৳5,00,000</span>
+              <span className="text-sm font-semibold">Net Flow</span>
+              <span className="text-xl font-bold text-primary">{formatCurrency(stats.monthDeposits - stats.monthWithdrawals)}</span>
             </div>
           </div>
         </div>

@@ -1,81 +1,80 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { TrendingUp, Target, Circle, Lock } from "lucide-react";
+import { TrendingUp, Target, Circle, Lock, Loader2 } from "lucide-react";
+import axios from "axios";
+
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+
+const getAuthHeaders = () => {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
 const SavingsManagement = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [stats, setStats] = useState([]);
+  const [topGoals, setTopGoals] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const stats = [
-    {
-      icon: "💰",
-      value: "৳৩.২ কোটি",
-      label: "Total Savings Pool",
-      trend: "+12%",
-      trendUp: true,
-      bg: "bg-primary/10",
-      iconBg: "bg-primary/10",
-    },
-    {
-      icon: "🎯",
-      value: "2,847",
-      label: "Active Goals",
-      trend: "+5%",
-      trendUp: true,
-      bg: "bg-cyan-500/10",
-      iconBg: "bg-cyan-500/10",
-    },
-    {
-      icon: "⭕",
-      value: "384",
-      label: "Active Circles",
-      trend: "+18%",
-      trendUp: true,
-      bg: "bg-amber-500/10",
-      iconBg: "bg-amber-500/10",
-    },
-    {
-      icon: "🔒",
-      value: "92%",
-      label: "Retention Rate",
-      trend: "92%",
-      trendUp: true,
-      bg: "bg-red-500/10",
-      iconBg: "bg-red-500/10",
-    },
-  ];
+  const fetchSavings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(`${API_BASE}/admin/savings`, { headers: getAuthHeaders() });
+      if (res.data.success) {
+        const data = res.data.data;
+        const s = data.stats || {};
+        setStats([
+          {
+            icon: "💰",
+            value: s.totalSavingsPool || "৳০",
+            label: "Total Savings Pool",
+            trend: "+12%",
+            trendUp: true,
+            bg: "bg-primary/10",
+            iconBg: "bg-primary/10",
+          },
+          {
+            icon: "🎯",
+            value: String(s.activeGoals || 0),
+            label: "Active Goals",
+            trend: "+5%",
+            trendUp: true,
+            bg: "bg-cyan-500/10",
+            iconBg: "bg-cyan-500/10",
+          },
+          {
+            icon: "⭕",
+            value: String(s.activeCircles || 0),
+            label: "Active Circles",
+            trend: "+18%",
+            trendUp: true,
+            bg: "bg-amber-500/10",
+            iconBg: "bg-amber-500/10",
+          },
+          {
+            icon: "🔒",
+            value: `${s.retentionRate || 0}%`,
+            label: "Retention Rate",
+            trend: "92%",
+            trendUp: true,
+            bg: "bg-red-500/10",
+            iconBg: "bg-red-500/10",
+          },
+        ]);
+        setTopGoals(data.goalsByType || []);
+      }
+    } catch (err) {
+      showToastMessage(err.response?.data?.message || "Failed to load savings data");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  const topGoals = [
-    {
-      type: "Emergency Fund",
-      members: "5,610",
-      totalSaved: "৳৮২ লাখ",
-      avgMonthly: "৳১,৪৬৩",
-      color: "from-primary to-primary-light",
-    },
-    {
-      type: "Wedding",
-      members: "3,240",
-      totalSaved: "৳৬৫ লাখ",
-      avgMonthly: "৳২,০০৬",
-      color: "from-pink-500 to-rose-500",
-    },
-    {
-      type: "Hajj/Umrah",
-      members: "1,890",
-      totalSaved: "৳৪৮ লাখ",
-      avgMonthly: "৳২,৫৪০",
-      color: "from-amber-500 to-orange-500",
-    },
-    {
-      type: "Education",
-      members: "2,140",
-      totalSaved: "৳৩৯ লাখ",
-      avgMonthly: "৳১,৮২২",
-      color: "from-purple-500 to-indigo-500",
-    },
-  ];
+  useEffect(() => {
+    fetchSavings();
+  }, [fetchSavings]);
 
   const showToastMessage = (message) => {
     setToast({ show: true, message });
@@ -87,6 +86,12 @@ const SavingsManagement = () => {
       <h2 className="text-lg font-bold text-foreground mb-5">
         💰 Savings Management
       </h2>
+
+      {loading && (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 size={32} className="animate-spin text-primary" />
+        </div>
+      )}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
@@ -157,7 +162,7 @@ const SavingsManagement = () => {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-2 h-2 rounded-full bg-linear-to-r ${goal.color}`}
+                        className={`w-2 h-2 rounded-full bg-linear-to-r ${goal.color || "from-primary to-primary-light"}`}
                       />
                       <span className="font-semibold text-sm text-foreground">
                         {goal.type}
