@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create instance
 const axiosInstance = axios.create({
-  baseURL: "http://localhost:5000/api", 
+  baseURL: "https://server-amanah-savings.onrender.com/api", 
   withCredentials: true, 
 });
 
