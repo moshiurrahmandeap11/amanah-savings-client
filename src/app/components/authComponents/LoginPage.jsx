@@ -9,7 +9,6 @@ import {
   Eye,
   EyeOff,
   Mail,
-  Phone,
   Lock,
   Check,
   AlertCircle,
@@ -20,8 +19,6 @@ import useAuth from "../../hooks/useAuth";
 const LoginPage = () => {
   const router = useRouter();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
-  const [loginMethod, setLoginMethod] = useState("phone");
-  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -29,10 +26,8 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (user?.role === "admin") {
         router.replace("/admin");
@@ -54,16 +49,9 @@ const LoginPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (loginMethod === "phone") {
-      const phoneRegex = /^1[3-9]\d{8}$/;
-      if (!phoneRegex.test(phone.replace(/\D/g, ""))) {
-        newErrors.phone = "Enter a valid phone number (e.g., 17XXXXXXXX)";
-      }
-    } else {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
-        newErrors.email = "Enter a valid email address";
-      }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      newErrors.email = "Enter a valid email address";
     }
     if (!password.trim()) {
       newErrors.password = "Password is required";
@@ -77,10 +65,9 @@ const LoginPage = () => {
     if (!validateForm()) return;
 
     setIsLoading(true);
-    const identifier = loginMethod === "phone" ? phone : email;
 
     try {
-      const result = await login(identifier, password);
+      const result = await login(email, password);
 
       if (result.success) {
         showAlert(
@@ -88,7 +75,6 @@ const LoginPage = () => {
           `Welcome back, ${result.user.firstName || result.user.fullName || "User"}!`,
           "success",
         );
-        
         // রিডাইরেক্ট হবে useEffect এর মাধ্যমে
       } else {
         showAlert("Login Failed", result.message, "error");
@@ -147,72 +133,16 @@ const LoginPage = () => {
             </p>
           </div>
 
-          {/* Tabs */}
-          <div className="flex bg-secondary/20 rounded-xl p-1 mb-6">
-            <button
-              onClick={() => {
-                setLoginMethod("phone");
-                setErrors({});
-              }}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition ${
-                loginMethod === "phone"
-                  ? "bg-linear-to-r from-primary to-primary-light text-white shadow-md"
-                  : "text-foreground/60 hover:text-primary"
-              }`}
-            >
-              <Phone size={14} className="inline mr-1" /> Phone
-            </button>
-            <button
-              onClick={() => {
-                setLoginMethod("email");
-                setErrors({});
-              }}
-              className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition ${
-                loginMethod === "email"
-                  ? "bg-linear-to-r from-primary to-primary-light text-white shadow-md"
-                  : "text-foreground/60 hover:text-primary"
-              }`}
-            >
-              <Mail size={14} className="inline mr-1" /> Email
-            </button>
-          </div>
-
           <form onSubmit={handleSubmit}>
-            {/* Phone Input */}
-            {loginMethod === "phone" && (
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                  Mobile Number
-                </label>
-                <div className="flex">
-                  <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-border bg-input text-foreground/60 text-sm">
-                    +880
-                  </span>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => {
-                      setPhone(e.target.value.replace(/\D/g, "").slice(0, 11));
-                      setErrors({});
-                    }}
-                    placeholder="1XXXXXXXXX"
-                    className="flex-1 p-3 rounded-r-xl border border-border bg-input text-foreground outline-none focus:border-primary transition"
-                  />
-                </div>
-                {errors.phone && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                    <AlertCircle size={12} /> {errors.phone}
-                  </p>
-                )}
-              </div>
-            )}
-
             {/* Email Input */}
-            {loginMethod === "email" && (
-              <div className="mb-4">
-                <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                  Email Address
-                </label>
+            <div className="mb-4">
+              <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                Email Address
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40">
+                  <Mail size={18} />
+                </div>
                 <input
                   type="email"
                   value={email}
@@ -221,15 +151,15 @@ const LoginPage = () => {
                     setErrors({});
                   }}
                   placeholder="your@email.com"
-                  className="w-full p-3 rounded-xl border border-border bg-input text-foreground outline-none focus:border-primary transition"
+                  className="w-full p-3 pl-10 rounded-xl border border-border bg-input text-foreground outline-none focus:border-primary transition"
                 />
-                {errors.email && (
-                  <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                    <AlertCircle size={12} /> {errors.email}
-                  </p>
-                )}
               </div>
-            )}
+              {errors.email && (
+                <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                  <AlertCircle size={12} /> {errors.email}
+                </p>
+              )}
+            </div>
 
             {/* Password Input */}
             <div className="mb-4">
@@ -245,6 +175,9 @@ const LoginPage = () => {
                 </Link>
               </div>
               <div className="relative">
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/40">
+                  <Lock size={18} />
+                </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
@@ -253,7 +186,7 @@ const LoginPage = () => {
                     setErrors({});
                   }}
                   placeholder="Enter your password"
-                  className="w-full p-3 rounded-xl border border-border bg-input text-foreground outline-none focus:border-primary transition pr-10"
+                  className="w-full p-3 pl-10 rounded-xl border border-border bg-input text-foreground outline-none focus:border-primary transition pr-10"
                 />
                 <button
                   type="button"
