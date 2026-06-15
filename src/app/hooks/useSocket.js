@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "https://server-amanah-savings.onrender.com";
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL
 
 export const useSocket = (userId, role = "user") => {
   const socketRef = useRef(null);

@@ -3,9 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Send, Calendar, Edit, Settings, Loader2 } from "lucide-react";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -34,8 +32,8 @@ const NotificationsPage = () => {
     setLoading(true);
     try {
       const [logsRes, settingsRes] = await Promise.all([
-        axios.get(`${API_BASE}/admin/notifications/logs`, { headers: getAuthHeaders() }),
-        axios.get(`${API_BASE}/admin/settings`, { headers: getAuthHeaders() }),
+        axiosInstance.get("/admin/notifications/logs", { headers: getAuthHeaders() }),
+        axiosInstance.get("/admin/settings", { headers: getAuthHeaders() }),
       ]);
       if (logsRes.data.success) {
         setRecentSends(logsRes.data.data.logs || []);
@@ -81,8 +79,8 @@ const NotificationsPage = () => {
       if (sendVia.email) channels.push("email");
       if (sendVia.push) channels.push("push");
 
-      const res = await axios.post(
-        `${API_BASE}/admin/notifications/send`,
+      const res = await axiosInstance.post(
+        "/admin/notifications/send",
         {
           title,
           message,

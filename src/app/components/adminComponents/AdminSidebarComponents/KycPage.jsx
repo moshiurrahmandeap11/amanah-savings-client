@@ -11,9 +11,7 @@ import {
   FileText,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const KycPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,7 +44,7 @@ const KycPage = () => {
       if (searchQuery) params.append("search", searchQuery);
       if (activeFilter !== "All") params.append("status", activeFilter.toLowerCase());
 
-      const res = await axios.get(`${API_BASE}/admin/kyc?${params.toString()}`, {
+      const res = await axiosInstance.get(`/admin/kyc?${params.toString()}`, {
         headers: getAuthHeaders(),
       });
 
@@ -69,8 +67,8 @@ const KycPage = () => {
     try {
       const payload = { status };
       if (rejectionReason) payload.rejectionReason = rejectionReason;
-      const res = await axios.patch(
-        `${API_BASE}/admin/users/${userId}/kyc`,
+      const res = await axiosInstance.patch(
+        `/admin/users/${userId}/kyc`,
         payload,
         { headers: getAuthHeaders() }
       );
@@ -86,8 +84,8 @@ const KycPage = () => {
   const banUser = async (userId, name) => {
     if (!confirm(`Ban user ${name} permanently?`)) return;
     try {
-      const res = await axios.patch(
-        `${API_BASE}/admin/users/${userId}/status`,
+      const res = await axiosInstance.patch(
+        `/admin/users/${userId}/status`,
         { isBanned: true },
         { headers: getAuthHeaders() }
       );

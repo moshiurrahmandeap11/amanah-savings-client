@@ -13,9 +13,7 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const UserManagementPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,7 +54,7 @@ const UserManagementPage = () => {
       if (status) params.append("status", status);
       if (kycStatus) params.append("kycStatus", kycStatus);
 
-      const res = await axios.get(`${API_BASE}/admin/users?${params.toString()}`, {
+      const res = await axiosInstance.get(`/admin/users?${params.toString()}`, {
         headers: getAuthHeaders(),
       });
 
@@ -77,8 +75,8 @@ const UserManagementPage = () => {
 
   const updateUserStatus = async (userId, updates) => {
     try {
-      const res = await axios.patch(
-        `${API_BASE}/admin/users/${userId}/status`,
+      const res = await axiosInstance.patch(
+        `/admin/users/${userId}/status`,
         updates,
         { headers: getAuthHeaders() }
       );
@@ -93,8 +91,8 @@ const UserManagementPage = () => {
 
   const approveKyc = async (userId) => {
     try {
-      const res = await axios.patch(
-        `${API_BASE}/admin/users/${userId}/kyc`,
+      const res = await axiosInstance.patch(
+        `/admin/users/${userId}/kyc`,
         { status: "approved" },
         { headers: getAuthHeaders() }
       );
@@ -135,9 +133,7 @@ const UserManagementPage = () => {
       }
     } else if (action === "approveKYC") {
       approveKyc(user.id);
-    } else if (action === "edit") {
-      showToastMessage(`✏️ Opening edit form for ${user.fullName || user.firstName}`, "info");
-    }
+    } 
   };
 
   const getBadgeClass = (type, color) => {
@@ -322,9 +318,6 @@ const UserManagementPage = () => {
                             <div className="flex gap-2">
                               <button onClick={() => openUserModal(user)} className="p-1.5 rounded-lg border border-border hover:border-primary transition" title="View">
                                 <Eye size={14} />
-                              </button>
-                              <button onClick={() => handleAction("edit", user)} className="p-1.5 rounded-lg border border-border hover:border-primary transition" title="Edit">
-                                <Edit size={14} />
                               </button>
                               {user.isBanned ? (
                                 <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-green-500/30 text-green-500 hover:bg-green-500/10 transition" title="Unban">

@@ -15,9 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import Link from "next/link";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -56,7 +54,7 @@ const WithDrawalsPage = () => {
       params.append("limit", "20");
       if (searchQuery) params.append("search", searchQuery);
 
-      const res = await axios.get(`${API_BASE}/admin/transactions?${params.toString()}`, {
+      const res = await axiosInstance.get(`/admin/transactions?${params.toString()}`, {
         headers: getAuthHeaders(),
       });
 
@@ -92,8 +90,8 @@ const WithDrawalsPage = () => {
 
   const approveTransaction = async (id) => {
     try {
-      const res = await axios.patch(
-        `${API_BASE}/admin/deposits/${id}/approve`,
+      const res = await axiosInstance.patch(
+        `/admin/deposits/${id}/approve`,
         {},
         { headers: getAuthHeaders() }
       );
@@ -108,8 +106,8 @@ const WithDrawalsPage = () => {
 
   const rejectTransaction = async (id) => {
     try {
-      const res = await axios.patch(
-        `${API_BASE}/admin/deposits/${id}/reject`,
+      const res = await axiosInstance.patch(
+        `/admin/deposits/${id}/reject`,
         {},
         { headers: getAuthHeaders() }
       );

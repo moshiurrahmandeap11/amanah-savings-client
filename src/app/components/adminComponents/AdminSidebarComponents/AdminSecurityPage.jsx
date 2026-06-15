@@ -11,9 +11,7 @@ import {
   Server,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -29,7 +27,7 @@ const AdminSecurityPage = () => {
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/admin/security/events?page=1&limit=50`, {
+      const res = await axiosInstance.get("/admin/security/events?page=1&limit=50", {
         headers: getAuthHeaders(),
       });
       if (res.data.success) {

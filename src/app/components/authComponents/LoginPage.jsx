@@ -29,10 +29,10 @@ const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
 
-  // Check if user is already logged in - শুধু একবার চেক করবে
+
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      // ইউজারের রোল চেক করে রিডাইরেক্ট
+
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       if (user?.role === "admin") {
         router.replace("/admin");

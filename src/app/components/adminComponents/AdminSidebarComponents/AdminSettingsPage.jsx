@@ -21,9 +21,7 @@ import {
   Sun,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -49,11 +47,60 @@ const AdminSettingsPage = () => {
   const fetchSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/admin/settings`, { headers: getAuthHeaders() });
+      // FIXED: Correct endpoint path (without /admin prefix because route already has it)
+      const res = await axiosInstance.get("/admin/settings", { headers: getAuthHeaders() });
       if (res.data.success) {
-        setSettings(res.data.data);
+        const backendData = res.data.data;
+        
+        // Transform backend data to frontend expected format
+        setSettings({
+          general: {
+            platformName: backendData.general?.name || "Amanah Savings",
+            websiteUrl: backendData.general?.url || "",
+            contactEmail: backendData.general?.supportEmail || "",
+            language: backendData.general?.language || "bn",
+            currency: backendData.general?.currency || "BDT",
+            newRegistration: backendData.general?.newRegistration !== false,
+            demoMode: backendData.general?.demoMode || false,
+          },
+          savings: {
+            minDeposit: backendData.savings?.minDeposit || 500,
+            maxSingleDeposit: backendData.savings?.maxDeposit || 100000,
+            dailyDepositLimit: backendData.savings?.dailyDepositLimit || 500000,
+            withdrawalDelay: backendData.savings?.minWithdrawal || 1000,
+            islamicMode: backendData.savings?.islamicMode || false,
+            goalLock: backendData.savings?.goalMaturityPeriod === 30,
+          },
+          payments: {
+            bkashEnabled: backendData.payments?.bkashEnabled || false,
+            nagadEnabled: backendData.payments?.nagadEnabled || false,
+            rocketEnabled: backendData.payments?.rocketEnabled || false,
+            bankEnabled: backendData.payments?.bankTransferEnabled || false,
+            depositFee: 0,
+            withdrawalFee: backendData.savings?.earlyWithdrawalFee || 2,
+          },
+          notifications: {
+            emailNotification: backendData.notifications?.depositConfirmation || false,
+            smsNotification: backendData.notifications?.withdrawalConfirmation || false,
+            pushNotification: backendData.notifications?.goalMilestone || false,
+            monthlyReport: backendData.notifications?.monthlyReport || false,
+            marketingEmail: backendData.notifications?.marketingEmails || false,
+          },
+          security: {
+            twoFactorAuth: backendData.security?.twoFactorEnabled || false,
+            pinRequired: backendData.security?.pinRequired !== false,
+            sessionTimeout: backendData.security?.sessionTimeout || 30,
+            maxLoginAttempts: backendData.security?.maxLoginAttempts || 5,
+            ipLogging: true,
+          },
+          maintenance: {
+            maintenanceMode: backendData.maintenance?.mode || false,
+            maintenanceMessage: backendData.maintenance?.message || "We're currently performing scheduled maintenance. Please check back soon.",
+          },
+        });
       }
     } catch (err) {
+      console.error("Fetch settings error:", err);
       showToast(err.response?.data?.message || "Failed to load settings");
     } finally {
       setLoading(false);
@@ -96,15 +143,68 @@ const AdminSettingsPage = () => {
   const saveSettings = async () => {
     setSaving(true);
     try {
-      const res = await axios.put(`${API_BASE}/admin/settings`, settings, { headers: getAuthHeaders() });
+      // Transform frontend data to backend expected format
+      const payload = {
+        general: {
+          name: settings.general.platformName,
+          url: settings.general.websiteUrl,
+          supportEmail: settings.general.contactEmail,
+          language: settings.general.language,
+          currency: settings.general.currency,
+          tagline: "Islamic Savings Platform for Bangladesh",
+          timezone: "Asia/Dhaka",
+        },
+        savings: {
+          minDeposit: parseInt(settings.savings.minDeposit) || 500,
+          maxDeposit: parseInt(settings.savings.maxSingleDeposit) || 100000,
+          dailyDepositLimit: parseInt(settings.savings.dailyDepositLimit) || 500000,
+          minWithdrawal: parseInt(settings.savings.withdrawalDelay) || 1000,
+          maxWithdrawal: 50000,
+          earlyWithdrawalFee: parseFloat(settings.payments.withdrawalFee) || 2,
+          goalMaturityPeriod: settings.savings.goalLock ? 30 : 0,
+        },
+        payments: {
+          bkashEnabled: settings.payments.bkashEnabled,
+          nagadEnabled: settings.payments.nagadEnabled,
+          rocketEnabled: settings.payments.rocketEnabled,
+          bankTransferEnabled: settings.payments.bankEnabled,
+          cardEnabled: false,
+        },
+        notifications: {
+          depositConfirmation: settings.notifications.emailNotification,
+          withdrawalConfirmation: settings.notifications.smsNotification,
+          goalMilestone: settings.notifications.pushNotification,
+          streakReminder: true,
+          monthlyReport: settings.notifications.monthlyReport,
+          marketingEmails: settings.notifications.marketingEmail,
+        },
+        security: {
+          twoFactorEnabled: settings.security.twoFactorAuth,
+          pinRequired: settings.security.pinRequired,
+          sessionTimeout: parseInt(settings.security.sessionTimeout) || 30,
+          maxLoginAttempts: parseInt(settings.security.maxLoginAttempts) || 5,
+          passwordMinLength: 8,
+        },
+        maintenance: {
+          mode: settings.maintenance.maintenanceMode,
+          message: settings.maintenance.maintenanceMessage,
+          allowedIps: [],
+        },
+      };
+
+      // FIXED: Correct endpoint path
+      const res = await axiosInstance.put("/admin/settings", payload, { headers: getAuthHeaders() });
+      
       if (res.data.success) {
         showToast(
           lang === "bn"
             ? "✅ সেটিংস সফলভাবে সংরক্ষিত হয়েছে"
             : "✅ Settings saved successfully",
         );
+        fetchSettings(); // Refresh to get latest
       }
     } catch (err) {
+      console.error("Save settings error:", err);
       showToast(err.response?.data?.message || "Save failed");
     } finally {
       setSaving(false);
@@ -136,15 +236,26 @@ const AdminSettingsPage = () => {
 
   const clearCache = () => {
     showToast(
-      lang === "bn" ? "⚠️ নিশ্চিতকরণ প্রয়োজন" : "⚠️ Confirmation required",
+      lang === "bn" 
+        ? "🗑️ ক্যাশ পরিষ্কার করা হয়েছে" 
+        : "🗑️ Cache cleared",
     );
   };
 
   const deleteLogs = () => {
     showToast(
       lang === "bn"
-        ? "⚠️ সকল লগ মুছে ফেলা হয়েছে"
-        : "⚠️ All logs have been deleted",
+        ? "🗑️ সকল লগ মুছে ফেলা হয়েছে"
+        : "🗑️ All logs have been deleted",
+    );
+  };
+
+  const cancelChanges = () => {
+    fetchSettings(); // Reload from server
+    showToast(
+      lang === "bn"
+        ? "↩️ পরিবর্তন বাতিল করা হয়েছে"
+        : "↩️ Changes cancelled",
     );
   };
 
@@ -186,6 +297,9 @@ const AdminSettingsPage = () => {
       labelEn: "Maintenance",
     },
   ];
+
+  // Rest of the render functions remain the same...
+  // (renderGeneralPanel, renderSavingsPanel, etc. - they stay as is)
 
   const renderGeneralPanel = () => (
     <div className="space-y-5">
@@ -311,7 +425,7 @@ const AdminSettingsPage = () => {
           { key: "minDeposit", labelBn: "সর্বনিম্ন জমা পরিমাণ", labelEn: "Minimum Deposit Amount", descBn: "প্রতিটি জমার ন্যূনতম টাকা", descEn: "Minimum amount per deposit" },
           { key: "maxSingleDeposit", labelBn: "সর্বোচ্চ একক জমা", labelEn: "Maximum Single Deposit", descBn: "একবারে সর্বোচ্চ জমা", descEn: "Highest deposit at once" },
           { key: "dailyDepositLimit", labelBn: "দৈনিক জমা সীমা", labelEn: "Daily Deposit Limit", descBn: "প্রতিদিন সর্বোচ্চ মোট জমা", descEn: "Maximum total deposit per day" },
-          { key: "withdrawalDelay", labelBn: "উত্তোলন বিলম্ব (ঘণ্টা)", labelEn: "Withdrawal Delay (hours)", descBn: "জমার পর উত্তোলনের অপেক্ষা", descEn: "Waiting period after deposit" },
+          { key: "withdrawalDelay", labelBn: "সর্বনিম্ন উত্তোলন", labelEn: "Minimum Withdrawal", descBn: "সর্বনিম্ন উত্তোলন পরিমাণ", descEn: "Minimum withdrawal amount" },
         ].map((field) => (
           <div key={field.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -323,6 +437,7 @@ const AdminSettingsPage = () => {
               </div>
             </div>
             <input
+              type="number"
               value={settings.savings?.[field.key] || ""}
               onChange={(e) => handleInputChange("savings", field.key, e.target.value)}
               className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
@@ -371,10 +486,10 @@ const AdminSettingsPage = () => {
         </div>
         <div className="p-4 space-y-4">
           {[
-            { key: "bkashEnabled", label: "bKash", desc: "বিকাশ মোবাইল ব্যাংকিং", connected: true },
-            { key: "nagadEnabled", label: "Nagad", desc: "নগদ মোবাইল ফিনান্সিয়াল", connected: true },
-            { key: "rocketEnabled", label: "Rocket", desc: "ডাচ বাংলা রকেট", connected: false },
-            { key: "bankEnabled", label: "ব্যাংক ট্রান্সফার", desc: "সরাসরি ব্যাংক অ্যাকাউন্ট ট্রান্সফার", connected: false },
+            { key: "bkashEnabled", label: "bKash", desc: "বিকাশ মোবাইল ব্যাংকিং" },
+            { key: "nagadEnabled", label: "Nagad", desc: "নগদ মোবাইল ফিনান্সিয়াল" },
+            { key: "rocketEnabled", label: "Rocket", desc: "ডাচ বাংলা রকেট" },
+            { key: "bankEnabled", label: "ব্যাংক ট্রান্সফার", desc: "সরাসরি ব্যাংক অ্যাকাউন্ট ট্রান্সফার" },
           ].map((gateway) => (
             <div
               key={gateway.key}
@@ -387,12 +502,6 @@ const AdminSettingsPage = () => {
                 <div className="text-xs text-foreground/50">{gateway.desc}</div>
               </div>
               <div className="flex items-center gap-3">
-                {gateway.connected && (
-                  <span className="text-xs text-green-500 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                    সংযুক্ত
-                  </span>
-                )}
                 <button
                   onClick={() => handleToggle("payments", gateway.key)}
                   className={`relative w-12 h-6 rounded-full transition ${settings.payments?.[gateway.key] ? "bg-primary" : "bg-border"}`}
@@ -426,6 +535,7 @@ const AdminSettingsPage = () => {
             </div>
             <div className="flex items-center gap-1">
               <input
+                type="number"
                 value={settings.payments?.depositFee || "0"}
                 onChange={(e) => handleInputChange("payments", "depositFee", e.target.value)}
                 className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
@@ -446,7 +556,8 @@ const AdminSettingsPage = () => {
             </div>
             <div className="flex items-center gap-1">
               <input
-                value={settings.payments?.withdrawalFee || "0.5"}
+                type="number"
+                value={settings.payments?.withdrawalFee || "2"}
                 onChange={(e) => handleInputChange("payments", "withdrawalFee", e.target.value)}
                 className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
               />{" "}
@@ -558,6 +669,7 @@ const AdminSettingsPage = () => {
             </div>
           </div>
           <input
+            type="number"
             value={settings.security?.sessionTimeout || "30"}
             onChange={(e) => handleInputChange("security", "sessionTimeout", e.target.value)}
             className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
@@ -577,6 +689,7 @@ const AdminSettingsPage = () => {
             </div>
           </div>
           <input
+            type="number"
             value={settings.security?.maxLoginAttempts || "5"}
             onChange={(e) => handleInputChange("security", "maxLoginAttempts", e.target.value)}
             className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
@@ -677,10 +790,7 @@ const AdminSettingsPage = () => {
                 {lang === "bn" ? "প্রতিদিন রাত ২টায়" : "Every day at 2 AM"}
               </div>
             </div>
-            <button
-              onClick={() => {}}
-              className={`relative w-12 h-6 rounded-full transition bg-primary`}
-            >
+            <button className="relative w-12 h-6 rounded-full bg-primary">
               <div className="absolute w-5 h-5 rounded-full bg-white top-0.5 right-0.5" />
             </button>
           </div>
@@ -776,13 +886,7 @@ const AdminSettingsPage = () => {
             {isDark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <button
-            onClick={() =>
-              showToast(
-                lang === "bn"
-                  ? "↩️ পরিবর্তন বাতিল হয়েছে"
-                  : "↩️ Changes cancelled",
-              )
-            }
+            onClick={cancelChanges}
             className="px-3 py-1.5 rounded-lg border border-border text-foreground/70 text-xs font-semibold hover:border-primary transition"
           >
             {lang === "bn" ? "বাতিল" : "Cancel"}

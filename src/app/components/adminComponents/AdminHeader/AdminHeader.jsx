@@ -4,33 +4,63 @@ import React, { useState, useEffect } from "react";
 import { Menu, Moon, Sun, Bell, AlertTriangle, Globe } from "lucide-react";
 import Link from "next/link";
 import useSocket from "../../../hooks/useSocket";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [currentLang, setCurrentLang] = useState("en");
   const [fraudCount, setFraudCount] = useState(0);
   
-  // Fetch real fraud count from API
+  // Fetch real fraud count from API - FIXED ENDPOINT
   useEffect(() => {
     const fetchFraudCount = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
-        const res = await fetch("https://server-amanah-savings.onrender.com/api/admin/security", {
+        
+        // Fixed: Use correct endpoint /admin/security/events
+        const res = await axiosInstance.get("/admin/security/events", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        const data = await res.json();
-        if (data.success && data.data?.securityEvents) {
-          const count = data.data.securityEvents.filter(
-            (e) => e.severity === "high" || e.severity === "critical"
+        
+        if (res.data.success && res.data.data?.events) {
+          // Count high risk events
+          const count = res.data.data.events.filter(
+            (e) => e.status === "danger" || e.severity === "high" || e.severity === "critical"
           ).length;
           setFraudCount(count);
         }
       } catch (err) {
         console.error("Fraud count fetch error:", err);
+        // Set fallback count or keep existing
+        setFraudCount(0);
       }
     };
     fetchFraudCount();
+  }, []);
+  
+  // Also fetch fraud alerts count from fraud endpoint
+  useEffect(() => {
+    const fetchFraudAlerts = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+        
+        const res = await axiosInstance.get("/admin/fraud/alerts", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        if (res.data.success && res.data.data?.alerts) {
+          const highRiskCount = res.data.data.alerts.filter(
+            (a) => a.severity === "high" || a.severity === "danger"
+          ).length;
+          setFraudCount(highRiskCount);
+        }
+      } catch (err) {
+        console.error("Fraud alerts fetch error:", err);
+      }
+    };
+    fetchFraudAlerts();
   }, []);
   
   // Admin socket for real-time alerts (admin role, no specific userId needed for admin room)
@@ -79,6 +109,19 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
     localStorage.setItem("admin_lang", newLang);
   };
 
+  // Get language text
+  const getText = (key) => {
+    const texts = {
+      en: {
+        fraudAlerts: "Fraud Alerts"
+      },
+      bn: {
+        fraudAlerts: "জালিয়াতি সতর্কতা"
+      }
+    };
+    return texts[currentLang][key] || texts.en[key];
+  };
+
   return (
     <header className="sticky top-0 z-40 bg-card border-b border-border">
       <div className="px-4 sm:px-6 py-3 flex items-center justify-between gap-3 flex-wrap">
@@ -109,9 +152,11 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-bold hover:bg-red-500/20 transition"
           >
             <AlertTriangle size={12} />
-            {currentLang === "bn"
-              ? `${fraudCount} জালিয়াতি সতর্কতা`
-              : `${fraudCount} Fraud Alerts`}
+            {fraudCount > 0 ? (
+              <span>{fraudCount} {getText("fraudAlerts")}</span>
+            ) : (
+              <span>{getText("fraudAlerts")}</span>
+            )}
           </button>
 
           {/* Notifications Button */}

@@ -3,7 +3,7 @@ import Navbar from "../components/shared/Navbar/Navbar";
 
 export default async function GeneralLayout({ children }) {
   return (
-    <dev className="min-h-full flex flex-col">
+    <div className="min-h-full flex flex-col">
       <nav className="sticky top-0 z-50">
         <Navbar />
       </nav>
@@ -11,6 +11,6 @@ export default async function GeneralLayout({ children }) {
       <footer>
         <Footer />
       </footer>
-    </dev>
+    </div>
   );
 }

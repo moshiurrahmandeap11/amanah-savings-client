@@ -1,14 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Copy, Check, Share2, Users, Gift, TrendingUp, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Copy, Check, Share2, Users, Gift, TrendingUp, Loader2, X, Trophy, Medal } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
 const ReferralPage = () => {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [leaderboardStats, setLeaderboardStats] = useState({ total: 0 });
   const [referralData, setReferralData] = useState({
     referralCode: "",
     referralLink: "",
@@ -54,6 +58,39 @@ const ReferralPage = () => {
     }
   };
 
+  // Fetch leaderboard
+  const fetchLeaderboard = async () => {
+    setLeaderboardLoading(true);
+    try {
+      const response = await axiosInstance.get("/referrals/leaderboard?limit=50");
+      if (response.data.success) {
+        setLeaderboard(response.data.data.leaderboard);
+        setLeaderboardStats({ total: response.data.data.total });
+      }
+    } catch (error) {
+      console.error("Fetch leaderboard error:", error);
+      Swal.fire({
+        title: "Error!",
+        text: "Failed to load leaderboard",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    } finally {
+      setLeaderboardLoading(false);
+    }
+  };
+
+  const openLeaderboardModal = async () => {
+    setShowLeaderboardModal(true);
+    document.body.style.overflow = "hidden";
+    await fetchLeaderboard();
+  };
+
+  const closeLeaderboardModal = () => {
+    setShowLeaderboardModal(false);
+    document.body.style.overflow = "auto";
+  };
+
   useEffect(() => {
     fetchReferralStats();
     fetchReferralHistory();
@@ -87,6 +124,13 @@ const ReferralPage = () => {
   const shareOnSMS = () => {
     const message = `Amanah Savings-এ আমার সাথে সঞ্চয় শুরু করো: ${referralData.referralLink}`;
     window.location.href = `sms:?body=${encodeURIComponent(message)}`;
+  };
+
+  const getRankIcon = (rank) => {
+    if (rank === 1) return "🥇";
+    if (rank === 2) return "🥈";
+    if (rank === 3) return "🥉";
+    return `${rank}`;
   };
 
   const stats = [
@@ -267,13 +311,123 @@ const ReferralPage = () => {
             </div>
           </div>
           <button
-            onClick={() => window.open("/dashboard/referral-leaderboard", "_blank")}
+            onClick={openLeaderboardModal}
             className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition"
           >
             View Leaderboard →
           </button>
         </div>
       </div>
+
+      {/* Leaderboard Modal */}
+      <AnimatePresence>
+        {showLeaderboardModal && (
+          <div
+            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
+            onClick={closeLeaderboardModal}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card rounded-2xl max-w-2xl w-full max-h-[85vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-card border-b border-border p-5 flex justify-between items-center">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                    🏆 Top Referrers Leaderboard
+                  </h3>
+                  <p className="text-sm text-foreground/50">
+                    Top {leaderboardStats.total} referrers based on total referrals
+                  </p>
+                </div>
+                <button
+                  onClick={closeLeaderboardModal}
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="overflow-y-auto max-h-[calc(85vh-120px)]">
+                {leaderboardLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                ) : leaderboard.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-4xl mb-3">🏆</div>
+                    <p className="text-foreground/50">No referrers found yet</p>
+                    <p className="text-xs text-foreground/40 mt-1">Be the first to refer friends!</p>
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border">
+                    {/* Header Row */}
+                    <div className="grid grid-cols-12 gap-2 px-5 py-3 bg-background sticky top-0 font-semibold text-xs text-foreground/60">
+                      <div className="col-span-2">Rank</div>
+                      <div className="col-span-5">Referrer</div>
+                      <div className="col-span-2 text-center">Referrals</div>
+                      <div className="col-span-3 text-right">Bonus Earned</div>
+                    </div>
+
+                    {/* Leaderboard Rows */}
+                    {leaderboard.map((user, idx) => (
+                      <motion.div
+                        key={idx}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.03 }}
+                        className="grid grid-cols-12 gap-2 px-5 py-3 hover:bg-primary/5 transition"
+                      >
+                        <div className="col-span-2 flex items-center gap-1">
+                          <span className="text-xl">{getRankIcon(user.rank)}</span>
+                          <span className="text-sm font-semibold text-foreground">#{user.rank}</span>
+                        </div>
+                        <div className="col-span-5 flex items-center gap-2">
+                          {user.profilePicture ? (
+                            <img
+                              src={user.profilePicture}
+                              alt={user.name}
+                              className="w-6 h-6 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-primary to-primary-light flex items-center justify-center text-white text-[10px] font-bold">
+                              {user.name?.charAt(0) || "U"}
+                            </div>
+                          )}
+                          <span className="text-sm font-medium text-foreground truncate">
+                            {user.name}
+                          </span>
+                        </div>
+                        <div className="col-span-2 text-center">
+                          <span className="text-sm font-bold text-primary">
+                            {user.referrals}
+                          </span>
+                          <span className="text-xs text-foreground/50 ml-1">
+                            {user.referrals === 1 ? "referral" : "referrals"}
+                          </span>
+                        </div>
+                        <div className="col-span-3 text-right">
+                          <span className="text-sm font-semibold text-green-600 dark:text-green-400">
+                            ৳{user.bonusEarned.toLocaleString()}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="sticky bottom-0 bg-card border-t border-border p-4 text-center">
+                <p className="text-xs text-foreground/40">
+                  Leaderboard updates daily based on total referrals
+                </p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

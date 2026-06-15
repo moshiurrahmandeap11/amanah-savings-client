@@ -6,9 +6,7 @@ import Chart from "chart.js/auto";
 import {
   Download,
 } from "lucide-react";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const AdminDashboardPage = () => {
   const router = useRouter();
@@ -43,7 +41,7 @@ const AdminDashboardPage = () => {
 
   const fetchDashboard = useCallback(async () => {
     try {
-      const res = await axios.get(`${API_BASE}/admin/dashboard`, {
+      const res = await axiosInstance.get("/admin/dashboard", {
         headers: getAuthHeaders(),
       });
       if (res.data.success) {

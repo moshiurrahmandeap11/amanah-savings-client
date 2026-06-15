@@ -6,7 +6,7 @@ import { Bell, TrendingUp, Users, Award, Zap, Play, Pause } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import useSocket from "../../../hooks/useSocket";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000api";
 
 const LiveFeedPage = () => {
   const [isDark, setIsDark] = useState(false);

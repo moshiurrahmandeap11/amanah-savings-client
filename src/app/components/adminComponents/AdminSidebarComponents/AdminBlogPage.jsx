@@ -23,9 +23,7 @@ import {
   Send,
   Loader2,
 } from "lucide-react";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -39,11 +37,11 @@ const AdminBlogPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showEditor, setShowEditor] = useState(false);
   const [editingPost, setEditingPost] = useState(null);
-  const [postTitle, setPostTitle] = useState("");
-  const [postContent, setPostContent] = useState("");
-  const [postCategory, setPostCategory] = useState("💰 Savings Tips");
-  const [postLanguage, setPostLanguage] = useState("🇧🇩 Bangla");
-  const [scheduleDate, setScheduleDate] = useState("");
+  const [postTitleBn, setPostTitleBn] = useState("");
+  const [postTitleEn, setPostTitleEn] = useState("");
+  const [postContentBn, setPostContentBn] = useState("");
+  const [postContentEn, setPostContentEn] = useState("");
+  const [postCategory, setPostCategory] = useState("general");
   const [toast, setToast] = useState({ show: false, message: "" });
   const [posts, setPosts] = useState([]);
   const [stats, setStats] = useState([
@@ -58,44 +56,52 @@ const AdminBlogPage = () => {
     setLoading(true);
     try {
       const [articlesRes, statsRes] = await Promise.all([
-        axios.get(`${API_BASE}/help/articles`, { headers: getAuthHeaders() }),
-        axios.get(`${API_BASE}/help/statistics`, { headers: getAuthHeaders() }),
+        axiosInstance.get("/help/articles", { headers: getAuthHeaders() }),
+        axiosInstance.get("/help/statistics", { headers: getAuthHeaders() }),
       ]);
+      
       if (articlesRes.data.success) {
         const articles = articlesRes.data.data.articles || [];
-        setPosts(articles.map((a) => ({
-          id: a.id || a._id,
-          thumb: a.thumb || "📝",
-          title: a.title,
-          titleEn: a.titleEn || a.title,
-          author: a.author || "Admin",
-          date: a.publishedAt ? `Published ${new Date(a.publishedAt).toLocaleDateString()}` : "Draft",
-          readTime: a.readTime || "5 min read",
+        // Transform backend data to frontend format
+        const formattedPosts = articles.map((a) => ({
+          id: a.articleId,
+          thumb: a.icon || "📝",
+          title: a.title?.bn || a.title?.en || "Untitled",
+          titleEn: a.title?.en || a.title?.bn || "Untitled",
+          author: "Admin", // You can add author field to backend
+          date: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "Unknown",
+          readTime: a.readTime?.bn || "5 min read",
           status: a.status || "published",
-          category: a.category || "☪️ Islamic Finance",
-          excerpt: a.excerpt || a.content?.slice(0, 120) + "...",
-          excerptEn: a.excerptEn || a.excerpt,
+          category: getCategoryName(a.category?.en),
+          categoryEn: a.category?.en,
+          categoryBn: a.category?.bn,
+          excerpt: a.body?.bn?.slice(0, 120) + "..." || "No content",
+          excerptEn: a.body?.en?.slice(0, 120) + "..." || "No content",
           views: String(a.views || 0),
-          likes: String(a.likes || 0),
-          comments: String(a.comments || 0),
-          shares: String(a.shares || 0),
-        })));
+          helpful: String(a.helpful || 0),
+          notHelpful: String(a.notHelpful || 0),
+        }));
+        setPosts(formattedPosts);
       }
+      
       if (statsRes.data.success) {
         const s = statsRes.data.data;
+        const published = posts.filter(p => p.status === "published").length;
+        const drafts = posts.filter(p => p.status === "draft").length;
         setStats([
-          { value: String(s.published || 0), label: "Published", color: "green" },
-          { value: String(s.drafts || 0), label: "Drafts", color: "yellow" },
-          { value: String(s.scheduled || 0), label: "Scheduled", color: "blue" },
+          { value: String(published), label: "Published", color: "green" },
+          { value: String(drafts), label: "Drafts", color: "yellow" },
+          { value: "0", label: "Scheduled", color: "blue" },
           { value: String(s.totalViews || 0), label: "Total Views", color: "purple" },
         ]);
       }
     } catch (err) {
+      console.error("Fetch error:", err);
       showToast(err.response?.data?.message || "Failed to load articles");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [posts.length]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -116,19 +122,45 @@ const AdminBlogPage = () => {
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
+  const getCategoryName = (categoryEn) => {
+    const categories = {
+      "General": "📝 General",
+      "Savings Tips": "💰 Savings Tips",
+      "Islamic Finance": "☪️ Islamic Finance",
+      "Announcement": "📢 Announcement",
+      "Reports": "📊 Reports",
+      "Community": "🎉 Community"
+    };
+    return categories[categoryEn] || "📝 General";
+  };
+
+  const getCategoryValue = (categoryDisplay) => {
+    const categories = {
+      "📝 General": "General",
+      "💰 Savings Tips": "Savings Tips",
+      "☪️ Islamic Finance": "Islamic Finance",
+      "📢 Announcement": "Announcement",
+      "📊 Reports": "Reports",
+      "🎉 Community": "Community"
+    };
+    return categories[categoryDisplay] || "General";
+  };
+
   const openEditor = (post = null) => {
     if (post) {
       setEditingPost(post);
-      setPostTitle(post.title);
-      setPostContent(post.excerpt);
-      setPostCategory(post.category);
+      setPostTitleBn(post.title);
+      setPostTitleEn(post.titleEn);
+      setPostContentBn(post.excerpt.replace("...", ""));
+      setPostContentEn(post.excerptEn.replace("...", ""));
+      setPostCategory(getCategoryValue(post.category));
     } else {
       setEditingPost(null);
-      setPostTitle("");
-      setPostContent("");
-      setPostCategory("💰 Savings Tips");
-      setPostLanguage("🇧🇩 Bangla");
-      setScheduleDate("");
+      setPostTitleBn("");
+      setPostTitleEn("");
+      setPostContentBn("");
+      setPostContentEn("");
+      setPostCategory("General");
     }
     setShowEditor(true);
     document.body.style.overflow = "hidden";
@@ -140,69 +172,77 @@ const AdminBlogPage = () => {
     document.body.style.overflow = "auto";
   };
 
-  const saveDraft = async () => {
-    try {
-      const payload = {
-        title: postTitle,
-        content: postContent,
-        category: postCategory,
-        status: "draft",
-      };
-      if (editingPost) {
-        await axios.put(`${API_BASE}/help/admin/articles/${editingPost.id}`, payload, { headers: getAuthHeaders() });
-      } else {
-        await axios.post(`${API_BASE}/help/admin/articles`, payload, { headers: getAuthHeaders() });
-      }
-      closeEditor();
-      showToast(
-        lang === "bn"
-          ? "💾 ড্রাফট সফলভাবে সংরক্ষিত হয়েছে"
-          : "💾 Draft saved successfully",
-      );
-      fetchPosts();
-    } catch (err) {
-      showToast(err.response?.data?.message || "Save failed");
-    }
-  };
-
-  const publishPost = async () => {
-    if (!postTitle.trim()) {
+  const saveOrPublishPost = async (status) => {
+    if (!postTitleBn.trim() && !postTitleEn.trim()) {
       showToast(
         lang === "bn" ? "⚠️ অনুগ্রহ করে শিরোনাম দিন" : "⚠️ Please add a title",
       );
       return;
     }
+
     try {
+      const articleId = editingPost?.id || `ART-${Date.now()}`;
       const payload = {
-        title: postTitle,
-        content: postContent,
-        category: postCategory,
-        status: "published",
+        articleId,
+        icon: "📝",
+        titleBn: postTitleBn || postTitleEn,
+        titleEn: postTitleEn || postTitleBn,
+        categoryBn: getCategoryBn(postCategory),
+        categoryEn: postCategory,
+        readTimeBn: "৫ মিনিট পড়া",
+        readTimeEn: "5 min read",
+        bodyBn: postContentBn || "Content will be added soon",
+        bodyEn: postContentEn || "Content will be added soon",
+        tags: [postCategory.toLowerCase()],
+        isPopular: false,
+        status: status,
       };
+
       if (editingPost) {
-        await axios.put(`${API_BASE}/help/admin/articles/${editingPost.id}`, payload, { headers: getAuthHeaders() });
+        await axiosInstance.put(`/help/admin/articles/${articleId}`, payload, { 
+          headers: getAuthHeaders() 
+        });
       } else {
-        await axios.post(`${API_BASE}/help/admin/articles`, payload, { headers: getAuthHeaders() });
+        await axiosInstance.post("/help/admin/articles", payload, { 
+          headers: getAuthHeaders() 
+        });
       }
+
       closeEditor();
       showToast(
-        lang === "bn"
-          ? "🚀 পোস্ট সফলভাবে প্রকাশিত হয়েছে!"
-          : "🚀 Post published successfully!",
+        status === "published"
+          ? (lang === "bn" ? "🚀 পোস্ট প্রকাশিত হয়েছে!" : "🚀 Post published!")
+          : (lang === "bn" ? "💾 ড্রাফট সংরক্ষিত হয়েছে" : "💾 Draft saved"),
       );
       fetchPosts();
     } catch (err) {
-      showToast(err.response?.data?.message || "Publish failed");
+      console.error("Save error:", err);
+      showToast(err.response?.data?.message || "Operation failed");
     }
+  };
+
+  const saveDraft = () => saveOrPublishPost("draft");
+  const publishPost = () => saveOrPublishPost("published");
+
+  const getCategoryBn = (categoryEn) => {
+    const categories = {
+      "General": "সাধারণ",
+      "Savings Tips": "সঞ্চয় টিপস",
+      "Islamic Finance": "ইসলামী অর্থায়ন",
+      "Announcement": "ঘোষণা",
+      "Reports": "রিপোর্ট",
+      "Community": "কমিউনিটি"
+    };
+    return categories[categoryEn] || "সাধারণ";
   };
 
   const unpublishPost = async (id) => {
     try {
-      await axios.put(`${API_BASE}/help/admin/articles/${id}`, { status: "draft" }, { headers: getAuthHeaders() });
+      await axiosInstance.put(`/help/admin/articles/${id}`, { status: "draft" }, { headers: getAuthHeaders() });
       showToast(
         lang === "bn"
-          ? "⬇️ পোস্ট আনপাবলিশ হয়েছে — ড্রাফটে রাখা হয়েছে"
-          : "⬇️ Post unpublished — moved to drafts",
+          ? "⬇️ পোস্ট আনপাবলিশ করা হয়েছে"
+          : "⬇️ Post unpublished",
       );
       fetchPosts();
     } catch (err) {
@@ -211,18 +251,10 @@ const AdminBlogPage = () => {
   };
 
   const deletePost = async (id) => {
-    if (
-      confirm(
-        lang === "bn"
-          ? "এই পোস্ট স্থায়ীভাবে মুছে ফেলবেন?"
-          : "Delete this post permanently?",
-      )
-    ) {
+    if (confirm(lang === "bn" ? "পোস্ট ডিলিট করবেন?" : "Delete post?")) {
       try {
-        await axios.delete(`${API_BASE}/help/admin/articles/${id}`, { headers: getAuthHeaders() });
-        showToast(
-          lang === "bn" ? "🗑️ পোস্ট মুছে ফেলা হয়েছে" : "🗑️ Post deleted",
-        );
+        await axiosInstance.delete(`/help/admin/articles/${id}`, { headers: getAuthHeaders() });
+        showToast(lang === "bn" ? "🗑️ পোস্ট ডিলিট হয়েছে" : "🗑️ Post deleted");
         fetchPosts();
       } catch (err) {
         showToast(err.response?.data?.message || "Delete failed");
@@ -250,14 +282,13 @@ const AdminBlogPage = () => {
     const matchesSearch =
       searchQuery === "" ||
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (lang === "en" &&
-        post.titleEn?.toLowerCase().includes(searchQuery.toLowerCase()));
+      post.titleEn.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesFilter && matchesSearch;
   });
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
+      {/* Header - Same as before */}
       <div className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-50 flex-wrap">
         <button
           onClick={() => window.history.back()}
@@ -285,7 +316,7 @@ const AdminBlogPage = () => {
         </button>
       </div>
 
-      {/* Stats */}
+      {/* Stats Grid - Same */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4 max-w-6xl mx-auto">
         {stats.map((stat, idx) => (
           <div
@@ -304,7 +335,7 @@ const AdminBlogPage = () => {
         ))}
       </div>
 
-      {/* Toolbar */}
+      {/* Toolbar - Same */}
       <div className="flex flex-col sm:flex-row gap-3 px-4 pb-3 max-w-6xl mx-auto">
         <div className="relative flex-1">
           <Search
@@ -327,7 +358,7 @@ const AdminBlogPage = () => {
         </button>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Filter Tabs - Same */}
       <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide max-w-6xl mx-auto">
         {[
           { id: "all", label: `All (${posts.length})` },
@@ -349,14 +380,14 @@ const AdminBlogPage = () => {
         ))}
       </div>
 
-      {/* Loading */}
+      {/* Loading - Same */}
       {loading && (
         <div className="flex items-center justify-center py-12 max-w-6xl mx-auto">
           <Loader2 size={32} className="animate-spin text-primary" />
         </div>
       )}
 
-      {/* Posts List */}
+      {/* Posts List - Similar but with helpful instead of likes */}
       <div className="max-w-6xl mx-auto px-4 pb-20 space-y-3">
         {filteredPosts.map((post) => {
           const statusBadge = getStatusBadge(post.status);
@@ -372,7 +403,7 @@ const AdminBlogPage = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-sm text-foreground">
-                      {lang === "bn" ? post.title : post.titleEn || post.title}
+                      {lang === "bn" ? post.title : post.titleEn}
                     </div>
                     <div className="text-xs text-foreground/50 mt-0.5">
                       {post.author} · {post.date}
@@ -391,9 +422,7 @@ const AdminBlogPage = () => {
                 </div>
                 <div className="mt-3 pt-3 border-t border-border">
                   <p className="text-xs text-foreground/60 leading-relaxed">
-                    {lang === "bn"
-                      ? post.excerpt
-                      : post.excerptEn || post.excerpt}
+                    {lang === "bn" ? post.excerpt : post.excerptEn}
                   </p>
                 </div>
                 {post.status === "published" && (
@@ -405,48 +434,8 @@ const AdminBlogPage = () => {
                     </div>
                     <div className="flex items-center gap-1 text-xs text-foreground/50">
                       <Heart size={12} />{" "}
-                      <strong className="text-foreground">{post.likes}</strong>{" "}
-                      likes
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-foreground/50">
-                      <MessageCircle size={12} />{" "}
-                      <strong className="text-foreground">
-                        {post.comments}
-                      </strong>{" "}
-                      comments
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-foreground/50">
-                      <Share2 size={12} />{" "}
-                      <strong className="text-foreground">{post.shares}</strong>{" "}
-                      shares
-                    </div>
-                  </div>
-                )}
-                {post.status === "draft" && (
-                  <div className="flex gap-4 mt-3">
-                    <div className="text-xs text-foreground/50">
-                      📝 <strong className="text-foreground">Draft</strong>
-                    </div>
-                    <div className="text-xs text-foreground/50">
-                      ⏱️{" "}
-                      <strong className="text-foreground">
-                        {post.progress || "60%"}
-                      </strong>{" "}
-                      complete
-                    </div>
-                  </div>
-                )}
-                {post.status === "scheduled" && (
-                  <div className="flex gap-4 mt-3">
-                    <div className="text-xs text-foreground/50">
-                      📅 Publishes{" "}
-                      <strong className="text-foreground">
-                        {post.publishDate || "Soon"}
-                      </strong>
-                    </div>
-                    <div className="text-xs text-foreground/50">
-                      ⏱️ <strong className="text-foreground">100%</strong>{" "}
-                      complete
+                      <strong className="text-foreground">{post.helpful}</strong>{" "}
+                      helpful
                     </div>
                   </div>
                 )}
@@ -464,7 +453,7 @@ const AdminBlogPage = () => {
                     >
                       ⬇️ Unpublish
                     </button>
-                  ) : post.status === "draft" ? (
+                  ) : (
                     <button
                       onClick={() => {
                         setEditingPost(post);
@@ -473,16 +462,6 @@ const AdminBlogPage = () => {
                       className="py-2 rounded-lg border border-green-500/30 text-green-500 text-xs font-semibold hover:bg-green-500/10 transition"
                     >
                       🚀 Publish
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setEditingPost(post);
-                        publishPost();
-                      }}
-                      className="py-2 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
-                    >
-                      🚀 Publish Now
                     </button>
                   )}
                   <button
@@ -501,7 +480,7 @@ const AdminBlogPage = () => {
                     onClick={() => deletePost(post.id)}
                     className="py-2 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/10 transition"
                   >
-                    🗑️
+                    🗑️ Delete
                   </button>
                 </div>
               </div>
@@ -510,7 +489,7 @@ const AdminBlogPage = () => {
         })}
       </div>
 
-      {/* Editor Sheet Modal */}
+      {/* Editor Sheet Modal - Updated with bilingual fields */}
       <AnimatePresence>
         {showEditor && (
           <>
@@ -530,12 +509,17 @@ const AdminBlogPage = () => {
                 <div className="flex gap-3 mb-4">
                   <input
                     type="text"
-                    value={postTitle}
-                    onChange={(e) => setPostTitle(e.target.value)}
-                    placeholder={
-                      lang === "bn" ? "পোস্টের শিরোনাম..." : "Post title..."
-                    }
-                    className="flex-1 p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm font-semibold"
+                    value={postTitleBn}
+                    onChange={(e) => setPostTitleBn(e.target.value)}
+                    placeholder={lang === "bn" ? "বাংলা শিরোনাম..." : "Bangla title..."}
+                    className="flex-1 p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
+                  />
+                  <input
+                    type="text"
+                    value={postTitleEn}
+                    onChange={(e) => setPostTitleEn(e.target.value)}
+                    placeholder={lang === "bn" ? "ইংরেজি শিরোনাম..." : "English title..."}
+                    className="flex-1 p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
                   />
                   <button
                     onClick={closeEditor}
@@ -550,39 +534,24 @@ const AdminBlogPage = () => {
                     onChange={(e) => setPostCategory(e.target.value)}
                     className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
                   >
-                    {["💰 Savings Tips", "☪️ Islamic Finance", "📢 Announcement", "📊 Reports", "🎉 Community"].map((cat) => (
+                    {["General", "Savings Tips", "Islamic Finance", "Announcement", "Reports", "Community"].map((cat) => (
                       <option key={cat}>{cat}</option>
                     ))}
                   </select>
-                  <select
-                    value={postLanguage}
-                    onChange={(e) => setPostLanguage(e.target.value)}
-                    className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
-                  >
-                    {["🇧🇩 Bangla", "🇬🇧 English", "Both"].map((lang) => (
-                      <option key={lang}>{lang}</option>
-                    ))}
-                  </select>
-                  <input
-                    type="date"
-                    value={scheduleDate}
-                    onChange={(e) => setScheduleDate(e.target.value)}
-                    className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
-                    placeholder={
-                      lang === "bn" ? "প্রকাশের তারিখ" : "Schedule date"
-                    }
-                  />
                 </div>
                 <textarea
-                  value={postContent}
-                  onChange={(e) => setPostContent(e.target.value)}
-                  rows={8}
-                  placeholder={
-                    lang === "bn"
-                      ? "এখানে পোস্টের বিষয়বস্তু লিখুন..."
-                      : "Write your post content here..."
-                  }
+                  value={postContentBn}
+                  onChange={(e) => setPostContentBn(e.target.value)}
+                  rows={6}
+                  placeholder={lang === "bn" ? "বাংলা কন্টেন্ট লিখুন..." : "Write Bangla content..."}
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm resize-none"
+                />
+                <textarea
+                  value={postContentEn}
+                  onChange={(e) => setPostContentEn(e.target.value)}
+                  rows={6}
+                  placeholder={lang === "bn" ? "ইংরেজি কন্টেন্ট লিখুন..." : "Write English content..."}
+                  className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm resize-none mt-3"
                 />
                 <div className="flex gap-3 mt-4">
                   <button
@@ -606,7 +575,7 @@ const AdminBlogPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Toast */}
+      {/* Toast - Same */}
       <AnimatePresence>
         {toast.show && (
           <motion.div

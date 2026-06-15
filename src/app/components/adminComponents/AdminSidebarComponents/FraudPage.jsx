@@ -3,9 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import axios from "axios";
-
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://server-amanah-savings.onrender.com/api";
+import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
+import Swal from "sweetalert2";
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
@@ -21,17 +20,43 @@ const FraudPage = () => {
   const fetchAlerts = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${API_BASE}/admin/fraud/alerts`, { headers: getAuthHeaders() });
+      const res = await axiosInstance.get("/admin/fraud/alerts", { headers: getAuthHeaders() });
       if (res.data.success) {
-        setFraudAlerts(res.data.data.alerts || []);
-        setStats(res.data.data.stats || []);
+        const data = res.data.data;
+        // Ensure stats is an array - convert object to array if needed
+        let statsArray = [];
+        if (data.stats) {
+          if (Array.isArray(data.stats)) {
+            statsArray = data.stats;
+          } else {
+            // Convert stats object to array format
+            statsArray = [
+              { icon: "🚨", value: data.stats.highRisk || 0, label: "High Risk Alerts", trend: "Critical", trendUp: false, iconBg: "bg-red-500/10" },
+              { icon: "⚠️", value: data.stats.mediumRisk || 0, label: "Medium Risk Alerts", trend: "Warning", trendUp: false, iconBg: "bg-amber-500/10" },
+              { icon: "🔒", value: data.stats.suspended || 0, label: "Suspended Accounts", trend: "Action Needed", trendUp: false, iconBg: "bg-yellow-500/10" },
+              { icon: "🚫", value: data.stats.banned || 0, label: "Banned Accounts", trend: "Permanent", trendUp: false, iconBg: "bg-red-500/10" },
+            ];
+          }
+        }
+        setStats(statsArray);
+        setFraudAlerts(Array.isArray(data.alerts) ? data.alerts : []);
       }
     } catch (err) {
+      console.error("Fetch alerts error:", err);
       showToast(err.response?.data?.message || "Failed to load fraud alerts");
+      // Set fallback stats
+      setStats(getFallbackStats());
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const getFallbackStats = () => [
+    { icon: "🚨", value: "0", label: "High Risk Alerts", trend: "Critical", trendUp: false, iconBg: "bg-red-500/10" },
+    { icon: "⚠️", value: "0", label: "Medium Risk Alerts", trend: "Warning", trendUp: false, iconBg: "bg-amber-500/10" },
+    { icon: "🔒", value: "0", label: "Suspended Accounts", trend: "Action Needed", trendUp: false, iconBg: "bg-yellow-500/10" },
+    { icon: "🚫", value: "0", label: "Banned Accounts", trend: "Permanent", trendUp: false, iconBg: "bg-red-500/10" },
+  ];
 
   useEffect(() => {
     fetchAlerts();
@@ -42,104 +67,197 @@ const FraudPage = () => {
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
-  const handleBan = async (userId, user) => {
-    if (!confirm(`Ban user ${user} permanently?`)) return;
-    try {
-      const res = await axios.patch(
-        `${API_BASE}/admin/users/${userId}/status`,
-        { isBanned: true },
-        { headers: getAuthHeaders() }
-      );
-      if (res.data.success) {
-        showToast(`🚫 User ${user} banned permanently`);
-        fetchAlerts();
+  const handleBan = async (userId, userName) => {
+    const result = await Swal.fire({
+      title: "Ban User?",
+      html: `
+        <div class="text-left">
+          <p>Are you sure you want to permanently ban <strong>${userName || "this user"}</strong>?</p>
+          <div class="mt-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Reason for ban:</label>
+            <input type="text" id="banReason" class="swal2-input w-full" placeholder="Enter reason...">
+          </div>
+        </div>
+      `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, Ban User",
+      cancelButtonText: "Cancel",
+      preConfirm: () => {
+        const reason = document.getElementById("banReason").value;
+        if (!reason) {
+          Swal.showValidationMessage("Please provide a reason for the ban");
+        }
+        return { reason };
       }
-    } catch (err) {
-      showToast(err.response?.data?.message || "Ban failed");
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await axiosInstance.patch(
+          `/admin/users/${userId}/status`,
+          { isBanned: true, banReason: result.value.reason },
+          { headers: getAuthHeaders() }
+        );
+        if (res.data.success) {
+          showToast(`🚫 User ${userName} banned permanently`);
+          fetchAlerts();
+        }
+      } catch (err) {
+        showToast(err.response?.data?.message || "Ban failed");
+      }
     }
   };
 
-  const handleSuspend = async (userId) => {
-    try {
-      const res = await axios.patch(
-        `${API_BASE}/admin/users/${userId}/status`,
-        { isSuspended: true },
-        { headers: getAuthHeaders() }
-      );
-      if (res.data.success) {
-        showToast(`🔒 Account suspended — user notified`);
-        fetchAlerts();
+  const handleSuspend = async (userId, userName) => {
+    const result = await Swal.fire({
+      title: "Suspend Account?",
+      html: `
+        <div class="text-left">
+          <p>Are you sure you want to suspend <strong>${userName || "this user"}</strong>'s account?</p>
+          <div class="mt-3">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Reason for suspension:</label>
+            <input type="text" id="suspendReason" class="swal2-input w-full" placeholder="Enter reason...">
+          </div>
+        </div>
+      `,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, Suspend",
+      cancelButtonText: "Cancel",
+      preConfirm: () => {
+        const reason = document.getElementById("suspendReason").value;
+        if (!reason) {
+          Swal.showValidationMessage("Please provide a reason for suspension");
+        }
+        return { reason };
       }
-    } catch (err) {
-      showToast(err.response?.data?.message || "Suspend failed");
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await axiosInstance.patch(
+          `/admin/users/${userId}/status`,
+          { isSuspended: true, suspensionReason: result.value.reason },
+          { headers: getAuthHeaders() }
+        );
+        if (res.data.success) {
+          showToast(`🔒 Account suspended — user notified`);
+          fetchAlerts();
+        }
+      } catch (err) {
+        showToast(err.response?.data?.message || "Suspend failed");
+      }
     }
   };
 
-  const handleUnlock = async (userId) => {
-    try {
-      const res = await axios.patch(
-        `${API_BASE}/admin/users/${userId}/status`,
-        { isSuspended: false, isBanned: false },
-        { headers: getAuthHeaders() }
-      );
-      if (res.data.success) {
-        showToast(`🔓 Account unlocked — user can now login`);
-        fetchAlerts();
+  const handleUnlock = async (userId, userName) => {
+    const result = await Swal.fire({
+      title: "Unlock Account?",
+      text: `Are you sure you want to unlock ${userName || "this user"}'s account?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#059669",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: "Yes, Unlock",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const res = await axiosInstance.patch(
+          `/admin/users/${userId}/status`,
+          { isSuspended: false, isBanned: false },
+          { headers: getAuthHeaders() }
+        );
+        if (res.data.success) {
+          showToast(`🔓 Account unlocked — user can now login`);
+          fetchAlerts();
+        }
+      } catch (err) {
+        showToast(err.response?.data?.message || "Unlock failed");
       }
-    } catch (err) {
-      showToast(err.response?.data?.message || "Unlock failed");
     }
   };
 
-  const handleDetails = () => {
-    showToast(`📋 Opening fraud details...`);
+  const handleDetails = (alert) => {
+    Swal.fire({
+      title: "Alert Details",
+      html: `
+        <div class="text-left">
+          <p><strong>Type:</strong> ${alert.type || "N/A"}</p>
+          <p><strong>User:</strong> ${alert.user || alert.userName || "Unknown"}</p>
+          <p><strong>Details:</strong> ${alert.details || "No details"}</p>
+          <p><strong>Risk Score:</strong> ${alert.riskScore || "N/A"}/100</p>
+          <p><strong>Time:</strong> ${alert.time || new Date(alert.createdAt).toLocaleString()}</p>
+          <p><strong>Status:</strong> ${alert.status || "Active"}</p>
+        </div>
+      `,
+      icon: "info",
+      confirmButtonColor: "#059669",
+      confirmButtonText: "Close",
+    });
   };
 
-  const handleExportReport = () => {
-    showToast(`⬇️ Generating fraud report...`);
+  const handleExportReport = async () => {
+    try {
+      const response = await axiosInstance.get("/admin/fraud/export", { headers: getAuthHeaders() });
+      const dataStr = JSON.stringify(response.data, null, 2);
+      const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+      const exportFileDefaultName = `fraud_report_${new Date().toISOString().slice(0, 19)}.json`;
+      const linkElement = document.createElement("a");
+      linkElement.setAttribute("href", dataUri);
+      linkElement.setAttribute("download", exportFileDefaultName);
+      linkElement.click();
+      showToast("Report downloaded successfully");
+    } catch (err) {
+      showToast("Failed to generate report");
+    }
   };
 
   const getSeverityBadge = (severity) => {
     switch (severity) {
       case "danger":
+      case "high":
         return "bg-red-500/15 text-red-500";
       case "warn":
+      case "medium":
         return "bg-amber-500/15 text-amber-500";
       case "info":
+      case "low":
         return "bg-blue-500/15 text-blue-500";
       default:
         return "bg-gray-500/15 text-gray-500";
     }
   };
 
-  const getStatusBadge = (statusColor) => {
-    switch (statusColor) {
-      case "danger":
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case "active":
         return "bg-red-500/15 text-red-500";
-      case "warn":
+      case "resolved":
+        return "bg-green-500/15 text-green-500";
+      case "investigating":
         return "bg-amber-500/15 text-amber-500";
-      case "info":
-        return "bg-blue-500/15 text-blue-500";
       default:
         return "bg-gray-500/15 text-gray-500";
     }
   };
 
-  const getRiskColor = (riskColor) => {
-    switch (riskColor) {
-      case "danger":
-        return "text-red-500";
-      case "warning":
-        return "text-amber-500";
-      case "info":
-        return "text-blue-500";
-      default:
-        return "text-foreground";
-    }
+  const getRiskColor = (riskScore) => {
+    if (riskScore >= 70) return "text-red-500";
+    if (riskScore >= 40) return "text-amber-500";
+    return "text-blue-500";
   };
 
-  const highRisk = fraudAlerts.filter(a => a.severity === "danger").length;
-  const mediumRisk = fraudAlerts.filter(a => a.severity === "warn").length;
+  const highRisk = fraudAlerts.filter(a => a.severity === "danger" || a.severity === "high").length;
+  const mediumRisk = fraudAlerts.filter(a => a.severity === "warn" || a.severity === "medium").length;
+
+  const displayStats = Array.isArray(stats) && stats.length > 0 ? stats : getFallbackStats();
 
   return (
     <div>
@@ -157,7 +275,7 @@ const FraudPage = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-        {stats.map((stat, idx) => (
+        {displayStats.map((stat, idx) => (
           <div
             key={idx}
             className="bg-card border border-border rounded-xl p-4"
@@ -168,11 +286,18 @@ const FraudPage = () => {
               >
                 {stat.icon}
               </div>
-              <span
-                className={`text-xs font-bold px-2 py-1 rounded-full ${stat.trendUp ? "bg-green-500/10 text-green-500" : stat.trendDown ? "bg-red-500/10 text-red-500" : "bg-amber-500/10 text-amber-500"}`}
-              >
-                {stat.trend}
-              </span>
+              {stat.trend && (
+                <span
+                  className={`text-xs font-bold px-2 py-1 rounded-full ${
+                    stat.trend === "Critical" ? "bg-red-500/10 text-red-500" :
+                    stat.trend === "Warning" ? "bg-amber-500/10 text-amber-500" :
+                    stat.trend === "Action Needed" ? "bg-yellow-500/10 text-yellow-500" :
+                    "bg-gray-500/10 text-gray-500"
+                  }`}
+                >
+                  {stat.trend}
+                </span>
+              )}
             </div>
             <div className="text-2xl font-bold text-foreground mt-3">
               {stat.value}
@@ -228,92 +353,92 @@ const FraudPage = () => {
               </tr>
             </thead>
             <tbody>
-              {fraudAlerts.map((alert, idx) => (
-                <tr
-                  key={idx}
-                  className="border-b border-border last:border-0 hover:bg-primary/5 transition"
-                >
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full ${getSeverityBadge(alert.severity)}`}
-                    >
-                      {alert.icon || "🚨"} {alert.type}
-                    </span>
+              {fraudAlerts.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="px-4 py-8 text-center text-foreground/50">
+                    No fraud alerts found
                   </td>
-                  <td className="px-4 py-3">
-                    <div className="font-semibold text-sm text-foreground">
-                      {alert.user || alert.userName || "Unknown"}
-                    </div>
-                    <div className="text-xs text-foreground/50">
-                      {alert.userSub || `ID #${alert.userId || "N/A"}`}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-foreground/70">
-                    {alert.details}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-sm font-bold ${getRiskColor(alert.riskColor)}`}
-                    >
-                      {alert.riskScore} / 100
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-xs text-foreground/50">
-                    {alert.time || new Date(alert.createdAt).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusBadge(alert.statusColor)}`}
-                    >
-                      {alert.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-2 flex-wrap">
-                      <button
-                        onClick={handleDetails}
-                        className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition"
+                 </tr>
+              ) : (
+                fraudAlerts.map((alert, idx) => (
+                  <tr
+                    key={idx}
+                    className="border-b border-border last:border-0 hover:bg-primary/5 transition"
+                  >
+                    <td className="px-4 py-3">
+                      <span
+                        className={`text-xs font-semibold px-2 py-1 rounded-full ${getSeverityBadge(alert.severity)}`}
                       >
-                        Details
-                      </button>
-                      {alert.severity === "danger" && (
+                        {alert.icon || "🚨"} {alert.type || "Alert"}
+                      </span>
+                     </td>
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-sm text-foreground">
+                        {alert.userName || alert.user || "Unknown"}
+                      </div>
+                      <div className="text-xs text-foreground/50">
+                        ID: {alert.userId || "N/A"}
+                      </div>
+                     </td>
+                    <td className="px-4 py-3 text-sm text-foreground/70">
+                      {alert.description || alert.details || "No details"}
+                     </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`text-sm font-bold ${getRiskColor(alert.riskScore)}`}
+                      >
+                        {alert.riskScore || 0} / 100
+                      </span>
+                     </td>
+                    <td className="px-4 py-3 text-xs text-foreground/50">
+                      {alert.time || (alert.createdAt ? new Date(alert.createdAt).toLocaleString() : "N/A")}
+                     </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusBadge(alert.status)}`}
+                      >
+                        {alert.status || "Active"}
+                      </span>
+                     </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2 flex-wrap">
                         <button
-                          onClick={() => handleBan(alert.userId, alert.user || alert.userName)}
-                          className="px-3 py-1 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/10 transition"
+                          onClick={() => handleDetails(alert)}
+                          className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition"
                         >
-                          🚫 Ban
+                          Details
                         </button>
-                      )}
-                      {alert.severity === "warn" && alert.type?.includes("Login") && (
-                        <button
-                          onClick={() => handleSuspend(alert.userId)}
-                          className="px-3 py-1 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
-                        >
-                          Lock Account
-                        </button>
-                      )}
-                      {alert.severity === "warn" && alert.type?.includes("Deposit") && (
-                        <button
-                          onClick={() => handleSuspend(alert.userId)}
-                          className="px-3 py-1 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/10 transition"
-                        >
-                          Freeze
-                        </button>
-                      )}
-                      {alert.severity === "info" && (
-                        <button
-                          onClick={() => handleUnlock(alert.userId)}
-                          className="px-3 py-1 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
-                        >
-                          Unlock
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        {(alert.severity === "danger" || alert.severity === "high") && alert.userId && (
+                          <button
+                            onClick={() => handleBan(alert.userId, alert.userName || alert.user)}
+                            className="px-3 py-1 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/10 transition"
+                          >
+                            🚫 Ban
+                          </button>
+                        )}
+                        {(alert.severity === "warn" || alert.severity === "medium") && alert.type?.toLowerCase().includes("login") && (
+                          <button
+                            onClick={() => handleSuspend(alert.userId, alert.userName || alert.user)}
+                            className="px-3 py-1 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
+                          >
+                            Lock Account
+                          </button>
+                        )}
+                        {(alert.severity === "info" || alert.severity === "low") && (
+                          <button
+                            onClick={() => handleUnlock(alert.userId, alert.userName || alert.user)}
+                            className="px-3 py-1 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
+                          >
+                            Unlock
+                          </button>
+                        )}
+                      </div>
+                     </td>
+                   </tr>
+                ))
+              )}
             </tbody>
-          </table>
+           </table>
         </div>
       </div>
 
