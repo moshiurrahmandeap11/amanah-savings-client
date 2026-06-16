@@ -22,9 +22,9 @@ const HomeGeneralInquiries = () => {
 
   const faqs = [
     {
-      question: "Is Amanah a bank or investment company?",
+      question: "Is Sanchoy Bondhu a bank or investment company?",
       answer:
-        "No, Amanah is not a bank or investment company. It's a digital savings community that helps members save money together toward specific goals. We don't lend money or invest your savings. We simply help you stay disciplined and connected with your savings journey.",
+        "No, Sanchoy Bondhu is not a bank or investment company. It's a digital savings community that helps members save money together toward specific goals. We don't lend money or invest your savings. We simply help you stay disciplined and connected with your savings journey.",
       icon: <Banknote size={20} />,
     },
     {
@@ -42,7 +42,7 @@ const HomeGeneralInquiries = () => {
     {
       question: "Is this platform Halal or Islamic Finance-compliant?",
       answer:
-        "Yes, Amanah operates on Islamic principles. We don't charge interest (riba), we don't invest in haram activities, and all transactions are transparent. Our savings circles are based on mutual cooperation (ta'awun), making them Shariah-compliant.",
+        "Yes, Sanchoy Bondhu operates on Islamic principles. We don't charge interest (riba), we don't invest in haram activities, and all transactions are transparent. Our savings circles are based on mutual cooperation (ta'awun), making them Shariah-compliant.",
       icon: <FaMosque size={20} />,
     },
     {
@@ -54,7 +54,7 @@ const HomeGeneralInquiries = () => {
     {
       question: "How does the referral system work?",
       answer:
-        "Refer friends and family to Amanah. When they complete their first month of savings, you both earn bonus rewards. Top referrers get featured on our leaderboard and receive additional benefits like reduced fees or exclusive badges.",
+        "Refer friends and family to Sanchoy Bondhu. When they complete their first month of savings, you both earn bonus rewards. Top referrers get featured on our leaderboard and receive additional benefits like reduced fees or exclusive badges.",
       icon: <Users size={20} />,
     },
   ];
@@ -132,7 +132,7 @@ const HomeGeneralInquiries = () => {
           </h2>
 
           <p className="text-base sm:text-lg text-foreground/70 max-w-2xl">
-            What you need to know before joining the Amanah community.
+            What you need to know before joining the Sanchoy Bondhucommunity.
           </p>
         </motion.div>
 

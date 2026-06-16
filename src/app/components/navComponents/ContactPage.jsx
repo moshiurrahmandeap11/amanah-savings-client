@@ -69,7 +69,7 @@ const ContactPage = () => {
     {
       icon: <MessageCircle size={24} />,
       label: "WhatsApp Support",
-      value: "+880 1700-AMANAH",
+      value: "+880 1700-000000",
       note: "Fastest response — usually within 1 hour",
       button: "Chat on WhatsApp",
       link: "https://wa.me/8801700262624",
@@ -78,10 +78,10 @@ const ContactPage = () => {
     {
       icon: <Mail size={24} />,
       label: "Email Support",
-      value: "support@amanah.com.bd",
+      value: "sanchoybondhu@gmail.com",
       note: "For account issues, KYC, and billing queries",
       button: "Send Email",
-      link: "mailto:support@amanah.com.bd",
+      link: "mailto:sanchoybondhu@gmail.com",
       btnColor: "bg-primary/15 text-primary",
     },
     {
@@ -94,17 +94,17 @@ const ContactPage = () => {
     {
       icon: <Globe size={24} />,
       label: "Social Media",
-      value: "@AmanahSavingsBD",
+      value: "@SachoyBondhuBD",
       note: "Facebook · Instagram · LinkedIn",
       button: null,
     },
   ];
 
   const socialLinks = [
-    { icon: <FaFacebook size={20} />, label: "Facebook", link: "https://facebook.com/amanah", color: "bg-[#1877f2]" },
-    { icon: <FaInstagram size={20} />, label: "Instagram", link: "https://instagram.com/amanah", color: "bg-[#e4405f]" },
-    { icon: <FaLinkedin size={20} />, label: "LinkedIn", link: "https://linkedin.com/company/amanah", color: "bg-[#0a66c2]" },
-    { icon: <FaTwitter size={20} />, label: "Twitter", link: "https://twitter.com/amanah", color: "bg-[#1da1f2]" },
+    { icon: <FaFacebook size={20} />, label: "Facebook", link: "https://facebook.com/sanchoybondhu", color: "bg-[#1877f2]" },
+    { icon: <FaInstagram size={20} />, label: "Instagram", link: "https://instagram.com/sanchoybondhu", color: "bg-[#e4405f]" },
+    { icon: <FaLinkedin size={20} />, label: "LinkedIn", link: "https://linkedin.com/company/sanchoybondhu", color: "bg-[#0a66c2]" },
+    { icon: <FaTwitter size={20} />, label: "Twitter", link: "https://twitter.com/sanchoybondhu", color: "bg-[#1da1f2]" },
   ];
 
   const hours = [

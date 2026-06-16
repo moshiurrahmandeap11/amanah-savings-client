@@ -59,7 +59,7 @@ const AboutUsPage = () => {
   const values = [
     {
       icon: <Shield size={28} />,
-      title: "Amanah (Trust)",
+      title: "Sanchoy Bondhu (Trust)",
       desc: "We operate with complete transparency. No hidden fees, no unclear terms, no surprise deductions.",
     },
     {
@@ -124,7 +124,7 @@ const AboutUsPage = () => {
     {
       year: "January 2024",
       title: "The Idea",
-      desc: "Rafiqul and Nusrat sketch the first concept of Amanah over tea in Dhaka.",
+      desc: "Rafiqul and Nusrat sketch the first concept of Sanchoy Bondhu over tea in Dhaka.",
       icon: <Sparkles size={20} />,
     },
     {
@@ -173,7 +173,7 @@ const AboutUsPage = () => {
             Built for Bangladesh&apos;s Savers
           </h1>
           <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto mb-12">
-            We started Amanah because we believed every Bangladeshi deserves a
+            We started Sanchoy Bondhu because we believed every Bangladeshi deserves a
             trusted, transparent, and community-powered way to save for what
             matters most.
           </p>
@@ -224,7 +224,7 @@ const AboutUsPage = () => {
                 Savings for Every Dream
               </h2>
               <p className="text-foreground/70 mb-4 leading-relaxed">
-                Amanah Savings Community was founded in 2024 with a single
+                Sonchoy Bondhu Community was founded in 2024 with a single
                 belief: that saving money should be simple, social, and
                 accessible to every Bangladeshi — whether they live in Dhaka or
                 a remote village.
@@ -251,7 +251,7 @@ const AboutUsPage = () => {
               <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
                 <Shield size={40} />
               </div>
-              <div className="text-2xl font-bold">Amanah Savings</div>
+              <div className="text-2xl font-bold">Sonchoy Bondhu</div>
               <div className="text-white/80 mt-2">Trusted Savings Community</div>
               <div className="mt-4 flex justify-center gap-2">
                 <CheckCircle size={16} className="text-white/60" />
@@ -342,7 +342,7 @@ const AboutUsPage = () => {
               <span>Meet the Team</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              The People Behind Amanah
+              The People Behind Sanchoy Bondhu
             </h2>
             <p className="text-foreground/60 max-w-2xl mx-auto">
               A small, passionate team from Bangladesh — building the savings
@@ -393,7 +393,7 @@ const AboutUsPage = () => {
                 From Idea to 47,000 Members
               </h2>
               <p className="text-foreground/60">
-                A timeline of our growth and milestones that shaped Amanah into
+                A timeline of our growth and milestones that shaped Sanchoy Bondhu into
                 what it is today.
               </p>
             </motion.div>
@@ -446,7 +446,7 @@ const AboutUsPage = () => {
               <Quote size={32} />
             </div>
             <p className="text-foreground/80 text-lg italic mb-6">
-              &quot;Amanah changed how I save money. The circle system keeps me
+              &quot;Sanchoy Bondhu changed how I save money. The circle system keeps me
               accountable, and I&apos;ve already reached my first goal of ৳50,000!&quot;
             </p>
             <div>

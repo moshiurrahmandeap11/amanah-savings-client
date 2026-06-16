@@ -152,8 +152,8 @@ const Navbar = () => {
               href="/"
               className="text-xl sm:text-2xl font-bold tracking-tight whitespace-nowrap"
             >
-              <span className="text-primary">Amanah</span>
-              <span className="text-secondary dark:text-white"> Savings</span>
+              <span className="text-primary">Sonchoy</span>
+              <span className="text-secondary dark:text-white"> Bondhu</span>
             </Link>
           </div>
 

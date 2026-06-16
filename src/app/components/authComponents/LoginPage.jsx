@@ -112,7 +112,7 @@ const LoginPage = () => {
               🌿
             </div>
             <span className="font-bold text-xl">
-              Amanah <span className="text-primary">Savings</span>
+              Sanchoy <span className="text-primary">Bondhu</span>
             </span>
           </Link>
         </div>
@@ -244,40 +244,6 @@ const LoginPage = () => {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-6">
-            <div className="flex-1 h-px bg-border" />
-            <span className="text-xs text-foreground/40">or continue with</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
-
-          {/* Social Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            <button
-              onClick={() => {
-                showAlert(
-                  "Coming Soon",
-                  "Google login will be available soon",
-                  "info",
-                );
-              }}
-              className="py-2.5 rounded-xl border border-border bg-card text-foreground text-sm font-semibold hover:border-primary transition"
-            >
-              Continue with Google
-            </button>
-            <button
-              onClick={() => {
-                showAlert(
-                  "Coming Soon",
-                  "Facebook login will be available soon",
-                  "info",
-                );
-              }}
-              className="py-2.5 rounded-xl border border-border bg-card text-foreground text-sm font-semibold hover:border-primary transition"
-            >
-              Continue with Facebook
-            </button>
-          </div>
 
           {/* Footer */}
           <div className="text-center">
@@ -295,7 +261,7 @@ const LoginPage = () => {
           {/* Disclaimer */}
           <div className="mt-6 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
             <p className="text-xs text-amber-500 text-center">
-              Amanah is a savings community platform, not a bank. Savings are
+              Sanchoy Bondhu is a savings community platform, not a bank. Savings are
               locked until goal maturity.
             </p>
           </div>

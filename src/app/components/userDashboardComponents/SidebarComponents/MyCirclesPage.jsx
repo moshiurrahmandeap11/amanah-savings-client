@@ -20,6 +20,14 @@ import {
   Shield,
   UserPlus,
   Loader2,
+  Heart,
+  Star,
+  Home,
+  GraduationCap,
+  Briefcase,
+  Plane,
+  Gift,
+  Search,
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
@@ -31,7 +39,6 @@ const MyCirclesPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [circles, setCircles] = useState([]);
-  console.log("circle :", circles);
   const [publicCircles, setPublicCircles] = useState([]);
   const [selectedPurpose, setSelectedPurpose] = useState("all");
   const [formData, setFormData] = useState({
@@ -44,15 +51,15 @@ const MyCirclesPage = () => {
   });
 
   const purposes = [
-    { emoji: "💍", name: "Wedding", value: "wedding" },
-    { emoji: "🕌", name: "Hajj/Umrah", value: "hajj" },
-    { emoji: "🎓", name: "Education", value: "education" },
-    { emoji: "🏠", name: "Home", value: "home" },
-    { emoji: "💼", name: "Business", value: "business" },
-    { emoji: "🆘", name: "Emergency", value: "emergency" },
-    { emoji: "✈️", name: "Travel", value: "travel" },
-    { emoji: "🌙", name: "Eid", value: "eid" },
-    { emoji: "🤝", name: "General", value: "general" },
+    { icon: <Heart size={18} />, name: "Wedding", value: "wedding" },
+    { icon: <Star size={18} />, name: "Hajj/Umrah", value: "hajj" },
+    { icon: <GraduationCap size={18} />, name: "Education", value: "education" },
+    { icon: <Home size={18} />, name: "Home", value: "home" },
+    { icon: <Briefcase size={18} />, name: "Business", value: "business" },
+    { icon: <Shield size={18} />, name: "Emergency", value: "emergency" },
+    { icon: <Plane size={18} />, name: "Travel", value: "travel" },
+    { icon: <Star size={18} />, name: "Eid", value: "eid" },
+    { icon: <Users size={18} />, name: "General", value: "general" },
   ];
 
   // Fetch user's circles
@@ -89,7 +96,6 @@ const MyCirclesPage = () => {
 
   // Create circle
   const createCircle = async () => {
-    // Validation
     if (!formData.circleName.trim()) {
       Swal.fire({
         title: "Error",
@@ -251,8 +257,8 @@ const MyCirclesPage = () => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
-            🤝 My Circles
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
+            <Users size={28} /> My Circles
           </h2>
           <p className="text-xs sm:text-sm text-foreground/60 mt-1">
             Community savings groups — achieve goals together
@@ -263,7 +269,7 @@ const MyCirclesPage = () => {
             onClick={() => setShowJoinModal(true)}
             className="px-4 sm:px-5 py-2.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base"
           >
-            <Users size={18} /> 
+            <Search size={18} /> 
             <span>Join Circle</span>
           </button>
           <button
@@ -279,7 +285,7 @@ const MyCirclesPage = () => {
       {/* Circles Grid */}
       {circles.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center mb-8">
-          <div className="text-6xl mb-4">🤝</div>
+          <Users size={64} className="text-foreground/30 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-foreground mb-2">No Circles Yet</h3>
           <p className="text-foreground/60 mb-4">
             Create or join a circle to start saving together
@@ -295,7 +301,7 @@ const MyCirclesPage = () => {
               onClick={() => setShowJoinModal(true)}
               className="px-6 py-2.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition inline-flex items-center gap-2"
             >
-              <Users size={18} /> Join Circle
+              <Search size={18} /> Join Circle
             </button>
           </div>
         </div>
@@ -312,9 +318,9 @@ const MyCirclesPage = () => {
             >
               <div className="flex items-center gap-3 mb-4">
                 <div
-                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r ${circle.color} flex items-center justify-center text-2xl group-hover:scale-110 transition`}
+                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-primary/10 to-primary-light/10 flex items-center justify-center text-primary group-hover:scale-110 transition`}
                 >
-                  {circle.emoji}
+                  <Users size={24} />
                 </div>
                 <div>
                   <h3 className="font-bold text-foreground text-sm sm:text-base">{circle.name}</h3>
@@ -348,17 +354,17 @@ const MyCirclesPage = () => {
       )}
 
       {/* Info Card */}
-      <div className="bg-linear-to-r from-primary/5 to-blue-500/5 border border-primary/15 rounded-xl sm:rounded-2xl p-4 sm:p-5">
+      <div className="bg-gradient-to-r from-primary/5 to-primary-light/5 border border-primary/15 rounded-xl sm:rounded-2xl p-4 sm:p-5">
         <div className="flex items-start gap-3">
           <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <CircleDot size={16} className="text-primary" />
+            <CircleDot size={18} className="text-primary" />
           </div>
           <div>
             <h3 className="font-bold text-foreground text-sm sm:text-base mb-1">What is a Circle?</h3>
             <p className="text-xs sm:text-sm text-foreground/60 leading-relaxed">
               A Circle is a community savings group where people with the same goals
               save together. Each month, one member receives a payout from the pool
-              (rotational basis). It&apos;s the digital version of Bangladesh&apos;s
+              (rotational basis). It's the digital version of Bangladesh's
               traditional "Samity" system.
             </p>
           </div>
@@ -435,7 +441,7 @@ const MyCirclesPage = () => {
                     <option value="">Select purpose</option>
                     {purposes.map(p => (
                       <option key={p.value} value={p.value}>
-                        {p.emoji} {p.name}
+                        {p.name}
                       </option>
                     ))}
                   </select>
@@ -529,7 +535,7 @@ const MyCirclesPage = () => {
                     </button>
                   </div>
                   <p className="text-[10px] text-foreground/50 mt-2">
-                    {circleType === "private" ? "🔒 Invite only - You control who joins" : "🌍 Anyone can discover and join this circle"}
+                    {circleType === "private" ? "Invite only - You control who joins" : "Anyone can discover and join this circle"}
                   </p>
                 </div>
 
@@ -604,7 +610,7 @@ const MyCirclesPage = () => {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <Users size={16} className="text-primary" />
+                        <Search size={16} className="text-primary" />
                       </div>
                       <h3 className="text-lg sm:text-xl font-bold text-foreground">Join a Circle</h3>
                     </div>
@@ -649,7 +655,7 @@ const MyCirclesPage = () => {
                             : "bg-border text-foreground/70 hover:bg-primary/20"
                         }`}
                       >
-                        <span>{p.emoji}</span>
+                        {p.icon}
                         <span>{p.name}</span>
                       </button>
                     ))}
@@ -659,7 +665,7 @@ const MyCirclesPage = () => {
                 {/* Public Circles Grid */}
                 {publicCircles.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="text-6xl mb-4">🔍</div>
+                    <Search size={64} className="text-foreground/30 mx-auto mb-4" />
                     <h3 className="text-lg font-bold text-foreground mb-2">No circles found</h3>
                     <p className="text-foreground/60">
                       {selectedPurpose === "all" 
@@ -678,7 +684,9 @@ const MyCirclesPage = () => {
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-3">
-                            <span className="text-3xl">{circle.emoji}</span>
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                              <Users size={20} />
+                            </div>
                             <div>
                               <h4 className="font-bold text-foreground">{circle.name}</h4>
                               <p className="text-xs text-foreground/50">{circle.purpose}</p>
@@ -701,7 +709,7 @@ const MyCirclesPage = () => {
                             <div className="text-foreground/50">Pool</div>
                           </div>
                           <div>
-                            <div className="font-bold text-primary">৳{circle.minDeposit.toLocaleString()}</div>
+                            <div className="font-bold text-primary">৳{circle.minDeposit?.toLocaleString()}</div>
                             <div className="text-foreground/50">Min Deposit</div>
                           </div>
                         </div>

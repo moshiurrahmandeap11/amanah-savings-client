@@ -17,8 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: {
-    default: "Amanah Savings - Digital Savings Community in Bangladesh",
-    template: "%s | Amanah Savings",
+    default: "Sonchoy Bondhu - Digital Savings Community in Bangladesh",
+    template: "%s | Sonchoy Bondhu",
   },
   description:
     "Amanah is Bangladesh's trusted digital savings community platform. Save together, achieve your goals, and build your future in a halal and disciplined way.",

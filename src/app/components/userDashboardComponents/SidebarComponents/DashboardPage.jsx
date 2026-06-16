@@ -6,6 +6,31 @@ import { useRouter } from "next/navigation";
 import Chart from "chart.js/auto";
 import useAuth from "../../../hooks/useAuth";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
+import {
+  User,
+  Wallet,
+  Flame,
+  Trophy,
+  TrendingUp,
+  Calendar,
+  Target,
+  ArrowRight,
+  Sparkles,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  CreditCard,
+  Send,
+  RefreshCw,
+  Shield,
+  Mail,
+  Phone,
+  Users,
+  Gift,
+  Copy,
+  Award,
+  XCircle,
+} from "lucide-react";
 
 const DashboardPage = () => {
   const { user: authUser, isLoading: authLoading } = useAuth();
@@ -52,7 +77,7 @@ const DashboardPage = () => {
         setUserGoals(
           goals.map((g) => ({
             id: g._id,
-            emoji: getGoalEmoji(g.goalType || g.type || "other"),
+            icon: getGoalIcon(g.goalType || g.type || "other"),
             name: g.goalName || g.name || "Savings Goal",
             status: g.status || "active",
             timeLeft: calculateTimeLeft(g),
@@ -78,7 +103,6 @@ const DashboardPage = () => {
     
     const insightsList = [];
     
-    // Calculate insights based on real user data
     const totalSaved = userData.totalSaved || userData.goal?.currentSaved || 0;
     const streak = userData.streak || 0;
     const activeGoals = userData.activeGoals || userGoals.length;
@@ -87,7 +111,7 @@ const DashboardPage = () => {
     
     if (totalSaved > 0) {
       insightsList.push({
-        text: `🎯 You've saved ${formatCurrency(totalSaved)} so far! ${targetAmount > 0 ? `That's ${Math.round((totalSaved / targetAmount) * 100)}% of your goal.` : "Great progress!"}`,
+        text: `You've saved ${formatCurrency(totalSaved)} so far! ${targetAmount > 0 ? `That's ${Math.round((totalSaved / targetAmount) * 100)}% of your goal.` : "Great progress!"}`,
         isBot: true,
         isHighlight: totalSaved > 50000,
       });
@@ -95,7 +119,7 @@ const DashboardPage = () => {
     
     if (streak > 0) {
       insightsList.push({
-        text: `🔥 You're on a ${streak}-day savings streak! ${streak >= 30 ? "Outstanding consistency!" : "Keep it going!"}`,
+        text: `You're on a ${streak}-day savings streak! ${streak >= 30 ? "Outstanding consistency!" : "Keep it going!"}`,
         isBot: true,
         isHighlight: streak >= 30,
       });
@@ -103,7 +127,7 @@ const DashboardPage = () => {
     
     if (monthlyDeposit > 0) {
       insightsList.push({
-        text: `💰 Your monthly commitment is ${formatCurrency(monthlyDeposit)}. ${monthlyDeposit >= 10000 ? "That's impressive!" : "Every deposit counts toward your goal!"}`,
+        text: `Your monthly commitment is ${formatCurrency(monthlyDeposit)}. ${monthlyDeposit >= 10000 ? "That's impressive!" : "Every deposit counts toward your goal!"}`,
         isBot: true,
         isHighlight: monthlyDeposit >= 10000,
       });
@@ -111,7 +135,7 @@ const DashboardPage = () => {
     
     if (activeGoals === 0) {
       insightsList.push({
-        text: "✨ Create your first savings goal to start your journey! Click 'Create Goal' to get started.",
+        text: "Create your first savings goal to start your journey! Click 'Create Goal' to get started.",
         isBot: true,
         isHighlight: true,
       });
@@ -119,7 +143,7 @@ const DashboardPage = () => {
     
     if (insightsList.length === 0) {
       insightsList.push({
-        text: "🌟 Welcome to Amanah Savings! Start by creating a goal or making your first deposit.",
+        text: "Welcome to Sonchoy Bondhu! Start by creating a goal or making your first deposit.",
         isBot: true,
         isHighlight: true,
       });
@@ -136,7 +160,6 @@ const DashboardPage = () => {
       if (res.data.success) {
         setSavingsHistory(res.data.data || []);
       } else {
-        // Generate demo history based on actual data
         generateDemoHistory();
       }
     } catch (error) {
@@ -188,7 +211,6 @@ const DashboardPage = () => {
             amount: d.depositAmount || d.amount || 0,
             status: d.status,
             date: d.createdAt,
-            icon: "📥",
             color: "text-green-500",
           });
         });
@@ -203,7 +225,6 @@ const DashboardPage = () => {
             amount: w.withdrawalAmount || w.amount || 0,
             status: w.status,
             date: w.createdAt,
-            icon: "📤",
             color: "text-red-500",
           });
         });
@@ -295,13 +316,22 @@ const DashboardPage = () => {
     return Math.min(100, Math.round((saved / target) * 100));
   };
 
-  const getGoalEmoji = (goalType) => {
+  const getGoalIcon = (goalType) => {
     const map = {
-      home: "🏠", wedding: "💍", hajj: "🕌", education: "🎓",
-      emergency: "🚨", gadget: "📱", car: "🚗", business: "💼",
-      travel: "✈️", health: "🏥", investment: "📈", other: "🎯"
+      home: <Target size={24} />,
+      wedding: <Heart size={24} />,
+      hajj: <Star size={24} />,
+      education: <GraduationCap size={24} />,
+      emergency: <Shield size={24} />,
+      gadget: <Smartphone size={24} />,
+      car: <Car size={24} />,
+      business: <Briefcase size={24} />,
+      travel: <Plane size={24} />,
+      health: <Heart size={24} />,
+      investment: <TrendingUp size={24} />,
+      other: <Target size={24} />,
     };
-    return map[goalType?.toLowerCase()] || "🎯";
+    return map[goalType?.toLowerCase()] || <Target size={24} />;
   };
 
   const getGoalColor = (type) => {
@@ -420,10 +450,10 @@ const DashboardPage = () => {
     const activeCircles = userData?.activeCircles || userData?.circles?.length || 0;
 
     return [
-      { icon: "💰", value: formatCurrency(totalSaved), label: "Total Savings", change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} this month` : "Start saving today!", color: "green" },
-      { icon: "⭕", value: activeCircles.toString(), label: "Active Circles", change: activeCircles > 0 ? "↑ Goals on track" : "Join a circle!", color: "blue" },
-      { icon: "🔥", value: streak.toString(), label: "Day Streak", change: streak >= 30 ? "Top saver!" : streak > 0 ? "Keep going!" : "Start your streak!", color: "warning" },
-      { icon: "🏅", value: level.toString(), label: "Saver Level", change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : "Member", color: "info" },
+      { icon: <Wallet size={24} />, value: formatCurrency(totalSaved), label: "Total Savings", change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} this month` : "Start saving today!", color: "green" },
+      { icon: <Users size={24} />, value: activeCircles.toString(), label: "Active Circles", change: activeCircles > 0 ? "↑ Goals on track" : "Join a circle!", color: "blue" },
+      { icon: <Flame size={24} />, value: streak.toString(), label: "Day Streak", change: streak >= 30 ? "Top saver!" : streak > 0 ? "Keep going!" : "Start your streak!", color: "warning" },
+      { icon: <Trophy size={24} />, value: level.toString(), label: "Saver Level", change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : "Member", color: "info" },
     ];
   };
 
@@ -449,7 +479,7 @@ const DashboardPage = () => {
   const totalSaved = userData?.totalSaved || userData?.goal?.currentSaved || 0;
   const targetAmount = userData?.goal?.targetAmount || userGoals.reduce((sum, g) => sum + parseFloat(g.target.replace(/[^0-9]/g, "")), 0);
   const progressPercent = targetAmount > 0 ? Math.min(100, Math.round((totalSaved / targetAmount) * 100)) : 0;
-  const nextDueDays = 7; // Can be calculated from user's last deposit date
+  const nextDueDays = 7;
 
   if (authLoading) {
     return (
@@ -467,26 +497,26 @@ const DashboardPage = () => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">{greeting}, {userName}! 👋</h1>
+          <h1 className="text-2xl font-bold text-foreground">{greeting}, {userName}!</h1>
           <p className="text-sm text-foreground/60 mt-1">
             Your next deposit is due in <strong className="text-amber-500">{nextDueDays} days</strong>. Keep your streak alive!
           </p>
         </div>
-        <Link href="/dashboard/submit" className="px-5 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition w-full sm:w-auto text-center">
-          + Make Deposit
+        <Link href="/dashboard/submit" className="px-5 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition w-full sm:w-auto text-center inline-flex items-center justify-center gap-2">
+          <DollarSign size={16} /> Make Deposit
         </Link>
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { icon: "💳", label: "Deposit", href: "/dashboard/submit", primary: true },
-          { icon: "🏧", label: "Withdraw", href: "/dashboard/lifting", primary: false },
-          { icon: "🔄", label: "Transfer", href: "/dashboard/transfer", primary: false },
-          { icon: "⚡", label: "Auto-Save", href: "/dashboard/auto-save", primary: false },
+          { icon: <CreditCard size={20} />, label: "Deposit", href: "/dashboard/submit", primary: true },
+          { icon: <Send size={20} />, label: "Withdraw", href: "/dashboard/lifting", primary: false },
+          { icon: <RefreshCw size={20} />, label: "Transfer", href: "/dashboard/transfer", primary: false },
+          { icon: <Sparkles size={20} />, label: "Auto-Save", href: "/dashboard/auto-save", primary: false },
         ].map((action) => (
           <Link key={action.label} href={action.href} className={`rounded-xl p-4 text-center transition-all ${action.primary ? "bg-linear-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20" : "bg-card border border-border text-foreground hover:border-primary"}`}>
-            <div className="text-2xl mb-1">{action.icon}</div>
+            <div className="flex justify-center mb-1">{action.icon}</div>
             <div className="text-xs font-bold">{action.label}</div>
           </Link>
         ))}
@@ -496,7 +526,7 @@ const DashboardPage = () => {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((stat, idx) => (
           <div key={idx} className="bg-card border border-border rounded-xl p-4 hover:shadow-lg transition">
-            <div className={`w-11 h-11 rounded-xl bg-${stat.color === "green" ? "primary" : stat.color === "blue" ? "blue-500" : stat.color === "warning" ? "amber-500" : "cyan-500"}/10 flex items-center justify-center text-xl mb-3`}>
+            <div className={`w-11 h-11 rounded-xl bg-${stat.color === "green" ? "primary" : stat.color === "blue" ? "blue-500" : stat.color === "warning" ? "amber-500" : "cyan-500"}/10 flex items-center justify-center mb-3`}>
               {stat.icon}
             </div>
             <div className="text-2xl font-bold text-foreground">{stat.value}</div>
@@ -546,7 +576,9 @@ const DashboardPage = () => {
           {/* Chart */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">📈 Savings History</div>
+              <div className="font-bold text-foreground flex items-center gap-2">
+                <TrendingUp size={18} /> Savings History
+              </div>
               <div className="flex gap-2">
                 {["6m", "1y", "all"].map((period) => (
                   <button key={period} onClick={() => setChartPeriod(period)} className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${chartPeriod === period ? "bg-primary text-white" : "bg-background text-foreground/60 hover:bg-primary/10"}`}>
@@ -563,8 +595,10 @@ const DashboardPage = () => {
           {/* Goals Section */}
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-foreground">My Savings Goals</h2>
-              <Link href="/dashboard/goals" className="text-sm text-primary font-semibold">View all →</Link>
+              <h2 className="font-bold text-foreground flex items-center gap-2">
+                <Target size={18} /> My Savings Goals
+              </h2>
+              <Link href="/dashboard/goals" className="text-sm text-primary font-semibold flex items-center gap-1">View all <ArrowRight size={14} /></Link>
             </div>
             {loadingGoals ? (
               <div className="text-center py-8">
@@ -573,17 +607,21 @@ const DashboardPage = () => {
               </div>
             ) : userGoals.length === 0 ? (
               <div className="bg-card border border-border rounded-xl p-8 text-center">
-                <div className="text-4xl mb-2">🎯</div>
+                <Target size={48} className="text-foreground/30 mx-auto mb-2" />
                 <div className="text-foreground font-semibold mb-1">No goals yet</div>
                 <div className="text-foreground/50 text-sm mb-4">Create your first savings goal to get started</div>
-                <Link href="/dashboard/goals" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition">Create Goal</Link>
+                <Link href="/dashboard/goals" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition inline-flex items-center gap-2">
+                  <Target size={14} /> Create Goal
+                </Link>
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 gap-4">
                 {userGoals.slice(0, 4).map((goal, idx) => (
                   <div key={idx} className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-primary transition">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="text-3xl">{goal.emoji}</span>
+                      <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        {goal.icon}
+                      </div>
                       <span className={`text-xs font-semibold px-2 py-1 rounded-full ${goal.status === "active" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-500"}`}>
                         {goal.status === "active" ? "Active" : "Paused"}
                       </span>
@@ -609,7 +647,9 @@ const DashboardPage = () => {
           {/* Recent Transactions */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">📋 Recent Transactions</div>
+              <div className="font-bold text-foreground flex items-center gap-2">
+                <Clock size={18} /> Recent Transactions
+              </div>
               <Link href="/dashboard/transactions" className="text-xs text-primary">View all</Link>
             </div>
             {loadingTransactions ? (
@@ -623,14 +663,16 @@ const DashboardPage = () => {
                 {recentTransactions.map((tx, idx) => (
                   <div key={idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                     <div className="flex items-center gap-3">
-                      <span className={`text-lg ${tx.color}`}>{tx.icon}</span>
+                      <div className={`w-8 h-8 rounded-lg ${tx.type === "deposit" ? "bg-green-500/10" : "bg-red-500/10"} flex items-center justify-center`}>
+                        {tx.type === "deposit" ? <DollarSign size={14} className="text-green-500" /> : <Send size={14} className="text-red-500" />}
+                      </div>
                       <div>
                         <div className="text-sm font-semibold text-foreground capitalize">{tx.type}</div>
                         <div className="text-xs text-foreground/50">{new Date(tx.date).toLocaleDateString()}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`text-sm font-bold ${tx.color}`}>{tx.type === "deposit" ? "+" : "-"}{formatCurrency(tx.amount)}</div>
+                      <div className={`text-sm font-bold ${tx.type === "deposit" ? "text-green-500" : "text-red-500"}`}>{tx.type === "deposit" ? "+" : "-"}{formatCurrency(tx.amount)}</div>
                       <div className={`text-xs ${tx.status === "pending" ? "text-amber-500" : "text-green-500"}`}>{tx.status}</div>
                     </div>
                   </div>
@@ -641,16 +683,18 @@ const DashboardPage = () => {
 
           {/* AI Assistant */}
           <div className="bg-card border border-border rounded-xl p-5">
-            <div className="font-bold text-foreground mb-3">🤖 Amanah AI Assistant</div>
+            <div className="font-bold text-foreground mb-3 flex items-center gap-2">
+              <Sparkles size={18} className="text-primary" /> Sanchoy Bondhu AI Assistant
+            </div>
             <div className="h-32 overflow-y-auto mb-3 space-y-2 text-sm">
               {insights.slice(0, 3).map((insight, idx) => (
                 <div key={idx} className={`p-2 rounded-lg ${insight.isHighlight ? "bg-primary/10 border border-primary/20" : "bg-background"}`}>
-                  <span className="text-xs">{insight.isHighlight ? "✨" : "💡"} {insight.text}</span>
+                  <span className="text-xs">{insight.isHighlight ? <Sparkles size={10} className="inline mr-1" /> : <TrendingUp size={10} className="inline mr-1" />} {insight.text}</span>
                 </div>
               ))}
               {aiMessages.map((msg, idx) => (
                 <div key={idx} className={`p-2 rounded-lg ${msg.isBot ? "bg-primary/5" : "bg-amber-500/10 ml-4"}`}>
-                  <span className="text-xs">{msg.isBot ? "🤖 " : "👤 "}{msg.text}</span>
+                  <span className="text-xs">{msg.isBot ? <Sparkles size={10} className="inline mr-1" /> : <User size={10} className="inline mr-1" />}{msg.text}</span>
                 </div>
               ))}
             </div>
@@ -663,7 +707,9 @@ const DashboardPage = () => {
           {/* Goal Progress Rings */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">Goal Progress</div>
+              <div className="font-bold text-foreground flex items-center gap-2">
+                <Target size={18} /> Goal Progress
+              </div>
               <Link href="/dashboard/goals" className="text-xs text-primary">Details</Link>
             </div>
             {userGoals.length === 0 ? (
@@ -691,23 +737,25 @@ const DashboardPage = () => {
 
           {/* KYC Status */}
           <div className="bg-primary/5 border border-primary/15 rounded-xl p-5">
-            <div className="font-bold text-foreground mb-3">🪪 Verification Status</div>
+            <div className="font-bold text-foreground mb-3 flex items-center gap-2">
+              <Shield size={18} /> Verification Status
+            </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm">📧 Email Verified</span>
-                <span className="text-primary">{authUser?.email ? "✅" : "❌"}</span>
+                <span className="text-sm flex items-center gap-2"><Mail size={12} /> Email Verified</span>
+                <span className="text-primary">{authUser?.email ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">📱 Phone Verified</span>
-                <span className="text-primary">{authUser?.phone ? "✅" : "❌"}</span>
+                <span className="text-sm flex items-center gap-2"><Phone size={12} /> Phone Verified</span>
+                <span className="text-primary">{authUser?.phone ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">🪪 KYC Verified</span>
-                <span className="text-primary">{userData?.kyc?.status === "approved" || userData?.kycCompleted ? "✅" : "⏳"}</span>
+                <span className="text-sm flex items-center gap-2"><Shield size={12} /> KYC Verified</span>
+                <span className="text-primary">{userData?.kyc?.status === "approved" || userData?.kycCompleted ? <CheckCircle size={16} /> : <Clock size={16} />}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm">🤳 Profile Picture</span>
-                <span className="text-primary">{userData?.profilePicture ? "✅" : "❌"}</span>
+                <span className="text-sm flex items-center gap-2"><User size={12} /> Profile Picture</span>
+                <span className="text-primary">{userData?.profilePicture ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
               </div>
             </div>
             <div className="flex gap-1 mt-3">
@@ -726,11 +774,11 @@ const DashboardPage = () => {
       {/* Referral Section */}
       <div className="grid lg:grid-cols-2 gap-6 mt-6">
         <div className="bg-linear-to-r from-emerald-900 to-cyan-900 rounded-xl p-5 text-white">
-          <div className="font-bold text-lg mb-1">🤝 Refer & Earn</div>
+          <div className="font-bold text-lg mb-1 flex items-center gap-2"><Gift size={18} /> Refer & Earn</div>
           <div className="text-sm opacity-80 mb-4">Get ৳500 bonus for each friend who joins and makes their first deposit.</div>
           <div className="flex items-center gap-2 bg-white/15 rounded-lg p-3 mb-4">
-            <span className="flex-1 font-mono text-sm">amanah.bd/ref/{authUser?.referralCode || "USER"}</span>
-            <button onClick={() => { navigator.clipboard.writeText(`amanah.bd/ref/${authUser?.referralCode || "USER"}`); alert("Referral link copied!"); }} className="px-3 py-1 bg-white/20 rounded-lg text-sm font-semibold hover:bg-white/30 transition">Copy</button>
+            <span className="flex-1 font-mono text-sm">sanchoybondhu.com/ref/{authUser?.referralCode || "USER"}</span>
+            <button onClick={() => { navigator.clipboard.writeText(`sanchoybondhu.com/ref/${authUser?.referralCode || "USER"}`); alert("Referral link copied!"); }} className="px-3 py-1 bg-white/20 rounded-lg text-sm font-semibold hover:bg-white/30 transition inline-flex items-center gap-1"><Copy size={12} /> Copy</button>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white/10 rounded-lg p-2 text-center">
@@ -746,7 +794,7 @@ const DashboardPage = () => {
 
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex justify-between items-center mb-4">
-            <div className="font-bold text-foreground">📋 Your Savings Plan</div>
+            <div className="font-bold text-foreground flex items-center gap-2"><Award size={18} /> Your Savings Plan</div>
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-background rounded-lg">

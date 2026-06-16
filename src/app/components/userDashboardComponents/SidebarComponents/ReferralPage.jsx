@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Share2, Users, Gift, TrendingUp, Loader2, X, Trophy, Medal } from "lucide-react";
+import { Copy, Check, Share2, Users, Gift, TrendingUp, Loader2, X, Trophy, Medal, Crown, Star, Award, UserPlus, Wallet, Calendar, ArrowUp, MessageCircle, Facebook, Phone } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
+import { FaFacebook } from "react-icons/fa";
 
 const ReferralPage = () => {
   const [copied, setCopied] = useState(false);
@@ -110,7 +111,7 @@ const ReferralPage = () => {
   };
 
   const shareOnWhatsApp = () => {
-    const message = `আমি Amanah Savings-এ সঞ্চয় করছি! তুমিও যোগ দাও: ${referralData.referralLink}`;
+    const message = `Join me on Sonchoy Bondhu! Get ৳500 bonus when you sign up and make your first deposit: ${referralData.referralLink}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank");
   };
 
@@ -122,22 +123,53 @@ const ReferralPage = () => {
   };
 
   const shareOnSMS = () => {
-    const message = `Amanah Savings-এ আমার সাথে সঞ্চয় শুরু করো: ${referralData.referralLink}`;
+    const message = `Join me on Sonchoy Bondhu: ${referralData.referralLink}`;
     window.location.href = `sms:?body=${encodeURIComponent(message)}`;
   };
 
   const getRankIcon = (rank) => {
-    if (rank === 1) return "🥇";
-    if (rank === 2) return "🥈";
-    if (rank === 3) return "🥉";
-    return `${rank}`;
+    if (rank === 1) return <Crown size={18} className="text-amber-500" />;
+    if (rank === 2) return <Medal size={18} className="text-gray-400" />;
+    if (rank === 3) return <Medal size={18} className="text-amber-600" />;
+    return <Star size={14} className="text-foreground/30" />;
+  };
+
+  const getRankBadge = (rank) => {
+    if (rank === 1) return "bg-amber-500/20 text-amber-500";
+    if (rank === 2) return "bg-gray-400/20 text-gray-400";
+    if (rank === 3) return "bg-amber-600/20 text-amber-600";
+    return "bg-primary/10 text-primary";
   };
 
   const stats = [
-    { value: referralData.stats.totalReferrals, label: "Friends Referred" },
-    { value: `৳${referralData.stats.totalBonusEarned.toLocaleString()}`, label: "Total Bonus Earned" },
-    { value: referralData.stats.activeReferrals, label: "Active Referrals" },
-    { value: `৳${referralData.stats.thisMonthBonus.toLocaleString()}`, label: "This Month" },
+    { 
+      icon: <UserPlus size={18} />, 
+      value: referralData.stats.totalReferrals, 
+      label: "Friends Referred",
+      color: "primary",
+      bg: "bg-primary/10"
+    },
+    { 
+      icon: <Wallet size={18} />, 
+      value: `৳${referralData.stats.totalBonusEarned.toLocaleString()}`, 
+      label: "Total Bonus Earned",
+      color: "green",
+      bg: "bg-green-500/10"
+    },
+    { 
+      icon: <Users size={18} />, 
+      value: referralData.stats.activeReferrals, 
+      label: "Active Referrals",
+      color: "blue",
+      bg: "bg-blue-500/10"
+    },
+    { 
+      icon: <Calendar size={18} />, 
+      value: `৳${referralData.stats.thisMonthBonus.toLocaleString()}`, 
+      label: "This Month",
+      color: "amber",
+      bg: "bg-amber-500/10"
+    },
   ];
 
   if (loading) {
@@ -150,16 +182,22 @@ const ReferralPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h2 className="text-2xl font-bold text-foreground mb-5">
-        🤝 Referral Program
+      <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+        <Gift size={28} className="text-primary" /> Referral Program
       </h2>
+      <p className="text-sm text-foreground/60 mb-5">Invite friends and earn rewards together</p>
 
       {/* Referral Card */}
-      <div className="bg-linear-to-r from-emerald-900 to-cyan-900 rounded-xl p-6 mb-6 text-white">
-        <div className="text-xl font-bold mb-1">Invite Friends, Get ৳500!</div>
-        <div className="text-sm text-white/80 mb-4">
-          Both you and your friend get ৳500 bonus when they join and make their
-          first deposit of at least ৳500.
+      <div className="bg-gradient-to-r from-emerald-700 to-emerald-800 rounded-xl p-6 mb-6 text-white">
+        <div className="flex items-start justify-between mb-4">
+          <div>
+            <div className="text-xl font-bold mb-1">Invite Friends, Get ৳500!</div>
+            <div className="text-sm text-white/80">
+              Both you and your friend get ৳500 bonus when they join and make their
+              first deposit of at least ৳500.
+            </div>
+          </div>
+          <Trophy size={40} className="text-white/20" />
         </div>
 
         <div className="flex items-center justify-between bg-white/15 rounded-lg p-3 mb-4">
@@ -178,28 +216,31 @@ const ReferralPage = () => {
         <div className="flex gap-3 mb-6">
           <button
             onClick={shareOnWhatsApp}
-            className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition"
+            className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition flex items-center justify-center gap-2"
           >
-            📱 WhatsApp
+            <MessageCircle size={16} /> WhatsApp
           </button>
           <button
             onClick={shareOnFacebook}
-            className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition"
+            className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition flex items-center justify-center gap-2"
           >
-            📘 Facebook
+            <FaFacebook size={16} /> Facebook
           </button>
           <button
             onClick={shareOnSMS}
-            className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition"
+            className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition flex items-center justify-center gap-2"
           >
-            💌 SMS
+            <Phone size={16} /> SMS
           </button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {stats.map((stat, idx) => (
-            <div key={idx} className="bg-white/10 rounded-lg p-3 text-center">
-              <div className="text-xl font-bold">{stat.value}</div>
+            <div key={idx} className={`${stat.bg} rounded-lg p-3 text-center`}>
+              <div className={`${stat.color === "primary" ? "text-emerald-300" : stat.color === "green" ? "text-green-300" : stat.color === "blue" ? "text-blue-300" : "text-amber-300"} mb-1 flex justify-center`}>
+                {stat.icon}
+              </div>
+              <div className="text-xl font-bold text-white">{stat.value}</div>
               <div className="text-xs text-white/70 mt-1">{stat.label}</div>
             </div>
           ))}
@@ -209,11 +250,11 @@ const ReferralPage = () => {
       {/* Referral History Card */}
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-          📋 Referral History
+          <Users size={18} className="text-primary" /> Referral History
         </div>
         {history.length === 0 ? (
           <div className="text-center py-8">
-            <div className="text-4xl mb-2">🤝</div>
+            <Gift size={48} className="text-foreground/30 mx-auto mb-2" />
             <p className="text-foreground/50">No referrals yet</p>
             <p className="text-xs text-foreground/40 mt-1">
               Share your referral link to start earning bonuses!
@@ -229,33 +270,20 @@ const ReferralPage = () => {
                 transition={{ delay: idx * 0.1 }}
                 className="flex items-center gap-3 pb-3 border-b border-border last:border-0"
               >
-                <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                    item.status === "bonus" ? "bg-primary/10" : "bg-amber-500/10"
-                  }`}
-                >
-                  {item.status === "bonus" ? "👤" : "⏳"}
+                <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${item.status === "bonus" ? "bg-primary/10" : "bg-amber-500/10"}`}>
+                  {item.status === "bonus" ? <CheckCircle size={16} className="text-primary" /> : <Clock size={16} className="text-amber-500" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-sm text-foreground">
-                    {item.name}
-                  </div>
+                  <div className="font-semibold text-sm text-foreground">{item.name}</div>
                   <div className="text-xs text-foreground/50">{item.date}</div>
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full ${
-                      item.status === "bonus"
-                        ? "bg-primary/10 text-primary"
-                        : "bg-amber-500/10 text-amber-500"
-                    }`}
-                  >
+                  <span className={`text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1 ${
+                    item.status === "bonus" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-500"
+                  }`}>
+                    {item.status === "bonus" ? <Award size={10} /> : <Clock size={10} />}
                     {item.badge}
                   </span>
                 </div>
-                <div
-                  className={`font-bold text-sm ${
-                    item.status === "bonus" ? "text-primary" : "text-foreground/50"
-                  }`}
-                >
+                <div className={`font-bold text-sm ${item.status === "bonus" ? "text-primary" : "text-foreground/50"}`}>
                   {item.amount}
                 </div>
               </motion.div>
@@ -312,9 +340,9 @@ const ReferralPage = () => {
           </div>
           <button
             onClick={openLeaderboardModal}
-            className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition"
+            className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition flex items-center gap-1"
           >
-            View Leaderboard →
+            <Trophy size={14} /> View Leaderboard
           </button>
         </div>
       </div>
@@ -336,7 +364,7 @@ const ReferralPage = () => {
               <div className="sticky top-0 bg-card border-b border-border p-5 flex justify-between items-center">
                 <div>
                   <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
-                    🏆 Top Referrers Leaderboard
+                    <Trophy size={22} className="text-amber-500" /> Top Referrers Leaderboard
                   </h3>
                   <p className="text-sm text-foreground/50">
                     Top {leaderboardStats.total} referrers based on total referrals
@@ -357,7 +385,7 @@ const ReferralPage = () => {
                   </div>
                 ) : leaderboard.length === 0 ? (
                   <div className="text-center py-12">
-                    <div className="text-4xl mb-3">🏆</div>
+                    <Trophy size={48} className="text-foreground/30 mx-auto mb-3" />
                     <p className="text-foreground/50">No referrers found yet</p>
                     <p className="text-xs text-foreground/40 mt-1">Be the first to refer friends!</p>
                   </div>
@@ -378,26 +406,24 @@ const ReferralPage = () => {
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.03 }}
-                        className="grid grid-cols-12 gap-2 px-5 py-3 hover:bg-primary/5 transition"
+                        className={`grid grid-cols-12 gap-2 px-5 py-3 hover:bg-primary/5 transition ${user.isMe ? "bg-primary/10" : ""}`}
                       >
                         <div className="col-span-2 flex items-center gap-1">
-                          <span className="text-xl">{getRankIcon(user.rank)}</span>
+                          <div className={`w-6 h-6 rounded-full ${getRankBadge(user.rank)} flex items-center justify-center`}>
+                            {getRankIcon(user.rank)}
+                          </div>
                           <span className="text-sm font-semibold text-foreground">#{user.rank}</span>
                         </div>
-                        <div className="col-span-5 flex items-center gap-2">
+                        <div className="col-span-5 flex items-center gap-2 min-w-0">
                           {user.profilePicture ? (
-                            <img
-                              src={user.profilePicture}
-                              alt={user.name}
-                              className="w-6 h-6 rounded-full object-cover"
-                            />
+                            <img src={user.profilePicture} alt={user.name} className="w-6 h-6 rounded-full object-cover shrink-0" />
                           ) : (
-                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-primary to-primary-light flex items-center justify-center text-white text-[10px] font-bold">
+                            <div className="w-6 h-6 rounded-full bg-gradient-to-r from-primary to-primary-light flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                               {user.name?.charAt(0) || "U"}
                             </div>
                           )}
                           <span className="text-sm font-medium text-foreground truncate">
-                            {user.name}
+                            {user.name} {user.isMe && <span className="text-primary text-xs ml-1">(You)</span>}
                           </span>
                         </div>
                         <div className="col-span-2 text-center">
@@ -405,7 +431,7 @@ const ReferralPage = () => {
                             {user.referrals}
                           </span>
                           <span className="text-xs text-foreground/50 ml-1">
-                            {user.referrals === 1 ? "referral" : "referrals"}
+                            {user.referrals === 1 ? "ref" : "refs"}
                           </span>
                         </div>
                         <div className="col-span-3 text-right">
@@ -420,8 +446,8 @@ const ReferralPage = () => {
               </div>
 
               <div className="sticky bottom-0 bg-card border-t border-border p-4 text-center">
-                <p className="text-xs text-foreground/40">
-                  Leaderboard updates daily based on total referrals
+                <p className="text-xs text-foreground/40 flex items-center justify-center gap-1">
+                  <TrendingUp size={10} /> Leaderboard updates daily based on total referrals
                 </p>
               </div>
             </motion.div>

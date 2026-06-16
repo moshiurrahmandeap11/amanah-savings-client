@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Moon, Sun, Loader2 } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Loader2, Calculator, TrendingUp, Wallet, Target, Share2, RefreshCw, Copy, Camera, MessageCircle, Award, Coins, Gem, Landmark, HandCoins } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
@@ -16,7 +16,7 @@ const ZakatPage = () => {
   const [silverRate, setSilverRate] = useState(130);
   const [assets, setAssets] = useState({
     cash: 0,
-    amanah: 0,
+    sanchoy: 0,
     mobile: 0,
     invest: 0,
     gold_g: 0,
@@ -46,7 +46,6 @@ const ZakatPage = () => {
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
     
-    // Load saved calculation from localStorage
     const savedCalculation = localStorage.getItem("zakatCalculation");
     if (savedCalculation) {
       const data = JSON.parse(savedCalculation);
@@ -57,7 +56,6 @@ const ZakatPage = () => {
     }
   }, []);
 
-  // Save rates to localStorage whenever they change
   useEffect(() => {
     const savedCalculation = localStorage.getItem("zakatCalculation");
     const data = savedCalculation ? JSON.parse(savedCalculation) : {};
@@ -105,7 +103,6 @@ const ZakatPage = () => {
       if (response.data.success) {
         setResult(response.data.data);
         
-        // Save to localStorage
         localStorage.setItem("zakatCalculation", JSON.stringify({
           assets,
           liabilities,
@@ -115,7 +112,6 @@ const ZakatPage = () => {
           timestamp: new Date().toISOString(),
         }));
         
-        // Auto-save to backend
         await axiosInstance.post("/zakat/save", {
           goldRate,
           silverRate,
@@ -143,7 +139,7 @@ const ZakatPage = () => {
   const resetCalculator = useCallback(() => {
     setAssets({
       cash: 0,
-      amanah: 0,
+      sanchoy: 0,
       mobile: 0,
       invest: 0,
       gold_g: 0,
@@ -161,14 +157,14 @@ const ZakatPage = () => {
       zakat: 0,
       aboveNisab: false,
     });
-    showToast(lang === "bn" ? "🔄 রিসেট হয়েছে" : "🔄 Reset done", "success");
+    showToast(lang === "bn" ? "Reset done" : "Reset done", "success");
   }, [lang]);
 
   const createZakatGoal = async () => {
     if (result.zakat <= 0) {
       showToast(
         lang === "bn" 
-          ? "যাকাতের পরিমাণ শূন্য থাকলে লক্ষ্য তৈরি করা যাবে না" 
+          ? "Cannot create goal when zakat amount is zero" 
           : "Cannot create goal when zakat amount is zero",
         "error"
       );
@@ -185,13 +181,13 @@ const ZakatPage = () => {
       
       if (response.data.success) {
         Swal.fire({
-          title: lang === "bn" ? "🎯 যাকাত লক্ষ্য তৈরি!" : "🎯 Zakat Goal Created!",
+          title: lang === "bn" ? "Zakat Goal Created!" : "Zakat Goal Created!",
           html: lang === "bn"
-            ? `আপনার যাকাতের টাকা আলাদা রাখার জন্য একটি নতুন লক্ষ্য তৈরি করা হয়েছে।<br/><strong>পরিমাণ: ৳${result.zakat.toLocaleString()}</strong>`
+            ? `A new goal has been created to save your zakat separately.<br/><strong>Amount: ৳${result.zakat.toLocaleString()}</strong>`
             : `A new goal has been created to save your zakat separately.<br/><strong>Amount: ৳${result.zakat.toLocaleString()}</strong>`,
           icon: "success",
           confirmButtonColor: "#059669",
-          confirmButtonText: lang === "bn" ? "ড্যাশবোর্ডে যান" : "Go to Dashboard",
+          confirmButtonText: lang === "bn" ? "Go to Dashboard" : "Go to Dashboard",
         }).then((result) => {
           if (result.isConfirmed) {
             router.push("/dashboard/goals");
@@ -219,17 +215,17 @@ const ZakatPage = () => {
       const amt = Math.round(result.zakat).toLocaleString("en-IN");
       const msg =
         lang === "bn"
-          ? `আমার এই বছরের যাকাত: ৳${amt}\n\nAmanah যাকাত ক্যালকুলেটর দিয়ে হিসাব করুন`
-          : `My Zakat this year: ৳${amt}\n\nCalculate yours with Amanah`;
+          ? `My Zakat this year: ৳${amt}\n\nCalculate yours with sanchoy`
+          : `My Zakat this year: ৳${amt}\n\nCalculate yours with sanchoy`;
 
       if (type === "copy") {
         navigator.clipboard.writeText(msg);
-        showToast(lang === "bn" ? "📋 কপি হয়েছে" : "📋 Copied!", "success");
+        showToast(lang === "bn" ? "Copied!" : "Copied!", "success");
       } else if (type === "whatsapp") {
         window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
       } else {
         showToast(
-          lang === "bn" ? "📸 স্ক্রিনশট নিন" : "📸 Take a screenshot",
+          lang === "bn" ? "Take a screenshot" : "Take a screenshot",
           "info"
         );
       }
@@ -238,226 +234,100 @@ const ZakatPage = () => {
     [result.zakat, lang, showToast, closeShareModal],
   );
 
-  // Auto-calculate on mount
   useEffect(() => {
     calculateZakat();
   }, []);
 
   const nisab = getNisab();
 
-  const getText = useCallback(
-    (key) => {
-      const texts = {
-        bn: {
-          pageTitle: "🌙 যাকাত ক্যালকুলেটর",
-          heroTitle: "যাকাত হিসাব করুন",
-          heroSub:
-            "ইসলামিক শরিয়াহ অনুযায়ী আপনার বার্ষিক যাকাতের সঠিক পরিমাণ জানুন",
-          nisabLabel: "নিসাব (স্বর্ণ ৮৫গ্রাম)",
-          goldRateLabel: "আজকের স্বর্ণের দর (প্রতি গ্রাম):",
-          silverRateLabel: "আজকের রুপার দর (প্রতি গ্রাম):",
-          rateNote: "* দর ব্যবহারকারী দ্বারা প্রদত্ত। বর্তমান বাজার দর যাচাই করুন।",
-          secAssets: "সম্পদ (Assets)",
-          secLiabilities: "দেনা (Liabilities)",
-          ctSavings: "🏦 নগদ ও সঞ্চয়",
-          ctGold: "💛 স্বর্ণ ও রুপা",
-          ctBusiness: "🏪 ব্যবসায়িক সম্পদ",
-          ctDebts: "💳 দেনা ও বকেয়া",
-          lblCash: "নগদ টাকা",
-          lblCashSub: "হাতে ও ব্যাংকে",
-          lblAmanah: "Amanah সঞ্চয়",
-          lblAmanahSub: "সব লক্ষ্যের মোট",
-          lblBkash: "bKash / Nagad",
-          lblBkashSub: "মোবাইল ব্যাংকিং ব্যালেন্স",
-          lblInvest: "বিনিয়োগ",
-          lblInvestSub: "শেয়ার, মিউচুয়াল ফান্ড",
-          lblGold: "স্বর্ণ (গ্রামে)",
-          lblGoldSub: "গহনা বাদে ব্যবহারযোগ্য স্বর্ণ",
-          lblSilver: "রুপা (গ্রামে)",
-          lblSilverSub: "৫৯৫ গ্রাম = ১ নিসাব",
-          lblStock: "পণ্য মজুদ",
-          lblStockSub: "বাজার মূল্যে",
-          lblReceivable: "পাওনা টাকা",
-          lblReceivableSub: "অন্যের কাছে দেওয়া ঋণ",
-          lblLoan: "ঋণ / লোন",
-          lblLoanSub: "পরিশোধযোগ্য বার্ষিক কিস্তি",
-          lblPayable: "বকেয়া বিল",
-          lblPayableSub: "ভাড়া, ইউটিলিটি ইত্যাদি",
-          lblOtherDebt: "অন্যান্য দেনা",
-          lblOtherDebtSub: "ব্যক্তিগত ঋণ",
-          bkTitle: "📊 হিসাবের বিবরণ",
-          bkAssets: "মোট সম্পদ",
-          bkLiab: "মোট দেনা",
-          bkNet: "যাকাতযোগ্য সম্পদ",
-          bkNisab: "নিসাব",
-          bkRate: "যাকাতের হার",
-          bkZakat: "প্রদেয় যাকাত",
-          resLabel: "🌙 এই বছর আপনার যাকাত",
-          resNote: "নেটওয়ার্থের ২.৫% · আল্লাহ কবুল করুন",
-          resBelowTitle: "আপনার সম্পদ নিসাবের নিচে",
-          resBelowSub: `আপনার মোট সম্পদ ${nisab.toLocaleString()} নিসাবের কম — এই বছর যাকাত ফরজ হয়নি।`,
-          goalPromptTitle: "যাকাত লক্ষ্য তৈরি করুন",
-          goalPromptSub: "আপনার যাকাতের টাকা আলাদা করে রাখুন",
-          goalPromptBtn: "লক্ষ্য তৈরি →",
-          btnReset: "🔄 রিসেট",
-          btnShare: "📤 শেয়ার করুন",
-          btnCalc: "☪️ যাকাত হিসাব করুন",
-          shareLabel: "আপনার এই বছরের যাকাত",
-          shareCopy: "কপি",
-          shareScreenshot: "স্ক্রিনশট",
-          shareClose: "বন্ধ করুন",
-        },
-        en: {
-          pageTitle: "🌙 Zakat Calculator",
-          heroTitle: "Calculate Your Zakat",
-          heroSub: "Find your annual Zakat amount according to Islamic Shariah",
-          nisabLabel: "Nisab (Gold 85g)",
-          goldRateLabel: "Today's Gold Rate (per gram):",
-          silverRateLabel: "Today's Silver Rate (per gram):",
-          rateNote: "* Rates are user-provided. Please check current market rates.",
-          secAssets: "Assets",
-          secLiabilities: "Liabilities",
-          ctSavings: "🏦 Cash & Savings",
-          ctGold: "💛 Gold & Silver",
-          ctBusiness: "🏪 Business Assets",
-          ctDebts: "💳 Debts & Payables",
-          lblCash: "Cash",
-          lblCashSub: "In hand & bank",
-          lblAmanah: "Amanah Savings",
-          lblAmanahSub: "Total across all goals",
-          lblBkash: "bKash / Nagad",
-          lblBkashSub: "Mobile banking balance",
-          lblInvest: "Investments",
-          lblInvestSub: "Shares, mutual funds",
-          lblGold: "Gold (grams)",
-          lblGoldSub: "Excluding jewelry in use",
-          lblSilver: "Silver (grams)",
-          lblSilverSub: "595g = 1 Nisab",
-          lblStock: "Business Stock",
-          lblStockSub: "At market value",
-          lblReceivable: "Receivables",
-          lblReceivableSub: "Money owed to you",
-          lblLoan: "Loans",
-          lblLoanSub: "Annual repayment amount",
-          lblPayable: "Outstanding Bills",
-          lblPayableSub: "Rent, utilities etc.",
-          lblOtherDebt: "Other Debts",
-          lblOtherDebtSub: "Personal loans",
-          bkTitle: "📊 Breakdown",
-          bkAssets: "Total Assets",
-          bkLiab: "Total Liabilities",
-          bkNet: "Zakatable Wealth",
-          bkNisab: "Nisab",
-          bkRate: "Zakat Rate",
-          bkZakat: "Zakat Due",
-          resLabel: "🌙 Your Zakat This Year",
-          resNote: "2.5% of net wealth · May Allah accept it",
-          resBelowTitle: "Your wealth is below Nisab",
-          resBelowSub: `Your total wealth is below the Nisab of ${nisab.toLocaleString()} — Zakat is not obligatory this year.`,
-          goalPromptTitle: "Create a Zakat Goal",
-          goalPromptSub: "Set aside your Zakat amount separately",
-          goalPromptBtn: "Create Goal →",
-          btnReset: "🔄 Reset",
-          btnShare: "📤 Share",
-          btnCalc: "☪️ Calculate Zakat",
-          shareLabel: "Your Zakat this year",
-          shareCopy: "Copy",
-          shareScreenshot: "Screenshot",
-          shareClose: "Close",
-        },
-      };
-      return texts[lang][key] || key;
-    },
-    [lang, nisab],
-  );
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <div className="bg-linear-to-r from-primary to-amber-600 px-5 py-4 flex items-center gap-3 sticky top-0 z-50">
+      <div className="bg-gradient-to-br from-emerald-700 to-emerald-800 px-5 py-4 flex items-center gap-3 sticky top-0 z-50">
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white"
+          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition"
         >
           <ArrowLeft size={18} />
         </button>
-        <h1 className="text-white text-lg font-bold flex-1">
-          {getText("pageTitle")}
+        <h1 className="text-white text-lg font-bold flex-1 flex items-center gap-2">
+          <Calculator size={20} /> Zakat Calculator
         </h1>
         <button
           onClick={toggleTheme}
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white"
+          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition"
         >
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <button
           onClick={() => setLang(lang === "bn" ? "en" : "bn")}
-          className="px-3 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold"
+          className="px-3 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold hover:bg-white/30 transition"
         >
           {lang === "bn" ? "EN" : "BN"}
         </button>
       </div>
 
       {/* Hero */}
-      <div className="bg-linear-to-r from-primary to-amber-600 px-5 pb-7 text-center">
-        <div className="text-2xl text-white/90 mb-1 tracking-wider">
-          بِسْمِ اللَّهِ
+      <div className="bg-gradient-to-br from-emerald-700 to-emerald-800 px-5 pb-7 text-center">
+        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
+          <HandCoins size={32} className="text-white" />
         </div>
         <div className="text-white text-xl font-bold mb-1">
-          {getText("heroTitle")}
+          Calculate Your Zakat
         </div>
-        <div className="text-white/80 text-xs leading-relaxed">
-          {getText("heroSub")}
+        <div className="text-white/80 text-sm">
+          Find your annual Zakat amount according to Islamic Shariah
         </div>
       </div>
 
       <div className="px-4 py-5 pb-32 max-w-full mx-auto">
         {/* Rate Inputs Section */}
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-xl p-4 mb-4">
+        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 mb-4">
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <div className="text-sm text-foreground font-medium">
-                {getText("goldRateLabel")}
+              <div className="text-sm text-foreground font-medium flex items-center gap-1">
+                <Gem size={14} className="text-emerald-600" /> Today's Gold Rate (per gram):
               </div>
               <div className="flex items-center gap-1">
                 <input
                   type="number"
                   value={goldRate}
                   onChange={(e) => setGoldRate(parseFloat(e.target.value) || 0)}
-                  className="w-24 p-1.5 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-primary"
+                  className="w-24 p-1.5 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-emerald-500"
                 />
-                <span className="text-sm font-semibold">৳/গ্রাম</span>
+                <span className="text-sm font-semibold">৳/g</span>
               </div>
             </div>
             <div className="flex justify-between items-center">
-              <div className="text-sm text-foreground font-medium">
-                {getText("silverRateLabel")}
+              <div className="text-sm text-foreground font-medium flex items-center gap-1">
+                <Coins size={14} className="text-gray-500" /> Today's Silver Rate (per gram):
               </div>
               <div className="flex items-center gap-1">
                 <input
                   type="number"
                   value={silverRate}
                   onChange={(e) => setSilverRate(parseFloat(e.target.value) || 0)}
-                  className="w-24 p-1.5 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-primary"
+                  className="w-24 p-1.5 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-emerald-500"
                 />
-                <span className="text-sm font-semibold">৳/গ্রাম</span>
+                <span className="text-sm font-semibold">৳/g</span>
               </div>
             </div>
           </div>
-          <div className="text-xs text-foreground/50 mt-3 pt-2 border-t border-amber-200 dark:border-amber-800">
-            {getText("rateNote")}
+          <div className="text-xs text-foreground/50 mt-3 pt-2 border-t border-emerald-200 dark:border-emerald-800">
+            * Rates are user-provided. Please check current market rates.
           </div>
         </div>
 
         {/* Nisab Banner */}
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-xl p-4 mb-4">
+        <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4 mb-4">
           <div className="flex justify-between items-center">
-            <div>
-              <div className="text-xs text-foreground/60">
-                {getText("nisabLabel")}
-              </div>
-              <div className="font-bold text-amber-600 text-base">
-                ৳ {nisab.toLocaleString()}
+            <div className="flex items-center gap-2">
+              <Award size={18} className="text-emerald-600" />
+              <div>
+                <div className="text-xs text-foreground/60">Nisab (Gold 85g)</div>
+                <div className="font-bold text-emerald-600 text-lg">
+                  ৳ {nisab.toLocaleString()}
+                </div>
               </div>
             </div>
           </div>
@@ -465,61 +335,27 @@ const ZakatPage = () => {
 
         {/* Assets Section */}
         <div className="text-xs font-bold text-foreground/60 uppercase tracking-wide mb-2 flex items-center gap-2">
-          💰 {getText("secAssets")}
+          <Wallet size={14} /> Assets
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            {getText("ctSavings")}
+            <Landmark size={16} /> Cash & Savings
           </div>
           {[
-            {
-              id: "cash",
-              label: "lblCash",
-              sub: "lblCashSub",
-              value: assets.cash,
-            },
-            {
-              id: "amanah",
-              label: "lblAmanah",
-              sub: "lblAmanahSub",
-              value: assets.amanah,
-            },
-            {
-              id: "mobile",
-              label: "lblBkash",
-              sub: "lblBkashSub",
-              value: assets.mobile,
-            },
-            {
-              id: "invest",
-              label: "lblInvest",
-              sub: "lblInvestSub",
-              value: assets.invest,
-            },
+            { id: "cash", label: "Cash", sub: "In hand & bank", value: assets.cash },
+            { id: "sanchoy", label: "Sonchoy Bondhu", sub: "Total across all goals", value: assets.sanchoy },
+            { id: "mobile", label: "bKash / Nagad", sub: "Mobile banking balance", value: assets.mobile },
+            { id: "invest", label: "Investments", sub: "Shares, mutual funds", value: assets.invest },
           ].map((item) => (
-            <div
-              key={item.id}
-              className="flex justify-between items-center py-2 border-b border-border last:border-0"
-            >
+            <div key={item.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
               <div>
-                <div className="text-sm text-foreground">
-                  {getText(item.label)}
-                </div>
-                <div className="text-xs text-foreground/50">
-                  {getText(item.sub)}
-                </div>
+                <div className="text-sm text-foreground">{item.label}</div>
+                <div className="text-xs text-foreground/50">{item.sub}</div>
               </div>
               <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
-                <span className="px-2 py-1 text-xs font-bold text-primary bg-primary/5 border-r border-border">
-                  ৳
-                </span>
-                <input
-                  type="number"
-                  value={item.value}
-                  onChange={(e) => updateAsset(item.id, e.target.value)}
-                  className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none"
-                />
+                <span className="px-2 py-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-r border-border">৳</span>
+                <input type="number" value={item.value} onChange={(e) => updateAsset(item.id, e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" />
               </div>
             </div>
           ))}
@@ -527,94 +363,46 @@ const ZakatPage = () => {
 
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            {getText("ctGold")}
+            <Gem size={16} /> Gold & Silver
           </div>
           <div className="flex justify-between items-center py-2 border-b border-border">
             <div>
-              <div className="text-sm text-foreground">
-                {getText("lblGold")}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {getText("lblGoldSub")}
-              </div>
+              <div className="text-sm text-foreground">Gold (grams)</div>
+              <div className="text-xs text-foreground/50">Excluding jewelry in use</div>
             </div>
             <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
-              <span className="px-2 py-1 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-r border-border">
-                গ্রা
-              </span>
-              <input
-                type="number"
-                value={assets.gold_g}
-                onChange={(e) => updateAsset("gold_g", e.target.value)}
-                className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none"
-                step="0.1"
-              />
+              <span className="px-2 py-1 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-r border-border">g</span>
+              <input type="number" value={assets.gold_g} onChange={(e) => updateAsset("gold_g", e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" step="0.1" />
             </div>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-border last:border-0">
             <div>
-              <div className="text-sm text-foreground">
-                {getText("lblSilver")}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {getText("lblSilverSub")}
-              </div>
+              <div className="text-sm text-foreground">Silver (grams)</div>
+              <div className="text-xs text-foreground/50">595g = 1 Nisab</div>
             </div>
             <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
-              <span className="px-2 py-1 text-xs font-bold text-gray-500 border-r border-border">
-                গ্রা
-              </span>
-              <input
-                type="number"
-                value={assets.silver_g}
-                onChange={(e) => updateAsset("silver_g", e.target.value)}
-                className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none"
-                step="0.1"
-              />
+              <span className="px-2 py-1 text-xs font-bold text-gray-500 border-r border-border">g</span>
+              <input type="number" value={assets.silver_g} onChange={(e) => updateAsset("silver_g", e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" step="0.1" />
             </div>
           </div>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            {getText("ctBusiness")}
+            <TrendingUp size={16} /> Business Assets
           </div>
           {[
-            {
-              id: "stock",
-              label: "lblStock",
-              sub: "lblStockSub",
-              value: assets.stock,
-            },
-            {
-              id: "recv",
-              label: "lblReceivable",
-              sub: "lblReceivableSub",
-              value: assets.recv,
-            },
+            { id: "stock", label: "Business Stock", sub: "At market value", value: assets.stock },
+            { id: "recv", label: "Receivables", sub: "Money owed to you", value: assets.recv },
           ].map((item) => (
-            <div
-              key={item.id}
-              className="flex justify-between items-center py-2 border-b border-border last:border-0"
-            >
+            <div key={item.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
               <div>
-                <div className="text-sm text-foreground">
-                  {getText(item.label)}
-                </div>
-                <div className="text-xs text-foreground/50">
-                  {getText(item.sub)}
-                </div>
+                <div className="text-sm text-foreground">{item.label}</div>
+                <div className="text-xs text-foreground/50">{item.sub}</div>
               </div>
               <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
-                <span className="px-2 py-1 text-xs font-bold text-primary bg-primary/5 border-r border-border">
-                  ৳
-                </span>
-                <input
-                  type="number"
-                  value={item.value}
-                  onChange={(e) => updateAsset(item.id, e.target.value)}
-                  className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none"
-                />
+                <span className="px-2 py-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-r border-border">৳</span>
+                <input type="number" value={item.value} onChange={(e) => updateAsset(item.id, e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" />
               </div>
             </div>
           ))}
@@ -622,55 +410,26 @@ const ZakatPage = () => {
 
         {/* Liabilities Section */}
         <div className="text-xs font-bold text-foreground/60 uppercase tracking-wide mb-2 flex items-center gap-2 mt-4">
-          📉 {getText("secLiabilities")}
+          <HandCoins size={14} /> Liabilities
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            {getText("ctDebts")}
+            <HandCoins size={16} /> Debts & Payables
           </div>
           {[
-            {
-              id: "loan",
-              label: "lblLoan",
-              sub: "lblLoanSub",
-              value: liabilities.loan,
-            },
-            {
-              id: "bills",
-              label: "lblPayable",
-              sub: "lblPayableSub",
-              value: liabilities.bills,
-            },
-            {
-              id: "other",
-              label: "lblOtherDebt",
-              sub: "lblOtherDebtSub",
-              value: liabilities.other,
-            },
+            { id: "loan", label: "Loans", sub: "Annual repayment amount", value: liabilities.loan },
+            { id: "bills", label: "Outstanding Bills", sub: "Rent, utilities etc.", value: liabilities.bills },
+            { id: "other", label: "Other Debts", sub: "Personal loans", value: liabilities.other },
           ].map((item) => (
-            <div
-              key={item.id}
-              className="flex justify-between items-center py-2 border-b border-border last:border-0"
-            >
+            <div key={item.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
               <div>
-                <div className="text-sm text-foreground">
-                  {getText(item.label)}
-                </div>
-                <div className="text-xs text-foreground/50">
-                  {getText(item.sub)}
-                </div>
+                <div className="text-sm text-foreground">{item.label}</div>
+                <div className="text-xs text-foreground/50">{item.sub}</div>
               </div>
               <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
-                <span className="px-2 py-1 text-xs font-bold text-red-500 bg-red-50 dark:bg-red-950/30 border-r border-border">
-                  ৳
-                </span>
-                <input
-                  type="number"
-                  value={item.value}
-                  onChange={(e) => updateLiability(item.id, e.target.value)}
-                  className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none"
-                />
+                <span className="px-2 py-1 text-xs font-bold text-red-500 bg-red-50 dark:bg-red-950/30 border-r border-border">৳</span>
+                <input type="number" value={item.value} onChange={(e) => updateLiability(item.id, e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" />
               </div>
             </div>
           ))}
@@ -679,29 +438,25 @@ const ZakatPage = () => {
         {/* Result Section */}
         {loading ? (
           <div className="bg-card border border-border rounded-xl p-6 text-center">
-            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+            <Loader2 className="w-8 h-8 animate-spin text-emerald-600 mx-auto" />
           </div>
         ) : result.aboveNisab ? (
-          <div className="bg-linear-to-r from-primary to-amber-600 rounded-xl p-6 text-center relative overflow-hidden mb-3">
-            <div className="absolute right-0 top-0 text-8xl opacity-10 pointer-events-none">
-              ☪️
-            </div>
-            <div className="text-white/85 text-sm mb-1">
-              {getText("resLabel")}
-            </div>
+          <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-center relative overflow-hidden mb-3">
+            <div className="absolute right-0 top-0 text-8xl opacity-10 pointer-events-none">☪️</div>
+            <div className="text-white/85 text-sm mb-1">Your Zakat This Year</div>
             <div className="text-4xl font-bold text-white mb-1">
               ৳ {Math.round(result.zakat).toLocaleString()}
             </div>
-            <div className="text-white/80 text-xs">{getText("resNote")}</div>
+            <div className="text-white/80 text-xs">2.5% of net wealth · May Allah accept it</div>
           </div>
         ) : (
           <div className="bg-card border-2 border-border rounded-xl p-5 text-center mb-3">
-            <div className="text-5xl mb-2">🌙</div>
+            <Award size={48} className="text-foreground/30 mx-auto mb-2" />
             <div className="text-base font-bold text-foreground mb-1">
-              {getText("resBelowTitle")}
+              Your wealth is below Nisab
             </div>
             <div className="text-sm text-foreground/60 leading-relaxed">
-              {getText("resBelowSub")}
+              Your total wealth is below the Nisab of {nisab.toLocaleString()} — Zakat is not obligatory this year.
             </div>
           </div>
         )}
@@ -709,93 +464,74 @@ const ZakatPage = () => {
         {/* Breakdown Card */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            {getText("bkTitle")}
+            <Calculator size={16} /> Breakdown
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">{getText("bkAssets")}</span>
-              <span className="font-semibold text-green-600">
-                ৳ {result.totalAssets.toLocaleString()}
-              </span>
+              <span className="text-foreground/60">Total Assets</span>
+              <span className="font-semibold text-green-600">৳ {result.totalAssets.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">{getText("bkLiab")}</span>
-              <span className="font-semibold text-red-500">
-                −৳ {result.totalLiabilities.toLocaleString()}
-              </span>
+              <span className="text-foreground/60">Total Liabilities</span>
+              <span className="font-semibold text-red-500">−৳ {result.totalLiabilities.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm pt-1 border-t border-dashed border-border">
-              <span className="text-foreground/60">{getText("bkNet")}</span>
-              <span className="font-bold text-amber-600">
-                ৳ {result.net.toLocaleString()}
-              </span>
+              <span className="text-foreground/60">Zakatable Wealth</span>
+              <span className="font-bold text-emerald-600">৳ {result.net.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">{getText("bkNisab")}</span>
-              <span className="text-foreground/50">
-                ৳ {nisab.toLocaleString()}
-              </span>
+              <span className="text-foreground/60">Nisab</span>
+              <span className="text-foreground/50">৳ {nisab.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">{getText("bkRate")}</span>
+              <span className="text-foreground/60">Zakat Rate</span>
               <span className="text-foreground/50">2.5%</span>
             </div>
             <div className="flex justify-between text-base pt-2 border-t-2 border-border">
-              <span className="font-bold text-foreground">
-                {getText("bkZakat")}
-              </span>
-              <span className="font-bold text-primary text-lg">
-                ৳ {Math.round(result.zakat).toLocaleString()}
-              </span>
+              <span className="font-bold text-foreground">Zakat Due</span>
+              <span className="font-bold text-emerald-600 text-lg">৳ {Math.round(result.zakat).toLocaleString()}</span>
             </div>
           </div>
-        </div>
-
-        {/* Info Box */}
-        <div className="bg-primary/5 border border-primary/15 rounded-xl p-4 mb-3 text-sm text-foreground/60">
-          <strong className="text-foreground">☪️ যাকাতের হার:</strong> মোট
-          যাকাতযোগ্য সম্পদের <strong className="text-primary">২.৫%</strong>{" "}
-          (১/৪০ ভাগ)। যাকাত ফরজ হয় যখন নিসাব পরিমাণ সম্পদ পূর্ণ এক চন্দ্রবছর
-          (হাওল) ধরে থাকে।
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-3 mb-3">
           <button
             onClick={resetCalculator}
-            className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-bold hover:border-primary hover:text-primary transition"
+            className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-bold hover:border-emerald-500 hover:text-emerald-600 transition flex items-center justify-center gap-2"
           >
-            {getText("btnReset")}
+            <RefreshCw size={16} /> Reset
           </button>
           {result.aboveNisab && (
             <button
               onClick={openShareModal}
-              className="flex-1 py-3 rounded-xl bg-linear-to-r from-primary to-amber-600 text-white font-bold"
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition"
             >
-              {getText("btnShare")}
+              <Share2 size={16} /> Share
             </button>
           )}
         </div>
 
         {/* Save to Goal Prompt */}
         {result.aboveNisab && result.zakat > 0 && (
-          <div className="bg-primary/5 border border-primary/30 rounded-xl p-4">
+          <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
             <div className="flex items-center gap-3">
-              <div className="text-3xl">🎯</div>
+              <Target size={24} className="text-emerald-600" />
               <div className="flex-1">
                 <div className="font-bold text-foreground text-sm">
-                  {getText("goalPromptTitle")}
+                  Create a Zakat Goal
                 </div>
                 <div className="text-xs text-foreground/50">
-                  {getText("goalPromptSub")}
+                  Set aside your Zakat amount separately
                 </div>
               </div>
               <button
                 onClick={createZakatGoal}
                 disabled={saving}
-                className="px-4 py-2 bg-linear-to-r from-primary to-amber-600 text-white rounded-lg text-xs font-bold whitespace-nowrap disabled:opacity-50"
+                className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-lg text-xs font-bold whitespace-nowrap disabled:opacity-50 hover:opacity-90 transition flex items-center gap-1"
               >
-                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : getText("goalPromptBtn")}
+                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Target size={14} />}
+                Create Goal
               </button>
             </div>
           </div>
@@ -807,19 +543,17 @@ const ZakatPage = () => {
         <button
           onClick={calculateZakat}
           disabled={loading}
-          className="w-full max-w-4xl mx-auto block py-4 bg-linear-to-r from-primary to-amber-600 text-white rounded-xl font-bold text-base disabled:opacity-50"
+          className="w-full max-w-4xl mx-auto block py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl font-bold text-base disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2"
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : getText("btnCalc")}
+          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Calculator size={18} />}
+          Calculate Zakat
         </button>
       </div>
 
       {/* Share Modal */}
       <AnimatePresence>
         {showShareModal && (
-          <div
-            className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center"
-            onClick={closeShareModal}
-          >
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center" onClick={closeShareModal}>
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -828,46 +562,23 @@ const ZakatPage = () => {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
-              <div className="text-4xl font-bold text-amber-600 mb-1">
+              <div className="text-4xl font-bold text-emerald-600 mb-1">
                 ৳ {Math.round(result.zakat).toLocaleString()}
               </div>
-              <div className="text-sm text-foreground/60 mb-5">
-                {getText("shareLabel")}
-              </div>
+              <div className="text-sm text-foreground/60 mb-5">Your Zakat this year</div>
               <div className="flex justify-center gap-4 mb-5">
                 {[
-                  { icon: "📋", label: "shareCopy", action: "copy" },
-                  {
-                    icon: "📸",
-                    label: "shareScreenshot",
-                    action: "screenshot",
-                  },
-                  { icon: "💬", label: "WhatsApp", action: "whatsapp" },
+                  { icon: <Copy size={24} />, label: "Copy", action: "copy" },
+                  { icon: <Camera size={24} />, label: "Screenshot", action: "screenshot" },
+                  { icon: <MessageCircle size={24} />, label: "WhatsApp", action: "whatsapp" },
                 ].map((opt) => (
-                  <button
-                    key={opt.action}
-                    onClick={() => shareAction(opt.action)}
-                    className="flex flex-col items-center gap-1"
-                  >
-                    <div className="w-14 h-14 rounded-xl border border-border bg-background flex items-center justify-center text-2xl hover:border-primary transition">
-                      {opt.icon}
-                    </div>
-                    <div className="text-xs text-foreground/60">
-                      {opt.label === "shareCopy"
-                        ? getText("shareCopy")
-                        : opt.label === "shareScreenshot"
-                          ? getText("shareScreenshot")
-                          : opt.label}
-                    </div>
+                  <button key={opt.action} onClick={() => shareAction(opt.action)} className="flex flex-col items-center gap-1">
+                    <div className="w-14 h-14 rounded-xl border border-border bg-background flex items-center justify-center hover:border-emerald-500 hover:text-emerald-600 transition">{opt.icon}</div>
+                    <div className="text-xs text-foreground/60">{opt.label}</div>
                   </button>
                 ))}
               </div>
-              <button
-                onClick={closeShareModal}
-                className="w-full py-3 rounded-xl border-2 border-border text-foreground/60 font-semibold"
-              >
-                {getText("shareClose")}
-              </button>
+              <button onClick={closeShareModal} className="w-full py-3 rounded-xl border-2 border-border text-foreground/60 font-semibold hover:border-emerald-500 hover:text-emerald-600 transition">Close</button>
             </motion.div>
           </div>
         )}

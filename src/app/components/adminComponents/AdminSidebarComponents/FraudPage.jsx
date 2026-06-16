@@ -80,7 +80,7 @@ const FraudPage = () => {
         
         // Prepare summary data
         const summaryData = [
-          { "Report Type": "Fraud & Security Report", "Value": "Amanah Savings" },
+          { "Report Type": "Fraud & Security Report", "Value": "Sonchoy Bondhu" },
           { "Report Generated": new Date().toLocaleString(), "Value": "" },
           { "Total Alerts": alerts.length, "Value": "" },
           { "High Risk Alerts": statsData.highRisk || 0, "Value": "" },

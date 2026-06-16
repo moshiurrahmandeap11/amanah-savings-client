@@ -100,8 +100,8 @@ const Footer = () => {
             <motion.div variants={itemVariants}>
               <Link href="/" className="inline-block mb-4">
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  <span className="text-primary">Amanah</span>
-                  <span className="text-foreground"> Savings</span>
+                  <span className="text-primary">Sanchoy</span>
+                  <span className="text-foreground"> Bondhu</span>
                 </h2>
               </Link>
               
@@ -117,7 +117,7 @@ const Footer = () => {
                   <div>
                     <p className="text-xs text-red-400 leading-relaxed">
                       <span className="font-semibold text-red-400">Important Announcement:</span>{" "}
-                      Amanah Savings Community is a savings circle management platform. 
+                      Sonchoy Bondhu Community is a savings circle management platform. 
                       We are not a bank, investment company or financial institution. 
                       We do not guarantee any returns or profits. Savings are locked in 
                       according to the member&apos;s own and circle terms.
@@ -184,7 +184,7 @@ const Footer = () => {
               </div>
               <div>
                 <p className="text-xs text-foreground/60">Email</p>
-                <p className="text-foreground font-semibold text-sm">support@amanahsavings.com.bd</p>
+                <p className="text-foreground font-semibold text-sm">sanchoybondhu@gmail.com</p>
               </div>
             </div>
           </div>
@@ -214,7 +214,7 @@ const Footer = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <p className="text-xs text-foreground/50">
-              © 2025 Amanah Savings Community. All rights reserved. Bangladesh.
+              © 2025 Sonchoy Bondhu Community. All rights reserved. Bangladesh.
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">

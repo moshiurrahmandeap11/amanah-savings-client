@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, Wallet, TrendingUp, Clock, ArrowUp, ArrowDown, Banknote, Calendar, CheckCircle, AlertCircle, Target, Smartphone, Building } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 const TransactionsPage = () => {
@@ -49,7 +49,6 @@ const TransactionsPage = () => {
       }
     } catch (error) {
       console.error("Error fetching withdrawals:", error);
-      // Don't let withdrawal fetch failure break the page
       setWithdrawals([]);
       setWithdrawalStats({ totalWithdrawn: 0, totalWithdrawals: 0 });
     }
@@ -70,15 +69,15 @@ const TransactionsPage = () => {
   const getStatusBadge = (status, type = "deposit") => {
     switch(status) {
       case "approved":
-        return { text: "✅ Approved", class: "bg-green-500/10 text-green-500" };
+        return { text: "Approved", class: "bg-green-500/10 text-green-500", icon: <CheckCircle size={12} /> };
       case "pending":
-        return { text: "⏳ Pending", class: "bg-amber-500/10 text-amber-500" };
+        return { text: "Pending", class: "bg-amber-500/10 text-amber-500", icon: <Clock size={12} /> };
       case "rejected":
-        return { text: "❌ Rejected", class: "bg-red-500/10 text-red-500" };
+        return { text: "Rejected", class: "bg-red-500/10 text-red-500", icon: <AlertCircle size={12} /> };
       case "completed":
-        return { text: "✅ Completed", class: "bg-blue-500/10 text-blue-500" };
+        return { text: "Completed", class: "bg-blue-500/10 text-blue-500", icon: <CheckCircle size={12} /> };
       default:
-        return { text: status || "Unknown", class: "bg-primary/10 text-primary" };
+        return { text: status || "Unknown", class: "bg-primary/10 text-primary", icon: null };
     }
   };
 
@@ -103,12 +102,22 @@ const TransactionsPage = () => {
 
   const getPaymentIcon = (method) => {
     const icons = {
-      bkash: "💜",
-      nagad: "🟠",
-      bank: "🏦",
-      rocket: "🚀",
+      bkash: <Smartphone size={16} />,
+      nagad: <Smartphone size={16} />,
+      bank: <Building size={16} />,
+      rocket: <Smartphone size={16} />,
     };
-    return icons[method?.toLowerCase()] || "💰";
+    return icons[method?.toLowerCase()] || <Wallet size={16} />;
+  };
+
+  const getPaymentIconColor = (method) => {
+    const colors = {
+      bkash: "text-pink-600",
+      nagad: "text-orange-500",
+      bank: "text-blue-600",
+      rocket: "text-purple-600",
+    };
+    return colors[method?.toLowerCase()] || "text-primary";
   };
 
   const getGoalIcon = (goalType) => {
@@ -125,7 +134,6 @@ const TransactionsPage = () => {
     return icons[goalType?.toLowerCase()] || "🎯";
   };
 
-  // Get all approved deposits for net calculation
   const getApprovedDepositsTotal = () => {
     return deposits
       .filter(d => d.status === "approved")
@@ -138,13 +146,12 @@ const TransactionsPage = () => {
       .reduce((sum, w) => sum + (w.withdrawalAmount || 0), 0);
   };
 
-  // Combine all transactions
   const getAllTransactions = () => {
     const depositTransactions = deposits.map(deposit => ({
       id: deposit._id,
       type: "deposit",
       icon: getPaymentIcon(deposit.paymentMethod),
-      iconBg: deposit.status === "pending" ? "pending" : "deposit",
+      iconColor: getPaymentIconColor(deposit.paymentMethod),
       name: `${getGoalIcon(deposit.goalType)} ${deposit.goalName} — ${deposit.paymentMethod?.toUpperCase() || "N/A"}`,
       date: deposit.createdAt,
       amount: deposit.depositAmount,
@@ -152,6 +159,7 @@ const TransactionsPage = () => {
       status: deposit.status,
       badge: getStatusBadge(deposit.status).text,
       badgeClass: getStatusBadge(deposit.status).class,
+      badgeIcon: getStatusBadge(deposit.status).icon,
       transactionId: deposit.transactionReference,
       screenshot: deposit.screenshot?.url,
     }));
@@ -159,8 +167,8 @@ const TransactionsPage = () => {
     const withdrawalTransactions = withdrawals.map(withdrawal => ({
       id: withdrawal._id,
       type: "withdrawal",
-      icon: "🏧",
-      iconBg: withdrawal.status === "pending" ? "pending" : "withdrawal",
+      icon: <ArrowDown size={16} />,
+      iconColor: "text-red-500",
       name: `${getGoalIcon(withdrawal.goalType)} ${withdrawal.goalName} — ${withdrawal.paymentMethod?.toUpperCase() || "N/A"}`,
       date: withdrawal.createdAt,
       amount: withdrawal.withdrawalAmount,
@@ -168,11 +176,11 @@ const TransactionsPage = () => {
       status: withdrawal.status,
       badge: getStatusBadge(withdrawal.status, "withdrawal").text,
       badgeClass: getStatusBadge(withdrawal.status, "withdrawal").class,
+      badgeIcon: getStatusBadge(withdrawal.status, "withdrawal").icon,
       transactionId: withdrawal.transactionId || withdrawal.transactionReference,
       reason: withdrawal.reason,
     }));
 
-    // Combine and sort by date (newest first)
     const all = [...depositTransactions, ...withdrawalTransactions];
     return all.sort((a, b) => new Date(b.date) - new Date(a.date));
   };
@@ -185,7 +193,6 @@ const TransactionsPage = () => {
     return all;
   };
 
-  // Calculate real-time stats
   const pendingDeposits = deposits.filter(d => d.status === "pending").length;
   const totalDeposited = depositStats.totalDeposited;
   const totalDepositCount = depositStats.totalDeposits;
@@ -195,57 +202,52 @@ const TransactionsPage = () => {
 
   const stats = [
     { 
-      icon: "💰", 
+      icon: <ArrowUp size={20} />, 
       value: formatAmount(totalDeposited), 
       label: "Total Deposit", 
-      color: "green" 
+      color: "green",
+      bg: "bg-primary/10"
     },
     { 
-      icon: "📊", 
+      icon: <Wallet size={20} />, 
       value: totalDepositCount.toString(), 
       label: "Total Deposits", 
-      color: "blue" 
+      color: "blue",
+      bg: "bg-blue-500/10"
     },
     { 
-      icon: "⏳", 
+      icon: <Clock size={20} />, 
       value: pendingDeposits.toString(), 
       label: "Pending Deposits", 
-      color: "warning" 
+      color: "warning",
+      bg: "bg-amber-500/10"
     },
     { 
-      icon: "🏧", 
+      icon: <ArrowDown size={20} />, 
       value: formatAmount(totalWithdrawn), 
       label: "Total Withdrawn", 
-      color: "info" 
+      color: "info",
+      bg: "bg-red-500/10"
     },
   ];
 
-  const getStatColor = (color) => {
+  const getStatBorderColor = (color) => {
     switch(color) {
       case "green": return "border-t-primary";
       case "blue": return "border-t-blue-500";
       case "warning": return "border-t-amber-500";
-      case "info": return "border-t-cyan-500";
+      case "info": return "border-t-red-500";
       default: return "border-t-primary";
     }
   };
 
   const getStatIconBg = (color) => {
     switch(color) {
-      case "green": return "bg-primary/10";
-      case "blue": return "bg-blue-500/10";
-      case "warning": return "bg-amber-500/10";
-      case "info": return "bg-cyan-500/10";
-      default: return "bg-primary/10";
-    }
-  };
-
-  const getIconBgColor = (iconBg) => {
-    switch(iconBg) {
-      case "deposit": return "bg-primary/10";
-      case "pending": return "bg-amber-500/10";
-      case "withdrawal": return "bg-red-500/10";
-      default: return "bg-primary/10";
+      case "green": return "bg-primary/10 text-primary";
+      case "blue": return "bg-blue-500/10 text-blue-500";
+      case "warning": return "bg-amber-500/10 text-amber-500";
+      case "info": return "bg-red-500/10 text-red-500";
+      default: return "bg-primary/10 text-primary";
     }
   };
 
@@ -263,8 +265,10 @@ const TransactionsPage = () => {
   const transactions = filteredTransactions();
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <h2 className="text-2xl font-bold text-foreground mb-5">📋 Transaction History</h2>
+    <div className="max-w-full mx-auto">
+      <h2 className="text-2xl font-bold text-foreground mb-5 flex items-center gap-2">
+        <Wallet size={28} className="text-primary" /> Transaction History
+      </h2>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -274,9 +278,9 @@ const TransactionsPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className={`bg-card border border-border rounded-xl p-4 hover:shadow-lg transition border-t-4 ${getStatColor(stat.color)}`}
+            className={`bg-card border border-border rounded-xl p-4 hover:shadow-lg transition border-t-4 ${getStatBorderColor(stat.color)}`}
           >
-            <div className={`w-11 h-11 rounded-xl ${getStatIconBg(stat.color)} flex items-center justify-center text-xl mb-3`}>
+            <div className={`w-11 h-11 rounded-xl ${getStatIconBg(stat.color)} flex items-center justify-center mb-3`}>
               {stat.icon}
             </div>
             <div className="text-2xl font-bold text-foreground">{stat.value}</div>
@@ -285,24 +289,42 @@ const TransactionsPage = () => {
         ))}
       </div>
 
+      {/* Net Savings Card */}
+      <div className="bg-gradient-to-r from-primary/10 to-primary-light/10 border border-primary/20 rounded-xl p-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <TrendingUp size={20} className="text-primary" />
+            <span className="font-semibold text-foreground">Net Savings</span>
+          </div>
+          <div className="text-2xl font-bold text-primary">{formatAmount(netSaved)}</div>
+        </div>
+        <div className="mt-2 h-1.5 bg-border rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-primary to-primary-light rounded-full"
+            style={{ width: `${totalDeposited > 0 ? (netSaved / totalDeposited) * 100 : 0}%` }}
+          />
+        </div>
+      </div>
+
       {/* Transactions Card */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         {/* Tabs */}
         <div className="flex gap-1 p-4 pb-0 border-b border-border flex-wrap">
           {[
-            { id: "all", label: `All (${getAllTransactions().length})` },
-            { id: "deposit", label: `Deposit (${getAllTransactions().filter(t => t.type === "deposit").length})` },
-            { id: "withdrawal", label: `Withdrawal (${getAllTransactions().filter(t => t.type === "withdrawal").length})` },
+            { id: "all", label: `All (${getAllTransactions().length})`, icon: <Wallet size={14} /> },
+            { id: "deposit", label: `Deposit (${getAllTransactions().filter(t => t.type === "deposit").length})`, icon: <ArrowUp size={14} /> },
+            { id: "withdrawal", label: `Withdrawal (${getAllTransactions().filter(t => t.type === "withdrawal").length})`, icon: <ArrowDown size={14} /> },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-2 rounded-t-lg text-sm font-semibold transition ${
+              className={`px-5 py-2 rounded-t-lg text-sm font-semibold transition flex items-center gap-2 ${
                 activeTab === tab.id
                   ? "bg-primary text-white"
                   : "text-foreground/60 hover:text-primary"
               }`}
             >
+              {tab.icon}
               {tab.label}
             </button>
           ))}
@@ -312,7 +334,7 @@ const TransactionsPage = () => {
         <div className="p-4">
           {transactions.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-4xl mb-3">📭</div>
+              <Wallet size={48} className="text-foreground/30 mx-auto mb-4" />
               <div className="text-foreground/50">No transactions found</div>
             </div>
           ) : (
@@ -325,15 +347,17 @@ const TransactionsPage = () => {
                   transition={{ delay: idx * 0.05 }}
                   className="flex items-start gap-3 pb-3 border-b border-border last:border-0"
                 >
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${getIconBgColor(txn.iconBg)}`}>
+                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10 ${txn.iconColor}`}>
                     {txn.icon}
                   </div>
                   <div className="flex-1">
                     <div className="font-semibold text-sm text-foreground">{txn.name}</div>
-                    <div className="text-xs text-foreground/50">{formatDate(txn.date)}</div>
+                    <div className="text-xs text-foreground/50 flex items-center gap-1">
+                      <Calendar size={10} /> {formatDate(txn.date)}
+                    </div>
                     {txn.transactionId && (
-                      <div className="text-[10px] text-foreground/30 font-mono mt-0.5">
-                        ID: {txn.transactionId}
+                      <div className="text-[10px] text-foreground/30 font-mono mt-0.5 flex items-center gap-1">
+                        <Banknote size={10} /> ID: {txn.transactionId}
                       </div>
                     )}
                     {txn.reason && (
@@ -341,7 +365,8 @@ const TransactionsPage = () => {
                         Reason: {txn.reason}
                       </div>
                     )}
-                    <span className={`text-xs px-2 py-0.5 rounded-full inline-block mt-1 ${txn.badgeClass}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1 mt-1 ${txn.badgeClass}`}>
+                      {txn.badgeIcon}
                       {txn.badge}
                     </span>
                   </div>
@@ -391,7 +416,9 @@ const TransactionsPage = () => {
       {/* Summary Section */}
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="bg-card border border-border rounded-xl p-4">
-          <h3 className="font-semibold text-foreground mb-3">📈 Deposit Summary</h3>
+          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <ArrowUp size={16} className="text-primary" /> Deposit Summary
+          </h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-foreground/60">Total Deposits:</span>
@@ -411,13 +438,17 @@ const TransactionsPage = () => {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-foreground/60">Pending Approval:</span>
-              <span className="font-semibold text-amber-500">{pendingDeposits}</span>
+              <span className="font-semibold text-amber-500 flex items-center gap-1">
+                <Clock size={12} /> {pendingDeposits}
+              </span>
             </div>
           </div>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4">
-          <h3 className="font-semibold text-foreground mb-3">📉 Withdrawal Summary</h3>
+          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <ArrowDown size={16} className="text-red-500" /> Withdrawal Summary
+          </h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-foreground/60">Total Withdrawals:</span>
@@ -429,8 +460,8 @@ const TransactionsPage = () => {
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-foreground/60">Pending Withdrawals:</span>
-              <span className="font-semibold text-amber-500">
-                {withdrawals.filter(w => w.status === "pending").length}
+              <span className="font-semibold text-amber-500 flex items-center gap-1">
+                <Clock size={12} /> {withdrawals.filter(w => w.status === "pending").length}
               </span>
             </div>
             <div className="flex justify-between text-sm border-t border-border pt-2 mt-2">

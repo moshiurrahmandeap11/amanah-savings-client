@@ -204,7 +204,7 @@ const LiveFeedPage = () => {
             badge: (item) =>
               `<strong>${item.name}</strong> "<span class="text-purple-600 font-bold">${item.badgeName}</span>" ব্যাজ অর্জন করেছেন!`,
             join: (item) =>
-              `<strong>${item.name}</strong> Amanah-তে <strong>নতুন সদস্য</strong> হিসেবে যোগ দিয়েছেন!`,
+              `<strong>${item.name}</strong> Sanchoy Bondhu-তে <strong>নতুন সদস্য</strong> হিসেবে যোগ দিয়েছেন!`,
             streak: (item) =>
               `<strong>${item.name}</strong> টানা <strong class="text-red-500">${item.days} দিনের</strong> সঞ্চয় স্ট্রিক বজায় রাখছেন! 🔥`,
           },
@@ -247,7 +247,7 @@ const LiveFeedPage = () => {
             badge: (item) =>
               `<strong>${item.name}</strong> earned the "<span class="text-purple-600 font-bold">${item.badgeName}</span>" badge!`,
             join: (item) =>
-              `<strong>${item.name}</strong> joined Amanah as a <strong>new member</strong>!`,
+              `<strong>${item.name}</strong> joined Sanchoy Bondhu as a <strong>new member</strong>!`,
             streak: (item) =>
               `<strong>${item.name}</strong> is keeping a <strong class="text-red-500">${item.days} day</strong> savings streak alive! 🔥`,
           },

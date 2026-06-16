@@ -174,7 +174,7 @@ const SettingsPage = () => {
           if (response.data.success) {
             const dataStr = JSON.stringify(response.data.data, null, 2);
             const dataUri = "data:application/json;charset=utf-8,"+ encodeURIComponent(dataStr);
-            const exportFileDefaultName = `amanah_data_${new Date().toISOString().slice(0,19)}.json`;
+            const exportFileDefaultName = `sanchoy_data_${new Date().toISOString().slice(0,19)}.json`;
             const linkElement = document.createElement("a");
             linkElement.setAttribute("href", dataUri);
             linkElement.setAttribute("download", exportFileDefaultName);
@@ -273,7 +273,7 @@ const SettingsPage = () => {
       if (response.data.success) {
         const dataStr = JSON.stringify(response.data.data, null, 2);
         const dataUri = "data:application/json;charset=utf-8,"+ encodeURIComponent(dataStr);
-        const exportFileDefaultName = `amanah_transactions_${new Date().toISOString().slice(0,19)}.json`;
+        const exportFileDefaultName = `sanchoy_transactions_${new Date().toISOString().slice(0,19)}.json`;
         const linkElement = document.createElement("a");
         linkElement.setAttribute("href", dataUri);
         linkElement.setAttribute("download", exportFileDefaultName);
@@ -487,10 +487,10 @@ const SettingsPage = () => {
           {/* App Version Card */}
           <div className="bg-card border border-border rounded-xl p-4 text-center">
             <div className="text-xs text-foreground/40">
-              Amanah Savings App v2.0.0
+              Sonchoy Bondhu App v2.0.0
             </div>
             <div className="text-[10px] text-foreground/30 mt-1">
-              © 2026 Amanah. All rights reserved.
+              © 2026 Sanchoy Bondhu. All rights reserved.
             </div>
           </div>
         </div>

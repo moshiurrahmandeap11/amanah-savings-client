@@ -419,7 +419,7 @@ const SavingsPlanSection = () => {
           viewport={{ once: true }}
           className="mt-10 sm:mt-12 text-center text-xs text-foreground/40"
         >
-          All savings are member-owned and locked until goal maturity. Amanah
+          All savings are member-owned and locked until goal maturity. Sanchoy Bondhu
           is a savings community, not a bank or investment firm.
         </motion.p>
       </div>

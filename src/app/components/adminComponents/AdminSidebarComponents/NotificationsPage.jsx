@@ -41,7 +41,7 @@ const NotificationsPage = () => {
       if (settingsRes.data.success) {
         const s = settingsRes.data.data;
         setCmsItems([
-          { icon: "🏦", label: "Platform Name", value: s.general?.platformName || "Amanah Savings" },
+          { icon: "🏦", label: "Platform Name", value: s.general?.platformName || "Sonchoy Bondhu" },
           { icon: "📞", label: "Support Phone", value: s.general?.supportPhone || "01XXX-XXXXXX" },
           { icon: "📧", label: "Support Email", value: s.general?.supportEmail || "support@amanah.bd" },
           { icon: "💰", label: "Min Deposit", value: s.savings?.minDeposit || "৳500" },

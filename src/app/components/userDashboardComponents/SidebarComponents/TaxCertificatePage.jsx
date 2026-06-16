@@ -213,7 +213,7 @@ const TaxCertificatePage = () => {
           {/* Certificate Header */}
           <div className="bg-linear-to-r from-primary to-primary-light pt-7 pb-6 text-center">
             <div className="text-white/80 text-[10px] tracking-wider uppercase mb-1">
-              Amanah Savings Community
+              Sonchoy Bondhu Community
             </div>
             <div className="text-white text-xl font-bold mb-1">
               Annual Savings Certificate
@@ -313,7 +313,7 @@ const TaxCertificatePage = () => {
             <div className="text-center">
               <div className="w-16 h-px bg-foreground/50 mx-auto mb-1" />
               <div className="text-[9px] text-foreground/50">
-                Amanah Community
+                Sanchoy Bondhu Community
               </div>
               <div className="text-[8px] text-foreground/50">
                 Digital Signature

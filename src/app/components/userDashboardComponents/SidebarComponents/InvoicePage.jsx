@@ -42,7 +42,7 @@ const InvoicePage = () => {
               txid: latest.transactionId || latest.txid || `BK${Date.now()}`,
               date: new Date(latest.createdAt || Date.now()),
               approvedAt: new Date(latest.approvedAt || latest.updatedAt || Date.now()),
-              approvedBy: latest.approvedBy || "Amanah Admin",
+              approvedBy: latest.approvedBy || "Sanchoy Bondhu Admin",
               memberName: latest.userName || latest.fullName || "Member",
               phone: latest.phone || "+880 1XXX-XXXXXX",
               goalProgress: latest.goalProgress || { before: 19, after: 21.5 },
@@ -93,8 +93,8 @@ const InvoicePage = () => {
     setShowShareSheet(false);
     navigator.clipboard.writeText(
       receipt
-        ? `https://amanahsavings.com.bd/invoice/${receipt.receiptId}`
-        : "https://amanahsavings.com.bd",
+        ? `https://sanchoybondhu.com/invoice/${receipt.receiptId}`
+        : "https://sanchoybondhu.com",
     );
     showToast(lang === "bn" ? "🔗 লিংক কপি হয়েছে!" : "🔗 Link copied!");
   };
@@ -147,7 +147,7 @@ const InvoicePage = () => {
         back: "← লেনদেন",
         backTitle: "ইনভয়েস",
         header: "🧾 জমার রসিদ",
-        receiptSub: "Amanah ডিজিটাল সঞ্চয় কমিউনিটি",
+        receiptSub: "Sanchoy Bondhu ডিজিটাল সঞ্চয় কমিউনিটি",
         status: "অনুমোদিত",
         amountLabel: "জমার পরিমাণ",
         download: "📥 PDF ডাউনলোড",
@@ -159,7 +159,7 @@ const InvoicePage = () => {
         back: "← Transactions",
         backTitle: "Invoice",
         header: "🧾 Deposit Receipt",
-        receiptSub: "Amanah Digital Savings Community",
+        receiptSub: "Sanchoy Bondhu Digital Savings Community",
         status: "Approved",
         amountLabel: "Deposit Amount",
         download: "📥 Download PDF",
@@ -228,7 +228,7 @@ const InvoicePage = () => {
           <div className="bg-linear-to-r from-primary to-primary-light pt-6 pb-5 text-center">
             <div className="text-3xl mb-1">🌿</div>
             <div className="text-white text-base font-bold">
-              Amanah Savings Community
+              Sonchoy Bondhu Community
             </div>
             <div className="text-white/75 text-xs">
               {labels.receiptSub}
@@ -359,7 +359,7 @@ const InvoicePage = () => {
                 {lang === "bn" ? "রসিদ নম্বর · ডিজিটাল স্বাক্ষরিত" : "Receipt number · digitally signed"}
               </div>
               <div className="text-xs text-primary font-semibold">
-                amanah.com.bd/verify →
+                sanchoybondhu.com/verify →
               </div>
             </div>
           </div>

@@ -122,7 +122,7 @@ const Step1Account = ({ formData, updateField, errors, setErrors, handleNext }) 
 
       <label className="flex items-start gap-3 mb-3 cursor-pointer">
         <input type="checkbox" checked={formData.terms} onChange={(e) => updateField("terms", e.target.checked)} className="mt-1" />
-        <span className="text-sm text-foreground/70">I have read and agree to the <Link href="/terms" className="text-primary">Terms</Link> and <Link href="/privacy" className="text-primary">Privacy Policy</Link>. Amanah is a savings community, not a bank.</span>
+        <span className="text-sm text-foreground/70">I have read and agree to the <Link href="/terms" className="text-primary">Terms</Link> and <Link href="/privacy" className="text-primary">Privacy Policy</Link>. Sanchoy Bondhu is a savings community, not a bank.</span>
       </label>
       {errors.terms && <p className="text-xs text-red-500 mt-1">{errors.terms}</p>}
 

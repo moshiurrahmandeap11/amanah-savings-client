@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Moon, Sun, Loader2 } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Loader2, Zap, Target, Calendar, DollarSign, Smartphone, TrendingUp, Clock, CheckCircle, AlertCircle, Wallet, Repeat, CalendarDays } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
@@ -107,10 +107,10 @@ const AutoSavePage = () => {
     try {
       if (isActive) {
         await axiosInstance.patch(`/auto-save/${ruleId}/resume`);
-        showToast("✅ Auto-save enabled", "success");
+        showToast("Auto-save enabled", "success");
       } else {
         await axiosInstance.patch(`/auto-save/${ruleId}/pause`);
-        showToast("⏸️ Auto-save paused", "success");
+        showToast("Auto-save paused", "success");
       }
       await fetchAutoSaveRules();
     } catch (error) {
@@ -165,17 +165,17 @@ const AutoSavePage = () => {
     const amt = parseFloat(amount) || 0;
     
     if (amt < 10) {
-      showToast("⚠️ Minimum amount is ৳10", "error");
+      showToast("Minimum amount is ৳10", "error");
       return;
     }
 
     if (!selGoal) {
-      showToast("⚠️ Please select a goal", "error");
+      showToast("Please select a goal", "error");
       return;
     }
 
     if (!startDate) {
-      showToast("⚠️ Please select start date", "error");
+      showToast("Please select start date", "error");
       return;
     }
 
@@ -255,11 +255,11 @@ const AutoSavePage = () => {
     const date = new Date(nextDate);
     const today = new Date();
     const diff = date - today;
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
     
-    if (days === 0) return lang === "bn" ? "আজ" : "Today";
-    if (days === 1) return lang === "bn" ? "আগামীকাল" : "Tomorrow";
-    if (days < 7) return lang === "bn" ? `${days} দিন পরে` : `in ${days} days`;
+    if (daysLeft === 0) return lang === "bn" ? "আজ" : "Today";
+    if (daysLeft === 1) return lang === "bn" ? "আগামীকাল" : "Tomorrow";
+    if (daysLeft < 7) return lang === "bn" ? `${daysLeft} দিন পরে` : `in ${daysLeft} days`;
     
     return date.toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", {
       month: "short",
@@ -267,80 +267,18 @@ const AutoSavePage = () => {
     });
   };
 
-  const getText = (key) => {
-    const texts = {
-      bn: {
-        pageTitle: "⚡ অটো-সেভ",
-        heroTitle: "স্বয়ংক্রিয় সঞ্চয়",
-        heroSub: "একবার সেট করুন — Amanah বাকিটা করবে",
-        secActive: "চলমান অটো-সেভ",
-        secNew: "নতুন অটো-সেভ তৈরি করুন",
-        statSaved: "মোট জমা",
-        statTimes: "বার সম্পন্ন",
-        statNext: "পরবর্তী",
-        ctGoal: "🎯 কোন লক্ষ্যে জমা হবে?",
-        ctFreq: "🔁 কত ঘন ঘন জমা হবে?",
-        ctAmount: "💰 কত টাকা জমা হবে?",
-        ctMethod: "💳 কোন পদ্ধতিতে কাটবে?",
-        freqDaily: "প্রতিদিন",
-        freqWeekly: "সাপ্তাহিক",
-        freqMonthly: "মাসিক",
-        pickDay: "কোন দিন?",
-        pickDate: "কোন তারিখে?",
-        formStart: "শুরুর তারিখ",
-        projTitle: "📈 প্রজেকশন",
-        projPer: "প্রতি জমা",
-        projMonthly: "মাসে আনুমানিক",
-        projYearly: "বছরে আনুমানিক",
-        btnSubmit: "⚡ অটো-সেভ চালু করুন",
-        modalTitle: "অটো-সেভ চালু!",
-        modalDash: "ড্যাশবোর্ডে যান",
-        modalAnother: "আরেকটি তৈরি করুন",
-        daySun: "রবি",
-        dayMon: "সোম",
-        dayTue: "মঙ্গল",
-        dayWed: "বুধ",
-        dayThu: "বৃহঃ",
-        dayFri: "শুক্র",
-        daySat: "শনি",
-      },
-      en: {
-        pageTitle: "⚡ Auto-Save",
-        heroTitle: "Automatic Savings",
-        heroSub: "Set it once — Amanah does the rest",
-        secActive: "Active Auto-Saves",
-        secNew: "Create New Auto-Save",
-        statSaved: "Total Saved",
-        statTimes: "Times Run",
-        statNext: "Next",
-        ctGoal: "🎯 Which goal?",
-        ctFreq: "🔁 How often?",
-        ctAmount: "💰 How much each time?",
-        ctMethod: "💳 Payment method?",
-        freqDaily: "Daily",
-        freqWeekly: "Weekly",
-        freqMonthly: "Monthly",
-        pickDay: "Which day?",
-        pickDate: "Which date?",
-        formStart: "Start date",
-        projTitle: "📈 Projection",
-        projPer: "Per save",
-        projMonthly: "Est. monthly",
-        projYearly: "Est. yearly",
-        btnSubmit: "⚡ Enable Auto-Save",
-        modalTitle: "Auto-Save Enabled!",
-        modalDash: "Go to Dashboard",
-        modalAnother: "Create Another",
-        daySun: "Sun",
-        dayMon: "Mon",
-        dayTue: "Tue",
-        dayWed: "Wed",
-        dayThu: "Thu",
-        dayFri: "Fri",
-        daySat: "Sat",
-      },
+  const getGoalIcon = (goalType) => {
+    const icons = {
+      wedding: "💒",
+      education: "📚",
+      travel: "✈️",
+      hajj: "🕌",
+      home: "🏠",
+      business: "💼",
+      emergency: "🚨",
+      other: "🎯",
     };
-    return texts[lang][key] || key;
+    return icons[goalType?.toLowerCase()] || "🎯";
   };
 
   const projection = updateProjection();
@@ -354,54 +292,81 @@ const AutoSavePage = () => {
     );
   }
 
+  if (goals.length === 0) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <Target size={48} className="text-foreground/30 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-foreground mb-2">No Active Goals</h3>
+          <p className="text-foreground/60 mb-4">
+            Create a goal first to set up auto-save
+          </p>
+          <button
+            onClick={() => router.push("/dashboard/goals")}
+            className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold"
+          >
+            Create a Goal
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-40">
       {/* Header */}
-      <div className="bg-linear-to-r from-primary to-primary-light px-5 py-4 flex items-center gap-3 sticky top-0 z-50 flex-wrap">
+      <div className="bg-gradient-to-br from-primary to-primary-dark px-5 py-4 flex items-center gap-3 sticky top-0 z-50 flex-wrap">
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white"
+          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition"
         >
           <ArrowLeft size={18} />
         </button>
-        <h1 className="text-white text-lg font-bold flex-1 min-w-0 wrap-break-word">
-          {getText("pageTitle")}
+        <h1 className="text-white text-lg font-bold flex-1 flex items-center gap-2 min-w-0">
+          <Zap size={20} /> Auto-Save
         </h1>
         <button
           onClick={toggleTheme}
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white"
+          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition"
         >
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <button
           onClick={() => setLang(lang === "bn" ? "en" : "bn")}
-          className="px-3 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold"
+          className="px-3 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold hover:bg-white/30 transition"
         >
           {lang === "bn" ? "EN" : "BN"}
         </button>
       </div>
 
       {/* Hero */}
-      <div className="bg-linear-to-r from-primary to-primary-light px-5 pb-7 text-center">
-        <div className="text-5xl mb-2">⚡</div>
-        <div className="text-white text-xl font-bold mb-1">
-          {getText("heroTitle")}
+      <div className="bg-gradient-to-br from-primary to-primary-dark px-5 pb-7 text-center">
+        <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-3">
+          <Zap size={32} className="text-white" />
         </div>
-        <div className="text-white/80 text-xs">{getText("heroSub")}</div>
+        <div className="text-white text-xl font-bold mb-1">
+          Automatic Savings
+        </div>
+        <div className="text-white/80 text-sm">
+          Set it once — Sanchoy Bondhu does the rest
+        </div>
       </div>
 
-      <div className="px-4 py-5 max-w-5xl mx-auto">
+      <div className="px-4 py-5 max-w-full mx-auto">
         {/* Statistics Summary */}
         <div className="grid grid-cols-3 gap-3 mb-5">
           <div className="bg-card border border-border rounded-xl p-3 text-center">
+            <Wallet size={16} className="text-primary mx-auto mb-1" />
             <div className="text-lg font-bold text-primary">{formatCurrency(statistics.totalSaved)}</div>
-            <div className="text-[10px] text-foreground/50">{getText("statSaved")}</div>
+            <div className="text-[10px] text-foreground/50">Total Saved</div>
           </div>
           <div className="bg-card border border-border rounded-xl p-3 text-center">
+            <Repeat size={16} className="text-foreground/50 mx-auto mb-1" />
             <div className="text-lg font-bold text-foreground">{statistics.totalRules}</div>
             <div className="text-[10px] text-foreground/50">Total Rules</div>
           </div>
           <div className="bg-card border border-border rounded-xl p-3 text-center">
+            <CheckCircle size={16} className="text-green-500 mx-auto mb-1" />
             <div className="text-lg font-bold text-green-500">{statistics.activeRules}</div>
             <div className="text-[10px] text-foreground/50">Active Rules</div>
           </div>
@@ -410,17 +375,17 @@ const AutoSavePage = () => {
         {/* Active Rules */}
         {activeRules.length > 0 && (
           <>
-            <div className="font-bold text-foreground mb-3">
-              {getText("secActive")}
+            <div className="font-bold text-foreground mb-3 flex items-center gap-2">
+              <Zap size={16} className="text-primary" /> Active Auto-Saves
             </div>
             {activeRules.map((rule) => (
               <div
                 key={rule._id}
-                className={`bg-card border rounded-xl p-4 mb-3 transition ${rule.status === "active" ? "border-primary" : "opacity-70"}`}
+                className={`bg-card border rounded-xl p-4 mb-3 transition ${rule.status === "active" ? "border-primary shadow-md" : "opacity-70"}`}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-11 h-11 rounded-xl bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-xl">
-                    {rule.goalType === "wedding" ? "💒" : rule.goalType === "education" ? "📚" : "🎯"}
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-xl">
+                    {getGoalIcon(rule.goalType)}
                   </div>
                   <div className="flex-1">
                     <div className="font-bold text-sm text-foreground">
@@ -451,25 +416,19 @@ const AutoSavePage = () => {
                     <div className="font-bold text-sm text-foreground">
                       {formatCurrency(rule.totalSaved)}
                     </div>
-                    <div className="text-[10px] text-foreground/50">
-                      {getText("statSaved")}
-                    </div>
+                    <div className="text-[10px] text-foreground/50">Saved</div>
                   </div>
                   <div className="text-center">
                     <div className="font-bold text-sm text-foreground">
                       {rule.timesRun}
                     </div>
-                    <div className="text-[10px] text-foreground/50">
-                      {getText("statTimes")}
-                    </div>
+                    <div className="text-[10px] text-foreground/50">Times</div>
                   </div>
                   <div className="text-center">
                     <div className="font-bold text-sm text-foreground">
                       {getNextExecutionText(rule.nextExecutionDate)}
                     </div>
-                    <div className="text-[10px] text-foreground/50">
-                      {getText("statNext")}
-                    </div>
+                    <div className="text-[10px] text-foreground/50">Next</div>
                   </div>
                 </div>
               </div>
@@ -478,56 +437,60 @@ const AutoSavePage = () => {
         )}
 
         {/* New Rule Setup */}
-        <div className="font-bold text-foreground mb-3 mt-5">
-          {getText("secNew")}
+        <div className="font-bold text-foreground mb-3 mt-5 flex items-center gap-2">
+          <Target size={16} className="text-primary" /> Create New Auto-Save
         </div>
 
         {/* Goal Selection */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            {getText("ctGoal")}
+            <Target size={16} /> Which goal?
           </div>
-          {goals.map((goal) => (
-            <div
-              key={goal._id}
-              onClick={() => selectGoal(goal._id)}
-              className={`flex items-center gap-3 p-3 border-2 rounded-xl mb-2 cursor-pointer transition ${
-                selGoal === goal._id ? "border-primary bg-primary/5" : "border-border hover:border-primary"
-              }`}
-            >
-              <span className="text-2xl">{goal.goalType === "wedding" ? "💒" : goal.goalType === "education" ? "📚" : "🎯"}</span>
-              <div className="flex-1">
-                <div className="font-bold text-sm text-foreground">
-                  {goal.goalName}
+          <div className="space-y-2">
+            {goals.map((goal) => (
+              <div
+                key={goal._id}
+                onClick={() => selectGoal(goal._id)}
+                className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer transition ${
+                  selGoal === goal._id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                }`}
+              >
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <Target size={18} />
                 </div>
-                <div className="text-xs text-foreground/50">
-                  {formatCurrency(goal.currentSaved)} / {formatCurrency(goal.targetAmount)}
+                <div className="flex-1">
+                  <div className="font-bold text-sm text-foreground">
+                    {goal.goalName}
+                  </div>
+                  <div className="text-xs text-foreground/50">
+                    {formatCurrency(goal.currentSaved)} / {formatCurrency(goal.targetAmount)} ({goal.progress}%)
+                  </div>
                 </div>
+                {selGoal === goal._id && (
+                  <CheckCircle size={18} className="text-primary shrink-0" />
+                )}
               </div>
-              {selGoal === goal._id && (
-                <span className="text-primary text-xl">✓</span>
-              )}
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
 
         {/* Frequency Selection */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            {getText("ctFreq")}
+            <Repeat size={16} /> How often?
           </div>
-          <div className="flex gap-2 mb-4">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             {["daily", "weekly", "monthly"].map((freq) => (
               <button
                 key={freq}
                 onClick={() => setFrequency(freq)}
-                className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition ${
-                  selFreq === freq ? "border-primary text-primary bg-primary/5" : "border-border text-foreground/60"
+                className={`py-3 rounded-xl border-2 text-sm font-semibold transition ${
+                  selFreq === freq ? "border-primary text-primary bg-primary/5" : "border-border text-foreground/60 hover:border-primary/50"
                 }`}
               >
-                {freq === "daily" && getText("freqDaily")}
-                {freq === "weekly" && getText("freqWeekly")}
-                {freq === "monthly" && getText("freqMonthly")}
+                {freq === "daily" && "Daily"}
+                {freq === "weekly" && "Weekly"}
+                {freq === "monthly" && "Monthly"}
               </button>
             ))}
           </div>
@@ -536,7 +499,7 @@ const AutoSavePage = () => {
           {selFreq === "weekly" && (
             <div>
               <div className="text-xs font-semibold text-foreground/60 mb-2">
-                {getText("pickDay")}
+                Which day?
               </div>
               <div className="flex gap-2 flex-wrap">
                 {days.map((day, idx) => (
@@ -544,7 +507,7 @@ const AutoSavePage = () => {
                     key={idx}
                     onClick={() => toggleDay(idx)}
                     className={`w-10 h-10 rounded-full border-2 text-xs font-bold transition ${
-                      selDays.has(idx) ? "border-primary bg-primary text-white" : "border-border text-foreground/60"
+                      selDays.has(idx) ? "border-primary bg-primary text-white" : "border-border text-foreground/60 hover:border-primary/50"
                     }`}
                   >
                     {lang === "bn" ? daysBn[idx] : day}
@@ -558,7 +521,7 @@ const AutoSavePage = () => {
           {selFreq === "monthly" && (
             <div>
               <div className="text-xs font-semibold text-foreground/60 mb-2">
-                {getText("pickDate")}
+                Which date?
               </div>
               <div className="grid grid-cols-7 gap-2">
                 {Array.from({ length: 28 }, (_, i) => i + 1).map((date) => (
@@ -566,12 +529,10 @@ const AutoSavePage = () => {
                     key={date}
                     onClick={() => setDateValue(date)}
                     className={`aspect-square rounded-lg border-2 text-xs font-bold transition ${
-                      selDate === date ? "border-primary bg-primary text-white" : "border-border text-foreground/60"
+                      selDate === date ? "border-primary bg-primary text-white" : "border-border text-foreground/60 hover:border-primary/50"
                     }`}
                   >
-                    {lang === "bn"
-                      ? date.toString().replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d])
-                      : date}
+                    {date}
                   </button>
                 ))}
               </div>
@@ -582,7 +543,7 @@ const AutoSavePage = () => {
         {/* Amount Selection */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            {getText("ctAmount")}
+            <DollarSign size={16} /> How much each time?
           </div>
           <div className="relative mb-3">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-2xl font-bold">
@@ -594,7 +555,7 @@ const AutoSavePage = () => {
               onChange={(e) => setAmount(e.target.value)}
               placeholder="0"
               min="10"
-              className="w-full py-4 pl-12 pr-4 text-right text-2xl font-bold border-2 border-border rounded-xl text-foreground bg-background outline-none focus:border-primary"
+              className="w-full py-4 pl-12 pr-4 text-right text-2xl font-bold border-2 border-border rounded-xl text-foreground bg-background outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -603,7 +564,7 @@ const AutoSavePage = () => {
                 key={amt}
                 onClick={() => setPresetAmount(amt)}
                 className={`py-2 rounded-lg border-2 text-sm font-semibold transition ${
-                  parseFloat(amount) === amt ? "border-primary text-primary bg-primary/5" : "border-border text-foreground/60"
+                  parseFloat(amount) === amt ? "border-primary text-primary bg-primary/5" : "border-border text-foreground/60 hover:border-primary/50"
                 }`}
               >
                 {formatCurrency(amt)}
@@ -615,55 +576,55 @@ const AutoSavePage = () => {
         {/* Payment Method */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            {getText("ctMethod")}
+            <Smartphone size={16} /> Payment method?
           </div>
-          <div className="flex gap-2 mb-3">
+          <div className="grid grid-cols-2 gap-2 mb-3">
             {["bkash", "nagad"].map((method) => (
               <button
                 key={method}
                 onClick={() => setPaymentMethod(method)}
-                className={`flex-1 py-3 rounded-xl border-2 text-sm font-semibold transition ${
-                  selMethod === method ? "border-primary text-primary bg-primary/5" : "border-border text-foreground/60"
+                className={`py-3 rounded-xl border-2 text-sm font-semibold transition ${
+                  selMethod === method ? "border-primary text-primary bg-primary/5" : "border-border text-foreground/60 hover:border-primary/50"
                 }`}
               >
-                {method === "bkash" ? "💜 bKash" : "🟠 Nagad"}
+                {method === "bkash" ? "bKash" : "Nagad"}
               </button>
             ))}
           </div>
           <div>
-            <label className="block text-sm font-semibold text-foreground mb-2">
-              {getText("formStart")}
+            <label className="block text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+              <CalendarDays size={14} /> Start date
             </label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
+              className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary"
             />
           </div>
         </div>
 
         {/* Projection */}
-        <div className="bg-linear-to-r from-primary/10 to-primary-light/10 border border-primary/20 rounded-xl p-4 mb-4">
-          <div className="font-bold text-foreground mb-3">
-            {getText("projTitle")}
+        <div className="bg-gradient-to-r from-primary/5 to-primary-light/5 border border-primary/20 rounded-xl p-4 mb-4">
+          <div className="font-bold text-foreground mb-3 flex items-center gap-2">
+            <TrendingUp size={16} className="text-primary" /> Projection
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">{getText("projPer")}</span>
+              <span className="text-foreground/60">Per save</span>
               <span className="font-semibold">
                 {formatCurrency(projection.per)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">{getText("projMonthly")}</span>
+              <span className="text-foreground/60">Est. monthly</span>
               <span className="font-semibold">
                 {formatCurrency(projection.monthly)}
               </span>
             </div>
-            <div className="flex justify-between text-base">
-              <span className="text-foreground/60">{getText("projYearly")}</span>
-              <span className="font-bold text-primary">
+            <div className="flex justify-between text-base pt-2 border-t border-dashed border-primary/20">
+              <span className="text-foreground/60">Est. yearly</span>
+              <span className="font-bold text-primary text-lg">
                 {formatCurrency(projection.yearly)}
               </span>
             </div>
@@ -676,11 +637,73 @@ const AutoSavePage = () => {
         <button
           onClick={submitAutoSave}
           disabled={submitting || !amount || parseFloat(amount) < 10}
-          className="w-full max-w-5xl mx-auto block py-4 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full max-w-5xl mx-auto block py-4 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {submitting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : getText("btnSubmit")}
+          {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap size={18} />}
+          Enable Auto-Save
         </button>
       </div>
+
+      {/* Success Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <div
+            className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center"
+            onClick={() => closeModal()}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="bg-card rounded-t-2xl md:rounded-2xl w-full max-w-md p-6 text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle size={32} className="text-green-500" />
+              </div>
+              <div className="text-2xl font-bold text-foreground mb-2">
+                Auto-Save Enabled!
+              </div>
+              <div className="text-sm text-foreground/60 mb-4">
+                {formatCurrency(parseFloat(amount) || 0)} will be auto-saved {selFreq === "daily" ? "daily" : selFreq === "weekly" ? "weekly" : "monthly"}
+              </div>
+              <div className="bg-background border border-border rounded-xl p-3 mb-5 text-left space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-foreground/60">Goal</span>
+                  <span className="font-semibold">{selectedGoal?.goalName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-foreground/60">Frequency</span>
+                  <span className="font-semibold">{selFreq === "daily" ? "Daily" : selFreq === "weekly" ? "Weekly" : "Monthly"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-foreground/60">Amount</span>
+                  <span className="font-bold text-primary">{formatCurrency(parseFloat(amount) || 0)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-foreground/60">Starts</span>
+                  <span className="font-semibold">{new Date(startDate).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="w-full py-3 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-semibold mb-3"
+              >
+                Go to Dashboard
+              </button>
+              <button
+                onClick={() => {
+                  closeModal();
+                  setAmount("");
+                }}
+                className="w-full py-3 border-2 border-border text-foreground rounded-xl font-semibold hover:border-primary/50 transition"
+              >
+                Create Another
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

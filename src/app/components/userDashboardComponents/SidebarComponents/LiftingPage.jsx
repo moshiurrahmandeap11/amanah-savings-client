@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { AlertTriangle, Loader2 } from "lucide-react";
+import { AlertTriangle, Loader2, Target, Wallet, Banknote, Smartphone, Building, CreditCard, AlertCircle, CheckCircle } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
@@ -28,9 +28,9 @@ const LiftingPage = () => {
   ];
 
   const paymentMethods = [
-    { id: "bkash", name: "bKash", icon: "💜" },
-    { id: "nagad", name: "Nagad", icon: "🟠" },
-    { id: "bank", name: "Bank", icon: "🏦" },
+    { id: "bkash", name: "bKash", icon: <Smartphone size={20} />, color: "text-pink-600" },
+    { id: "nagad", name: "Nagad", icon: <Smartphone size={20} />, color: "text-orange-500" },
+    { id: "bank", name: "Bank", icon: <Building size={20} />, color: "text-blue-600" },
   ];
 
   // Fetch user's goals
@@ -70,45 +70,44 @@ const LiftingPage = () => {
     const amount = parseFloat(withdrawAmount);
     const selectedGoalData = goals.find(g => g._id === selectedGoal);
 
-    // Validation
     if (!selectedGoal) {
-      showToast("⚠️ Please select a goal");
+      showToast("Please select a goal");
       return;
     }
 
     if (!withdrawAmount || amount < 100) {
-      showToast("⚠️ Please withdraw at least ৳100");
+      showToast("Please withdraw at least ৳100");
       return;
     }
 
     if (amount > selectedGoalData?.currentSaved) {
-      showToast(`⚠️ Amount exceeds your saved balance of ৳${selectedGoalData.currentSaved.toLocaleString()}`);
+      showToast(`Amount exceeds your saved balance of ৳${selectedGoalData.currentSaved.toLocaleString()}`);
       return;
     }
 
     if (!reason) {
-      showToast("⚠️ Please select a reason");
+      showToast("Please select a reason");
       return;
     }
 
     if (paymentMethod === "bkash" || paymentMethod === "nagad") {
-      if (!phoneNumber || phoneNumber.length !== 10) {
-        showToast(`⚠️ Please enter a valid ${paymentMethod === "bkash" ? "bKash" : "Nagad"} number`);
+      if (!phoneNumber || phoneNumber.length !== 11) {
+        showToast(`Please enter a valid ${paymentMethod === "bkash" ? "bKash" : "Nagad"} number`);
         return;
       }
     }
 
     if (paymentMethod === "bank") {
       if (!bankName) {
-        showToast("⚠️ Please select a bank");
+        showToast("Please select a bank");
         return;
       }
       if (!accountNumber) {
-        showToast("⚠️ Please enter account number");
+        showToast("Please enter account number");
         return;
       }
       if (!accountHolderName) {
-        showToast("⚠️ Please enter account holder name");
+        showToast("Please enter account holder name");
         return;
       }
     }
@@ -123,7 +122,6 @@ const LiftingPage = () => {
         paymentMethod,
       };
 
-      // Add payment method specific fields
       if (paymentMethod === "bkash" || paymentMethod === "nagad") {
         requestData.phoneNumber = phoneNumber;
       }
@@ -144,7 +142,6 @@ const LiftingPage = () => {
           confirmButtonColor: "#059669",
           confirmButtonText: "OK",
         }).then(() => {
-          // Reset form
           setWithdrawAmount("");
           setPhoneNumber("");
           setBankName("");
@@ -183,7 +180,7 @@ const LiftingPage = () => {
     return (
       <div className="max-w-3xl">
         <div className="bg-card border border-border rounded-xl p-12 text-center">
-          <div className="text-6xl mb-4">💰</div>
+          <Target size={64} className="text-foreground/30 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-foreground mb-2">No Active Goals</h3>
           <p className="text-foreground/60 mb-4">
             You don't have any active savings goals with funds to withdraw.
@@ -202,7 +199,10 @@ const LiftingPage = () => {
   return (
     <>
       <div className="max-w-3xl">
-        <h2 className="text-2xl font-bold text-foreground mb-2">Withdrawal Request</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
+          <Wallet size={28} className="text-primary" /> Withdrawal Request
+        </h2>
+        <p className="text-sm text-foreground/60 mb-4">Request early withdrawal from your savings goal</p>
 
         {/* Warning Box */}
         <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl mb-5">
@@ -217,22 +217,26 @@ const LiftingPage = () => {
 
         {/* Goals List Card */}
         <div className="bg-card border border-border rounded-xl p-5 mb-5">
-          <div className="font-bold text-foreground mb-4">Your Goals</div>
+          <div className="font-bold text-foreground mb-4 flex items-center gap-2">
+            <Target size={18} /> Your Goals
+          </div>
           <div className="space-y-3">
             {goals.map((goal) => (
               <div
                 key={goal._id}
                 className="p-3 bg-background rounded-lg border border-border flex items-center gap-3"
               >
-                <span className="text-2xl">{goal.goalType === "wedding" ? "💒" : goal.goalType === "education" ? "📚" : "🎯"}</span>
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                  <Target size={18} />
+                </div>
                 <div className="flex-1">
                   <div className="font-semibold text-sm text-foreground">{goal.goalName}</div>
                   <div className="text-xs text-foreground/50">
                     Saved: ৳{goal.currentSaved.toLocaleString()} · Target: ৳{goal.targetAmount.toLocaleString()}
                   </div>
                 </div>
-                <span className="text-xs px-2 py-1 bg-amber-500/10 text-amber-500 rounded-md font-semibold">
-                  Locked
+                <span className="text-xs px-2 py-1 bg-amber-500/10 text-amber-500 rounded-md font-semibold flex items-center gap-1">
+                  <AlertTriangle size={10} /> Locked
                 </span>
               </div>
             ))}
@@ -241,12 +245,14 @@ const LiftingPage = () => {
 
         {/* Withdrawal Request Form */}
         <div className="bg-card border border-border rounded-xl p-5">
-          <div className="font-bold text-foreground mb-4">🆘 Emergency Withdrawal Request</div>
+          <div className="font-bold text-foreground mb-4 flex items-center gap-2">
+            <AlertCircle size={18} className="text-primary" /> Emergency Withdrawal Request
+          </div>
 
           {/* Select Goal */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-              Select Goal
+            <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide flex items-center gap-1">
+              <Target size={12} /> Select Goal
             </label>
             <select
               value={selectedGoal}
@@ -255,7 +261,7 @@ const LiftingPage = () => {
             >
               {goals.map((goal) => (
                 <option key={goal._id} value={goal._id}>
-                  🎯 {goal.goalName} — ৳{goal.currentSaved.toLocaleString()} saved
+                  {goal.goalName} — ৳{goal.currentSaved.toLocaleString()} saved
                 </option>
               ))}
             </select>
@@ -263,21 +269,24 @@ const LiftingPage = () => {
 
           {/* Withdrawal Amount */}
           <div className="mb-4">
-            <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-              Withdrawal Amount (BDT)
+            <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide flex items-center gap-1">
+              <Banknote size={12} /> Withdrawal Amount (BDT)
             </label>
-            <input
-              type="number"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              min="100"
-              max={selectedGoalData?.currentSaved}
-              placeholder="Enter amount"
-              className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">৳</span>
+              <input
+                type="number"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                min="100"
+                max={selectedGoalData?.currentSaved}
+                placeholder="Enter amount"
+                className="w-full p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
+              />
+            </div>
             {selectedGoalData && withdrawAmount > selectedGoalData.currentSaved && (
-              <p className="text-xs text-red-500 mt-1">
-                Amount exceeds your saved balance of ৳{selectedGoalData.currentSaved.toLocaleString()}
+              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                <AlertCircle size={12} /> Amount exceeds your saved balance of ৳{selectedGoalData.currentSaved.toLocaleString()}
               </p>
             )}
             {selectedGoalData && (
@@ -318,10 +327,12 @@ const LiftingPage = () => {
                   className={`py-3 rounded-xl border-2 text-center transition ${
                     paymentMethod === method.id
                       ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary"
+                      : "border-border hover:border-primary hover:bg-primary/5"
                   }`}
                 >
-                  <div className="text-2xl mb-1">{method.icon}</div>
+                  <div className={`flex justify-center mb-1 ${paymentMethod === method.id ? method.color : "text-foreground/50"}`}>
+                    {method.icon}
+                  </div>
                   <div className={`text-xs font-semibold ${paymentMethod === method.id ? "text-primary" : "text-foreground/70"}`}>
                     {method.name}
                   </div>
@@ -344,11 +355,11 @@ const LiftingPage = () => {
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 11))}
-                  placeholder="1XXXXXXXXX"
+                  placeholder="1XXXXXXXXXX"
                   className="flex-1 p-3 rounded-r-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 />
               </div>
-              <p className="text-xs text-foreground/50 mt-1">Enter 11-digit number (e.g., 1712345678)</p>
+              <p className="text-xs text-foreground/50 mt-1">Enter 11-digit number (e.g., 17123456789)</p>
             </div>
           )}
 
@@ -404,20 +415,23 @@ const LiftingPage = () => {
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {isSubmitting ? (
-              <span className="flex items-center justify-center gap-2">
+              <>
                 <Loader2 size={18} className="animate-spin" />
                 Submitting...
-              </span>
+              </>
             ) : (
-              "Send Withdrawal Request"
+              <>
+                <CreditCard size={18} />
+                Send Withdrawal Request
+              </>
             )}
           </button>
 
-          <p className="text-center text-xs text-foreground/50 mt-3">
-            Admin will review within 5-7 working days
+          <p className="text-center text-xs text-foreground/50 mt-3 flex items-center justify-center gap-1">
+            <AlertCircle size={12} /> Admin will review within 5-7 working days
           </p>
         </div>
       </div>
@@ -430,8 +444,9 @@ const LiftingPage = () => {
           exit={{ opacity: 0, y: 20 }}
           className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-lg shadow-lg text-sm ${
             toast.type === "error" ? "bg-red-500" : "bg-green-500"
-          } text-white`}
+          } text-white flex items-center gap-2`}
         >
+          {toast.type === "error" ? <AlertCircle size={16} /> : <CheckCircle size={16} />}
           {toast.message}
         </motion.div>
       )}

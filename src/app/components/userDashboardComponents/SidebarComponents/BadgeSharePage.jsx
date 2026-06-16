@@ -221,22 +221,20 @@ const BadgeSharePage = () => {
   const shareOnWhatsApp = () => {
     if (!selectedBadge) return;
     const msg = encodeURIComponent(
-      `🏅 I earned "${selectedBadge.name}" badge on Amanah Savings Community!\n\n${selectedBadge.emoji} ${selectedBadge.sub}\n\nStart saving today: amanahsavings.com.bd 🌿`,
+      `🏅 I earned "${selectedBadge.name}" badge on Sonchoy Bondhu Community!\n\n${selectedBadge.emoji} ${selectedBadge.sub}\n\nStart saving today: sanchoybondhu.com 🌿`,
     );
     window.open(`https://wa.me/?text=${msg}`, "_blank");
   };
 
   const shareOnFacebook = () => {
     window.open(
-      "https://www.facebook.com/sharer/sharer.php?u=https://amanahsavings.com.bd&quote=I+earned+a+new+badge+on+Amanah+Savings!",
-      "_blank",
-    );
-  };
+      "https://www.facebook.com/sharer/sharer.php?u=https://sanchoybondhu.com.bd&quote=I+earned+a+new+badge+on+Sanchoy+Bondhu!",
+  )};
 
   const copyBadgeLink = () => {
     if (!selectedBadge) return;
     navigator.clipboard.writeText(
-      `https://amanahsavings.com.bd/badges?share=${encodeURIComponent(selectedBadge.name)}`,
+      `https://sanchoybondhu.com/badges?share=${encodeURIComponent(selectedBadge.name)}`,
     );
     showToast("✅ Badge link copied!");
   };
@@ -271,7 +269,7 @@ const BadgeSharePage = () => {
           <div className="w-9 h-9 rounded-xl bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white text-lg">
             আ
           </div>
-          <span className="font-bold text-lg text-foreground">Amanah</span>
+          <span className="font-bold text-lg text-foreground">Sanchoy</span>
         </Link>
         <div className="flex items-center gap-3">
           <button
@@ -319,7 +317,7 @@ const BadgeSharePage = () => {
               <div className="absolute inset-0 bg-[repeating-linear-gradient(45deg,rgba(255,255,255,0.04)_0px,rgba(255,255,255,0.04)_2px,transparent_2px,transparent_8px)]" />
               <div className="relative z-10">
                 <div className="text-xs font-extrabold text-white/60 tracking-wider mb-4">
-                  🌿 AMANAH SAVINGS
+                  🌿 Sonchoy Bondhu
                 </div>
                 <div className="text-7xl mb-4 animate-bounce">
                   {selectedBadge.emoji}

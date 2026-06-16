@@ -55,7 +55,7 @@ const AdminSettingsPage = () => {
         // Transform backend data to frontend expected format
         setSettings({
           general: {
-            platformName: backendData.general?.name || "Amanah Savings",
+            platformName: backendData.general?.name || "Sonchoy Bondhu",
             websiteUrl: backendData.general?.url || "",
             contactEmail: backendData.general?.supportEmail || "",
             language: backendData.general?.language || "bn",

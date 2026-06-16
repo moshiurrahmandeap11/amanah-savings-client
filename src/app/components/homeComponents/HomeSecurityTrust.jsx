@@ -147,7 +147,7 @@ const HomeSecurityTrust = () => {
           </h2>
 
           <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl text-foreground/70 max-w-2xl">
-            Amanah is built with security in mind. Multiple layers of security
+            Sanchoy Bondhu is built with security in mind. Multiple layers of security
             keep your money and identity safe.
           </p>
         </motion.div>

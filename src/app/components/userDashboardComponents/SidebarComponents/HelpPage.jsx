@@ -548,13 +548,13 @@ const HelpPage = () => {
             </div>
           </button>
           <a
-            href="mailto:support@amanahsavings.com.bd"
+            href="mailto:support@sanchoybondhu.com"
             className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary transition"
           >
             <div className="text-3xl mb-1">📧</div>
             <div className="font-bold text-sm text-foreground">Email</div>
             <div className="text-xs text-foreground/50">
-              support@amanahsavings.com.bd
+              support@sanchoybondhu.com
             </div>
           </a>
           <a
@@ -608,7 +608,7 @@ const HelpPage = () => {
                 </div>
                 <div className="flex-1">
                   <div className="font-bold text-white text-sm">
-                    {lang === "bn" ? "Amanah সাপোর্ট" : "Amanah Support"}
+                    {lang === "bn" ? "Sanchoy Bondhu সাপোর্ট" : "Sanchoy Bondhu Support"}
                   </div>
                   <div className="text-white/70 text-xs flex items-center gap-1">
                     <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-400" : "bg-gray-400"}`} />

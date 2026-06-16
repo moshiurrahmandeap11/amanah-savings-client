@@ -134,14 +134,14 @@ const YearInReviewPage = () => {
 
   const shareOnWhatsApp = () => {
     const text = encodeURIComponent(
-      `আমি এই বছর Amanah Savings-এ ৳${totalSaved.toLocaleString()} জমিয়েছি! 🎉 আপনিও শুরু করুন: amanahsavings.com.bd`,
+      `আমি এই বছর Sonchoy Bondhu-এ ৳${totalSaved.toLocaleString()} জমিয়েছি! 🎉 আপনিও শুরু করুন: sanchoybondhu.com`,
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
   const shareOnFacebook = () => {
     window.open(
-      "https://www.facebook.com/sharer/sharer.php?u=https://amanahsavings.com.bd&quote=আমার+২০২৪+সঞ্চয়+যাত্রা+দেখুন!",
+      "https://www.facebook.com/sharer/sharer.php?u=https://sanchoybondhu.com&quote=আমার+২০২৪+সঞ্চয়+যাত্রা+দেখুন!",
       "_blank",
     );
   };
@@ -394,7 +394,7 @@ const YearInReviewPage = () => {
         <div className="text-6xl">🏆</div>
         <div>
           <div className="text-4xl font-bold text-amber-400">{badgesCount > 0 ? "Top Saver" : "Rising Star"}</div>
-          <div className="text-sm text-white/75">Among Amanah Savings members</div>
+          <div className="text-sm text-white/75">Among Sonchoy Bondhu members</div>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 w-full mb-5">
@@ -439,7 +439,7 @@ const YearInReviewPage = () => {
       </h1>
       <div className="bg-linear-to-r from-primary to-primary-light via-purple-600 rounded-2xl p-5 w-full mb-5 text-white text-left">
         <div className="flex justify-between items-start mb-4">
-          <div className="text-xs font-semibold">🌿 Amanah Savings</div>
+          <div className="text-xs font-semibold">🌿 Sonchoy Bondhu</div>
           <div className="text-[10px] bg-white/20 px-2 py-1 rounded-full">
             2024 Summary
           </div>

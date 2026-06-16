@@ -14,7 +14,7 @@ const HomeCommunityStories = () => {
       amount: "৳2.4 lakh",
       time: "18 months",
       quote:
-        "I saved ৳2.4 lakh for my wedding in just 18 months! Savings Circle has kept me disciplined even when I want to spend. Amanah has changed my life.",
+        "I saved ৳2.4 lakh for my wedding in just 18 months! Savings Circle has kept me disciplined even when I want to spend. Sanchoy Bondhu has changed my life.",
       initial: "R",
       color: "from-emerald-500 to-emerald-600",
       rating: 5,
@@ -126,7 +126,7 @@ const HomeCommunityStories = () => {
 
           <p className="mt-4 text-base sm:text-lg text-foreground/70 max-w-2xl">
             Real stories from real people who achieved their savings goals with
-            Amanah
+            Sanchoy Bondhu 
           </p>
         </motion.div>
 

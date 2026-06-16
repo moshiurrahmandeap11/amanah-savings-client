@@ -59,7 +59,7 @@ const HowItWorksPage = () => {
           </div>
 
           <h2 className="mt-6 sm:mt-8 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-            How <span className="text-primary">Amanah</span> Works
+            How <span className="text-primary">Sanchoy Bondhu</span> Works
           </h2>
 
           <p className="mt-4 sm:mt-6 max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-foreground/60">

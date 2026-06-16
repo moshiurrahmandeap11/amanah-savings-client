@@ -17,6 +17,17 @@ import {
   TrendingUp,
   PlayCircle,
   PauseCircle,
+  Heart,
+  Home,
+  GraduationCap,
+  Car,
+  Briefcase,
+  Shield,
+  Plane,
+  Star,
+  Trash2,
+  Eye,
+  DollarSign,
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
@@ -48,36 +59,36 @@ const MyGoalsPage = () => {
   });
 
   const goalTypes = [
-    { emoji: "🕌", name: "Hajj/Umrah", value: "hajj" },
-    { emoji: "💍", name: "Wedding", value: "wedding" },
-    { emoji: "🏠", name: "Home", value: "home" },
-    { emoji: "🎓", name: "Education", value: "education" },
-    { emoji: "🚗", name: "Car", value: "car" },
-    { emoji: "💼", name: "Business", value: "business" },
-    { emoji: "🆘", name: "Emergency", value: "emergency" },
-    { emoji: "✈️", name: "Travel", value: "travel" },
-    { emoji: "🎯", name: "Other", value: "other" },
+    { icon: <Star size={20} />, name: "Hajj/Umrah", value: "hajj" },
+    { icon: <Heart size={20} />, name: "Wedding", value: "wedding" },
+    { icon: <Home size={20} />, name: "Home", value: "home" },
+    { icon: <GraduationCap size={20} />, name: "Education", value: "education" },
+    { icon: <Car size={20} />, name: "Car", value: "car" },
+    { icon: <Briefcase size={20} />, name: "Business", value: "business" },
+    { icon: <Shield size={20} />, name: "Emergency", value: "emergency" },
+    { icon: <Plane size={20} />, name: "Travel", value: "travel" },
+    { icon: <Target size={20} />, name: "Other", value: "other" },
   ];
 
-  const getGoalEmoji = (goalType) => {
-    const emojiMap = {
-      hajj: "🕌",
-      wedding: "💍",
-      home: "🏠",
-      education: "🎓",
-      car: "🚗",
-      business: "💼",
-      emergency: "🆘",
-      travel: "✈️",
-      other: "🎯",
+  const getGoalIcon = (goalType) => {
+    const iconMap = {
+      hajj: <Star size={28} />,
+      wedding: <Heart size={28} />,
+      home: <Home size={28} />,
+      education: <GraduationCap size={28} />,
+      car: <Car size={28} />,
+      business: <Briefcase size={28} />,
+      emergency: <Shield size={28} />,
+      travel: <Plane size={28} />,
+      other: <Target size={28} />,
     };
-    return emojiMap[goalType] || "🎯";
+    return iconMap[goalType] || <Target size={28} />;
   };
 
   const getGoalColor = (goalType) => {
     const colorMap = {
       hajj: "from-amber-500 to-orange-500",
-      wedding: "from-primary to-primary-light",
+      wedding: "from-pink-500 to-rose-500",
       home: "from-emerald-500 to-teal-500",
       education: "from-purple-500 to-indigo-500",
       car: "from-blue-500 to-cyan-500",
@@ -265,7 +276,6 @@ const MyGoalsPage = () => {
         islamicMode: formData.islamicMode,
       };
 
-      // Set token for this request
       axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
       const response = await axiosInstance.post("/goals", requestData);
@@ -280,7 +290,6 @@ const MyGoalsPage = () => {
           showConfirmButton: false,
         });
 
-        // Reset form and close modal
         setShowGoalModal(false);
         setFormData({
           goalName: "",
@@ -292,7 +301,6 @@ const MyGoalsPage = () => {
         });
         setSelectedGoalType("hajj");
 
-        // Refresh data
         await fetchGoals();
         await fetchStatistics();
       }
@@ -419,7 +427,6 @@ const MyGoalsPage = () => {
     setShowDetailsModal(true);
   };
 
-  // Calculate stats from real data
   const activeGoalsCount = goals.filter((g) => g.status === "active").length;
   const totalSavedAmount = goals.reduce((sum, g) => sum + (g.currentSaved || 0), 0);
   const monthlyDepositTotal = goals.reduce((sum, g) => sum + (g.monthlyDeposit || 0), 0);
@@ -427,25 +434,25 @@ const MyGoalsPage = () => {
 
   const stats = [
     {
-      icon: "🎯",
+      icon: <Target size={20} />,
       value: activeGoalsCount.toString(),
       label: "Active Goals",
       bg: "bg-primary/10",
     },
     {
-      icon: "💰",
+      icon: <DollarSign size={20} />,
       value: formatCurrency(totalSavedAmount),
       label: "Total Saved",
       bg: "bg-blue-500/10",
     },
     {
-      icon: "📅",
+      icon: <Calendar size={20} />,
       value: formatCurrency(monthlyDepositTotal),
       label: "Monthly Deposit",
       bg: "bg-amber-500/10",
     },
     {
-      icon: "✅",
+      icon: <CheckCircle size={20} />,
       value: pausedGoalsCount.toString(),
       label: "On Pause",
       bg: "bg-cyan-500/10",
@@ -473,8 +480,8 @@ const MyGoalsPage = () => {
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground">
-            🎯 My Savings Goals
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
+            <Target size={28} /> My Savings Goals
           </h2>
           <p className="text-xs sm:text-sm text-foreground/60 mt-1">
             {activeGoalsCount} active goals · Total saved {formatCurrency(totalSavedAmount)}
@@ -500,7 +507,7 @@ const MyGoalsPage = () => {
             className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:shadow-lg transition group"
           >
             <div
-              className={`w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl ${stat.bg} flex items-center justify-center text-lg sm:text-xl mb-2 sm:mb-3 group-hover:scale-110 transition`}
+              className={`w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl ${stat.bg} flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition text-primary`}
             >
               {stat.icon}
             </div>
@@ -517,7 +524,7 @@ const MyGoalsPage = () => {
       {/* Goals Grid */}
       {goals.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
-          <div className="text-6xl mb-4">🎯</div>
+          <Target size={64} className="text-foreground/30 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-foreground mb-2">No Goals Yet</h3>
           <p className="text-foreground/60 mb-4">
             Create your first savings goal to start your journey
@@ -542,9 +549,9 @@ const MyGoalsPage = () => {
               {/* Goal Header */}
               <div className="flex justify-between items-start mb-3">
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <span className="text-3xl sm:text-4xl">
-                    {getGoalEmoji(goal.goalType)}
-                  </span>
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    {getGoalIcon(goal.goalType)}
+                  </div>
                   <div>
                     <h3 className="text-base sm:text-lg font-bold text-foreground">
                       {goal.goalName}
@@ -561,7 +568,7 @@ const MyGoalsPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <span
-                    className={`text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full ${
+                    className={`text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1 ${
                       goal.status === "active"
                         ? "bg-primary/10 text-primary"
                         : goal.status === "paused"
@@ -569,6 +576,7 @@ const MyGoalsPage = () => {
                         : "bg-green-500/10 text-green-500"
                     }`}
                   >
+                    {getStatusIcon(goal.status)}
                     {goal.status === "active" 
                       ? "Active" 
                       : goal.status === "paused" 
@@ -580,7 +588,7 @@ const MyGoalsPage = () => {
                       onClick={() => toggleGoalStatus(goal._id, goal.status)}
                       className="text-xs text-foreground/50 hover:text-primary transition"
                     >
-                      {goal.status === "active" ? "⏸ Pause" : "▶️ Resume"}
+                      {goal.status === "active" ? "Pause" : "Resume"}
                     </button>
                   )}
                 </div>
@@ -614,16 +622,16 @@ const MyGoalsPage = () => {
                 </Link>
                 <button
                   onClick={() => handleViewDetails(goal)}
-                  className="flex-1 py-2 text-center rounded-lg border border-border text-foreground text-xs sm:text-sm font-semibold hover:border-primary hover:text-primary transition px-3"
+                  className="flex-1 py-2 text-center rounded-lg border border-border text-foreground text-xs sm:text-sm font-semibold hover:border-primary hover:text-primary transition px-3 flex items-center justify-center gap-1"
                 >
-                  Details
+                  <Eye size={14} /> Details
                 </button>
                 {goal.currentSaved === 0 && goal.status !== "completed" && (
                   <button
                     onClick={() => deleteGoal(goal._id)}
-                    className="py-2 px-3 rounded-lg border border-red-500/30 text-red-500 text-xs sm:text-sm font-semibold hover:bg-red-500/10 transition"
+                    className="py-2 px-3 rounded-lg border border-red-500/30 text-red-500 text-xs sm:text-sm font-semibold hover:bg-red-500/10 transition flex items-center justify-center gap-1"
                   >
-                    Delete
+                    <Trash2 size={14} /> Delete
                   </button>
                 )}
               </div>
@@ -638,7 +646,7 @@ const MyGoalsPage = () => {
           <div className="flex gap-3">
             <Info size={16} className="text-primary shrink-0 mt-0.5" />
             <p className="text-[11px] sm:text-xs text-foreground/60 leading-relaxed">
-              💡 <span className="font-semibold">Pro Tip:</span> Setting up
+              <span className="font-semibold">Pro Tip:</span> Setting up
               auto-save for your goals helps you stay consistent and reach your
               targets faster. You can pause any goal anytime from settings.
             </p>
@@ -666,9 +674,9 @@ const MyGoalsPage = () => {
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                      <span className="text-3xl sm:text-4xl">
-                        {getGoalEmoji(selectedGoal.goalType)}
-                      </span>
+                      <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        {getGoalIcon(selectedGoal.goalType)}
+                      </div>
                       <div>
                         <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                           {selectedGoal.goalName}
@@ -693,7 +701,7 @@ const MyGoalsPage = () => {
                       </span>
                       {selectedGoal.islamicMode && (
                         <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500">
-                          ☪️ Riba-free
+                          <Star size={12} /> Riba-free
                         </span>
                       )}
                     </div>
@@ -845,14 +853,14 @@ const MyGoalsPage = () => {
                 {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-3 text-center">
-                    <div className="text-2xl mb-1">🎯</div>
+                    <Target size={24} className="mx-auto mb-1 text-green-500" />
                     <div className="text-xs text-foreground/60">Monthly Progress</div>
                     <div className="text-sm font-bold text-green-500">
                       {Math.round((selectedGoal.monthlyDeposit / selectedGoal.targetAmount) * 100)}% / month
                     </div>
                   </div>
                   <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 text-center">
-                    <div className="text-2xl mb-1">⏱️</div>
+                    <Clock size={24} className="mx-auto mb-1 text-blue-500" />
                     <div className="text-xs text-foreground/60">To Reach Target</div>
                     <div className="text-sm font-bold text-blue-500">
                       {calculateRemainingMonths(selectedGoal)} months
@@ -902,8 +910,8 @@ const MyGoalsPage = () => {
               <div className="sticky top-0 bg-card border-b border-border p-4 sm:p-6 rounded-t-2xl z-10">
                 <div className="flex justify-between items-center">
                   <div>
-                    <h3 className="text-lg sm:text-xl font-bold text-foreground">
-                      Create New Goal
+                    <h3 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
+                      <Target size={20} /> Create New Goal
                     </h3>
                     <p className="text-xs sm:text-sm text-foreground/60 mt-1">
                       Set a new savings target to stay motivated
@@ -938,9 +946,9 @@ const MyGoalsPage = () => {
                             : "border-border hover:border-primary/50 hover:bg-primary/5"
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
-                        <span className="text-xl sm:text-2xl block mb-0.5 sm:mb-1">
-                          {type.emoji}
-                        </span>
+                        <div className="flex justify-center mb-1 text-primary">
+                          {type.icon}
+                        </div>
                         <span className="text-[10px] sm:text-xs font-semibold">
                           {type.name}
                         </span>
@@ -1041,7 +1049,7 @@ const MyGoalsPage = () => {
                 {/* Islamic Mode Toggle */}
                 <div className="flex items-center justify-between p-3 sm:p-4 bg-primary/5 border border-primary/15 rounded-xl">
                   <div className="flex items-center gap-2 sm:gap-3">
-                    <span className="text-2xl sm:text-3xl">☪️</span>
+                    <Star size={24} className="text-primary" />
                     <div>
                       <div className="font-semibold text-foreground text-sm sm:text-base">
                         Riba-free Savings Mode

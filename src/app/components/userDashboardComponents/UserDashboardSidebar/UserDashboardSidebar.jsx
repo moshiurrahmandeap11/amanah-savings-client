@@ -56,7 +56,7 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
           icon: <Target size={18} />,
           path: "/dashboard/goals",
           id: "goals",
-          badge: "4",
+          badge: "",
         },
         {
           name: "My Circles",
@@ -127,7 +127,7 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
           icon: <Gift size={18} />,
           path: "/dashboard/referral",
           id: "referral",
-          badge: "৳500",
+          badge: "",
         },
       ],
     },
@@ -139,7 +139,7 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
           icon: <Bell size={18} />,
           path: "/dashboard/notifications",
           id: "notifications",
-          badge: "3",
+          badge: "",
         },
         {
           name: "Profile & KYC",
@@ -216,9 +216,9 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
           </div>
           <div>
             <span className="font-bold text-white text-base sm:text-lg">
-              Amanah
+              Sanchoy
             </span>
-            <span className="block text-xs text-primary-light">Savings</span>
+            <span className="block text-xs text-primary-light">Bondhu</span>
           </div>
         </Link>
       </div>

@@ -50,7 +50,7 @@ const HomeDownloadApp = () => {
     {
       step: "1",
       title: "Open this site",
-      description: "Open amanah.com.bd in Chrome or Safari browser",
+      description: "Open sanchoybondhu.com in Chrome or Safari browser",
     },
     {
       step: "2",
@@ -60,9 +60,9 @@ const HomeDownloadApp = () => {
     },
     {
       step: "3",
-      title: "Find the Amanah Icon",
+      title: "Find the Sanchoy Bondhu Icon",
       description:
-        "You'll see the Amanah icon on your home screen — that's it!",
+        "You'll see the Sanchoy Bondhu icon on your home screen — that's it!",
     },
   ];
 
@@ -125,7 +125,7 @@ const HomeDownloadApp = () => {
 
             {/* Heading */}
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Use Amanah on{" "}
+              Use Sanchoy Bondhu on{" "}
               <span className="bg-linear-to-r from-primary to-primary-light bg-clip-text text-transparent">
                 any device
               </span>

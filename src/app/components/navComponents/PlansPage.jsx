@@ -531,7 +531,7 @@ const PlanPage = () => {
           <div className="mt-6 p-4 bg-card border border-border rounded-xl">
             <p className="text-xs text-foreground/50 leading-relaxed">
               <strong>Disclaimer:</strong> This calculator shows projected savings totals based on your inputs. 
-              Amanah Savings Community is not an investment platform and does not offer any guaranteed returns, 
+              Sonchoy Bondhu Community is not an investment platform and does not offer any guaranteed returns, 
               fixed profits, or interest. All figures represent community savings deposits only.
             </p>
           </div>
@@ -589,7 +589,7 @@ const PlanPage = () => {
         <div className="max-w-5xl mx-auto">
           <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-8 sm:p-12 text-center">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Ready to Start Saving?</h2>
-            <p className="text-white/90 mb-6">Join thousands of members already building their savings goals with Amanah.</p>
+            <p className="text-white/90 mb-6">Join thousands of members already building their savings goals with Sanchoy Bondhu.</p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link href="/register" className="px-6 py-3 bg-white text-primary rounded-xl font-semibold hover:bg-white/90 transition">
                 Create Free Account

@@ -63,7 +63,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <Users size={18} />,
           href: "/admin/users",
           id: "users",
-          badge: "12.4k",
+          badge: "",
           badgeColor: "green",
         },
         {
@@ -71,7 +71,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <Shield size={18} />,
           href: "/admin/kyc",
           id: "kyc",
-          badge: "23",
+          badge: "",
           badgeColor: "yellow",
         },
       ],
@@ -90,7 +90,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <CreditCard size={18} />,
           href: "/admin/deposits",
           id: "deposits",
-          badge: "14",
+          badge: "",
           badgeColor: "yellow",
         },
         {
@@ -98,7 +98,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <Wallet size={18} />,
           href: "/admin/withdrawals",
           id: "withdrawals",
-          badge: "8",
+          badge: "",
           badgeColor: "yellow",
         },
         {
@@ -117,7 +117,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <AlertTriangle size={18} />,
           href: "/admin/fraud",
           id: "fraud",
-          badge: "5",
+          badge: "",
           badgeColor: "red",
         },
         {
@@ -154,7 +154,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <HelpCircle size={18} />,
           href: "/admin/support",
           id: "support",
-          badge: "38",
+          badge: "",
           badgeColor: "red",
         },
         {
@@ -168,7 +168,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <Receipt size={18} />,
           href: "/admin/withdrawal-approvals",
           id: "withdrawal-approvals",
-          badge: "8",
+          badge: "",
           badgeColor: "yellow",
         },
         {
@@ -209,7 +209,7 @@ const AdminSidebar = ({ closeSidebar }) => {
               🏦
             </div>
             <div className="font-bold text-white text-sm">
-              Amanah <span className="text-primary-light">Admin</span>
+              Sanchoy <span className="text-primary-light">Bondhu</span>
             </div>
           </div>
           <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold">
