@@ -25,6 +25,7 @@ const WithdrawalApprovalsPage = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [withdrawals, setWithdrawals] = useState([]);
+  console.log("withdrawal approval :", withdrawals);
   const [statistics, setStatistics] = useState({
     pending: { count: 0, totalAmount: 0 },
     approved: { count: 0, totalAmount: 0 },
@@ -280,7 +281,7 @@ const WithdrawalApprovalsPage = () => {
       title: lang === "bn" ? "সদস্যের তথ্য" : "User Details",
       html: `
         <div class="text-left">
-          <p><strong>${lang === "bn" ? "নাম" : "Name"}:</strong> ${withdrawal.user?.name || "N/A"}</p>
+          <p><strong>${lang === "bn" ? "নাম" : "Name"}:</strong> ${withdrawal.user?.fullName || "N/A"}</p>
           <p><strong>${lang === "bn" ? "ইমেইল" : "Email"}:</strong> ${withdrawal.user?.email || "N/A"}</p>
           <p><strong>${lang === "bn" ? "ফোন" : "Phone"}:</strong> ${withdrawal.user?.phone || "N/A"}</p>
           <p><strong>${lang === "bn" ? "যোগদান" : "Joined"}:</strong> ${withdrawal.user?.createdAt ? new Date(withdrawal.user.createdAt).toLocaleDateString() : "N/A"}</p>
@@ -508,7 +509,7 @@ const WithdrawalApprovalsPage = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold text-sm text-foreground">
-                          {withdrawal.user?.name || "Unknown User"}
+                          {withdrawal.user?.fullName || "Unknown User"}
                         </div>
                         <div className="text-xs text-foreground/50">
                           {withdrawal.user?.phone || "No phone"} · {getPaymentIcon(withdrawal.paymentMethod)} {withdrawal.paymentMethod?.toUpperCase()} · Ref: {withdrawal._id.slice(-6)} · {formatDate(withdrawal.createdAt)}

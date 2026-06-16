@@ -11,6 +11,10 @@ import {
   Users,
   HardDrive,
   ChevronRight,
+  Award,
+  TrendingUp,
+  CheckCircle,
+  Zap,
 } from "lucide-react";
 import { FaChrome } from "react-icons/fa";
 
@@ -64,8 +68,14 @@ const HomeDownloadApp = () => {
 
   const stats = [
     { value: "4.8★", label: "Rating", icon: <Star size={16} /> },
-    { value: "47K+", label: "Member", icon: <Users size={16} /> },
+    { value: "47K+", label: "Members", icon: <Users size={16} /> },
     { value: "5MB", label: "Size", icon: <HardDrive size={16} /> },
+  ];
+
+  const features = [
+    { icon: <Zap size={14} />, text: "Lightning fast" },
+    { icon: <CheckCircle size={14} />, text: "Offline access" },
+    { icon: <TrendingUp size={14} />, text: "Real-time sync" },
   ];
 
   return (
@@ -208,6 +218,22 @@ const HomeDownloadApp = () => {
                 Detailed install guide <ChevronRight size={14} />
               </button>
             </motion.div>
+
+            {/* Features Row */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="flex flex-wrap gap-4 mt-6"
+            >
+              {features.map((feature, idx) => (
+                <div key={idx} className="flex items-center gap-1 text-xs text-foreground/60">
+                  <span className="text-primary">{feature.icon}</span>
+                  <span>{feature.text}</span>
+                </div>
+              ))}
+            </motion.div>
           </motion.div>
 
           {/* Right Side - Phone Mockup */}
@@ -243,7 +269,7 @@ const HomeDownloadApp = () => {
                           Rahima Akter
                         </div>
                       </div>
-                      <div className="w-10 h-10 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white">
+                      <div className="w-10 h-10 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-semibold">
                         R
                       </div>
                     </div>

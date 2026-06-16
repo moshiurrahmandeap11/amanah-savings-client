@@ -3,7 +3,14 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Search, X, Sun, Moon, Filter } from "lucide-react";
+import { 
+  Search, X, Sun, Moon, Filter, 
+  Users, Calendar, TrendingUp, Target, 
+  Gem, Star, Shield, GraduationCap, 
+  Smartphone, Briefcase, Heart, 
+  Flame, Award, CheckCircle, ArrowRight,
+  Crown, DollarSign, Clock, Lock
+} from "lucide-react";
 
 const GoalsPage = () => {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -20,7 +27,7 @@ const GoalsPage = () => {
       id: "wedding",
       name: "Wedding Fund",
       category: "family lifestyle",
-      emoji: "💍",
+      icon: <Gem size={28} />,
       members: 3240,
       progress: 68,
       monthly: "৳5k–৳30k",
@@ -33,7 +40,7 @@ const GoalsPage = () => {
       id: "hajj",
       name: "Hajj Fund",
       category: "islamic",
-      emoji: "🕌",
+      icon: <Star size={28} />,
       members: 1890,
       progress: 42,
       monthly: "৳10k–৳20k",
@@ -46,7 +53,7 @@ const GoalsPage = () => {
       id: "emergency",
       name: "Emergency Fund",
       category: "emergency",
-      emoji: "🛡️",
+      icon: <Shield size={28} />,
       members: 5610,
       progress: 55,
       monthly: "৳500–৳5k",
@@ -59,7 +66,7 @@ const GoalsPage = () => {
       id: "education",
       name: "Education Fund",
       category: "education",
-      emoji: "🎓",
+      icon: <GraduationCap size={28} />,
       members: 2140,
       progress: 38,
       monthly: "৳2k–৳15k",
@@ -72,7 +79,7 @@ const GoalsPage = () => {
       id: "gadget",
       name: "Gadget & Device Fund",
       category: "tech",
-      emoji: "💻",
+      icon: <Smartphone size={28} />,
       members: 4320,
       progress: 74,
       monthly: "৳1k–৳10k",
@@ -85,7 +92,7 @@ const GoalsPage = () => {
       id: "business",
       name: "Business Startup Fund",
       category: "business",
-      emoji: "💼",
+      icon: <Briefcase size={28} />,
       members: 980,
       progress: 28,
       monthly: "৳5k–৳50k",
@@ -98,7 +105,7 @@ const GoalsPage = () => {
       id: "bike",
       name: "Bike / Vehicle Fund",
       category: "lifestyle",
-      emoji: "🏍️",
+      icon: <Target size={28} />,
       members: 1620,
       progress: 61,
       monthly: "৳2k–৳15k",
@@ -111,7 +118,7 @@ const GoalsPage = () => {
       id: "kids",
       name: "Kids Future Fund",
       category: "family education",
-      emoji: "🧒",
+      icon: <Heart size={28} />,
       members: 640,
       progress: 18,
       monthly: "৳1k–৳20k",
@@ -124,7 +131,7 @@ const GoalsPage = () => {
       id: "umrah",
       name: "Umrah Fund",
       category: "islamic",
-      emoji: "🌙",
+      icon: <Star size={28} />,
       members: 720,
       progress: 33,
       monthly: "৳3k–৳10k",
@@ -138,7 +145,7 @@ const GoalsPage = () => {
   const challenges = [
     {
       id: "streak",
-      emoji: "🔥",
+      icon: <Flame size={24} />,
       title: "30-Day Savings Streak",
       desc: "Make a deposit every day for 30 consecutive days and earn the Streak Warrior badge.",
       tag: "Active",
@@ -147,7 +154,7 @@ const GoalsPage = () => {
     },
     {
       id: "ramadan",
-      emoji: "🌙",
+      icon: <Star size={24} />,
       title: "Ramadan Savings Challenge",
       desc: "Save a little every day of Ramadan. Special seasonal badge + community milestone celebration.",
       tag: "Seasonal",
@@ -156,7 +163,7 @@ const GoalsPage = () => {
     },
     {
       id: "daily",
-      emoji: "💯",
+      icon: <Target size={24} />,
       title: "Daily ৳100 Challenge",
       desc: "Save just ৳100 every single day. Prove that small, consistent steps build big savings.",
       tag: "Beginner Friendly",
@@ -182,8 +189,7 @@ const GoalsPage = () => {
     )
     .filter(
       (goal) =>
-        goal.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        goal.emoji.includes(searchQuery),
+        goal.name.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
       if (sortBy === "progress-desc") return b.progress - a.progress;
@@ -215,6 +221,7 @@ const GoalsPage = () => {
       <section className="bg-linear-to-br from-primary/5 via-background to-background pt-20 pb-16 text-center">
         <div className="max-w-4xl mx-auto px-4">
           <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-1.5 text-primary text-sm mb-6">
+            <Target size={14} />
             Savings Goals & Circles
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
@@ -227,13 +234,13 @@ const GoalsPage = () => {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               href="/register"
-              className="px-6 py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition"
+              className="px-6 py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition inline-flex items-center gap-2"
             >
-              Join a Circle →
+              Join a Circle <ArrowRight size={16} />
             </Link>
             <button
               onClick={() => setCreateModalOpen(true)}
-              className="px-6 py-3 border border-border rounded-xl font-semibold hover:border-primary hover:text-primary transition"
+              className="px-6 py-3 border border-border rounded-xl font-semibold hover:border-primary hover:text-primary transition inline-flex items-center gap-2"
             >
               + Create Custom Goal
             </button>
@@ -322,7 +329,7 @@ const GoalsPage = () => {
               }}
               className="ml-auto px-3 py-1.5 bg-white/15 rounded-lg text-white text-sm hover:bg-white/25 transition"
             >
-              ✕ Cancel
+              Cancel
             </button>
           </div>
         </div>
@@ -340,13 +347,14 @@ const GoalsPage = () => {
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32" />
           <div className="relative z-10">
             <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 text-xs font-semibold mb-3">
-               Featured Circle · Most Popular
+              <Crown size={12} />
+              Featured Circle · Most Popular
             </div>
             <h3 className="text-2xl font-bold mb-2">
               Grand Wedding Fund 2026
             </h3>
             <p className="text-white/90 text-sm mb-4 max-w-xl">
-              Bangladesh&apos;s largest wedding savings circle. 850+ members
+              Bangladesh's largest wedding savings circle. 850+ members
               saving together for the perfect wedding.
             </p>
             <div className="flex gap-6 mb-4">
@@ -369,9 +377,9 @@ const GoalsPage = () => {
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setJoinModalOpen("wedding")}
-                className="px-5 py-2 bg-white text-primary rounded-lg font-semibold text-sm hover:bg-gray-100 transition"
+                className="px-5 py-2 bg-white text-primary rounded-lg font-semibold text-sm hover:bg-gray-100 transition inline-flex items-center gap-2"
               >
-                Join This Circle →
+                Join This Circle <ArrowRight size={14} />
               </button>
               <button className="px-5 py-2 bg-white/20 rounded-lg font-semibold text-sm hover:bg-white/30 transition">
                 View Details
@@ -404,7 +412,9 @@ const GoalsPage = () => {
             >
               <div className="p-5">
                 <div className="flex justify-between items-start mb-3">
-                  <span className="text-4xl">{goal.emoji}</span>
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    {goal.icon}
+                  </div>
                   <span
                     className={`text-xs font-semibold px-2 py-1 rounded-full ${goal.status === "filling" ? "bg-orange-500/20 text-orange-500" : goal.badge === "Islamic" ? "bg-emerald-500/20 text-emerald-500" : goal.badge === "Most Popular" ? "bg-amber-500/20 text-amber-500" : "bg-primary/20 text-primary"}`}
                   >
@@ -418,7 +428,9 @@ const GoalsPage = () => {
                   Save consistently with community support.
                 </p>
                 <div className="flex justify-between text-xs mb-1">
-                  <span>{goal.members.toLocaleString()} members</span>
+                  <span className="flex items-center gap-1">
+                    <Users size={10} /> {goal.members.toLocaleString()} members
+                  </span>
                   <span className="text-primary font-semibold">
                     {goal.progress}%
                   </span>
@@ -431,14 +443,14 @@ const GoalsPage = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-2 mb-3">
                   <div className="bg-background rounded-lg p-2">
-                    <div className="text-[10px] text-foreground/50">
-                      Monthly
+                    <div className="text-[10px] text-foreground/50 flex items-center gap-1">
+                      <DollarSign size={10} /> Monthly
                     </div>
                     <div className="text-xs font-semibold">{goal.monthly}</div>
                   </div>
                   <div className="bg-background rounded-lg p-2">
-                    <div className="text-[10px] text-foreground/50">
-                      Duration
+                    <div className="text-[10px] text-foreground/50 flex items-center gap-1">
+                      <Clock size={10} /> Duration
                     </div>
                     <div className="text-xs font-semibold">{goal.duration}</div>
                   </div>
@@ -457,7 +469,7 @@ const GoalsPage = () => {
         {/* Create Banner */}
         <div className="mt-8 p-6 bg-card border border-border rounded-xl text-center">
           <h3 className="text-xl font-bold text-foreground mb-2">
-            ✨ Don&apos;t see your goal?
+            Don't see your goal?
           </h3>
           <p className="text-foreground/60 mb-4">
             Create a completely custom savings goal with your own target amount,
@@ -465,7 +477,7 @@ const GoalsPage = () => {
           </p>
           <button
             onClick={() => setCreateModalOpen(true)}
-            className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-lg font-semibold hover:opacity-90 transition"
+            className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-lg font-semibold hover:opacity-90 transition inline-flex items-center gap-2"
           >
             + Create Custom Goal
           </button>
@@ -475,7 +487,8 @@ const GoalsPage = () => {
       {/* Challenges Section */}
       <section className="bg-secondary/20 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-block bg-primary/10 rounded-full px-4 py-1 text-primary text-sm font-semibold mb-4">
+          <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-1 text-primary text-sm font-semibold mb-4">
+            <Flame size={14} />
             Community Challenges
           </div>
           <h2 className="text-3xl font-bold text-foreground mb-2">
@@ -494,22 +507,25 @@ const GoalsPage = () => {
                 transition={{ delay: idx * 0.1 }}
                 className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition"
               >
-                <div className="text-4xl mb-2">{challenge.emoji}</div>
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
+                  {challenge.icon}
+                </div>
                 <h3 className="font-bold text-foreground mb-1">
                   {challenge.title}
                 </h3>
                 <p className="text-foreground/60 text-sm mb-3">
                   {challenge.desc}
                 </p>
-                <div className="flex gap-2 mb-3">
+                <div className="flex justify-center gap-2 mb-3">
                   <span
                     className={`text-xs px-2 py-1 rounded-full ${challenge.tagColor === "green" ? "bg-primary/20 text-primary" : challenge.tagColor === "gold" ? "bg-amber-500/20 text-amber-500" : "bg-blue-500/20 text-blue-500"}`}
                   >
                     {challenge.tag}
                   </span>
                 </div>
-                <div className="text-xs text-foreground/50 mb-3">
-                  🏃 {challenge.participants.toLocaleString()} participants
+                <div className="text-xs text-foreground/50 mb-3 flex items-center justify-center gap-1">
+                  <Users size={12} />
+                  {challenge.participants.toLocaleString()} participants
                 </div>
                 <button
                   onClick={() => setJoinModalOpen("challenge")}
@@ -541,9 +557,11 @@ const GoalsPage = () => {
                 onClick={() => setJoinModalOpen(null)}
                 className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
               >
-                ✕
+                <X size={16} />
               </button>
-              <div className="text-5xl text-center mb-3">💍</div>
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
+                <Target size={32} />
+              </div>
               <h3 className="text-xl font-bold text-center mb-2">
                 Join Savings Circle
               </h3>
@@ -551,6 +569,7 @@ const GoalsPage = () => {
                 You need an active account to join this circle.
               </p>
               <div className="bg-background rounded-xl p-4 text-xs text-foreground/60 mb-4">
+                <Lock size={12} className="inline mr-1" />
                 Savings are locked until goal maturity. Early withdrawal
                 requires admin approval. No interest, no profit guarantees.
               </div>
@@ -591,10 +610,13 @@ const GoalsPage = () => {
                 onClick={() => setCreateModalOpen(false)}
                 className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
               >
-                ✕
+                <X size={16} />
               </button>
-              <h3 className="text-xl font-bold mb-1">✨ Create Custom Goal</h3>
-              <p className="text-foreground/60 text-sm mb-5">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
+                <Target size={32} />
+              </div>
+              <h3 className="text-xl font-bold mb-1 text-center">Create Custom Goal</h3>
+              <p className="text-foreground/60 text-sm text-center mb-5">
                 Define your own savings goal with a custom name, target, and
                 timeline.
               </p>
@@ -627,8 +649,6 @@ const GoalsPage = () => {
           </div>
         )}
       </AnimatePresence>
-
-
     </div>
   );
 };

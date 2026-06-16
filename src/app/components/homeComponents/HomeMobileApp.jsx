@@ -6,12 +6,24 @@ import {
   Smartphone,
   Download,
   Sparkles,
+  Bell,
+  Moon,
+  Wifi,
+  Trophy,
+  Flame,
+  Star,
+  Users,
+  Target,
+  MessageCircle,
+  Clock,
+  Zap,
+  CheckCircle,
 } from "lucide-react";
 
 const HomeMobileApp = () => {
   return (
     <section className="min-h-screen bg-background text-foreground overflow-hidden relative">
-      {/* Background gradient using CSS variables */}
+      {/* Background gradient */}
       <div className="absolute inset-0 bg-linear-to-br from-background via-primary/5 to-background"></div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
@@ -33,7 +45,7 @@ const HomeMobileApp = () => {
             >
               <Smartphone size={14} className="text-primary" />
               <span className="text-xs sm:text-sm font-medium tracking-wide text-primary">
-                Mobile app
+                Mobile App
               </span>
             </motion.div>
 
@@ -59,25 +71,25 @@ const HomeMobileApp = () => {
             >
               {[
                 {
-                  icon: "📱",
+                  icon: <Smartphone size={20} />,
                   title: "PWA — No installation required",
                   desc: "Add to home screen right from the browser. Quick access without the app store.",
                   delay: 0,
                 },
                 {
-                  icon: "🛎️",
+                  icon: <Bell size={20} />,
                   title: "Smart payment reminder",
                   desc: "Never miss a submission. Personal reminders before due dates.",
                   delay: 0.1,
                 },
                 {
-                  icon: "🌙",
+                  icon: <Moon size={20} />,
                   title: "Dark mode + Bangla UI",
                   desc: "Full Bangla language support with beautiful dark mode for comfortable night use.",
                   delay: 0.2,
                 },
                 {
-                  icon: "⚡",
+                  icon: <Wifi size={20} />,
                   title: "Offline access",
                   desc: "View your savings goals and history without the internet.",
                   delay: 0.3,
@@ -94,7 +106,7 @@ const HomeMobileApp = () => {
                 >
                   <motion.div
                     whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-xl sm:text-2xl"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-primary"
                   >
                     {feature.icon}
                   </motion.div>
@@ -118,25 +130,6 @@ const HomeMobileApp = () => {
               viewport={{ once: true }}
               className="flex flex-wrap gap-3 sm:gap-4 pt-6"
             >
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="flex items-center gap-2 sm:gap-3 bg-primary text-white px-5 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold hover:bg-primary-hover transition-all shadow-lg shadow-primary/20"
-              >
-                <Download size={18} />
-                Add to home screen
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="flex items-center gap-2 sm:gap-3 border border-border bg-card hover:bg-card-hover px-5 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold transition-all"
-              >
-                <span className="text-xl">📦</span>
-                Android APK
-              </motion.button>
             </motion.div>
           </motion.div>
 
@@ -166,13 +159,13 @@ const HomeMobileApp = () => {
                 <div className="p-4 sm:p-5">
                   <div className="flex justify-between items-center mb-5 sm:mb-6">
                     <div className="flex items-center gap-2">
-                      <motion.span
+                      <motion.div
                         animate={{ rotate: [0, 10, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
-                        className="text-2xl"
+                        className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"
                       >
-                        🏆
-                      </motion.span>
+                        <Trophy size={18} className="text-primary" />
+                      </motion.div>
                       <span className="font-semibold text-foreground text-sm sm:text-base">
                         Achievements
                       </span>
@@ -182,10 +175,10 @@ const HomeMobileApp = () => {
 
                   <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     {[
-                      { emoji: "🔥", title: "90-day streak" },
-                      { emoji: "⭐", title: "Super Saver" },
-                      { emoji: "🤝", title: "Referral Hero" },
-                      { emoji: "🏆", title: "Locked", locked: true },
+                      { icon: <Flame size={24} />, title: "90-day streak", locked: false },
+                      { icon: <Star size={24} />, title: "Super Saver", locked: false },
+                      { icon: <Users size={24} />, title: "Referral Hero", locked: false },
+                      { icon: <Trophy size={24} />, title: "Locked", locked: true },
                     ].map((item, idx) => (
                       <motion.div
                         key={idx}
@@ -199,9 +192,9 @@ const HomeMobileApp = () => {
                             repeat: Infinity,
                             delay: idx * 0.5,
                           }}
-                          className="text-2xl sm:text-3xl mb-1"
+                          className="text-primary mb-1"
                         >
-                          {item.emoji}
+                          {item.icon}
                         </motion.div>
                         <div className="text-xs sm:text-sm font-medium text-foreground">
                           {item.title}
@@ -218,9 +211,7 @@ const HomeMobileApp = () => {
                     <div className="space-y-3">
                       <div>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="text-foreground/70">
-                            Marriage goals
-                          </span>
+                          <span className="text-foreground/70">Marriage goals</span>
                           <span className="text-foreground/70">65%</span>
                         </div>
                         <div className="h-1.5 bg-foreground/10 rounded-full overflow-hidden">
@@ -272,13 +263,13 @@ const HomeMobileApp = () => {
                     <motion.div
                       animate={{ rotate: [0, 5, -5, 0] }}
                       transition={{ duration: 3, repeat: Infinity }}
-                      className="w-8 h-8 sm:w-10 sm:h-10 bg-linear-to-br from-primary to-primary-light rounded-xl flex items-center justify-center text-lg sm:text-xl"
+                      className="w-8 h-8 sm:w-10 sm:h-10 bg-linear-to-br from-primary to-primary-light rounded-xl flex items-center justify-center"
                     >
-                      🤖
+                      <MessageCircle size={18} className="text-white" />
                     </motion.div>
                     <div>
                       <div className="font-semibold text-foreground text-sm sm:text-base">
-                        AI assistant
+                        AI Assistant
                       </div>
                     </div>
                   </div>
@@ -291,6 +282,7 @@ const HomeMobileApp = () => {
                       transition={{ duration: 0.4, delay: 0.6 }}
                       className="bg-card-hover rounded-2xl rounded-tr-none p-3 sm:p-4 text-xs sm:text-sm max-w-[85%]"
                     >
+                      <Sparkles size={12} className="inline mr-1 text-primary" />
                       Save an extra ৳500 per week to finish 2 months early!
                     </motion.div>
 
@@ -309,7 +301,8 @@ const HomeMobileApp = () => {
                       transition={{ duration: 0.4, delay: 1.0 }}
                       className="bg-card-hover rounded-2xl p-3 sm:p-4 text-xs sm:text-sm"
                     >
-                      Average cost is ৳6.5 lakh. With ৳10k/month, you&apos;ll be
+                      <Target size={12} className="inline mr-1 text-primary" />
+                      Average cost is ৳6.5 lakh. With ৳10k/month, you'll be
                       ready in 42 months.
                     </motion.div>
                   </div>
@@ -326,15 +319,17 @@ const HomeMobileApp = () => {
                       <motion.div
                         animate={{ rotate: [0, 10, -10, 0] }}
                         transition={{ duration: 2, repeat: Infinity }}
-                        className="text-base"
+                        className="text-primary"
                       >
-                        🔔
+                        <Bell size={16} />
                       </motion.div>
                       <div>
-                        <div className="font-medium text-foreground">
+                        <div className="font-medium text-foreground flex items-center gap-1">
                           Smart Reminder
+                          <Zap size={10} className="text-primary" />
                         </div>
-                        <div className="text-foreground/60">
+                        <div className="text-foreground/60 flex items-center gap-1">
+                          <Clock size={10} />
                           Deposit due in 2 days
                         </div>
                       </div>

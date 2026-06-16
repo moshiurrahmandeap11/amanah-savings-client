@@ -8,15 +8,26 @@ import {
   Target,
   Globe,
   TrendingUp,
-  Sun,
-  Moon,
-  X,
-  Menu,
+  Shield,
+  Sparkles,
+  Heart,
+  Eye,
+  Lock,
+  Calendar,
+  Rocket,
+  Award,
+  CheckCircle,
+  ArrowRight,
+  Quote,
+  Star,
+  Briefcase,
+  Code,
+  Palette,
+  BarChart,
 } from "lucide-react";
 
 const AboutUsPage = () => {
   const [isDark, setIsDark] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const stats = [
     {
@@ -47,32 +58,32 @@ const AboutUsPage = () => {
 
   const values = [
     {
-      icon: "🤝",
+      icon: <Shield size={28} />,
       title: "Amanah (Trust)",
       desc: "We operate with complete transparency. No hidden fees, no unclear terms, no surprise deductions.",
     },
     {
-      icon: "🌍",
+      icon: <Globe size={28} />,
       title: "Inclusive Access",
       desc: "From ৳500 starter to ৳5,000/month Platinum — anyone at any income level can start saving today.",
     },
     {
-      icon: "☪️",
+      icon: <Star size={28} />,
       title: "Halal First",
       desc: "Islamic savings mode on every plan. We operate without interest (riba) and comply with Halal finance principles.",
     },
     {
-      icon: "👥",
+      icon: <Users size={28} />,
       title: "Community Power",
       desc: "Circles, leaderboards, referrals, and streaks — saving together is more powerful than saving alone.",
     },
     {
-      icon: "🔐",
+      icon: <Lock size={28} />,
       title: "Privacy & Security",
       desc: "256-bit encryption, NID-verified KYC, and 2FA on all accounts. Your data stays private — always.",
     },
     {
-      icon: "🎯",
+      icon: <Target size={28} />,
       title: "Goal-Focused",
       desc: "Every feature is built around your goals — AI assistant, streak system, progress tracking all exist to keep you on track.",
     },
@@ -83,28 +94,28 @@ const AboutUsPage = () => {
       name: "Rafiqul Islam",
       role: "Co-Founder & CEO",
       bio: "Former fintech analyst at BRAC Bank. Passionate about financial inclusion for rural Bangladesh.",
-      avatar: "👨‍💼",
+      icon: <Briefcase size={32} />,
       color: "from-emerald-500 to-teal-500",
     },
     {
       name: "Nusrat Jahan",
       role: "Co-Founder & CTO",
       bio: "10 years in software engineering. Built scalable platforms used by millions across South Asia.",
-      avatar: "👩‍💻",
+      icon: <Code size={32} />,
       color: "from-blue-500 to-cyan-500",
     },
     {
       name: "Arif Hossain",
       role: "Head of Design",
       bio: "UX designer with a love for building products that feel as good as they work.",
-      avatar: "👨‍🎨",
+      icon: <Palette size={32} />,
       color: "from-purple-500 to-pink-500",
     },
     {
       name: "Fatema Khanam",
       role: "Head of Operations",
       bio: "Oversees member relations, KYC processes, and community circle management across all 64 districts.",
-      avatar: "👩‍📊",
+      icon: <BarChart size={32} />,
       color: "from-orange-500 to-amber-500",
     },
   ];
@@ -114,37 +125,49 @@ const AboutUsPage = () => {
       year: "January 2024",
       title: "The Idea",
       desc: "Rafiqul and Nusrat sketch the first concept of Amanah over tea in Dhaka.",
+      icon: <Sparkles size={20} />,
     },
     {
       year: "April 2024",
       title: "Beta Launch",
       desc: "First 200 beta members join — all from word of mouth. ৳8 lakh saved in first month.",
+      icon: <Rocket size={20} />,
     },
     {
       year: "August 2024",
       title: "Circles Launch",
       desc: "Savings Circles feature goes live — 100 circles formed in first 48 hours.",
+      icon: <Users size={20} />,
     },
     {
       year: "January 2025",
       title: "10,000 Members",
       desc: "Crossed 10,000 active members. Launched AI savings assistant for Gold/Platinum.",
+      icon: <Award size={20} />,
     },
     {
       year: "May 2026",
       title: "47,000 Members & Growing",
       desc: "৳2.4 crore saved. Present in all 64 districts. Islamic mode launched nationwide.",
+      icon: <TrendingUp size={20} />,
     },
   ];
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
+  const achievements = [
+    { label: "Member Satisfaction", value: "98%", icon: <Heart size={20} /> },
+    { label: "Goal Completion Rate", value: "87%", icon: <CheckCircle size={20} /> },
+    { label: "Active Daily Users", value: "12K+", icon: <Users size={20} /> },
+    { label: "Referral Success", value: "45%", icon: <TrendingUp size={20} /> },
+  ];
 
+  return (
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="relative bg-linear-to-r from-primary to-primary-light pt-20 pb-16 sm:py-20 text-center overflow-hidden">
+      <section className="relative bg-gradient-to-br from-primary to-primary-dark pt-20 pb-16 sm:py-20 text-center overflow-hidden">
         <div className="relative z-10 max-w-4xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-1.5 text-white text-sm mb-6">
-            🌿 Our Story
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-white text-sm mb-6">
+            <Eye size={14} />
+            <span>Our Story</span>
           </div>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
             Built for Bangladesh&apos;s Savers
@@ -163,7 +186,7 @@ const AboutUsPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: stat.delay }}
-                className="bg-white/15 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20"
+                className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20"
               >
                 <div className="text-white mb-2 flex justify-center">
                   {stat.icon}
@@ -177,15 +200,8 @@ const AboutUsPage = () => {
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0">
-          <svg
-            viewBox="0 0 1200 60"
-            preserveAspectRatio="none"
-            className="w-full h-12"
-          >
-            <path
-              d="M0,60 C300,0 900,0 1200,60 L1200,60 L0,60 Z"
-              fill="var(--background)"
-            />
+          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-12">
+            <path d="M0,60 C300,0 900,0 1200,60 L1200,60 L0,60 Z" fill="var(--background)" />
           </svg>
         </div>
       </section>
@@ -200,8 +216,9 @@ const AboutUsPage = () => {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <div className="inline-block bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-                Our Mission
+              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
+                <Target size={12} />
+                <span>Our Mission</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
                 Savings for Every Dream
@@ -229,12 +246,16 @@ const AboutUsPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="bg-linear-to-r from-primary to-primary-light rounded-2xl p-8 text-center text-white"
+              className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-8 text-center text-white"
             >
-              <div className="text-6xl mb-4">🌿</div>
+              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
+                <Shield size={40} />
+              </div>
               <div className="text-2xl font-bold">Amanah Savings</div>
-              <div className="text-white/80 mt-2">
-                Trusted Savings Community
+              <div className="text-white/80 mt-2">Trusted Savings Community</div>
+              <div className="mt-4 flex justify-center gap-2">
+                <CheckCircle size={16} className="text-white/60" />
+                <span className="text-sm text-white/70">100% Transparent</span>
               </div>
             </motion.div>
           </div>
@@ -245,8 +266,9 @@ const AboutUsPage = () => {
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-secondary/20">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <div className="inline-block bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-              Our Values
+            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
+              <Heart size={12} />
+              <span>Our Values</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
               What We Stand For
@@ -263,7 +285,9 @@ const AboutUsPage = () => {
                 whileHover={{ y: -4 }}
                 className="bg-card border border-border rounded-xl p-6 hover:border-primary/40 transition-all"
               >
-                <div className="text-4xl mb-3">{value.icon}</div>
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
+                  {value.icon}
+                </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">
                   {value.title}
                 </h3>
@@ -276,12 +300,46 @@ const AboutUsPage = () => {
         </div>
       </section>
 
-      {/* Team Section */}
+      {/* Achievements Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
-            <div className="inline-block bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-              Meet the Team
+            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
+              <Award size={12} />
+              <span>Our Achievements</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              Impact by the Numbers
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            {achievements.map((achievement, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="bg-card border border-border rounded-xl p-6 text-center"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
+                  {achievement.icon}
+                </div>
+                <div className="text-2xl font-bold text-primary">{achievement.value}</div>
+                <div className="text-xs text-foreground/60 mt-1">{achievement.label}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
+              <Users size={12} />
+              <span>Meet the Team</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
               The People Behind Amanah
@@ -302,10 +360,8 @@ const AboutUsPage = () => {
                 whileHover={{ y: -4 }}
                 className="bg-card border border-border rounded-xl p-6 text-center hover:border-primary/40 transition-all"
               >
-                <div
-                  className={`w-20 h-20 rounded-full bg-linear-to-r ${member.color} flex items-center justify-center text-3xl mx-auto mb-4`}
-                >
-                  {member.avatar}
+                <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-white mx-auto mb-4`}>
+                  {member.icon}
                 </div>
                 <h3 className="font-bold text-foreground">{member.name}</h3>
                 <p className="text-primary text-sm font-semibold mb-2">
@@ -321,7 +377,7 @@ const AboutUsPage = () => {
       </section>
 
       {/* Timeline Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+      <section className="py-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12">
             <motion.div
@@ -329,12 +385,17 @@ const AboutUsPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <div className="inline-block bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-                Our Journey
+              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
+                <Calendar size={12} />
+                <span>Our Journey</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
                 From Idea to 47,000 Members
               </h2>
+              <p className="text-foreground/60">
+                A timeline of our growth and milestones that shaped Amanah into
+                what it is today.
+              </p>
             </motion.div>
             <div className="relative pl-6 border-l-2 border-primary">
               {timeline.map((item, idx) => (
@@ -346,18 +407,53 @@ const AboutUsPage = () => {
                   transition={{ delay: idx * 0.1 }}
                   className="relative mb-8 last:mb-0"
                 >
-                  <div className="absolute -left-6.75 w-4 h-4 rounded-full bg-primary border-4 border-background" />
-                  <div className="text-primary text-xs font-semibold mb-1">
+                  <div className="absolute -left-9 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white border-4 border-background">
+                    {item.icon}
+                  </div>
+                  <div className="text-primary text-xs font-semibold mb-1 ml-4">
                     {item.year}
                   </div>
-                  <h3 className="font-bold text-foreground mb-1">
+                  <h3 className="font-bold text-foreground mb-1 ml-4">
                     {item.title}
                   </h3>
-                  <p className="text-foreground/60 text-sm">{item.desc}</p>
+                  <p className="text-foreground/60 text-sm ml-4">{item.desc}</p>
                 </motion.div>
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Testimonial Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-secondary/20">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
+              <Quote size={12} />
+              <span>Testimonials</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+              What Our Members Say
+            </h2>
+          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="bg-card border border-border rounded-2xl p-8 text-center"
+          >
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
+              <Quote size={32} />
+            </div>
+            <p className="text-foreground/80 text-lg italic mb-6">
+              &quot;Amanah changed how I save money. The circle system keeps me
+              accountable, and I&apos;ve already reached my first goal of ৳50,000!&quot;
+            </p>
+            <div>
+              <div className="font-bold text-foreground">Mohammad Rahim</div>
+              <div className="text-sm text-foreground/50">Gold Member • Dhaka</div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -368,7 +464,7 @@ const AboutUsPage = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="bg-linear-to-r from-primary to-primary-light rounded-2xl p-8 sm:p-12 text-center text-white"
+            className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-8 sm:p-12 text-center text-white"
           >
             <h2 className="text-2xl sm:text-3xl font-bold mb-2">
               Join Our Community
@@ -380,13 +476,14 @@ const AboutUsPage = () => {
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/register"
-                className="px-6 py-3 bg-white text-primary rounded-xl font-semibold hover:bg-gray-100 transition"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary rounded-xl font-semibold hover:bg-gray-100 transition"
               >
-                Open Free Account →
+                Open Free Account
+                <ArrowRight size={18} />
               </Link>
               <Link
                 href="/contact"
-                className="px-6 py-3 border-2 border-white/50 text-white rounded-xl font-semibold hover:bg-white/10 transition"
+                className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white/50 text-white rounded-xl font-semibold hover:bg-white/10 transition"
               >
                 Talk to Us
               </Link>
@@ -394,8 +491,6 @@ const AboutUsPage = () => {
           </motion.div>
         </div>
       </section>
-
-
     </div>
   );
 };

@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2 } from "lucide-react";
+import { Loader2, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
@@ -16,6 +17,7 @@ const FraudPage = () => {
   const [stats, setStats] = useState([]);
   const [fraudAlerts, setFraudAlerts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const fetchAlerts = useCallback(async () => {
     setLoading(true);
@@ -23,13 +25,11 @@ const FraudPage = () => {
       const res = await axiosInstance.get("/admin/fraud/alerts", { headers: getAuthHeaders() });
       if (res.data.success) {
         const data = res.data.data;
-        // Ensure stats is an array - convert object to array if needed
         let statsArray = [];
         if (data.stats) {
           if (Array.isArray(data.stats)) {
             statsArray = data.stats;
           } else {
-            // Convert stats object to array format
             statsArray = [
               { icon: "🚨", value: data.stats.highRisk || 0, label: "High Risk Alerts", trend: "Critical", trendUp: false, iconBg: "bg-red-500/10" },
               { icon: "⚠️", value: data.stats.mediumRisk || 0, label: "Medium Risk Alerts", trend: "Warning", trendUp: false, iconBg: "bg-amber-500/10" },
@@ -44,7 +44,6 @@ const FraudPage = () => {
     } catch (err) {
       console.error("Fetch alerts error:", err);
       showToast(err.response?.data?.message || "Failed to load fraud alerts");
-      // Set fallback stats
       setStats(getFallbackStats());
     } finally {
       setLoading(false);
@@ -65,6 +64,203 @@ const FraudPage = () => {
   const showToast = (message) => {
     setToast({ show: true, message });
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
+  };
+
+  // Excel Export Function
+  const exportToExcel = async () => {
+    setExporting(true);
+    try {
+      // Fetch fresh data for export
+      const res = await axiosInstance.get("/admin/fraud/alerts", { headers: getAuthHeaders() });
+      
+      if (res.data.success) {
+        const data = res.data.data;
+        const alerts = Array.isArray(data.alerts) ? data.alerts : [];
+        const statsData = data.stats || {};
+        
+        // Prepare summary data
+        const summaryData = [
+          { "Report Type": "Fraud & Security Report", "Value": "Amanah Savings" },
+          { "Report Generated": new Date().toLocaleString(), "Value": "" },
+          { "Total Alerts": alerts.length, "Value": "" },
+          { "High Risk Alerts": statsData.highRisk || 0, "Value": "" },
+          { "Medium Risk Alerts": statsData.mediumRisk || 0, "Value": "" },
+          { "Low Risk Alerts": statsData.lowRisk || 0, "Value": "" },
+          { "Active Alerts": statsData.active || 0, "Value": "" },
+          { "Resolved Alerts": statsData.resolved || 0, "Value": "" },
+          { "Suspended Accounts": statsData.suspended || 0, "Value": "" },
+          { "Banned Accounts": statsData.banned || 0, "Value": "" },
+        ];
+        
+        // Prepare alerts data for Excel
+        const alertsData = alerts.map((alert, index) => ({
+          "SL No": index + 1,
+          "Alert Type": alert.type || "Unknown",
+          "Severity": alert.severity === "danger" || alert.severity === "high" ? "High" : 
+                       alert.severity === "warn" || alert.severity === "medium" ? "Medium" : "Low",
+          "User Name": alert.userName || alert.user || "Unknown",
+          "User ID": alert.userId || "N/A",
+          "Description": alert.description || alert.details || "No details",
+          "Risk Score": `${alert.riskScore || 0}/100`,
+          "Status": alert.status || "Active",
+          "IP Address": alert.ip || alert.ips?.join(", ") || "N/A",
+          "Time": alert.time || (alert.createdAt ? new Date(alert.createdAt).toLocaleString() : "N/A"),
+        }));
+        
+        // Create Summary Sheet
+        const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+        summarySheet["!cols"] = [{ wch: 25 }, { wch: 30 }];
+        
+        // Style summary header
+        const range = XLSX.utils.decode_range(summarySheet["!ref"]);
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const address = XLSX.utils.encode_col(C) + "1";
+          if (summarySheet[address]) {
+            summarySheet[address].s = {
+              font: { bold: true, sz: 12, color: { rgb: "FFFFFF" } },
+              fill: { fgColor: { rgb: "059669" }, patternType: "solid" }
+            };
+          }
+        }
+        
+        // Create Alerts Sheet
+        const alertsSheet = XLSX.utils.json_to_sheet(alertsData);
+        
+        // Set column widths for alerts sheet
+        alertsSheet["!cols"] = [
+          { wch: 8 },   // SL No
+          { wch: 20 },  // Alert Type
+          { wch: 10 },  // Severity
+          { wch: 25 },  // User Name
+          { wch: 15 },  // User ID
+          { wch: 45 },  // Description
+          { wch: 12 },  // Risk Score
+          { wch: 12 },  // Status
+          { wch: 20 },  // IP Address
+          { wch: 20 },  // Time
+        ];
+        
+        // Style alerts header
+        const alertsRange = XLSX.utils.decode_range(alertsSheet["!ref"]);
+        for (let C = alertsRange.s.c; C <= alertsRange.e.c; ++C) {
+          const address = XLSX.utils.encode_col(C) + "1";
+          if (alertsSheet[address]) {
+            alertsSheet[address].s = {
+              font: { bold: true, sz: 11, color: { rgb: "FFFFFF" } },
+              fill: { fgColor: { rgb: "DC2626" }, patternType: "solid" }
+            };
+          }
+        }
+        
+        // Color code severity rows
+        alertsData.forEach((_, rowIndex) => {
+          const rowNum = rowIndex + 2; // +2 because header is row 1
+          const severityCell = XLSX.utils.encode_cell({ c: 2, r: rowNum - 1 }); // Severity column (index 2)
+          
+          if (alertsSheet[severityCell]) {
+            const severity = alertsData[rowIndex]["Severity"];
+            if (severity === "High") {
+              alertsSheet[severityCell].s = {
+                fill: { fgColor: { rgb: "FEE2E2" }, patternType: "solid" },
+                font: { color: { rgb: "DC2626" }, bold: true }
+              };
+            } else if (severity === "Medium") {
+              alertsSheet[severityCell].s = {
+                fill: { fgColor: { rgb: "FEF3C7" }, patternType: "solid" },
+                font: { color: { rgb: "D97706" }, bold: true }
+              };
+            } else {
+              alertsSheet[severityCell].s = {
+                fill: { fgColor: { rgb: "DBEAFE" }, patternType: "solid" },
+                font: { color: { rgb: "2563EB" }, bold: true }
+              };
+            }
+          }
+        });
+        
+        // Create workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
+        XLSX.utils.book_append_sheet(workbook, alertsSheet, "Fraud Alerts");
+        
+        // Add Statistics Sheet
+        const statsDataForSheet = [
+          ["Risk Level", "Count", "Percentage"],
+          ["High Risk", statsData.highRisk || 0, 
+            `${((statsData.highRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["Medium Risk", statsData.mediumRisk || 0,
+            `${((statsData.mediumRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["Low Risk", statsData.lowRisk || 0,
+            `${((statsData.lowRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["", "", ""],
+          ["Status", "Count", "Percentage"],
+          ["Active", statsData.active || 0,
+            `${((statsData.active || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["Resolved", statsData.resolved || 0,
+            `${((statsData.resolved || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+        ];
+        
+        const statsSheet = XLSX.utils.aoa_to_sheet(statsDataForSheet);
+        statsSheet["!cols"] = [{ wch: 15 }, { wch: 12 }, { wch: 12 }];
+        XLSX.utils.book_append_sheet(workbook, statsSheet, "Statistics");
+        
+        // Generate Excel file
+        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+        const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        
+        // Download file
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `fraud-report-${new Date().toISOString().split("T")[0]}.xlsx`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showToast(`✅ Exported ${alerts.length} alerts successfully!`);
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      showToast("❌ Failed to export report");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  // JSON Export Alternative
+  const exportToJSON = async () => {
+    setExporting(true);
+    try {
+      const res = await axiosInstance.get("/admin/fraud/alerts", { headers: getAuthHeaders() });
+      
+      if (res.data.success) {
+        const exportData = {
+          exportDate: new Date().toISOString(),
+          reportType: "Fraud & Security Report",
+          summary: res.data.data.stats,
+          alerts: res.data.data.alerts,
+        };
+        
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([dataStr], { type: "application/json" });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.href = url;
+        link.download = `fraud-report-${new Date().toISOString().split("T")[0]}.json`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showToast("✅ JSON report downloaded successfully!");
+      }
+    } catch (error) {
+      console.error("JSON Export error:", error);
+      showToast("❌ Failed to export JSON report");
+    } finally {
+      setExporting(false);
+    }
   };
 
   const handleBan = async (userId, userName) => {
@@ -190,33 +386,20 @@ const FraudPage = () => {
       html: `
         <div class="text-left">
           <p><strong>Type:</strong> ${alert.type || "N/A"}</p>
+          <p><strong>Severity:</strong> ${alert.severity || "N/A"}</p>
           <p><strong>User:</strong> ${alert.user || alert.userName || "Unknown"}</p>
-          <p><strong>Details:</strong> ${alert.details || "No details"}</p>
+          <p><strong>User ID:</strong> ${alert.userId || "N/A"}</p>
+          <p><strong>Details:</strong> ${alert.details || alert.description || "No details"}</p>
           <p><strong>Risk Score:</strong> ${alert.riskScore || "N/A"}/100</p>
           <p><strong>Time:</strong> ${alert.time || new Date(alert.createdAt).toLocaleString()}</p>
           <p><strong>Status:</strong> ${alert.status || "Active"}</p>
+          ${alert.ip ? `<p><strong>IP Address:</strong> ${alert.ip}</p>` : ""}
         </div>
       `,
       icon: "info",
       confirmButtonColor: "#059669",
       confirmButtonText: "Close",
     });
-  };
-
-  const handleExportReport = async () => {
-    try {
-      const response = await axiosInstance.get("/admin/fraud/export", { headers: getAuthHeaders() });
-      const dataStr = JSON.stringify(response.data, null, 2);
-      const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
-      const exportFileDefaultName = `fraud_report_${new Date().toISOString().slice(0, 19)}.json`;
-      const linkElement = document.createElement("a");
-      linkElement.setAttribute("href", dataUri);
-      linkElement.setAttribute("download", exportFileDefaultName);
-      linkElement.click();
-      showToast("Report downloaded successfully");
-    } catch (err) {
-      showToast("Failed to generate report");
-    }
   };
 
   const getSeverityBadge = (severity) => {
@@ -271,6 +454,32 @@ const FraudPage = () => {
             {highRisk} High Risk · {mediumRisk} Medium Risk
           </span>
         </div>
+        <div className="flex gap-2">
+          <button
+            onClick={exportToExcel}
+            disabled={exporting}
+            className="px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-sm font-semibold flex items-center gap-2 disabled:opacity-50"
+          >
+            {exporting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download size={16} />
+                Export Excel
+              </>
+            )}
+          </button>
+          <button
+            onClick={exportToJSON}
+            disabled={exporting}
+            className="px-4 py-2 rounded-lg border border-border bg-card text-foreground/70 text-sm font-semibold hover:border-primary transition disabled:opacity-50"
+          >
+            Export JSON
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
@@ -318,12 +527,9 @@ const FraudPage = () => {
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b border-border">
           <div className="font-bold text-foreground">All Fraud Alerts</div>
-          <button
-            onClick={handleExportReport}
-            className="text-xs text-primary font-semibold hover:underline"
-          >
-            Export Report
-          </button>
+          <div className="text-xs text-foreground/50">
+            Total: {fraudAlerts.length} alerts
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-200">
@@ -358,7 +564,7 @@ const FraudPage = () => {
                   <td colSpan="7" className="px-4 py-8 text-center text-foreground/50">
                     No fraud alerts found
                   </td>
-                 </tr>
+                </tr>
               ) : (
                 fraudAlerts.map((alert, idx) => (
                   <tr
@@ -371,7 +577,7 @@ const FraudPage = () => {
                       >
                         {alert.icon || "🚨"} {alert.type || "Alert"}
                       </span>
-                     </td>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="font-semibold text-sm text-foreground">
                         {alert.userName || alert.user || "Unknown"}
@@ -379,27 +585,27 @@ const FraudPage = () => {
                       <div className="text-xs text-foreground/50">
                         ID: {alert.userId || "N/A"}
                       </div>
-                     </td>
+                    </td>
                     <td className="px-4 py-3 text-sm text-foreground/70">
                       {alert.description || alert.details || "No details"}
-                     </td>
+                    </td>
                     <td className="px-4 py-3">
                       <span
                         className={`text-sm font-bold ${getRiskColor(alert.riskScore)}`}
                       >
                         {alert.riskScore || 0} / 100
                       </span>
-                     </td>
+                    </td>
                     <td className="px-4 py-3 text-xs text-foreground/50">
                       {alert.time || (alert.createdAt ? new Date(alert.createdAt).toLocaleString() : "N/A")}
-                     </td>
+                    </td>
                     <td className="px-4 py-3">
                       <span
                         className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusBadge(alert.status)}`}
                       >
                         {alert.status || "Active"}
                       </span>
-                     </td>
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2 flex-wrap">
                         <button
@@ -433,12 +639,12 @@ const FraudPage = () => {
                           </button>
                         )}
                       </div>
-                     </td>
-                   </tr>
+                    </td>
+                  </tr>
                 ))
               )}
             </tbody>
-           </table>
+          </table>
         </div>
       </div>
 

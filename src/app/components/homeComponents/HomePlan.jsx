@@ -1,50 +1,95 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, TrendingUp, Shield, Crown } from "lucide-react";
+import Link from "next/link";
+import {
+  Sparkles,
+  TrendingUp,
+  Shield,
+  Crown,
+  Check,
+  Loader2,
+  Star,
+  Diamond,
+} from "lucide-react";
+import axiosInstance from "../../components/shared/AxiosInstance/AxiosInstance";
 
-const plans = [
-  {
-    name: "Bronze",
-    price: "৳500 - ৳2,000",
-    period: "/ month",
-    desc: "Perfect for students and beginners starting their savings journey",
-    features: [
+const SavingsPlanSection = () => {
+  const [billingMode, setBillingMode] = useState("monthly");
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [cmsData, setCmsData] = useState(null);
+
+  // Complete plan pricing and metadata
+  const planMetadata = {
+    Bronze: {
+      monthly: 0,
+      yearly: 0,
+      tier: "Starter",
+      popular: false,
+      description: "Perfect for beginners. Save at your own pace with no platform fee.",
+      icon: <TrendingUp size={24} />,
+      color: "from-orange-600 to-orange-700",
+      priceLabel: "Free Forever",
+      minDeposit: 500,
+      maxDeposit: 4999,
+    },
+    Silver: {
+      monthly: 199,
+      yearly: 159,
+      tier: "Essential",
+      popular: false,
+      description: "For regular savers building serious momentum with community features.",
+      icon: <Shield size={24} />,
+      color: "from-gray-400 to-gray-600",
+      priceLabel: "৳199/month",
+      minDeposit: 5000,
+      maxDeposit: 14999,
+    },
+    Gold: {
+      monthly: 499,
+      yearly: 399,
+      tier: "Growth",
+      popular: true,
+      description: "Our flagship plan with AI assistant, unlimited goals, and full circle access.",
+      icon: <Crown size={24} />,
+      color: "from-primary to-primary-light",
+      priceLabel: "৳499/month",
+      minDeposit: 15000,
+      maxDeposit: 49999,
+    },
+    Platinum: {
+      monthly: 999,
+      yearly: 799,
+      tier: "Elite",
+      popular: false,
+      description: "For power savers who want exclusive features, dedicated support & elite status.",
+      icon: <Diamond size={24} />,
+      color: "from-sky-400 to-blue-600",
+      priceLabel: "৳999/month",
+      minDeposit: 50000,
+      maxDeposit: null,
+    },
+  };
+
+  // Default features for each plan
+  const defaultFeatures = {
+    Bronze: [
       "Monthly savings deposit",
       "1 active savings goal",
       "Basic progress tracking",
       "Community badge",
       "Mobile notifications",
     ],
-    button: "Get Started",
-    highlight: false,
-    color: "from-orange-600 to-orange-700",
-    icon: <TrendingUp size={20} />,
-  },
-  {
-    name: "Silver",
-    price: "৳2,000 - ৳10,000",
-    period: "/ month",
-    desc: "Ideal for young professionals building multiple goals simultaneously",
-    features: [
+    Silver: [
       "Weekly or monthly deposits",
       "Up to 3 active goals",
       "Advanced analytics",
       "AI savings insights",
       "Priority support",
     ],
-    button: "Get Started",
-    highlight: false,
-    color: "from-gray-400 to-gray-600",
-    icon: <Shield size={20} />,
-  },
-  {
-    name: "Gold",
-    price: "৳10,000 - ৳50,000",
-    period: "/ month",
-    desc: "For families and serious savers with big goals and community leadership",
-    features: [
+    Gold: [
       "Flexible weekly deposits",
       "Up to 5 active goals",
       "Family savings mode",
@@ -52,17 +97,7 @@ const plans = [
       "Referral rewards",
       "Early goal refresh",
     ],
-    button: "Get Started",
-    highlight: true,
-    color: "from-primary to-primary-light",
-    icon: <Crown size={20} />,
-  },
-  {
-    name: "Platinum",
-    price: "৳50,000+",
-    period: "/ month",
-    desc: "Premium tier for high-discipline savers and community leaders",
-    features: [
+    Platinum: [
       "Unlimited active goals",
       "Circle leadership role",
       "Dedicated account manager",
@@ -70,14 +105,106 @@ const plans = [
       "VIP community access",
       "Early maturity options",
     ],
-    button: "Get Started",
-    highlight: false,
-    color: "from-sky-400 to-blue-600",
-    icon: <Sparkles size={20} />,
-  },
-];
+  };
 
-const HomePlan = () => {
+  // Fetch CMS data
+  useEffect(() => {
+    const fetchCMSData = async () => {
+      setLoading(true);
+      try {
+        const res = await axiosInstance.get("/cms");
+        if (res.data.success) {
+          setCmsData(res.data.data);
+          const cmsPlans = res.data.data?.plans || [];
+          
+          if (cmsPlans.length > 0) {
+            // Merge CMS plans with metadata
+            const mergedPlans = cmsPlans.map(plan => {
+              const metadata = planMetadata[plan.name] || {
+                monthly: 0,
+                yearly: 0,
+                tier: "Standard",
+                popular: false,
+                description: `Start your savings journey with our ${plan.name} plan.`,
+                icon: <Sparkles size={24} />,
+                color: "from-primary to-primary-light",
+                priceLabel: "Contact Us",
+                minDeposit: plan.min || 500,
+                maxDeposit: plan.max,
+              };
+              
+              return {
+                name: plan.name,
+                min: plan.min,
+                max: plan.max,
+                color: plan.color,
+                features: plan.features || defaultFeatures[plan.name] || [],
+                monthlyPrice: metadata.monthly,
+                yearlyPrice: metadata.yearly,
+                tier: metadata.tier,
+                popular: metadata.popular,
+                description: metadata.description,
+                icon: metadata.icon,
+                gradientColor: metadata.color,
+                priceLabel: metadata.priceLabel,
+                minDeposit: metadata.minDeposit,
+                maxDeposit: metadata.maxDeposit,
+              };
+            });
+            setPlans(mergedPlans);
+          } else {
+            // Use default plans
+            setPlans(getDefaultPlans());
+          }
+        } else {
+          setPlans(getDefaultPlans());
+        }
+      } catch (error) {
+        console.error("Failed to fetch CMS data:", error);
+        setPlans(getDefaultPlans());
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCMSData();
+  }, []);
+
+  const getDefaultPlans = () => {
+    return Object.keys(planMetadata).map(name => ({
+      name,
+      min: planMetadata[name].minDeposit,
+      max: planMetadata[name].maxDeposit,
+      color: planMetadata[name].color.includes("primary") ? "#059669" : 
+             name === "Bronze" ? "#cd7f32" :
+             name === "Silver" ? "#c0c0c0" :
+             name === "Gold" ? "#ffd700" : "#e5e4e2",
+      features: defaultFeatures[name],
+      monthlyPrice: planMetadata[name].monthly,
+      yearlyPrice: planMetadata[name].yearly,
+      tier: planMetadata[name].tier,
+      popular: planMetadata[name].popular,
+      description: planMetadata[name].description,
+      icon: planMetadata[name].icon,
+      gradientColor: planMetadata[name].color,
+      priceLabel: planMetadata[name].priceLabel,
+      minDeposit: planMetadata[name].minDeposit,
+      maxDeposit: planMetadata[name].maxDeposit,
+    }));
+  };
+
+  const getPrice = (plan) => {
+    return billingMode === "monthly" ? (plan.monthlyPrice || 0) : (plan.yearlyPrice || 0);
+  };
+
+  const getSavingsPercent = (plan) => {
+    if (billingMode !== "yearly") return 0;
+    const monthlyTotal = (plan.monthlyPrice || 0) * 12;
+    const yearlyPrice = plan.yearlyPrice || 0;
+    if (monthlyTotal === 0) return 0;
+    return Math.round(((monthlyTotal - yearlyPrice) / monthlyTotal) * 100);
+  };
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -101,6 +228,16 @@ const HomePlan = () => {
     },
   };
 
+  if (loading) {
+    return (
+      <section className="py-16 sm:py-20 lg:py-24 bg-background">
+        <div className="flex items-center justify-center">
+          <Loader2 size={48} className="animate-spin text-primary" />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative overflow-hidden bg-background py-16 sm:py-20 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -112,8 +249,9 @@ const HomePlan = () => {
           viewport={{ once: true }}
           className="mb-12 sm:mb-16 lg:mb-20 text-center"
         >
-          <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-primary">
-            Savings Plans
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-primary">
+            <Sparkles size={14} />
+            <span>Savings Plans</span>
           </div>
 
           <h2 className="mt-5 sm:mt-6 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
@@ -129,6 +267,32 @@ const HomePlan = () => {
           </p>
         </motion.div>
 
+        {/* Billing Toggle */}
+        <div className="flex justify-center mb-10">
+          <div className="flex bg-card border border-border rounded-xl p-1">
+            <button
+              onClick={() => setBillingMode("monthly")}
+              className={`px-6 py-2 rounded-lg text-sm font-semibold transition ${
+                billingMode === "monthly"
+                  ? "bg-primary text-white"
+                  : "text-foreground/70 hover:text-primary"
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingMode("yearly")}
+              className={`px-6 py-2 rounded-lg text-sm font-semibold transition ${
+                billingMode === "yearly"
+                  ? "bg-primary text-white"
+                  : "text-foreground/70 hover:text-primary"
+              }`}
+            >
+              Yearly <span className="text-primary-400 text-xs ml-1">Save 20%</span>
+            </button>
+          </div>
+        </div>
+
         {/* CARDS */}
         <motion.div
           variants={containerVariants}
@@ -139,25 +303,20 @@ const HomePlan = () => {
         >
           {plans.map((plan, idx) => (
             <motion.div
-              key={idx}
+              key={plan.name}
               variants={cardVariants}
               whileHover={{
                 y: -8,
                 transition: { duration: 0.2 },
               }}
               className={`relative rounded-2xl border transition-all duration-300 overflow-hidden ${
-                plan.highlight
+                plan.popular
                   ? "border-primary bg-card shadow-xl shadow-primary/10"
                   : "border-border bg-card hover:border-primary/40"
               }`}
             >
-              {/* Glow Effect */}
-              {plan.highlight && (
-                <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-primary-light/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              )}
-
               {/* Popular Badge */}
-              {plan.highlight && (
+              {plan.popular && (
                 <motion.div
                   initial={{ x: 100, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
@@ -176,7 +335,7 @@ const HomePlan = () => {
                 <motion.div
                   whileHover={{ scale: 1.05, rotate: 5 }}
                   transition={{ type: "spring", stiffness: 300 }}
-                  className={`mb-4 sm:mb-5 h-12 w-12 rounded-xl bg-linear-to-r ${plan.color} flex items-center justify-center text-white shadow-lg`}
+                  className={`mb-4 sm:mb-5 h-14 w-14 rounded-xl bg-linear-to-r ${plan.gradientColor} flex items-center justify-center text-white shadow-lg`}
                 >
                   {plan.icon}
                 </motion.div>
@@ -185,25 +344,40 @@ const HomePlan = () => {
                 <h3 className="text-xl sm:text-2xl font-bold text-foreground">
                   {plan.name}
                 </h3>
+                <div className="text-xs text-primary mt-0.5">{plan.tier}</div>
 
                 {/* Price */}
                 <div className="mt-3">
-                  <span className="text-2xl sm:text-3xl font-bold text-primary">
-                    {plan.price}
-                  </span>
-                  <span className="ml-1 text-xs sm:text-sm text-foreground/50">
-                    {plan.period}
-                  </span>
+                  {getPrice(plan) === 0 ? (
+                    <span className="text-2xl sm:text-3xl font-bold text-primary">Free</span>
+                  ) : (
+                    <>
+                      <span className="text-2xl sm:text-3xl font-bold text-primary">
+                        ৳{getPrice(plan).toLocaleString()}
+                      </span>
+                      <span className="ml-1 text-xs sm:text-sm text-foreground/50">/month</span>
+                    </>
+                  )}
+                  {billingMode === "yearly" && getPrice(plan) > 0 && (
+                    <div className="text-xs text-green-500 mt-1">
+                      Save {getSavingsPercent(plan)}% annually
+                    </div>
+                  )}
+                </div>
+
+                {/* Min Deposit */}
+                <div className="mt-2 text-xs text-foreground/50">
+                  Min deposit: ৳{plan.minDeposit.toLocaleString()}/month
                 </div>
 
                 {/* Description */}
                 <p className="mt-3 text-xs sm:text-sm leading-relaxed text-foreground/60">
-                  {plan.desc}
+                  {plan.description}
                 </p>
 
                 {/* Features */}
                 <ul className="mt-4 sm:mt-5 space-y-2">
-                  {plan.features.map((feature, i) => (
+                  {plan.features.slice(0, 6).map((feature, i) => (
                     <motion.li
                       key={i}
                       initial={{ opacity: 0, x: -10 }}
@@ -211,25 +385,27 @@ const HomePlan = () => {
                       transition={{ delay: idx * 0.1 + i * 0.05 }}
                       className="flex items-start gap-2 text-xs sm:text-sm text-foreground/70"
                     >
-                      <span className="text-primary mt-0.5">✓</span>
-                      <span>{feature}</span>
+                      <Check size={14} className="text-primary mt-0.5 shrink-0" />
+                      <span>{typeof feature === 'string' ? feature : feature.text || feature}</span>
                     </motion.li>
                   ))}
                 </ul>
 
                 {/* Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                  className={`mt-6 w-full rounded-xl py-2.5 sm:py-3 font-semibold transition-all duration-300 ${
-                    plan.highlight
-                      ? "bg-linear-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/30 hover:shadow-primary/50"
-                      : "border border-border bg-background text-foreground hover:border-primary hover:bg-primary/5"
-                  }`}
-                >
-                  {plan.button}
-                </motion.button>
+                <Link href="/register">
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 17 }}
+                    className={`mt-6 w-full rounded-xl py-2.5 sm:py-3 font-semibold transition-all duration-300 ${
+                      plan.popular
+                        ? "bg-linear-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/30 hover:shadow-primary/50"
+                        : "border border-border bg-background text-foreground hover:border-primary hover:bg-primary/5"
+                    }`}
+                  >
+                    Choose {plan.name}
+                  </motion.button>
+                </Link>
               </div>
             </motion.div>
           ))}
@@ -243,7 +419,7 @@ const HomePlan = () => {
           viewport={{ once: true }}
           className="mt-10 sm:mt-12 text-center text-xs text-foreground/40"
         >
-          ⚠️ All savings are member-owned and locked until goal maturity. Amanah
+          All savings are member-owned and locked until goal maturity. Amanah
           is a savings community, not a bank or investment firm.
         </motion.p>
       </div>
@@ -257,4 +433,4 @@ const HomePlan = () => {
   );
 };
 
-export default HomePlan;
+export default SavingsPlanSection;

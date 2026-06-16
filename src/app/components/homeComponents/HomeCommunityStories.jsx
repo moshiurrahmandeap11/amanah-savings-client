@@ -2,14 +2,15 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Star, Quote, Users, Target, Heart, Shield } from "lucide-react";
+import { Star, Quote, Users, Target, Heart, Shield, CheckCircle, Award, ThumbsUp, TrendingUp } from "lucide-react";
+import Link from "next/link";
 
 const HomeCommunityStories = () => {
   const testimonials = [
     {
       name: "Rahima Begum",
       role: "Housewife, Dhaka",
-      achievement: "Marriage Fund ✓",
+      achievement: "Marriage Fund Completed",
       amount: "৳2.4 lakh",
       time: "18 months",
       quote:
@@ -22,7 +23,7 @@ const HomeCommunityStories = () => {
     {
       name: "Karim Ahmed",
       role: "University Student, Chittagong",
-      achievement: "Gadget Fund ✓",
+      achievement: "Gadget Fund Completed",
       amount: "৳50,000",
       goal: "laptop",
       quote:
@@ -49,7 +50,7 @@ const HomeCommunityStories = () => {
     { value: "15,000+", label: "Happy Members", icon: <Users size={18} /> },
     { value: "98%", label: "Goal Completion", icon: <Target size={18} /> },
     { value: "4.9", label: "Average Rating", icon: <Star size={18} /> },
-    { value: "৳500Cr+", label: "Total Saved", icon: <Heart size={18} /> },
+    { value: "৳500Cr+", label: "Total Saved", icon: <TrendingUp size={18} /> },
   ];
 
   const containerVariants = {
@@ -112,7 +113,7 @@ const HomeCommunityStories = () => {
           >
             <Quote size={14} className="text-primary" />
             <span className="text-xs sm:text-sm font-medium tracking-wider text-primary">
-              Community stories
+              Community Stories
             </span>
           </motion.div>
 
@@ -207,7 +208,7 @@ const HomeCommunityStories = () => {
                   </div>
                   {testimonial.achievement && (
                     <div className="text-xs text-primary mt-0.5 flex items-center gap-1">
-                      <span className="text-primary">✓</span>
+                      <CheckCircle size={10} className="text-primary" />
                       {testimonial.achievement}
                     </div>
                   )}
@@ -220,8 +221,9 @@ const HomeCommunityStories = () => {
                   initial={{ opacity: 0, scale: 0 }}
                   whileInView={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.4, delay: testimonial.delay + 0.3 }}
-                  className="absolute bottom-6 right-6 bg-primary/20 rounded-full px-2 py-1 text-xs font-semibold text-primary"
+                  className="absolute bottom-6 right-6 bg-primary/20 rounded-full px-2 py-1 text-xs font-semibold text-primary flex items-center gap-1"
                 >
+                  <Award size={10} />
                   {testimonial.amount} saved
                 </motion.div>
               )}
@@ -279,11 +281,15 @@ const HomeCommunityStories = () => {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
             className="group cursor-pointer inline-flex items-center gap-2 bg-linear-to-r from-primary to-primary-light text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
           >
+            <Link href={"/register"} className="flex items-center justify-center gap-4">
+            
             <Heart size={18} />
             Share Your Story
+            </Link>
             <motion.span
               animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1, repeat: Infinity }}
+              className="inline-block"
             >
               →
             </motion.span>

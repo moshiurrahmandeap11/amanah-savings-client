@@ -23,12 +23,7 @@ const LeaderboardPage = () => {
     year: new Date().getFullYear()
   });
 
-  const quickLinks = [
-    { name: "🏅 Challenges", href: "/dashboard/challenges" },
-    { name: "🧱 Savings Wall", href: "/dashboard/savings-wall" },
-    { name: "📡 Live Feed", href: "/dashboard/live-feed" },
-    { name: "⭐ Success Stories", href: "/dashboard/success-stories" }
-  ];
+
 
   // Fetch leaderboard data
   const fetchLeaderboard = async (type) => {
@@ -86,21 +81,6 @@ const LeaderboardPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      {/* Header with Quick Links */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <h2 className="text-2xl font-bold text-foreground">🏆 Leaderboard</h2>
-        <div className="flex gap-2 flex-wrap">
-          {quickLinks.map((link, idx) => (
-            <Link
-              key={idx}
-              href={link.href}
-              className="px-3 py-2 rounded-lg border border-border bg-background text-foreground/70 text-xs font-semibold hover:border-primary hover:text-primary transition"
-            >
-              {link.name}
-            </Link>
-          ))}
-        </div>
-      </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">

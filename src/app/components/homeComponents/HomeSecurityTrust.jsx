@@ -11,12 +11,19 @@ import {
   Eye,
   BadgeCheck,
   Sparkles,
+  UserCheck,
+  Database,
+  Smartphone,
+  AlertTriangle,
+  TrendingUp,
+  Clock,
 } from "lucide-react";
+import Link from "next/link";
 
 const HomeSecurityTrust = () => {
   const securityCards = [
     {
-      icon: "🪪",
+      icon: <UserCheck size={24} />,
       title: "NID + Selfie Verification",
       desc: "Each member's NID and live selfie are verified before savings are activated. No anonymous accounts.",
       color: "from-blue-500 to-blue-600",
@@ -24,7 +31,7 @@ const HomeSecurityTrust = () => {
       delay: 0,
     },
     {
-      icon: "🔒",
+      icon: <Lock size={24} />,
       title: "256-bit SSL encryption",
       desc: "All data sent and stored is protected with bank-grade 256-bit AES encryption. Your data never leaves our secure servers.",
       color: "from-amber-500 to-amber-600",
@@ -32,7 +39,7 @@ const HomeSecurityTrust = () => {
       delay: 0.1,
     },
     {
-      icon: "📱",
+      icon: <Smartphone size={24} />,
       title: "Two-factor authentication",
       desc: "Enable 2FA for extra security. SMS OTP + authenticator app support for maximum security.",
       color: "from-emerald-500 to-emerald-600",
@@ -40,7 +47,7 @@ const HomeSecurityTrust = () => {
       delay: 0.2,
     },
     {
-      icon: "🤖",
+      icon: <Brain size={24} />,
       title: "Fraud Detection AI",
       desc: "Our AI monitors suspicious activity, multiple accounts, and unusual login patterns — keeping the entire community safe.",
       color: "from-purple-500 to-purple-600",
@@ -48,7 +55,7 @@ const HomeSecurityTrust = () => {
       delay: 0.3,
     },
     {
-      icon: "🔐",
+      icon: <Vault size={24} />,
       title: "Locked savings vault",
       desc: "Savings are locked until the target period is completed. Early withdrawals require admin review to prevent unnecessary spending.",
       color: "from-orange-500 to-orange-600",
@@ -56,7 +63,7 @@ const HomeSecurityTrust = () => {
       delay: 0.4,
     },
     {
-      icon: "👁️",
+      icon: <Eye size={24} />,
       title: "Completely transparent ledger",
       desc: "Every deposit, transaction, and movement is visible in your personal ledger. Complete transparency, no hidden work.",
       color: "from-cyan-500 to-cyan-600",
@@ -128,7 +135,7 @@ const HomeSecurityTrust = () => {
           >
             <Shield size={14} className="text-primary" />
             <span className="text-xs sm:text-sm font-medium tracking-wider text-primary">
-              Security and trust
+              Security & Trust
             </span>
           </motion.div>
 
@@ -170,7 +177,7 @@ const HomeSecurityTrust = () => {
               <motion.div
                 whileHover={{ scale: 1.1, rotate: 5 }}
                 transition={{ type: "spring", stiffness: 300 }}
-                className={`w-10 h-10 sm:w-12 sm:h-12 ${card.bgColor} rounded-xl sm:rounded-2xl flex items-center justify-center mb-5 sm:mb-6 text-2xl sm:text-3xl`}
+                className={`w-12 h-12 sm:w-14 sm:h-14 ${card.bgColor} rounded-xl sm:rounded-2xl flex items-center justify-center mb-5 sm:mb-6 text-primary`}
               >
                 {card.icon}
               </motion.div>
@@ -214,17 +221,17 @@ const HomeSecurityTrust = () => {
               {
                 value: "৳500Cr+",
                 label: "Total Savings Protected",
-                icon: <Shield size={20} />,
+                icon: <Database size={20} />,
               },
               {
                 value: "99.9%",
                 label: "Uptime Guarantee",
-                icon: <Lock size={20} />,
+                icon: <Clock size={20} />,
               },
               {
                 value: "24/7",
                 label: "Security Monitoring",
-                icon: <Eye size={20} />,
+                icon: <AlertTriangle size={20} />,
               },
             ].map((stat, idx) => (
               <motion.div
@@ -264,11 +271,14 @@ const HomeSecurityTrust = () => {
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
             className="group inline-flex items-center gap-2 bg-linear-to-r from-primary to-primary-light text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-sm sm:text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
           >
+            <Link href={"/register"} className="flex items-center justify-center gap-4">
             <Shield size={18} />
             Learn about our security
+            </Link>
             <motion.span
               animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1, repeat: Infinity }}
+              className="inline-block"
             >
               →
             </motion.span>

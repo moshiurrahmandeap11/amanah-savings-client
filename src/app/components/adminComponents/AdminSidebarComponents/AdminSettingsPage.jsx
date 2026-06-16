@@ -379,31 +379,6 @@ const AdminSettingsPage = () => {
             {lang === "bn" ? "সিস্টেম অবস্থা" : "System Status"}
           </h3>
         </div>
-        <div className="p-4 space-y-4">
-          {[
-            { key: "newRegistration", labelBn: "নতুন নিবন্ধন", labelEn: "New Registration", descBn: "নতুন সদস্য যোগ দিতে পারবে", descEn: "New members can join" },
-            { key: "demoMode", labelBn: "ডেমো মোড", labelEn: "Demo Mode", descBn: "পরীক্ষামূলক মোড সক্রিয়", descEn: "Experimental mode active" },
-          ].map((field) => (
-            <div key={field.key} className="flex items-center justify-between">
-              <div>
-                <div className="font-medium text-sm text-foreground">
-                  {lang === "bn" ? field.labelBn : field.labelEn}
-                </div>
-                <div className="text-xs text-foreground/50">
-                  {lang === "bn" ? field.descBn : field.descEn}
-                </div>
-              </div>
-              <button
-                onClick={() => handleToggle("general", field.key)}
-                className={`relative w-12 h-6 rounded-full transition ${settings.general?.[field.key] ? "bg-primary" : "bg-border"}`}
-              >
-                <div
-                  className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.general?.[field.key] ? "right-0.5" : "left-0.5"}`}
-                />
-              </button>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );
@@ -773,75 +748,6 @@ const AdminSettingsPage = () => {
             />
           </div>
         </div>
-      </div>
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">
-            {lang === "bn" ? "ডেটাবেজ ব্যাকআপ" : "Database Backup"}
-          </h3>
-        </div>
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "স্বয়ংক্রিয় ব্যাকআপ" : "Automatic Backup"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn" ? "প্রতিদিন রাত ২টায়" : "Every day at 2 AM"}
-              </div>
-            </div>
-            <button className="relative w-12 h-6 rounded-full bg-primary">
-              <div className="absolute w-5 h-5 rounded-full bg-white top-0.5 right-0.5" />
-            </button>
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={() =>
-                showToast(
-                  lang === "bn"
-                    ? "💾 ব্যাকআপ শুরু হয়েছে..."
-                    : "💾 Backup has started...",
-                )
-              }
-              className="flex-1 py-2 rounded-lg border border-border text-foreground/70 text-sm font-semibold hover:border-primary transition"
-            >
-              💾 {lang === "bn" ? "এখনই ব্যাকআপ করুন" : "Backup Now"}
-            </button>
-            <button
-              onClick={downloadBackup}
-              className="flex-1 py-2 rounded-lg border border-border text-foreground/70 text-sm font-semibold hover:border-primary transition"
-            >
-              📥 {lang === "bn" ? "ব্যাকআপ ডাউনলোড" : "Download Backup"}
-            </button>
-          </div>
-        </div>
-      </div>
-      <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-3">
-        <AlertTriangle size={18} className="text-red-500 shrink-0" />
-        <div>
-          <strong className="text-sm text-foreground">
-            {lang === "bn" ? "বিপদজনক জোন" : "Danger Zone"}
-          </strong>
-          <p className="text-xs text-foreground/60">
-            {lang === "bn"
-              ? "নিচের কাজগুলো অপরিবর্তনীয়। সতর্কতার সাথে ব্যবহার করুন।"
-              : "The actions below are irreversible. Use them carefully."}
-          </p>
-        </div>
-      </div>
-      <div className="flex gap-3">
-        <button
-          onClick={clearCache}
-          className="flex-1 py-2 rounded-lg border border-red-500/30 text-red-500 text-sm font-semibold hover:bg-red-500/10 transition"
-        >
-          {lang === "bn" ? "ক্যাশ পরিষ্কার করুন" : "Clear Cache"}
-        </button>
-        <button
-          onClick={deleteLogs}
-          className="flex-1 py-2 rounded-lg border border-red-500/30 text-red-500 text-sm font-semibold hover:bg-red-500/10 transition"
-        >
-          {lang === "bn" ? "লগ মুছুন" : "Delete Logs"}
-        </button>
       </div>
     </div>
   );

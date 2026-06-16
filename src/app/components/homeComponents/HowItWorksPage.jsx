@@ -2,35 +2,46 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import {
+  UserPlus,
+  ShieldCheck,
+  Target,
+  CreditCard,
+  Trophy,
+  ArrowRight,
+  Sparkles,
+  CheckCircle,
+} from "lucide-react";
 
 const steps = [
   {
     id: 1,
-    icon: "📝",
+    icon: <UserPlus size={28} />,
     title: "Register",
     description: "Create your account with phone or email in under 2 minutes",
   },
   {
     id: 2,
-    icon: "🪪",
+    icon: <ShieldCheck size={28} />,
     title: "Verify",
     description: "Complete NID & phone verification for maximum security",
   },
   {
     id: 3,
-    icon: "🎯",
+    icon: <Target size={28} />,
     title: "Choose Goal",
     description: "Pick a savings goal or join an active community circle",
   },
   {
     id: 4,
-    icon: "💳",
+    icon: <CreditCard size={28} />,
     title: "Deposit",
     description: "Send weekly or monthly via bKash, Nagad, or bank transfer",
   },
   {
     id: 5,
-    icon: "🏆",
+    icon: <Trophy size={28} />,
     title: "Complete",
     description: "Reach your goal maturity and withdraw your full savings",
   },
@@ -42,8 +53,9 @@ const HowItWorksPage = () => {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12 sm:mb-16 lg:mb-24 text-center">
-          <div className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-primary">
-            Simple Process
+          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-primary">
+            <Sparkles size={14} />
+            <span>Simple Process</span>
           </div>
 
           <h2 className="mt-6 sm:mt-8 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
@@ -59,7 +71,7 @@ const HowItWorksPage = () => {
         {/* Timeline */}
         <div className="relative">
           {/* Horizontal Line - Hidden on mobile/tablet */}
-          <div className="absolute left-0 right-0 top-7 hidden h-0.5 bg-primary/20 lg:block" />
+          <div className="absolute left-0 right-0 top-9 hidden h-0.5 bg-primary/20 lg:block" />
 
           <div className="grid gap-10 md:gap-12 lg:gap-6 md:grid-cols-2 lg:grid-cols-5">
             {steps.map((step, index) => (
@@ -77,7 +89,7 @@ const HowItWorksPage = () => {
                 </div>
 
                 {/* Circle */}
-                <div className="relative z-10 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-linear-to-r from-primary to-primary-light text-2xl sm:text-3xl shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
+                <div className="relative z-10 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
                   {step.icon}
                 </div>
 
@@ -104,20 +116,41 @@ const HowItWorksPage = () => {
           </div>
         </div>
 
+        {/* Features Highlight */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          viewport={{ once: true }}
+          className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6"
+        >
+          {[
+            { icon: <ShieldCheck size={20} />, text: "100% Secure & Encrypted" },
+            { icon: <CheckCircle size={20} />, text: "No Hidden Fees" },
+            { icon: <Sparkles size={20} />, text: "24/7 Community Support" },
+          ].map((feature, idx) => (
+            <div key={idx} className="flex items-center justify-center gap-2 text-sm text-foreground/60">
+              <span className="text-primary">{feature.icon}</span>
+              <span>{feature.text}</span>
+            </div>
+          ))}
+        </motion.div>
+
         {/* CTA Button */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           viewport={{ once: true }}
-          className="mt-16 sm:mt-20 lg:mt-24 text-center"
+          className="mt-12 sm:mt-16 lg:mt-20 text-center"
         >
-          <button className="group relative inline-flex items-center gap-2 rounded-xl sm:rounded-2xl bg-linear-to-r from-primary to-primary-light px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
+          <Link
+            href="/register"
+            className="group relative inline-flex items-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary to-primary-dark px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300 hover:scale-105"
+          >
             Start Your Journey Today
-            <span className="group-hover:translate-x-1 transition-transform duration-300">
-              →
-            </span>
-          </button>
+            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-300" />
+          </Link>
         </motion.div>
       </div>
 

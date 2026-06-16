@@ -216,9 +216,6 @@ const FaqPage = () => {
       {/* Search Bar */}
       <div className="max-w-3xl mx-auto px-4 -mt-6 relative z-10">
         <div className="relative">
-          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40">
-            🔍
-          </span>
           <input
             type="text"
             placeholder="Search questions..."

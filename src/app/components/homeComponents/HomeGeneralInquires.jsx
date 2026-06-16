@@ -15,6 +15,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { FaMosque } from "react-icons/fa";
+import Link from "next/link";
 
 const HomeGeneralInquiries = () => {
   const [openIndex, setOpenIndex] = useState(null);
@@ -218,11 +219,14 @@ const HomeGeneralInquiries = () => {
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
               className="group inline-flex items-center gap-2 bg-linear-to-r from-primary to-primary-light text-white px-6 py-3 rounded-xl font-semibold text-sm sm:text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all whitespace-nowrap"
             >
+              <Link href={"/register"} className="flex items-center justify-center gap-4">
+              
               Contact Support
               <ArrowRight
                 size={18}
                 className="group-hover:translate-x-1 transition-transform"
               />
+              </Link>
             </motion.button>
           </div>
         </motion.div>

@@ -2,11 +2,25 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Users, Calendar, TrendingUp, Target } from "lucide-react";
+import {
+  Users,
+  Calendar,
+  TrendingUp,
+  Target,
+  Gem,
+  Star,
+  Shield,
+  GraduationCap,
+  Smartphone,
+  Briefcase,
+  ArrowRight,
+  Sparkles,
+} from "lucide-react";
+import Link from "next/link";
 
 const goals = [
   {
-    icon: "💍",
+    icon: <Gem size={28} />,
     name: "Marriage Fund",
     people: "3,240",
     range: "৳5,000 – ৳30,000/mo",
@@ -15,7 +29,7 @@ const goals = [
     color: "from-pink-500 to-rose-500",
   },
   {
-    icon: "🕌",
+    icon: <Star size={28} />,
     name: "Hajj Fund",
     people: "1,890",
     range: "৳10,000 – ৳20,000/mo",
@@ -24,7 +38,7 @@ const goals = [
     color: "from-emerald-500 to-teal-500",
   },
   {
-    icon: "🛡️",
+    icon: <Shield size={28} />,
     name: "Emergency fund",
     people: "5,610",
     range: "৳500 – ৳5,000/mo",
@@ -33,7 +47,7 @@ const goals = [
     color: "from-blue-500 to-cyan-500",
   },
   {
-    icon: "🎓",
+    icon: <GraduationCap size={28} />,
     name: "Education Fund",
     people: "2,140",
     range: "৳2,000 – ৳15,000/mo",
@@ -42,7 +56,7 @@ const goals = [
     color: "from-purple-500 to-indigo-500",
   },
   {
-    icon: "💻",
+    icon: <Smartphone size={28} />,
     name: "Gadgets/Devices",
     people: "4,320",
     range: "৳1,000 – ৳10,000/mo",
@@ -51,7 +65,7 @@ const goals = [
     color: "from-orange-500 to-amber-500",
   },
   {
-    icon: "💼",
+    icon: <Briefcase size={28} />,
     name: "Starting a business",
     people: "980",
     range: "৳5,000 – ৳50,000/mo",
@@ -96,7 +110,7 @@ const GoalCard = ({
       <motion.div
         whileHover={{ scale: 1.1, rotate: 5 }}
         transition={{ type: "spring", stiffness: 300 }}
-        className="text-4xl sm:text-5xl mb-4 select-none relative z-10"
+        className="w-14 h-14 rounded-xl bg-linear-to-r from-primary/10 to-primary-light/10 flex items-center justify-center text-primary mb-4 relative z-10"
       >
         {icon}
       </motion.div>
@@ -157,7 +171,9 @@ const GoalCard = ({
           relative z-10
         "
       >
+        <Link href={"/register"}>
         Join the circle →
+        </Link>
       </motion.button>
     </motion.div>
   );
@@ -261,12 +277,15 @@ const HomeGoal = () => {
               flex items-center gap-2 group
             "
           >
+            <Link href={"/goals"}>
             View all goals and circles
+            </Link>
             <motion.span
               animate={{ x: [0, 5, 0] }}
               transition={{ duration: 1, repeat: Infinity, repeatDelay: 1 }}
+              className="inline-flex"
             >
-              →
+              <ArrowRight size={16} />
             </motion.span>
           </motion.button>
         </motion.div>
@@ -299,7 +318,7 @@ const HomeGoal = () => {
               {
                 value: "98.5%",
                 label: "Success Rate",
-                icon: <Calendar size={20} />,
+                icon: <Sparkles size={20} />,
               },
             ].map((stat, idx) => (
               <motion.div

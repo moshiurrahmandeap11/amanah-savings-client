@@ -14,6 +14,7 @@ const DepositsApprovals = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [deposits, setDeposits] = useState([]);
+  console.log("deposits :", deposits);
   const [statistics, setStatistics] = useState({
     pending: { count: 0, totalAmount: 0 },
     approved: { count: 0, totalAmount: 0 },
@@ -94,7 +95,7 @@ const DepositsApprovals = () => {
       title: "Approve Deposit?",
       html: `
         <div class="text-left">
-          <p><strong>User:</strong> ${deposit.user?.name || "Unknown"}</p>
+          <p><strong>User:</strong> ${deposit.user?.fullName || "Unknown"}</p>
           <p><strong>Amount:</strong> ৳${deposit.depositAmount.toLocaleString()}</p>
           <p><strong>Goal:</strong> ${deposit.goalName}</p>
           <p><strong>Method:</strong> ${deposit.paymentMethod}</p>
@@ -226,7 +227,7 @@ const DepositsApprovals = () => {
       title: "User Details",
       html: `
         <div class="text-left">
-          <p><strong>Name:</strong> ${deposit.user?.name || "N/A"}</p>
+          <p><strong>Name:</strong> ${deposit.user?.fullName || "N/A"}</p>
           <p><strong>Email:</strong> ${deposit.user?.email || "N/A"}</p>
           <p><strong>Phone:</strong> ${deposit.user?.phone || "N/A"}</p>
           <p><strong>Member Since:</strong> ${deposit.user?.createdAt ? new Date(deposit.user.createdAt).toLocaleDateString() : "N/A"}</p>
@@ -412,7 +413,7 @@ const DepositsApprovals = () => {
                     </div>
                     <div>
                       <div className="font-semibold text-foreground">
-                        {deposit.user?.name || "Unknown User"}
+                        {deposit.user?.fullName || "Unknown User"}
                       </div>
                       <div className="text-xs text-foreground/50">
                         {deposit.user?.phone || "No phone"} ·{" "}

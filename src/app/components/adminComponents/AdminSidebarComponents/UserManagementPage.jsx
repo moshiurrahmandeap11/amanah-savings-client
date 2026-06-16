@@ -13,6 +13,8 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
 const UserManagementPage = () => {
@@ -23,6 +25,7 @@ const UserManagementPage = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -136,6 +139,137 @@ const UserManagementPage = () => {
     } 
   };
 
+  // Excel Export Function
+  const exportToExcel = async () => {
+    setExporting(true);
+    try {
+      // Fetch all users for export (without pagination)
+      let status = "";
+      let kycStatus = "";
+      if (activeFilter === "Active") status = "active";
+      else if (activeFilter === "Suspended") status = "suspended";
+      else if (activeFilter === "Flagged") status = "banned";
+      else if (activeFilter === "Pending KYC") kycStatus = "pending";
+
+      const params = new URLSearchParams();
+      params.append("page", 1);
+      params.append("limit", 999999); // Get all users
+      if (searchQuery) params.append("search", searchQuery);
+      if (status) params.append("status", status);
+      if (kycStatus) params.append("kycStatus", kycStatus);
+      params.append("export", "true");
+
+      const res = await axiosInstance.get(`/admin/users?${params.toString()}`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (res.data.success) {
+        const allUsers = res.data.data.users;
+        
+        // Prepare data for Excel
+        const excelData = allUsers.map((user, index) => ({
+          "SL No": index + 1,
+          "Full Name": user.fullName || `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+          "First Name": user.firstName || "",
+          "Last Name": user.lastName || "",
+          "Phone": user.phone,
+          "Email": user.email || "N/A",
+          "Role": user.role || "user",
+          "Plan": user.selectedPlan || "Bronze",
+          "Level": user.level || 1,
+          "Total Saved (৳)": user.totalSaved || 0,
+          "Total Deposits": user.totalDeposits || 0,
+          "Total Withdrawals": user.totalWithdrawals || 0,
+          "KYC Status": user.kycStatus === "approved" ? "Approved" : user.kycStatus === "pending" ? "Pending" : "Rejected",
+          "Account Status": user.isBanned ? "Banned" : user.isSuspended ? "Suspended" : user.accountActive ? "Active" : "Inactive",
+          "Division": user.division || "N/A",
+          "District": user.district || "N/A",
+          "Occupation": user.occupation || "N/A",
+          "Income": user.income || "N/A",
+          "Referral Code": user.referralCode || "N/A",
+          "Joined Date": new Date(user.createdAt).toLocaleDateString("en-GB"),
+          "Last Login": user.lastLogin ? new Date(user.lastLogin).toLocaleDateString("en-GB") : "Never",
+        }));
+
+        // Create worksheet
+        const worksheet = XLSX.utils.json_to_sheet(excelData);
+        
+        // Set column widths
+        const colWidths = [
+          { wch: 8 },   // SL No
+          { wch: 25 },  // Full Name
+          { wch: 15 },  // First Name
+          { wch: 15 },  // Last Name
+          { wch: 15 },  // Phone
+          { wch: 25 },  // Email
+          { wch: 10 },  // Role
+          { wch: 12 },  // Plan
+          { wch: 8 },   // Level
+          { wch: 15 },  // Total Saved
+          { wch: 15 },  // Total Deposits
+          { wch: 15 },  // Total Withdrawals
+          { wch: 12 },  // KYC Status
+          { wch: 15 },  // Account Status
+          { wch: 15 },  // Division
+          { wch: 15 },  // District
+          { wch: 20 },  // Occupation
+          { wch: 12 },  // Income
+          { wch: 15 },  // Referral Code
+          { wch: 12 },  // Joined Date
+          { wch: 12 },  // Last Login
+        ];
+        worksheet["!cols"] = colWidths;
+
+        // Style the header row
+        const range = XLSX.utils.decode_range(worksheet["!ref"]);
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const address = XLSX.utils.encode_col(C) + "1";
+          if (!worksheet[address]) continue;
+          worksheet[address].s = {
+            font: { bold: true, sz: 12, color: { rgb: "FFFFFF" } },
+            fill: { fgColor: { rgb: "059669" }, patternType: "solid" },
+            alignment: { horizontal: "center", vertical: "center" }
+          };
+        }
+
+        // Create workbook
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Users List");
+
+        // Add summary sheet
+        const summaryData = [
+          ["Report Generated", new Date().toLocaleString()],
+          ["Filter Applied", activeFilter],
+          ["Search Query", searchQuery || "None"],
+          ["Total Users", allUsers.length],
+          ["Active Users", allUsers.filter(u => u.accountActive && !u.isBanned && !u.isSuspended).length],
+          ["Pending KYC", allUsers.filter(u => u.kycStatus === "pending").length],
+          ["Banned Users", allUsers.filter(u => u.isBanned).length],
+          ["Suspended Users", allUsers.filter(u => u.isSuspended).length],
+        ];
+        
+        const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+        summarySheet["!cols"] = [{ wch: 20 }, { wch: 30 }];
+        XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
+
+        // Generate Excel file
+        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+        const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        
+        // Download file
+        const fileName = `amanah-users-${new Date().toISOString().split("T")[0]}.xlsx`;
+        saveAs(blob, fileName);
+        
+        showToastMessage(`✅ Exported ${allUsers.length} users successfully!`, "success");
+      }
+    } catch (error) {
+      console.error("Export error:", error);
+      showToastMessage("❌ Failed to export users", "error");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const getBadgeClass = (type, color) => {
     const classes = {
       ok: "bg-green-500/10 text-green-500",
@@ -204,12 +338,6 @@ const UserManagementPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <h2 className="text-lg font-bold text-foreground">👥 User Management</h2>
-        <button
-          onClick={() => showToastMessage("➕ Opening add user form...")}
-          className="px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-sm font-semibold flex items-center gap-2 w-full sm:w-auto justify-center"
-        >
-          <UserPlus size={16} /> Add User
-        </button>
       </div>
 
       {/* Toolbar */}
@@ -240,10 +368,20 @@ const UserManagementPage = () => {
             </button>
           ))}
           <button
-            onClick={() => showToastMessage("⬇️ Exporting CSV... download will start shortly")}
-            className="px-4 py-1.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1"
+            onClick={exportToExcel}
+            disabled={exporting}
+            className="px-4 py-1.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
           >
-            <Download size={12} /> Export
+            {exporting ? (
+              <>
+                <Loader2 size={12} className="animate-spin" />
+                Exporting...
+              </>
+            ) : (
+              <>
+                <Download size={12} /> Export Excel
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -275,7 +413,7 @@ const UserManagementPage = () => {
                     <tr>
                       <td colSpan={8} className="px-4 py-10 text-center text-sm text-foreground/50">
                         No users found
-                      </td>
+                       </td>
                     </tr>
                   ) : (
                     users.map((user, idx) => {
@@ -295,7 +433,7 @@ const UserManagementPage = () => {
                                 <div className="text-xs text-foreground/50">{user.email || "No email"}</div>
                               </div>
                             </div>
-                          </td>
+                           </td>
                           <td className="px-4 py-3 text-sm text-foreground">{user.phone}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(plan.label, plan.color)}`}>

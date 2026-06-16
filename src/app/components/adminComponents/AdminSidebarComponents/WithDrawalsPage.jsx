@@ -32,12 +32,15 @@ const WithDrawalsPage = () => {
   const [noteText, setNoteText] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
   const [transactions, setTransactions] = useState([]);
+  console.log("transactions :", transactions);
   const [stats, setStats] = useState({
     pending: 0,
     approved: 0,
     totalDeposits: 0,
     totalWithdrawals: 0,
   });
+
+  console.log("stats : ", stats);
   const [loading, setLoading] = useState(false);
 
   const fetchTransactions = useCallback(async () => {
@@ -174,10 +177,10 @@ const WithDrawalsPage = () => {
   const pendingCount = transactions.filter((t) => t.status === "pending").length;
 
   const statCards = [
-    { icon: "⏳", value: String(stats.pending || pendingCount), label: "Pending", color: "yellow" },
-    { icon: "✅", value: String(stats.approved || 0), label: "Approved", color: "green" },
-    { icon: "💰", value: `৳${stats.totalDeposits || 0}`, label: "Total Deposits", color: "blue" },
-    { icon: "⬇️", value: `৳${stats.totalWithdrawals || 0}`, label: "Total Withdrawals", color: "red" },
+    { icon: "⏳", value: String(stats.pendingDeposits || pendingCount), label: "Pending", color: "yellow" },
+    { icon: "✅", value: String(stats.approvedDeposits || 0), label: "Approved", color: "green" },
+    { icon: "💰", value: `৳${stats.totalDepositAmount || 0}`, label: "Total Deposits", color: "blue" },
+    { icon: "⬇️", value: `৳${stats.totalWithdrawalAmount || 0}`, label: "Total Withdrawals", color: "red" },
   ];
 
   return (
@@ -327,7 +330,7 @@ const WithDrawalsPage = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1 flex-wrap">
                     <span className="font-semibold text-sm text-foreground">
-                      {tx.name || "Unknown"}
+                      {tx.userName || "Unknown"}
                     </span>
                     <span
                       className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${getStatusBadge(tx.status)}`}
@@ -354,7 +357,7 @@ const WithDrawalsPage = () => {
                     {lang === "bn" ? "লক্ষ্য" : "Goal"}
                   </div>
                   <div className="text-xs font-semibold text-foreground">
-                    {tx.goal || "N/A"}
+                    {tx.goalName || "N/A"}
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">

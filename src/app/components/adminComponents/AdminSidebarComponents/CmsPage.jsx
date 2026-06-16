@@ -27,6 +27,7 @@ const CmsPage = () => {
   const [activeTab, setActiveTab] = useState("site");
   const [toast, setToast] = useState({ show: false, message: "" });
   const [cmsData, setCmsData] = useState(null); // null = not loaded yet
+  console.log("cms data :", cmsData?.plans);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
