@@ -1,601 +1,751 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Check, Loader2, Sparkles, Crown, Star, Diamond, TrendingUp, Shield } from "lucide-react";
-import axiosInstance from "../../components/shared/AxiosInstance/AxiosInstance";
+import {
+  ArrowRight,
+  Award,
+  Bot,
+  Check,
+  ChevronDown,
+  CreditCard,
+  Gem,
+  Medal,
+  Moon,
+  ShieldCheck,
+  Star,
+  Trophy,
+  Users,
+  Wallet,
+  X,
+} from "lucide-react";
 
-const PlanPage = () => {
-  const [billingMode, setBillingMode] = useState("monthly");
-  const [deposit, setDeposit] = useState(3000);
-  const [duration, setDuration] = useState(12);
-  const [target, setTarget] = useState("");
-  const [selectedPlan, setSelectedPlan] = useState("");
-  const [openFaq, setOpenFaq] = useState(null);
-  const [cmsData, setCmsData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [plans, setPlans] = useState([]);
+const plans = [
+  {
+    id: "bronze",
+    tier: "Bronze",
+    name: "Starter",
+    icon: Medal,
+    monthly: 0,
+    yearly: 0,
+    color: "#c2694f",
+    iconClass: "bg-gradient-to-br from-[#fef3c7] to-[#fde68a] text-[#b45309]",
+    cta: "Start Free",
+    desc: "Perfect for beginners. Save at your own pace with no platform fee, forever.",
+    features: [
+      ["Up to 3 savings goals", true],
+      ["Min deposit: ৳500/month", true],
+      ["bKash & Nagad payments", true],
+      ["Basic progress tracking", true],
+      ["Community access (read)", true],
+      ["Savings circles", false],
+      ["AI savings insights", false],
+      ["Priority withdrawals", false],
+    ],
+  },
+  {
+    id: "silver",
+    tier: "Silver",
+    name: "Essential",
+    icon: Award,
+    monthly: 199,
+    yearly: 159,
+    color: "#94a3b8",
+    iconClass: "bg-gradient-to-br from-[#f1f5f9] to-[#e2e8f0] text-[#64748b]",
+    cta: "Choose Silver",
+    desc: "For regular savers building serious momentum with community features.",
+    features: [
+      ["Up to 6 savings goals", true],
+      ["Min deposit: ৳1,000/month", true],
+      ["All payment methods", true],
+      ["Join 1 savings circle", true],
+      ["Streak tracking + badges", true],
+      ["Monthly insights report", true],
+      ["AI financial assistant", false],
+      ["Priority withdrawals", false],
+    ],
+  },
+  {
+    id: "gold",
+    tier: "Gold",
+    name: "Growth",
+    icon: Trophy,
+    monthly: 499,
+    yearly: 399,
+    color: "#f59e0b",
+    iconClass: "bg-gradient-to-br from-[#fef9c3] to-[#fde047] text-[#a16207]",
+    popular: true,
+    cta: "Choose Gold",
+    desc: "Our flagship plan with AI assistant, unlimited goals, and full circle access.",
+    features: [
+      ["Unlimited savings goals", true],
+      ["Min deposit: ৳2,000/month", true],
+      ["All payment methods", true],
+      ["Join up to 3 circles", true],
+      ["AI savings assistant", true],
+      ["Weekly insights report", true],
+      ["Leaderboard participation", true],
+      ["Priority withdrawal (3 days)", true],
+    ],
+  },
+  {
+    id: "platinum",
+    tier: "Platinum",
+    name: "Elite",
+    icon: Gem,
+    monthly: 999,
+    yearly: 799,
+    color: "#7c3aed",
+    iconClass: "bg-gradient-to-br from-[#ede9fe] to-[#ddd6fe] text-[#6d28d9]",
+    cta: "Choose Platinum",
+    desc: "For power savers who want exclusive features, dedicated support & elite status.",
+    features: [
+      ["Unlimited savings goals", true],
+      ["Min deposit: ৳5,000/month", true],
+      ["All payment methods + bank", true],
+      ["Create + join 10 circles", true],
+      ["Advanced AI assistant", true],
+      ["Daily personalized report", true],
+      ["Priority withdrawal (24h)", true],
+      ["Dedicated account manager", true],
+    ],
+  },
+];
 
-  // Complete plan pricing with all details
-  const planPricing = {
-    Bronze: {
-      monthly: 0,
-      yearly: 0,
-      tier: "Starter",
-      popular: false,
-      description: "Perfect for beginners. Save at your own pace with no platform fee.",
-      priceLabel: "Free Forever"
-    },
-    Silver: {
-      monthly: 199,
-      yearly: 159,
-      tier: "Essential",
-      popular: false,
-      description: "For regular savers building serious momentum with community features.",
-      priceLabel: "৳199/month"
-    },
-    Gold: {
-      monthly: 499,
-      yearly: 399,
-      tier: "Growth",
-      popular: true,
-      description: "Our flagship plan with AI assistant, unlimited goals, and full circle access.",
-      priceLabel: "৳499/month"
-    },
-    Platinum: {
-      monthly: 999,
-      yearly: 799,
-      tier: "Elite",
-      popular: false,
-      description: "For power savers who want exclusive features, dedicated support & elite status.",
-      priceLabel: "৳999/month"
-    }
-  };
+const comparisonGroups = [
+  {
+    label: "Savings Limits",
+    icon: Wallet,
+    rows: [
+      ["Active savings goals", "Up to 3", "Up to 6", "Unlimited", "Unlimited"],
+      ["Min monthly deposit", "৳500", "৳1,000", "৳2,000", "৳5,000"],
+      ["Max single deposit", "৳10,000", "৳25,000", "৳1,00,000", "৳5,00,000"],
+      ["Goal lock period", "3-12 months", "3-24 months", "3-60 months", "Custom"],
+    ],
+  },
+  {
+    label: "Payments",
+    icon: CreditCard,
+    rows: [
+      ["bKash & Nagad", true, true, true, true],
+      ["Bank Transfer", false, true, true, true],
+      ["Withdrawal time", "7-10 days", "5-7 days", "3 days", "24 hours"],
+      ["Early withdrawal", false, "With fee", "With fee", "Free once/yr"],
+    ],
+  },
+  {
+    label: "Community Circles",
+    icon: Users,
+    rows: [
+      ["Join circles", false, "1 circle", "3 circles", "10 circles"],
+      ["Create circles", false, false, "1 circle", "3 circles"],
+      ["Circle admin tools", false, false, true, true],
+    ],
+  },
+  {
+    label: "AI & Insights",
+    icon: Bot,
+    rows: [
+      ["Savings insights report", false, "Monthly", "Weekly", "Daily"],
+      ["AI financial assistant", false, false, true, "Advanced"],
+      ["Goal projections", "Basic", "Standard", "Advanced", "Advanced+"],
+    ],
+  },
+  {
+    label: "Gamification",
+    icon: Trophy,
+    rows: [
+      ["Streak tracking", true, true, true, true],
+      ["Achievement badges", "5 badges", "20 badges", "All badges", "All + exclusive"],
+      ["Community leaderboard", false, "View only", "Full access", "Featured profile"],
+      ["Savings challenges", false, true, true, true],
+    ],
+  },
+  {
+    label: "Security & Support",
+    icon: ShieldCheck,
+    rows: [
+      ["KYC verification", "Standard", "Standard", "Enhanced", "Premium"],
+      ["2-factor auth", true, true, true, true],
+      ["Customer support", "Email", "Email + Chat", "Priority chat", "Dedicated manager"],
+      ["Account manager", false, false, false, true],
+    ],
+  },
+  {
+    label: "Islamic Mode",
+    icon: Moon,
+    rows: [
+      ["Riba-free savings", true, true, true, true],
+      ["Halal goal categories", true, true, true, true],
+    ],
+  },
+];
 
-  // Fetch CMS data
-  useEffect(() => {
-    const fetchCMSData = async () => {
-      setLoading(true);
-      try {
-        const res = await axiosInstance.get("/cms");
-        console.log("CMS Response:", res.data);
-        
-        if (res.data.success) {
-          setCmsData(res.data.data);
-          const cmsPlans = res.data.data?.plans || [];
-          
-          if (cmsPlans.length > 0) {
-            // Merge CMS plans with pricing data
-            const mergedPlans = cmsPlans.map(plan => {
-              const pricing = planPricing[plan.name] || {
-                monthly: 0,
-                yearly: 0,
-                tier: "Standard",
-                popular: false,
-                description: `Start your savings journey with our ${plan.name} plan.`,
-                priceLabel: "Contact Us"
-              };
-              
-              return {
-                ...plan,
-                monthlyPrice: pricing.monthly,
-                yearlyPrice: pricing.yearly,
-                tier: pricing.tier,
-                popular: pricing.popular,
-                description: pricing.description,
-                priceLabel: pricing.priceLabel,
-                // Ensure features is always an array
-                features: plan.features || []
-              };
-            });
-            setPlans(mergedPlans);
-            if (mergedPlans.length > 0) {
-              setSelectedPlan(mergedPlans[0]?.name || "");
-            }
-          } else {
-            // Use fallback with pricing
-            setPlans(getFallbackPlans());
-            setSelectedPlan("Gold");
-          }
-        } else {
-          setPlans(getFallbackPlans());
-          setSelectedPlan("Gold");
-        }
-      } catch (error) {
-        console.error("Failed to fetch CMS data:", error);
-        setPlans(getFallbackPlans());
-        setSelectedPlan("Gold");
-      } finally {
-        setLoading(false);
-      }
-    };
+const testimonials = [
+  {
+    quote:
+      "Started on Bronze, upgraded to Gold after 2 months. The AI assistant showed me I was overspending ৳800/month. I redirected it to my Hajj goal and now I'm on track 6 months early!",
+    name: "Rashida Begum",
+    plan: "Gold Member · Dhaka",
+    avatar: "R",
+    stars: 5,
+  },
+  {
+    quote:
+      "Platinum is worth every taka. My account manager helped me set up 4 goals at once: wedding fund, emergency savings, a laptop goal, and business startup savings.",
+    name: "Kamal Hossain",
+    plan: "Platinum Member · Chittagong",
+    avatar: "K",
+    stars: 5,
+  },
+  {
+    quote:
+      "Silver is exactly what I needed. The savings circle with my cousins keeps me accountable. We're saving together for a family trip to Cox's Bazar next Eid.",
+    name: "Nasrin Akter",
+    plan: "Silver Member · Sylhet",
+    avatar: "N",
+    stars: 4,
+  },
+];
 
-    fetchCMSData();
-  }, []);
+const faqs = [
+  [
+    "Can I change my plan later?",
+    "Yes! You can upgrade your plan at any time from your dashboard settings. Downgrading is also possible at the end of your current billing cycle, though features like additional circles or AI access will be removed if you move to a lower tier.",
+  ],
+  [
+    "Is there a free trial for paid plans?",
+    "Silver and Gold plans include a 30-day free trial with full features. Platinum offers a 14-day trial with a dedicated account manager. No credit card required to start, just KYC verification.",
+  ],
+  [
+    "What happens if I miss a monthly deposit?",
+    "Missing a deposit breaks your savings streak but does not cancel your plan. Your goal timeline adjusts automatically. We send SMS reminders 3 days before your deposit date. There are no late fees.",
+  ],
+  [
+    "How is this different from a bank savings account?",
+    "Amanah is a digital savings community, not a bank. We do not offer interest, FDIC-style insurance, or banking services. We are a goal-tracking and community savings platform.",
+  ],
+  [
+    "Can I withdraw before my goal date?",
+    "Yes, but early withdrawals may incur a small processing fee to cover administrative costs. Bronze members cannot make early withdrawals. Platinum members get one free early withdrawal per year.",
+  ],
+  [
+    "Is Islamic Mode available on all plans?",
+    "Yes, Islamic savings mode is available on every plan including Bronze. Toggle it on during registration or in your profile settings for riba-free goal and circle calculations.",
+  ],
+  [
+    "What payment methods are accepted?",
+    "Bronze members can use bKash and Nagad. Silver, Gold, and Platinum members also have access to bank transfer. Deposits are manually verified within 24 hours by our finance team.",
+  ],
+  [
+    "Are there any hidden fees?",
+    "No hidden fees, ever. The platform fee for Silver, Gold, and Platinum is clearly stated. We will always give notice before any fee changes.",
+  ],
+];
 
-  // Fallback plans with complete pricing
-  const getFallbackPlans = () => {
-    return [
-      {
-        name: "Bronze",
-        min: 500,
-        max: 4999,
-        color: "#cd7f32",
-        features: ["Basic savings goals", "Monthly reports", "Email support", "Community access"],
-        monthlyPrice: 0,
-        yearlyPrice: 0,
-        tier: "Starter",
-        popular: false,
-        description: "Perfect for beginners. Save at your own pace with no platform fee.",
-        priceLabel: "Free Forever"
-      },
-      {
-        name: "Silver",
-        min: 5000,
-        max: 14999,
-        color: "#c0c0c0",
-        features: ["Multiple goals", "Weekly reports", "Priority support", "Streak tracking", "Monthly insights"],
-        monthlyPrice: 199,
-        yearlyPrice: 159,
-        tier: "Essential",
-        popular: false,
-        description: "For regular savers building serious momentum with community features.",
-        priceLabel: "৳199/month"
-      },
-      {
-        name: "Gold",
-        min: 15000,
-        max: 49999,
-        color: "#ffd700",
-        features: ["Unlimited goals", "Daily insights", "VIP support", "AI assistant", "Leaderboard access", "Priority withdrawal"],
-        monthlyPrice: 499,
-        yearlyPrice: 399,
-        tier: "Growth",
-        popular: true,
-        description: "Our flagship plan with AI assistant, unlimited goals, and full circle access.",
-        priceLabel: "৳499/month"
-      },
-      {
-        name: "Platinum",
-        min: 50000,
-        max: null,
-        color: "#e5e4e2",
-        features: ["Personal advisor", "Custom goals", "API access", "24/7 support", "Early withdrawal benefits", "Dedicated manager"],
-        monthlyPrice: 999,
-        yearlyPrice: 799,
-        tier: "Elite",
-        popular: false,
-        description: "For power savers who want exclusive features, dedicated support & elite status.",
-        priceLabel: "৳999/month"
-      }
-    ];
-  };
+const planOptions = {
+  bronze: { label: "Bronze", min: 500 },
+  silver: { label: "Silver", min: 1000 },
+  gold: { label: "Gold", min: 2000 },
+  platinum: { label: "Platinum", min: 5000 },
+};
 
-  const getPlanIcon = (planName) => {
-    const icons = {
-      Bronze: <Shield size={28} />,
-      Silver: <Star size={28} />,
-      Gold: <Crown size={28} />,
-      Platinum: <Diamond size={28} />
-    };
-    return icons[planName] || <Sparkles size={28} />;
-  };
+const formatBDT = (value) => `৳${Number(value).toLocaleString("en-US")}`;
 
-  const getPrice = (plan) => {
-    return billingMode === "monthly" ? (plan.monthlyPrice || 0) : (plan.yearlyPrice || 0);
-  };
-
-  const getOriginalPrice = (plan) => {
-    return billingMode === "monthly" ? (plan.monthlyPrice || 0) : (plan.monthlyPrice * 12 || 0);
-  };
-
-  const getSavingsPercent = (plan) => {
-    if (billingMode !== "yearly") return 0;
-    const monthlyTotal = (plan.monthlyPrice || 0) * 12;
-    const yearlyPrice = plan.yearlyPrice || 0;
-    if (monthlyTotal === 0) return 0;
-    return Math.round(((monthlyTotal - yearlyPrice) / monthlyTotal) * 100);
-  };
-
-  const getMinDepositFromPlan = (planName) => {
-    const plan = plans.find(p => p.name === planName);
-    return plan?.min || 500;
-  };
-
-  const totalSaved = deposit * duration;
-  const targetNum = parseInt(target) || 0;
-  const monthsNeeded = targetNum > 0 ? Math.ceil(targetNum / deposit) : 0;
-  const shortfall = targetNum > 0 && totalSaved < targetNum ? targetNum - totalSaved : 0;
-
-  const toggleFaq = (index) => {
-    setOpenFaq(openFaq === index ? null : index);
-  };
-
-  useEffect(() => {
-    const minDeposit = getMinDepositFromPlan(selectedPlan);
-    if (deposit < minDeposit) {
-      setDeposit(minDeposit);
-    }
-  }, [selectedPlan, plans]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <Loader2 size={48} className="animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">Loading savings plans...</p>
-        </div>
+function SectionHeading({ label, title, subtitle }) {
+  return (
+    <div className="mb-12 text-center">
+      <div className="mb-3 text-[13px] font-bold uppercase tracking-[1.5px] text-[#059669]">
+        {label}
       </div>
+      <h2 className="mb-4 text-[clamp(26px,4vw,40px)] font-extrabold leading-tight text-[#0f172a] dark:text-[#f1f5f9]">
+        {title}
+      </h2>
+      {subtitle && (
+        <p className="mx-auto max-w-[560px] text-base leading-relaxed text-[#475569] dark:text-[#94a3b8]">
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+
+function ValueCell({ value, highlight }) {
+  if (value === true) {
+    return (
+      <td className={`px-4 py-4 text-center text-sm ${highlight ? "bg-[#0596690a] dark:bg-[#10b98114]" : ""}`}>
+        <Check className="mx-auto h-[18px] w-[18px] text-[#059669]" strokeWidth={3} />
+      </td>
     );
   }
 
-  const displayPlans = plans.length > 0 ? plans : getFallbackPlans();
+  if (value === false) {
+    return (
+      <td className={`px-4 py-4 text-center text-sm ${highlight ? "bg-[#0596690a] dark:bg-[#10b98114]" : ""}`}>
+        <X className="mx-auto h-[18px] w-[18px] text-[#ef4444]" strokeWidth={3} />
+      </td>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary to-primary-dark py-20 text-center overflow-hidden">
-        <div className="relative z-10 max-w-4xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-white text-sm mb-6">
-            <Sparkles size={14} />
-            <span>{cmsData?.site?.tagline || "Transparent Savings Plans"}</span>
+    <td
+      className={`px-4 py-4 text-center text-sm text-[#475569] ${
+        highlight ? "bg-[#0596690a] font-bold text-[#0f172a] dark:bg-[#10b98114] dark:text-[#f1f5f9]" : "dark:text-[#94a3b8]"
+      }`}
+    >
+      {value}
+    </td>
+  );
+}
+
+const PlanPage = () => {
+  const [billingMode, setBillingMode] = useState("monthly");
+  const [selectedPlan, setSelectedPlan] = useState("gold");
+  const [deposit, setDeposit] = useState(3000);
+  const [duration, setDuration] = useState(12);
+  const [target, setTarget] = useState("");
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const selectedPlanData = planOptions[selectedPlan];
+  const totalSaved = deposit * duration;
+  const targetAmount = Number(target) || 0;
+  const monthsNeeded = targetAmount > 0 ? Math.ceil(targetAmount / deposit) : null;
+
+  const goalMessage = useMemo(() => {
+    if (!targetAmount) return "";
+    if (totalSaved >= targetAmount) {
+      return `You will reach your target in ${monthsNeeded} months with this monthly deposit.`;
+    }
+    return `You need ${monthsNeeded} months total to reach your target. Increase your deposit to finish sooner.`;
+  }, [monthsNeeded, targetAmount, totalSaved]);
+
+  const handlePlanChange = (value) => {
+    const nextMin = planOptions[value].min;
+    setSelectedPlan(value);
+    setDeposit((current) => Math.max(current, nextMin));
+  };
+
+  return (
+    <div className="min-h-screen overflow-x-hidden bg-white font-['Inter',sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#059669] to-[#0891b2] px-6 pb-[100px] pt-20 text-center">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.08)_0%,transparent_50%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.06)_0%,transparent_40%)]" />
+        <div className="relative z-10 mx-auto max-w-[700px]">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-4 py-1.5 text-[13px] font-semibold text-white backdrop-blur">
+            <Gem className="h-4 w-4" />
+            Transparent Savings Plans
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
-            {cmsData?.homepage?.heroTitle || "Choose Your Savings Journey"}
+          <h1 className="mb-4 text-[clamp(32px,5vw,52px)] font-black leading-[1.1] text-white">
+            Pick Your Savings Journey
           </h1>
-          <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto mb-8">
-            {cmsData?.homepage?.heroSubtitle || "Select the perfect plan that matches your savings goals and start building your future today."}
+          <p className="mx-auto mb-8 max-w-[520px] text-[17px] leading-relaxed text-white/85">
+            From your first ৳500 deposit to building a ৳10 lakh emergency fund, we have a plan that
+            grows with your ambitions.
           </p>
-          <div className="flex flex-wrap justify-center gap-8">
-            <div>
-              <div className="text-3xl font-bold text-white">৳{displayPlans[0]?.min || 500}</div>
-              <div className="text-white/80 text-sm">Minimum to start</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">{displayPlans.length}</div>
-              <div className="text-white/80 text-sm">Plans available</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">0%</div>
-              <div className="text-white/80 text-sm">Hidden fees</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold text-white">Free</div>
-              <div className="text-white/80 text-sm">Upgrade anytime</div>
-            </div>
+          <div className="flex flex-wrap justify-center gap-10">
+            {[
+              ["৳500", "Minimum to start"],
+              ["4 Tiers", "Plans available"],
+              ["0%", "Hidden fees"],
+              ["Free", "Upgrade anytime"],
+            ].map(([value, label]) => (
+              <div key={label} className="text-center">
+                <div className="text-[28px] font-extrabold text-white">{value}</div>
+                <div className="mt-0.5 text-xs text-white/75">{label}</div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-12">
-            <path d="M0,60 C300,0 900,0 1200,60 L1200,60 L0,60 Z" fill="var(--background)" />
+        <div className="absolute bottom-0 left-0 right-0 h-[60px]">
+          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="h-full w-full">
+            <path className="fill-white dark:fill-[#0a0f1e]" d="M0,60 C300,0 900,0 1200,60 L1200,60 L0,60 Z" />
           </svg>
         </div>
       </section>
 
-      {/* Plans Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="text-primary text-sm font-semibold mb-2">Savings Plans</div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">Choose Your Tier</h2>
-            <p className="text-foreground/60 max-w-2xl mx-auto">
-              No investment products, no guaranteed returns — just a powerful community savings platform built for your goals.
-            </p>
-          </div>
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-[1200px]">
+          <SectionHeading
+            label="Savings Plans"
+            title="Choose Your Tier"
+            subtitle="No investment products, no guaranteed returns, just a powerful community savings platform built for your goals."
+          />
 
-          {/* Billing Toggle */}
-          <div className="flex justify-center mb-10">
-            <div className="flex bg-card border border-border rounded-xl p-1">
-              <button 
-                onClick={() => setBillingMode("monthly")} 
-                className={`px-6 py-2 rounded-lg text-sm font-semibold transition ${billingMode === "monthly" ? "bg-primary text-white" : "text-foreground/70 hover:text-primary"}`}
-              >
-                Monthly
-              </button>
-              <button 
-                onClick={() => setBillingMode("yearly")} 
-                className={`px-6 py-2 rounded-lg text-sm font-semibold transition ${billingMode === "yearly" ? "bg-primary text-white" : "text-foreground/70 hover:text-primary"}`}
-              >
-                Yearly <span className="text-primary-400 text-xs ml-1">Save 20%</span>
-              </button>
+          <div className="mb-12 flex justify-center">
+            <div className="flex gap-1 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] p-1 dark:border-[#1e2d3d] dark:bg-[#111827]">
+              {["monthly", "yearly"].map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  onClick={() => setBillingMode(mode)}
+                  className={`rounded-[9px] px-6 py-2 text-sm font-semibold transition ${
+                    billingMode === mode
+                      ? "bg-white text-[#059669] shadow-[0_2px_8px_rgba(0,0,0,0.1)] dark:bg-[#1a2235] dark:text-[#10b981]"
+                      : "text-[#475569] hover:text-[#059669] dark:text-[#94a3b8]"
+                  }`}
+                >
+                  {mode === "monthly" ? "Monthly" : "Yearly"}
+                  {mode === "yearly" && (
+                    <span className="ml-1 text-[11px] text-[#059669]">Save 20%</span>
+                  )}
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Plan Cards Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {displayPlans.map((plan, idx) => (
-              <motion.div
-                key={plan.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: idx * 0.1 }}
-                whileHover={{ y: -4 }}
-                className={`relative bg-card border rounded-2xl p-6 transition-all ${plan.popular ? "border-primary shadow-lg shadow-primary/20" : "border-border hover:border-primary/40"}`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full whitespace-nowrap">
-                    Most Popular
+          <div className="mb-[60px] grid grid-cols-1 items-start gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {plans.map((plan) => {
+              const Icon = plan.icon;
+              const price = billingMode === "monthly" ? plan.monthly : plan.yearly;
+              return (
+                <article
+                  key={plan.id}
+                  className={`relative cursor-pointer rounded-2xl border-2 bg-white px-7 py-8 transition hover:-translate-y-1 hover:shadow-[0_8px_24px_rgba(0,0,0,0.10),0_24px_64px_rgba(0,0,0,0.08)] dark:bg-[#1a2235] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)] ${
+                    plan.popular
+                      ? "border-[#059669] shadow-[0_0_0_1px_#059669,0_8px_24px_rgba(0,0,0,0.10),0_24px_64px_rgba(0,0,0,0.08)]"
+                      : "border-[#e2e8f0] dark:border-[#1e2d3d]"
+                  }`}
+                >
+                  {plan.popular && (
+                    <div className="absolute left-1/2 top-[-14px] flex -translate-x-1/2 items-center gap-1 rounded-full bg-gradient-to-br from-[#059669] to-[#0891b2] px-4 py-1 text-[11px] font-bold tracking-[0.5px] text-white">
+                      <Star className="h-3 w-3 fill-white" />
+                      Most Popular
+                    </div>
+                  )}
+                  <div className={`mb-5 flex h-[52px] w-[52px] items-center justify-center rounded-[14px] ${plan.iconClass}`}>
+                    <Icon className="h-6 w-6" />
                   </div>
-                )}
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
-                  {getPlanIcon(plan.name)}
-                </div>
-                <div className="text-xs font-bold text-primary mb-1">{plan.name}</div>
-                <div className="text-xl font-bold text-foreground mb-1">{plan.tier}</div>
-                
-                {/* Price Display */}
-                <div className="mb-2">
-                  {getPrice(plan) === 0 ? (
-                    <span className="text-2xl font-bold text-foreground">Free</span>
-                  ) : (
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold text-foreground">৳{getPrice(plan).toLocaleString()}</span>
-                      <span className="text-foreground/50 text-sm">/month</span>
+                  <div
+                    className="mb-1.5 text-[11px] font-bold uppercase tracking-[1px]"
+                    style={{ color: plan.color }}
+                  >
+                    {plan.tier}
+                  </div>
+                  <h3 className="mb-2 text-[22px] font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">{plan.name}</h3>
+                  {plan.popular && (
+                    <div className="mb-4 rounded-lg bg-[#d1fae5] px-3 py-2 text-center text-xs font-semibold text-[#059669]">
+                      Most members choose Gold
                     </div>
                   )}
-                  {billingMode === "yearly" && getPrice(plan) > 0 && (
-                    <div className="text-xs text-green-500 mt-1">
-                      Save {getSavingsPercent(plan)}% annually
-                    </div>
-                  )}
-                </div>
+                  <div className="mb-1 flex items-baseline gap-1">
+                    <span className="text-xl font-bold text-[#0f172a] dark:text-[#f1f5f9]">৳</span>
+                    <span className="text-[40px] font-black leading-none text-[#0f172a] dark:text-[#f1f5f9]">{price}</span>
+                    <span className="text-sm text-[#94a3b8]">/month</span>
+                  </div>
+                  <p className="mb-6 text-[13px] leading-normal text-[#475569] dark:text-[#94a3b8]">{plan.desc}</p>
+                  <Link
+                    href="/register"
+                    className={`block w-full rounded-xl px-3 py-3 text-center text-sm font-bold transition ${
+                      plan.id === "gold"
+                        ? "bg-gradient-to-br from-[#059669] to-[#0891b2] text-white hover:opacity-90"
+                        : plan.id === "platinum"
+                          ? "bg-gradient-to-br from-[#7c3aed] to-[#5b21b6] text-white hover:opacity-90"
+                          : "border-2 border-[#e2e8f0] bg-[#f8fafc] text-[#0f172a] hover:border-current dark:border-[#1e2d3d] dark:bg-[#111827]"
+                    }`}
+                    style={plan.id === "bronze" || plan.id === "silver" ? { color: plan.color } : undefined}
+                  >
+                    {plan.cta}
+                  </Link>
+                  <hr className="my-5 border-[#e2e8f0] dark:border-[#1e2d3d]" />
+                  <ul className="flex flex-col gap-2.5">
+                    {plan.features.map(([feature, enabled]) => (
+                      <li key={feature} className="flex items-start gap-2.5 text-[13px] leading-snug text-[#475569] dark:text-[#94a3b8]">
+                        <span
+                          className={`mt-px flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full ${
+                            enabled ? "bg-[#d1fae5] text-[#059669]" : "bg-[#fee2e2] text-[#ef4444]"
+                          }`}
+                        >
+                          {enabled ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                        </span>
+                        <span className={enabled ? "" : "text-[#94a3b8] line-through"}>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </article>
+              );
+            })}
+          </div>
 
-                {/* Min Deposit Info */}
-                <div className="text-xs text-foreground/50 mb-3">
-                  Min deposit: ৳{plan.min.toLocaleString()}/month
-                </div>
+          <div className="flex flex-col items-center gap-8 rounded-2xl bg-gradient-to-br from-[#065f46] to-[#047857] px-6 py-10 text-center text-white md:flex-row md:text-left">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/15">
+              <Moon className="h-10 w-10" />
+            </div>
+            <div>
+              <h3 className="mb-2 text-[22px] font-extrabold">Islamic Savings Mode Available on All Plans</h3>
+              <p className="text-sm leading-relaxed text-white/85">
+                Enable riba-free savings across all tiers. Amanah&apos;s Islamic mode ensures every
+                transaction, goal, and circle operates without interest, fully compliant with Halal
+                finance principles.
+              </p>
+            </div>
+            <Link
+              href="/register"
+              className="shrink-0 rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#065f46] transition hover:bg-[#d1fae5] md:ml-auto"
+            >
+              Enable Islamic Mode
+            </Link>
+          </div>
+        </div>
+      </section>
 
-                <p className="text-foreground/60 text-sm mb-4">{plan.description}</p>
-                
-                {/* Features List */}
-                <div className="mt-4 mb-6">
-                  {plan.features && plan.features.slice(0, 6).map((feature, idx) => (
-                    <div key={idx} className="flex items-center gap-2 py-1.5">
-                      <Check size={14} className="text-primary shrink-0" />
-                      <span className="text-xs text-foreground/70">{typeof feature === 'string' ? feature : feature.text || feature}</span>
+      <section className="bg-[#f8fafc] px-6 py-20 dark:bg-[#111827]">
+        <div className="mx-auto max-w-[1200px]">
+          <SectionHeading
+            label="Feature Comparison"
+            title="Everything Side by Side"
+            subtitle="Compare every feature so you pick the right plan with confidence."
+          />
+          <div className="w-full overflow-x-auto rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.08),0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+            <table className="w-full min-w-[840px] border-collapse bg-white dark:bg-[#1a2235]">
+              <thead>
+                <tr>
+                  <th className="w-[34%] border-b-2 border-[#e2e8f0] px-6 py-5 text-left text-[13px] font-bold text-[#475569] dark:border-[#1e2d3d] dark:text-[#94a3b8]">
+                    Feature
+                  </th>
+                  {[
+                    ["Bronze", "Free", "bg-[#fef3c7] text-[#b45309]"],
+                    ["Silver", "৳199/mo", "bg-[#f1f5f9] text-[#64748b]"],
+                    ["Gold", "৳499/mo", "bg-[#fef9c3] text-[#a16207]"],
+                    ["Platinum", "৳999/mo", "bg-[#ede9fe] text-[#6d28d9]"],
+                  ].map(([name, price, className], index) => (
+                    <th
+                      key={name}
+                      className={`border-b-2 border-[#e2e8f0] px-6 py-5 text-center text-[13px] font-bold text-[#475569] dark:border-[#1e2d3d] dark:text-[#94a3b8] ${
+                        index === 2 ? "bg-[#0596690a] dark:bg-[#10b98114]" : ""
+                      }`}
+                    >
+                      <div className="text-base font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">{name}</div>
+                      <span className={`mt-1 inline-block rounded-full px-2.5 py-1 text-[10px] font-bold ${className}`}>
+                        {price}
+                      </span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonGroups.map((group) => {
+                  const Icon = group.icon;
+                  return (
+                    <React.Fragment key={group.label}>
+                      <tr>
+                        <td
+                          colSpan={5}
+                          className="bg-[#f8fafc] px-6 py-3 text-[11px] font-bold uppercase tracking-[1px] text-[#94a3b8] dark:bg-[#111827]"
+                        >
+                          <span className="inline-flex items-center gap-2">
+                            <Icon className="h-4 w-4" />
+                            {group.label}
+                          </span>
+                        </td>
+                      </tr>
+                      {group.rows.map((row) => (
+                        <tr key={`${group.label}-${row[0]}`} className="border-b border-[#e2e8f0] transition hover:bg-[#f8fafc] dark:border-[#1e2d3d] dark:hover:bg-[#111827]">
+                          <td className="px-6 py-4 text-left text-sm font-semibold text-[#0f172a] dark:text-[#f1f5f9]">{row[0]}</td>
+                          {row.slice(1).map((value, index) => (
+                            <ValueCell key={`${row[0]}-${index}`} value={value} highlight={index === 2} />
+                          ))}
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-[1200px]">
+          <SectionHeading
+            label="Savings Calculator"
+            title="See Your Goal Timeline"
+            subtitle="Adjust the sliders and watch your savings projection update instantly."
+          />
+          <div className="grid items-start gap-10 lg:grid-cols-2">
+            <div className="rounded-2xl border border-[#e2e8f0] bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)] md:p-9">
+              <h3 className="mb-1.5 text-[22px] font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">Configure Your Plan</h3>
+              <p className="mb-7 text-sm text-[#475569] dark:text-[#94a3b8]">
+                Estimate how fast you&apos;ll reach your goal with consistent monthly saving.
+              </p>
+
+              <div className="mb-5">
+                <label className="mb-2 flex justify-between text-[13px] font-semibold text-[#475569] dark:text-[#94a3b8]">
+                  Savings Plan <span className="font-bold text-[#059669]">{selectedPlanData.label}</span>
+                </label>
+                <select
+                  value={selectedPlan}
+                  onChange={(event) => handlePlanChange(event.target.value)}
+                  className="w-full rounded-[10px] border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2.5 text-sm text-[#0f172a] outline-none transition focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#111827] dark:text-[#f1f5f9]"
+                >
+                  <option value="bronze">Bronze - Free (৳500 min/mo)</option>
+                  <option value="silver">Silver - ৳199/mo (৳1,000 min/mo)</option>
+                  <option value="gold">Gold - ৳499/mo (৳2,000 min/mo)</option>
+                  <option value="platinum">Platinum - ৳999/mo (৳5,000 min/mo)</option>
+                </select>
+              </div>
+
+              <div className="mb-5">
+                <label className="mb-2 flex justify-between text-[13px] font-semibold text-[#475569] dark:text-[#94a3b8]">
+                  Monthly Deposit <span className="font-bold text-[#059669]">{formatBDT(deposit)}</span>
+                </label>
+                <input
+                  type="range"
+                  min={selectedPlanData.min}
+                  max="50000"
+                  step="500"
+                  value={deposit}
+                  onChange={(event) => setDeposit(Number(event.target.value))}
+                  className="w-full accent-[#059669]"
+                />
+              </div>
+
+              <div className="mb-5">
+                <label className="mb-2 flex justify-between text-[13px] font-semibold text-[#475569] dark:text-[#94a3b8]">
+                  Goal Duration <span className="font-bold text-[#059669]">{duration} months</span>
+                </label>
+                <input
+                  type="range"
+                  min="3"
+                  max="60"
+                  step="1"
+                  value={duration}
+                  onChange={(event) => setDuration(Number(event.target.value))}
+                  className="w-full accent-[#059669]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-[13px] font-semibold text-[#475569] dark:text-[#94a3b8]">
+                  Goal Target (optional)
+                </label>
+                <input
+                  type="number"
+                  value={target}
+                  onChange={(event) => setTarget(event.target.value)}
+                  placeholder="e.g. 100000"
+                  className="w-full rounded-[10px] border border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-2.5 text-sm text-[#0f172a] outline-none transition focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#111827] dark:text-[#f1f5f9]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="rounded-2xl bg-gradient-to-br from-[#059669] to-[#0891b2] p-7 text-white">
+                <h4 className="mb-2 text-sm text-white/85">You will save</h4>
+                <div className="mb-5 text-[40px] font-black">{formatBDT(totalSaved)}</div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {[
+                    ["Monthly", formatBDT(deposit)],
+                    ["Duration", `${duration} mo`],
+                    ["Goal reached", monthsNeeded ? `${monthsNeeded} mo` : "-"],
+                  ].map(([label, value]) => (
+                    <div key={label} className="rounded-[10px] bg-white/15 p-3 text-center">
+                      <div className="mb-1 text-[11px] text-white/80">{label}</div>
+                      <div className="text-lg font-bold">{value}</div>
                     </div>
                   ))}
                 </div>
-
-                <Link 
-                  href="/register" 
-                  className={`block w-full py-3 rounded-xl text-center font-semibold text-sm transition ${plan.popular ? "bg-primary text-white shadow-lg shadow-primary/20" : "border border-border text-foreground hover:border-primary hover:text-primary"}`}
+                {goalMessage && <p className="mt-4 text-[13px] leading-relaxed text-white/85">{goalMessage}</p>}
+                <Link
+                  href="/register"
+                  className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-white p-3.5 text-center text-[15px] font-bold text-[#059669] transition hover:bg-[#d1fae5]"
                 >
-                  Choose {plan.name}
+                  Start Saving Now <ArrowRight className="h-4 w-4" />
                 </Link>
-              </motion.div>
-            ))}
+              </div>
+              <div className="mt-5 rounded-2xl border border-[#e2e8f0] bg-[#f8fafc] p-5 dark:border-[#1e2d3d] dark:bg-[#111827]">
+                <p className="text-xs leading-relaxed text-[#94a3b8]">
+                  <strong>Disclaimer:</strong> This calculator shows projected savings totals based on
+                  your inputs. Amanah Savings Community is not an investment platform and does not
+                  offer any guaranteed returns, fixed profits, or interest.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Savings Calculator */}
-      <section className="py-16 px-4 bg-secondary/20">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10">
-            <div className="text-primary text-sm font-semibold mb-2">Savings Calculator</div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">Plan Your Savings Goal</h2>
-            <p className="text-foreground/60 max-w-2xl mx-auto">Adjust the parameters to see your savings projection.</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Calculator Inputs */}
-            <div className="bg-card border border-border rounded-2xl p-6">
-              <h3 className="text-xl font-bold text-foreground mb-2">Configure Your Plan</h3>
-              <p className="text-foreground/60 text-sm mb-6">Estimate how fast you'll reach your goal with consistent monthly saving.</p>
-
-              <div className="space-y-5">
-                <div>
-                  <label className="flex justify-between text-sm font-medium text-foreground/80 mb-2">
-                    <span>Savings Plan</span>
-                    <span className="text-primary">{selectedPlan}</span>
-                  </label>
-                  <select 
-                    value={selectedPlan} 
-                    onChange={(e) => setSelectedPlan(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-background border border-border text-foreground focus:outline-none focus:border-primary transition"
-                  >
-                    {displayPlans.map(plan => (
-                      <option key={plan.name} value={plan.name}>
-                        {plan.name} — {plan.monthlyPrice === 0 ? "Free" : `৳${plan.monthlyPrice}/mo`} (Min: ৳{plan.min.toLocaleString()})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="flex justify-between text-sm font-medium text-foreground/80 mb-2">
-                    <span>Monthly Deposit</span>
-                    <span className="text-primary">৳{deposit.toLocaleString()}</span>
-                  </label>
-                  <input 
-                    type="range" 
-                    min={getMinDepositFromPlan(selectedPlan)} 
-                    max="100000" 
-                    step="500" 
-                    value={deposit} 
-                    onChange={(e) => setDeposit(parseInt(e.target.value))}
-                    className="w-full accent-primary"
-                  />
-                  <div className="flex justify-between text-xs text-foreground/50 mt-1">
-                    <span>Min: ৳{getMinDepositFromPlan(selectedPlan).toLocaleString()}</span>
-                    <span>Max: ৳100,000</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="flex justify-between text-sm font-medium text-foreground/80 mb-2">
-                    <span>Duration</span>
-                    <span className="text-primary">{duration} months</span>
-                  </label>
-                  <input 
-                    type="range" 
-                    min="3" 
-                    max="60" 
-                    step="1" 
-                    value={duration} 
-                    onChange={(e) => setDuration(parseInt(e.target.value))}
-                    className="w-full accent-primary"
-                  />
-                  <div className="flex justify-between text-xs text-foreground/50 mt-1">
-                    <span>3 months</span>
-                    <span>5 years</span>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-medium text-foreground/80 mb-2 block">
-                    Target Amount (Optional)
-                  </label>
-                  <input 
-                    type="number" 
-                    placeholder="e.g., 500000" 
-                    value={target}
-                    onChange={(e) => setTarget(e.target.value)}
-                    className="w-full p-3 rounded-xl bg-background border border-border text-foreground focus:outline-none focus:border-primary transition"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Calculator Result */}
-            <div className="bg-primary rounded-2xl p-6 text-white">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp size={20} />
-                <h4 className="text-sm opacity-90">Projected Savings</h4>
-              </div>
-              <div className="text-4xl font-bold mb-6">৳{totalSaved.toLocaleString()}</div>
-              
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                <div className="bg-white/15 rounded-xl p-3 text-center">
-                  <div className="text-xs opacity-80">Monthly</div>
-                  <div className="text-lg font-bold">৳{deposit.toLocaleString()}</div>
-                </div>
-                <div className="bg-white/15 rounded-xl p-3 text-center">
-                  <div className="text-xs opacity-80">Duration</div>
-                  <div className="text-lg font-bold">{duration} months</div>
-                </div>
-                <div className="bg-white/15 rounded-xl p-3 text-center">
-                  <div className="text-xs opacity-80">Target Reached</div>
-                  <div className="text-lg font-bold">
-                    {targetNum > 0 ? (totalSaved >= targetNum ? `${monthsNeeded} mo` : `${duration + Math.ceil(shortfall / deposit)} mo`) : "—"}
-                  </div>
-                </div>
-              </div>
-
-              {targetNum > 0 && (
-                <div className="text-sm opacity-90 mb-6">
-                  {totalSaved >= targetNum ? (
-                    <span>🎉 You'll reach your target in <strong>{monthsNeeded} months</strong>, {duration - monthsNeeded} months ahead of schedule!</span>
-                  ) : (
-                    <span>📊 You need <strong>{duration + Math.ceil(shortfall / deposit)} months</strong> total to reach your target. Consider increasing your monthly deposit.</span>
-                  )}
-                </div>
-              )}
-
-              <div className="border-t border-white/20 my-4 pt-4">
-                <div className="flex justify-between text-sm mb-2">
-                  <span>Plan fee ({billingMode})</span>
-                  <span>
-                    {(() => {
-                      const selectedPlanData = displayPlans.find(p => p.name === selectedPlan);
-                      if (selectedPlanData?.monthlyPrice === 0) return "Free";
-                      const fee = billingMode === "monthly" ? selectedPlanData?.monthlyPrice : selectedPlanData?.yearlyPrice;
-                      return `৳${fee?.toLocaleString()}/${billingMode === "monthly" ? "mo" : "year"}`;
-                    })()}
-                  </span>
-                </div>
-                <div className="flex justify-between text-sm font-bold">
-                  <span>Total with fees</span>
-                  <span>
-                    {(() => {
-                      const selectedPlanData = displayPlans.find(p => p.name === selectedPlan);
-                      if (selectedPlanData?.monthlyPrice === 0) return `৳${totalSaved.toLocaleString()}`;
-                      const fee = billingMode === "monthly" 
-                        ? selectedPlanData?.monthlyPrice * duration 
-                        : selectedPlanData?.yearlyPrice * Math.ceil(duration / 12);
-                      return `৳{(totalSaved + fee).toLocaleString()}`;
-                    })()}
-                  </span>
-                </div>
-              </div>
-
-              <Link href="/register" className="block w-full py-3 bg-white text-primary rounded-xl text-center font-semibold hover:bg-white/90 transition mt-4">
-                Start Saving Now
-              </Link>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-card border border-border rounded-xl">
-            <p className="text-xs text-foreground/50 leading-relaxed">
-              <strong>Disclaimer:</strong> This calculator shows projected savings totals based on your inputs. 
-              Sonchoy Bondhu Community is not an investment platform and does not offer any guaranteed returns, 
-              fixed profits, or interest. All figures represent community savings deposits only.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="text-primary text-sm font-semibold mb-2">Common Questions</div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">Frequently Asked Questions</h2>
-          </div>
-
-          <div className="space-y-3">
-            {(cmsData?.faq || []).map((faq, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-card border border-border rounded-xl overflow-hidden"
+      <section className="bg-[#f8fafc] px-6 py-20 dark:bg-[#111827]">
+        <div className="mx-auto max-w-[1200px]">
+          <SectionHeading label="Member Stories" title="What Our Members Say" />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {testimonials.map((story) => (
+              <article
+                key={story.name}
+                className="rounded-2xl border border-[#e2e8f0] bg-white p-7 shadow-[0_1px_3px_rgba(0,0,0,0.06),0_4px_16px_rgba(0,0,0,0.04)] transition hover:-translate-y-1 hover:shadow-[0_4px_12px_rgba(0,0,0,0.08),0_12px_40px_rgba(0,0,0,0.06)] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:shadow-[0_20px_60px_rgba(0,0,0,0.35)]"
               >
-                <button
-                  onClick={() => toggleFaq(index)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left hover:bg-primary/5 transition"
-                >
-                  <span className="font-semibold text-foreground">{faq.question}</span>
-                  <ChevronDown size={18} className={`text-primary transition-transform ${openFaq === index ? "rotate-180" : ""}`} />
-                </button>
-                <AnimatePresence>
-                  {openFaq === index && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="border-t border-border"
-                    >
-                      <div className="px-6 py-4">
-                        <p className="text-foreground/70 text-sm leading-relaxed">{faq.answer}</p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
+                <div className="mb-3.5 flex gap-1 text-[#f59e0b]">
+                  {Array.from({ length: 5 }).map((_, index) => (
+                    <Star
+                      key={`${story.name}-${index}`}
+                      className={`h-4 w-4 ${index < story.stars ? "fill-[#f59e0b]" : ""}`}
+                    />
+                  ))}
+                </div>
+                <p className="mb-5 text-sm italic leading-[1.7] text-[#475569] dark:text-[#94a3b8]">&quot;{story.quote}&quot;</p>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#059669] to-[#0891b2] text-base font-bold text-white">
+                    {story.avatar}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-[#0f172a] dark:text-[#f1f5f9]">{story.name}</div>
+                    <div className="text-xs text-[#94a3b8]">{story.plan}</div>
+                  </div>
+                </div>
+              </article>
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Banner */}
-      <section className="py-16 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-8 sm:p-12 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Ready to Start Saving?</h2>
-            <p className="text-white/90 mb-6">Join thousands of members already building their savings goals with Sanchoy Bondhu.</p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <Link href="/register" className="px-6 py-3 bg-white text-primary rounded-xl font-semibold hover:bg-white/90 transition">
-                Create Free Account
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-[1200px]">
+          <SectionHeading label="Common Questions" title="Plans FAQ" />
+          <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            {faqs.map(([question, answer], index) => {
+              const open = openFaq === index;
+              return (
+                <div key={question} className="overflow-hidden rounded-2xl border border-[#e2e8f0] bg-white dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(open ? null : index)}
+                    className="flex w-full items-center justify-between gap-3 px-6 py-5 text-left text-sm font-semibold text-[#0f172a] transition hover:bg-[#f8fafc] dark:text-[#f1f5f9] dark:hover:bg-[#111827]"
+                  >
+                    {question}
+                    <ChevronDown
+                      className={`h-5 w-5 shrink-0 text-[#94a3b8] transition ${open ? "rotate-180 text-[#059669]" : ""}`}
+                    />
+                  </button>
+                  {open && <p className="px-6 pb-5 text-[13px] leading-[1.7] text-[#475569] dark:text-[#94a3b8]">{answer}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 pb-20">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="flex flex-col items-center justify-between gap-8 rounded-3xl bg-gradient-to-br from-[#059669] to-[#0891b2] px-6 py-10 text-center md:flex-row md:px-12 md:py-16 md:text-left">
+            <div>
+              <h2 className="mb-2 text-[clamp(22px,3vw,34px)] font-black text-white">
+                Ready to Start Saving?
+              </h2>
+              <p className="text-[15px] text-white/80">
+                Join 47,000+ members already building their savings goals with Amanah.
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
+              <Link
+                href="/register"
+                className="flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-[15px] font-bold text-[#059669] transition hover:bg-[#d1fae5]"
+              >
+                Open Free Account <ArrowRight className="h-4 w-4" />
               </Link>
-              <Link href="/contact" className="px-6 py-3 border-2 border-white/50 text-white rounded-xl font-semibold hover:bg-white/10 transition">
-                Contact Support
+              <Link
+                href="/contact"
+                className="rounded-xl border-2 border-white/50 px-7 py-3.5 text-[15px] font-bold text-white transition hover:border-white hover:bg-white/10"
+              >
+                Talk to Us
               </Link>
             </div>
           </div>

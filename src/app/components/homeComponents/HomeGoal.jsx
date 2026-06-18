@@ -1,364 +1,182 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
 import {
-  Users,
-  Calendar,
-  TrendingUp,
-  Target,
-  Gem,
-  Star,
-  Shield,
-  GraduationCap,
-  Smartphone,
-  Briefcase,
   ArrowRight,
+  Briefcase,
+  GraduationCap,
+  Landmark,
+  Laptop,
+  Shield,
   Sparkles,
+  Users,
+  Gem,
 } from "lucide-react";
 import Link from "next/link";
 
 const goals = [
   {
-    icon: <Gem size={28} />,
-    name: "Marriage Fund",
-    people: "3,240",
-    range: "৳5,000 – ৳30,000/mo",
-    months: "12–36 months",
-    fill: 65,
-    color: "from-pink-500 to-rose-500",
+    Icon: Gem,
+    name: "Wedding Fund",
+    members: "3,240 members saving",
+    amount: "৳5,000 – ৳30,000/mo",
+    period: "12–36 months",
+    progress: 68,
+    accent: "#f472b6",
   },
   {
-    icon: <Star size={28} />,
+    Icon: Landmark,
     name: "Hajj Fund",
-    people: "1,890",
-    range: "৳10,000 – ৳20,000/mo",
-    months: "24–48 months",
-    fill: 45,
-    color: "from-emerald-500 to-teal-500",
+    members: "1,890 members saving",
+    amount: "৳10,000 – ৳20,000/mo",
+    period: "24–48 months",
+    progress: 42,
+    accent: "#10b981",
   },
   {
-    icon: <Shield size={28} />,
-    name: "Emergency fund",
-    people: "5,610",
-    range: "৳500 – ৳5,000/mo",
-    months: "6–12 months",
-    fill: 75,
-    color: "from-blue-500 to-cyan-500",
+    Icon: Shield,
+    name: "Emergency Fund",
+    members: "5,610 members saving",
+    amount: "৳500 – ৳5,000/mo",
+    period: "6–12 months",
+    progress: 55,
+    accent: "#f59e0b",
   },
   {
-    icon: <GraduationCap size={28} />,
+    Icon: GraduationCap,
     name: "Education Fund",
-    people: "2,140",
-    range: "৳2,000 – ৳15,000/mo",
-    months: "12–60 months",
-    fill: 55,
-    color: "from-purple-500 to-indigo-500",
+    members: "2,140 members saving",
+    amount: "৳2,000 – ৳15,000/mo",
+    period: "12–60 months",
+    progress: 38,
+    accent: "#8b5cf6",
   },
   {
-    icon: <Smartphone size={28} />,
-    name: "Gadgets/Devices",
-    people: "4,320",
-    range: "৳1,000 – ৳10,000/mo",
-    months: "3–12 months",
-    fill: 80,
-    color: "from-orange-500 to-amber-500",
+    Icon: Laptop,
+    name: "Gadget / Device",
+    members: "4,320 members saving",
+    amount: "৳1,000 – ৳10,000/mo",
+    period: "3–12 months",
+    progress: 74,
+    accent: "#3b82f6",
   },
   {
-    icon: <Briefcase size={28} />,
-    name: "Starting a business",
-    people: "980",
-    range: "৳5,000 – ৳50,000/mo",
-    months: "12–48 months",
-    fill: 35,
-    color: "from-slate-500 to-gray-500",
+    Icon: Briefcase,
+    name: "Business Startup",
+    members: "980 members saving",
+    amount: "৳5,000 – ৳50,000/mo",
+    period: "12–48 months",
+    progress: 28,
+    accent: "#06b6d4",
   },
 ];
 
-const GoalCard = ({
-  icon,
-  name,
-  people,
-  range,
-  months,
-  fill,
-  color,
-  index,
-}) => {
+const HomeGoal = () => {
+  return (
+    <section
+      id="goals"
+      className="bg-white py-16 font-['Inter','Noto_Sans_Bengali',sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9] md:py-24"
+    >
+      <div className="mx-auto max-w-[1200px] px-6 text-center">
+        <span className="mb-4 inline-block rounded-full border border-[#059669]/15 bg-[#059669]/[0.08] px-4 py-1.5 text-[13px] font-semibold text-[#059669]">
+          Savings Goals
+        </span>
+
+        <h2 className="mb-4 text-[clamp(28px,4vw,42px)] font-extrabold leading-[1.2] tracking-normal">
+          Save for What <span className="text-[#059669]">Matters Most</span>
+        </h2>
+
+        <p className="mx-auto max-w-[580px] text-lg leading-[1.6] text-[#475569] dark:text-[#94a3b8]">
+          Choose from our community&apos;s most popular savings goals, or create
+          your own custom goal.
+        </p>
+
+        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {goals.map((goal, index) => (
+            <GoalCard key={goal.name} goal={goal} index={index} />
+          ))}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          viewport={{ once: true, margin: "-60px" }}
+          className="mt-9"
+        >
+          <Link
+            href="/goals"
+            className="inline-flex items-center justify-center gap-2 rounded-[14px] border border-[#e2e8f0] bg-transparent px-8 py-4 text-base font-semibold text-[#0f172a] transition-all duration-200 hover:border-[#059669] hover:bg-[#059669]/5 hover:text-[#059669] dark:border-[#1e2d3d] dark:text-[#f1f5f9]"
+          >
+            View All Goals & Circles
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+const GoalCard = ({ goal, index }) => {
+  const { Icon } = goal;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      viewport={{ once: true }}
-      whileHover={{
-        y: -8,
-        transition: { duration: 0.2 },
-      }}
-      className="
-        bg-card border border-border rounded-2xl p-5 sm:p-6 lg:p-7
-        flex flex-col items-center text-center
-        hover:border-primary/40
-        transition-all duration-300
-        cursor-pointer relative overflow-hidden group
-      "
+      transition={{ duration: 0.55, delay: index * 0.08 }}
+      viewport={{ once: true, margin: "-80px" }}
+      className="group relative cursor-pointer overflow-hidden rounded-[20px] border border-[#e2e8f0] bg-white p-6 text-left shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-all duration-300 hover:-translate-y-1 hover:border-[#059669] hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)]"
     >
-      {/* Background Gradient on Hover */}
-      <div className="absolute inset-0 bg-linear-to-br from-primary/5 to-primary-light/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div
+        className="absolute -right-5 -top-5 h-[100px] w-[100px] rounded-full opacity-[0.08] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.15]"
+        style={{
+          background: `radial-gradient(circle, ${goal.accent}, transparent)`,
+        }}
+      />
 
-      {/* Icon with Animation */}
-      <motion.div
-        whileHover={{ scale: 1.1, rotate: 5 }}
-        transition={{ type: "spring", stiffness: 300 }}
-        className="w-14 h-14 rounded-xl bg-linear-to-r from-primary/10 to-primary-light/10 flex items-center justify-center text-primary mb-4 relative z-10"
-      >
-        {icon}
-      </motion.div>
+      <Icon
+        size={36}
+        strokeWidth={1.9}
+        className="relative mb-3"
+        style={{ color: goal.accent }}
+        aria-hidden="true"
+      />
 
-      {/* Name */}
-      <h3 className="text-foreground font-bold text-base sm:text-lg mb-4 relative z-10">
-        {name}
+      <h3 className="relative mb-1.5 text-[17px] font-bold text-[#0f172a] dark:text-[#f1f5f9]">
+        {goal.name}
       </h3>
 
-      {/* People saving */}
-      <div className="flex items-center gap-1.5 mb-3 self-start w-full relative z-10">
-        <Users size={14} className="text-primary" />
-        <span className="text-foreground/60 text-xs sm:text-sm">
-          {people} people are saving
-        </span>
+      <div className="relative mb-3 flex items-center gap-1.5 text-xs text-[#94a3b8]">
+        <Users size={14} className="text-[#059669]" aria-hidden="true" />
+        <span>{goal.members}</span>
       </div>
 
-      {/* Progress bar */}
-      <div className="w-full bg-background rounded-full h-2 mb-4 overflow-hidden relative z-10">
+      <div className="relative mb-2 h-1.5 overflow-hidden rounded-[3px] bg-[#e2e8f0] dark:bg-[#1e2d3d]">
         <motion.div
           initial={{ width: 0 }}
-          whileInView={{ width: `${fill}%` }}
-          transition={{ duration: 1, delay: index * 0.1 }}
+          whileInView={{ width: `${goal.progress}%` }}
+          transition={{ duration: 1.2, delay: 0.1 + index * 0.08 }}
           viewport={{ once: true }}
-          className={`h-full rounded-full bg-linear-to-r ${color} relative`}
+          className="h-full rounded-[3px] bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)]"
+        />
+      </div>
+
+      <div className="relative flex items-center justify-between gap-3 text-xs">
+        <span className="font-bold text-[#059669]">{goal.amount}</span>
+        <span className="text-[#94a3b8]">{goal.period}</span>
+      </div>
+
+      <div className="relative mt-3.5">
+        <Link
+          href="/register"
+          className="inline-flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-[#059669]/20 bg-[#059669]/[0.08] px-4 py-2.5 text-[13px] font-semibold text-[#059669] transition-all duration-200 hover:border-transparent hover:bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] hover:text-white"
         >
-          {/* Shine effect */}
-          <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/20 to-transparent animate-shine" />
-        </motion.div>
-      </div>
-
-      {/* Range & months */}
-      <div className="flex items-center justify-between w-full mb-6 relative z-10">
-        <div className="flex items-center gap-1">
-          <TrendingUp size={12} className="text-primary" />
-          <span className="text-primary font-semibold text-xs sm:text-sm">
-            {range}
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <Calendar size={12} className="text-foreground/50" />
-          <span className="text-foreground/50 text-xs sm:text-sm">
-            {months}
-          </span>
-        </div>
-      </div>
-
-      {/* CTA Button */}
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        transition={{ type: "spring", stiffness: 400, damping: 17 }}
-        className="
-          w-full py-2.5 sm:py-3 rounded-xl border border-primary
-          text-primary text-sm font-semibold
-          hover:bg-primary hover:text-white
-          transition-all duration-300
-          relative z-10
-        "
-      >
-        <Link href={"/register"}>
-        Join the circle →
+          Join Circle
+          <Sparkles size={14} aria-hidden="true" />
         </Link>
-      </motion.button>
+      </div>
     </motion.div>
-  );
-};
-
-const HomeGoal = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-      },
-    },
-  };
-
-  return (
-    <section className="bg-background min-h-screen py-12 sm:py-16 lg:py-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Glow Effects */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-0 w-80 h-80 bg-primary-light/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-10 sm:mb-12 lg:mb-16"
-        >
-          {/* Badge */}
-          <div className="flex justify-center mb-4 sm:mb-5">
-            <motion.div
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ duration: 0.4, type: "spring" }}
-              viewport={{ once: true }}
-              className="
-                inline-flex items-center gap-2 px-4 py-1.5 rounded-full
-                bg-primary/10 dark:bg-primary/20
-                text-primary text-xs sm:text-sm font-semibold
-                border border-primary/20
-              "
-            >
-              <Target size={14} />
-              Savings goal
-            </motion.div>
-          </div>
-
-          {/* Headline */}
-          <h1 className="text-center text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-foreground mb-4">
-            <span className="bg-linear-to-r from-primary to-primary-light bg-clip-text text-transparent">
-              Save for
-            </span>
-            <span> what really matters.</span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="text-center text-foreground/60 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">
-            Choose from our community&apos;s popular savings goals, or create
-            your own custom goal. Join thousands of members already saving
-            together.
-          </p>
-        </motion.div>
-
-        {/* Cards Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 mb-10 sm:mb-12"
-        >
-          {goals.map((goal, index) => (
-            <GoalCard key={goal.name} {...goal} index={index} />
-          ))}
-        </motion.div>
-
-        {/* View all button */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          viewport={{ once: true }}
-          className="flex justify-center"
-        >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="
-              px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl
-              border border-border
-              text-foreground text-sm font-semibold
-              hover:border-primary hover:text-primary
-              transition-all duration-300
-              flex items-center gap-2 group
-            "
-          >
-            <Link href={"/goals"}>
-            View all goals and circles
-            </Link>
-            <motion.span
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 1, repeat: Infinity, repeatDelay: 1 }}
-              className="inline-flex"
-            >
-              <ArrowRight size={16} />
-            </motion.span>
-          </motion.button>
-        </motion.div>
-
-        {/* Stats Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          viewport={{ once: true }}
-          className="mt-12 sm:mt-16 lg:mt-20 pt-8 sm:pt-10 border-t border-border"
-        >
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[
-              {
-                value: "18,000+",
-                label: "Active Savers",
-                icon: <Users size={20} />,
-              },
-              {
-                value: "৳500Cr+",
-                label: "Total Saved",
-                icon: <TrendingUp size={20} />,
-              },
-              {
-                value: "45,000+",
-                label: "Goals Completed",
-                icon: <Target size={20} />,
-              },
-              {
-                value: "98.5%",
-                label: "Success Rate",
-                icon: <Sparkles size={20} />,
-              },
-            ].map((stat, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.6 + idx * 0.1 }}
-                viewport={{ once: true }}
-                className="group"
-              >
-                <div className="text-primary mb-2 flex justify-center group-hover:scale-110 transition-transform duration-300">
-                  {stat.icon}
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-1">
-                  {stat.value}
-                </h3>
-                <p className="text-xs sm:text-sm text-foreground/60">
-                  {stat.label}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Add custom keyframe animation for shine effect */}
-      <style jsx>{`
-        @keyframes shine {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        .animate-shine {
-          animation: shine 2s infinite;
-        }
-      `}</style>
-    </section>
   );
 };
 

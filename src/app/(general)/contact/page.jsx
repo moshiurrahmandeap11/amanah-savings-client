@@ -1,12 +1,7 @@
 import ContactPage from "../../components/navComponents/ContactPage";
-import React from "react";
 
 const Contact = () => {
-  return (
-    <div>
-      <ContactPage />
-    </div>
-  );
+  return <ContactPage />;
 };
 
 export default Contact;

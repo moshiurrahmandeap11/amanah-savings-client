@@ -1,347 +1,258 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
 import {
-  Smartphone,
-  Download,
-  Sparkles,
   Bell,
-  Moon,
-  Wifi,
-  Trophy,
+  Bot,
+  CalendarDays,
   Flame,
+  Handshake,
+  Landmark,
+  Lightbulb,
+  Moon,
+  Smartphone,
   Star,
-  Users,
   Target,
-  MessageCircle,
-  Clock,
+  Trophy,
+  Wifi,
   Zap,
-  CheckCircle,
 } from "lucide-react";
+
+const features = [
+  {
+    Icon: Smartphone,
+    title: "PWA — No Install Needed",
+    description:
+      "Add to home screen directly from your browser. Instant access, no app store required.",
+  },
+  {
+    Icon: Bell,
+    title: "Smart Payment Reminders",
+    description:
+      "Never miss a deposit. Personalized reminders before your savings due date.",
+  },
+  {
+    Icon: Moon,
+    title: "Dark Mode + Bangla UI",
+    description:
+      "Full Bangla language support with beautiful dark mode for comfortable nighttime use.",
+  },
+  {
+    Icon: Zap,
+    title: "Offline Access",
+    description:
+      "View your savings goals and history even without an internet connection.",
+  },
+];
+
+const achievements = [
+  { Icon: Flame, label: "90-Day Streak", locked: false },
+  { Icon: Star, label: "Super Saver", locked: false },
+  { Icon: Handshake, label: "Referral Hero", locked: false },
+  { Icon: Trophy, label: "Locked", locked: true },
+];
 
 const HomeMobileApp = () => {
   return (
-    <section className="min-h-screen bg-background text-foreground overflow-hidden relative">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-linear-to-br from-background via-primary/5 to-background"></div>
-
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 lg:py-24">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Content */}
+    <section
+      id="app"
+      className="bg-[linear-gradient(135deg,#ecfdf5_0%,#eff6ff_100%)] py-16 font-['Inter','Noto_Sans_Bengali',sans-serif] text-[#0f172a] dark:bg-[linear-gradient(135deg,#022c22_0%,#0c1a3a_100%)] dark:text-[#f1f5f9] md:py-24"
+    >
+      <div className="mx-auto max-w-[1200px] px-6">
+        <div className="grid items-center gap-16 md:grid-cols-2">
           <motion.div
-            initial={{ opacity: 0, x: -50 }}
+            initial={{ opacity: 0, x: -40 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            viewport={{ once: true }}
-            className="space-y-6 sm:space-y-8"
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: "-80px" }}
           >
-            <motion.div
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ duration: 0.4, type: "spring" }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-md px-3 sm:px-4 py-1.5 rounded-full border border-primary/20"
-            >
-              <Smartphone size={14} className="text-primary" />
-              <span className="text-xs sm:text-sm font-medium tracking-wide text-primary">
-                Mobile App
-              </span>
-            </motion.div>
+            <span className="mb-4 inline-block rounded-full border border-[#059669]/15 bg-[#059669]/[0.08] px-4 py-1.5 text-[13px] font-semibold text-[#059669]">
+              Mobile App
+            </span>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight text-foreground">
-              Your savings{" "}
-              <span className="bg-linear-to-r from-primary to-primary-light bg-clip-text text-transparent">
-                in your pocket
-              </span>
-            </h1>
+            <h2 className="mb-4 text-[clamp(28px,4vw,42px)] font-extrabold leading-[1.2] tracking-normal">
+              Your Savings
+              <br />
+              <span className="text-[#059669]">In Your Pocket</span>
+            </h2>
 
-            <p className="text-base sm:text-lg md:text-xl text-foreground/70 max-w-lg">
-              Manage all your savings goals, view progress, get smart reminders,
-              and stay connected with Savings Circle — all from your phone.
+            <p className="mb-2 max-w-[580px] text-base leading-[1.7] text-[#475569] dark:text-[#94a3b8]">
+              Manage all your savings goals, track progress, receive smart
+              reminders, and stay connected with your savings circles — all from
+              your phone.
             </p>
 
-            {/* Features */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              viewport={{ once: true }}
-              className="space-y-5 sm:space-y-6 pt-4"
-            >
-              {[
-                {
-                  icon: <Smartphone size={20} />,
-                  title: "PWA — No installation required",
-                  desc: "Add to home screen right from the browser. Quick access without the app store.",
-                  delay: 0,
-                },
-                {
-                  icon: <Bell size={20} />,
-                  title: "Smart payment reminder",
-                  desc: "Never miss a submission. Personal reminders before due dates.",
-                  delay: 0.1,
-                },
-                {
-                  icon: <Moon size={20} />,
-                  title: "Dark mode + Bangla UI",
-                  desc: "Full Bangla language support with beautiful dark mode for comfortable night use.",
-                  delay: 0.2,
-                },
-                {
-                  icon: <Wifi size={20} />,
-                  title: "Offline access",
-                  desc: "View your savings goals and history without the internet.",
-                  delay: 0.3,
-                },
-              ].map((feature, idx) => (
+            <div className="mt-8 flex flex-col gap-4">
+              {features.map(({ Icon, title, description }, index) => (
                 <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
+                  key={title}
+                  initial={{ opacity: 0, y: 18 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: feature.delay }}
-                  viewport={{ once: true }}
-                  whileHover={{ x: 5 }}
-                  className="flex gap-3 sm:gap-4 group cursor-pointer"
+                  transition={{ duration: 0.45, delay: index * 0.07 }}
+                  viewport={{ once: true, margin: "-60px" }}
+                  className="flex items-start gap-4"
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 text-primary"
-                  >
-                    {feature.icon}
-                  </motion.div>
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#059669]/10 text-[#059669]">
+                    <Icon size={20} aria-hidden="true" />
+                  </div>
                   <div>
-                    <h3 className="font-semibold text-base sm:text-lg text-foreground">
-                      {feature.title}
-                    </h3>
-                    <p className="text-foreground/60 text-sm sm:text-base">
-                      {feature.desc}
+                    <h4 className="mb-1 text-[15px] font-bold">{title}</h4>
+                    <p className="text-[13px] leading-[1.5] text-[#475569] dark:text-[#94a3b8]">
+                      {description}
                     </p>
                   </div>
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
 
-            {/* Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              viewport={{ once: true }}
-              className="flex flex-wrap gap-3 sm:gap-4 pt-6"
-            >
-            </motion.div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a
+                href="#app"
+                className="inline-flex items-center gap-2 rounded-xl bg-[#0f172a] px-5 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:opacity-85 dark:bg-[#f1f5f9] dark:text-[#0a0f1e]"
+              >
+                <Smartphone size={17} aria-hidden="true" />
+                Add to Home Screen
+              </a>
+              <a
+                href="#app"
+                className="inline-flex items-center gap-2 rounded-xl border border-[#e2e8f0] bg-[#f8fafc] px-5 py-2.5 text-sm font-semibold text-[#0f172a] transition-all duration-200 hover:-translate-y-0.5 hover:opacity-85 dark:border-[#1e2d3d] dark:bg-[#111827] dark:text-[#f1f5f9]"
+              >
+                <Bot size={17} aria-hidden="true" />
+                Android APK
+              </a>
+            </div>
           </motion.div>
 
-          {/* Right Side - Side by Side Phone Mockups */}
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 40 }}
             whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-            viewport={{ once: true }}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            viewport={{ once: true, margin: "-80px" }}
+            className="flex items-center justify-center gap-5 max-md:hidden"
           >
-            {/* Phone 1 - Achievements */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3, type: "spring" }}
-              viewport={{ once: true }}
-              whileHover={{ y: -10, scale: 1.02 }}
-              className="bg-card rounded-[2.5rem] sm:rounded-[3rem] p-2 sm:p-3 shadow-2xl border border-border w-65 sm:w-70"
-            >
-              <div className="bg-background rounded-4xl sm:rounded-[2.2rem] overflow-hidden h-125 sm:h-135 relative">
-                {/* Dynamic Island */}
-                <div className="h-6 sm:h-7 bg-background flex items-center justify-center relative">
-                  <div className="w-24 sm:w-28 h-3 sm:h-3.5 bg-foreground/10 rounded-full"></div>
-                </div>
-
-                <div className="p-4 sm:p-5">
-                  <div className="flex justify-between items-center mb-5 sm:mb-6">
-                    <div className="flex items-center gap-2">
-                      <motion.div
-                        animate={{ rotate: [0, 10, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center"
-                      >
-                        <Trophy size={18} className="text-primary" />
-                      </motion.div>
-                      <span className="font-semibold text-foreground text-sm sm:text-base">
-                        Achievements
-                      </span>
-                    </div>
-                    <Sparkles size={16} className="text-primary" />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
-                    {[
-                      { icon: <Flame size={24} />, title: "90-day streak", locked: false },
-                      { icon: <Star size={24} />, title: "Super Saver", locked: false },
-                      { icon: <Users size={24} />, title: "Referral Hero", locked: false },
-                      { icon: <Trophy size={24} />, title: "Locked", locked: true },
-                    ].map((item, idx) => (
-                      <motion.div
-                        key={idx}
-                        whileHover={{ scale: 1.05 }}
-                        className={`bg-card-hover rounded-xl sm:rounded-2xl p-3 sm:p-4 ${item.locked ? "opacity-60" : ""}`}
-                      >
-                        <motion.div
-                          animate={!item.locked ? { scale: [1, 1.1, 1] } : {}}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            delay: idx * 0.5,
-                          }}
-                          className="text-primary mb-1"
-                        >
-                          {item.icon}
-                        </motion.div>
-                        <div className="text-xs sm:text-sm font-medium text-foreground">
-                          {item.title}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  <div className="mt-5 sm:mt-6 bg-card-hover rounded-xl sm:rounded-2xl p-3 sm:p-4">
-                    <div className="flex items-center justify-between text-xs sm:text-sm mb-3">
-                      <span className="text-foreground/80">Progress</span>
-                      <span className="text-primary">65%</span>
-                    </div>
-                    <div className="space-y-3">
-                      <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-foreground/70">Marriage goals</span>
-                          <span className="text-foreground/70">65%</span>
-                        </div>
-                        <div className="h-1.5 bg-foreground/10 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: "65%" }}
-                            transition={{ duration: 1, delay: 0.5 }}
-                            className="h-1.5 bg-linear-to-r from-primary to-primary-light rounded-full"
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-xs mb-1">
-                          <span className="text-foreground/70">Hajj Fund</span>
-                          <span className="text-foreground/70">28%</span>
-                        </div>
-                        <div className="h-1.5 bg-foreground/10 rounded-full overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: "28%" }}
-                            transition={{ duration: 1, delay: 0.7 }}
-                            className="h-1.5 bg-linear-to-r from-primary to-primary-light rounded-full"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Phone 2 - AI Assistant */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5, type: "spring" }}
-              viewport={{ once: true }}
-              whileHover={{ y: -10, scale: 1.02 }}
-              className="bg-card rounded-[2.5rem] sm:rounded-[3rem] p-2 sm:p-3 shadow-2xl border border-border w-65 sm:w-70"
-            >
-              <div className="bg-background rounded-4xl sm:rounded-[2.2rem] overflow-hidden h-125 sm:h-135 relative">
-                {/* Dynamic Island */}
-                <div className="h-6 sm:h-7 bg-background flex items-center justify-center">
-                  <div className="w-24 sm:w-28 h-3 sm:h-3.5 bg-foreground/10 rounded-full"></div>
-                </div>
-
-                <div className="p-4 sm:p-5 h-full flex flex-col">
-                  <div className="flex items-center gap-2 mb-5 sm:mb-6">
-                    <motion.div
-                      animate={{ rotate: [0, 5, -5, 0] }}
-                      transition={{ duration: 3, repeat: Infinity }}
-                      className="w-8 h-8 sm:w-10 sm:h-10 bg-linear-to-br from-primary to-primary-light rounded-xl flex items-center justify-center"
-                    >
-                      <MessageCircle size={18} className="text-white" />
-                    </motion.div>
-                    <div>
-                      <div className="font-semibold text-foreground text-sm sm:text-base">
-                        AI Assistant
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Messages */}
-                  <div className="space-y-3 sm:space-y-4 flex-1 overflow-y-auto">
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.4, delay: 0.6 }}
-                      className="bg-card-hover rounded-2xl rounded-tr-none p-3 sm:p-4 text-xs sm:text-sm max-w-[85%]"
-                    >
-                      <Sparkles size={12} className="inline mr-1 text-primary" />
-                      Save an extra ৳500 per week to finish 2 months early!
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.4, delay: 0.8 }}
-                      className="bg-linear-to-r from-primary to-primary-light text-white rounded-2xl rounded-tl-none p-3 sm:p-4 text-xs sm:text-sm ml-auto max-w-[85%]"
-                    >
-                      How much should I save for Hajj?
-                    </motion.div>
-
-                    <motion.div
-                      initial={{ opacity: 0, x: -20 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.4, delay: 1.0 }}
-                      className="bg-card-hover rounded-2xl p-3 sm:p-4 text-xs sm:text-sm"
-                    >
-                      <Target size={12} className="inline mr-1 text-primary" />
-                      Average cost is ৳6.5 lakh. With ৳10k/month, you'll be
-                      ready in 42 months.
-                    </motion.div>
-                  </div>
-
-                  {/* Reminder */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: 1.2 }}
-                    whileHover={{ scale: 1.02 }}
-                    className="mt-4 bg-card-hover rounded-xl sm:rounded-2xl p-3 sm:p-4 text-xs"
-                  >
-                    <div className="flex items-start gap-3">
-                      <motion.div
-                        animate={{ rotate: [0, 10, -10, 0] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                        className="text-primary"
-                      >
-                        <Bell size={16} />
-                      </motion.div>
-                      <div>
-                        <div className="font-medium text-foreground flex items-center gap-1">
-                          Smart Reminder
-                          <Zap size={10} className="text-primary" />
-                        </div>
-                        <div className="text-foreground/60 flex items-center gap-1">
-                          <Clock size={10} />
-                          Deposit due in 2 days
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                </div>
-              </div>
-            </motion.div>
+            <PhoneFrame className="-rotate-[5deg] -translate-y-2.5">
+              <AchievementsScreen />
+            </PhoneFrame>
+            <PhoneFrame className="z-10 rotate-[5deg] translate-y-2.5">
+              <AssistantScreen />
+            </PhoneFrame>
           </motion.div>
         </div>
       </div>
     </section>
+  );
+};
+
+const PhoneFrame = ({ children, className = "" }) => {
+  return (
+    <div
+      className={`w-[200px] rounded-[32px] border border-[#e2e8f0] bg-white p-3 shadow-[0_20px_60px_rgba(0,0,0,0.10)] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:shadow-[0_20px_60px_rgba(0,0,0,0.5)] ${className}`}
+    >
+      <div className="mx-auto mb-2.5 h-[22px] w-20 rounded-b-xl bg-[#f8fafc] dark:bg-[#0a0f1e]" />
+      <div className="h-[360px] overflow-hidden rounded-[22px] bg-[linear-gradient(135deg,#ecfdf5_0%,#eff6ff_100%)] p-3 dark:bg-[linear-gradient(135deg,#022c22_0%,#0c1a3a_100%)]">
+        {children}
+      </div>
+    </div>
+  );
+};
+
+const AchievementsScreen = () => {
+  return (
+    <div className="p-2">
+      <div className="mb-3 flex items-center gap-1.5 text-xs font-bold">
+        <Trophy size={14} className="text-[#059669]" aria-hidden="true" />
+        Achievements
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        {achievements.map(({ Icon, label, locked }) => (
+          <div
+            key={label}
+            className={
+              locked
+                ? "rounded-lg border border-dashed border-[#059669]/30 bg-[#059669]/5 p-2.5 text-center"
+                : "rounded-lg border border-[#e2e8f0] bg-white p-2.5 text-center dark:border-[#1e2d3d] dark:bg-[#1a2235]"
+            }
+          >
+            <Icon
+              size={22}
+              className={`mx-auto ${locked ? "text-[#94a3b8] opacity-40" : "text-[#059669]"}`}
+              aria-hidden="true"
+            />
+            <div
+              className={`mt-1 text-[9px] font-bold ${locked ? "text-[#94a3b8]" : ""}`}
+            >
+              {label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-3 rounded-lg border border-[#e2e8f0] bg-white p-2.5 dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+        <div className="mb-1.5 flex items-center gap-1.5 text-[10px] font-bold">
+          <Target size={12} className="text-[#059669]" aria-hidden="true" />
+          Progress
+        </div>
+        <ProgressRow label="Wedding Goal" width="72%" />
+        <div className="mt-2" />
+        <ProgressRow label="Hajj Fund" width="26%" />
+      </div>
+    </div>
+  );
+};
+
+const ProgressRow = ({ label, width }) => {
+  return (
+    <>
+      <div className="mb-1 text-[9px] text-[#94a3b8]">{label}</div>
+      <div className="h-1 rounded-sm bg-[#e2e8f0] dark:bg-[#1e2d3d]">
+        <div
+          className="h-full rounded-sm bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)]"
+          style={{ width }}
+        />
+      </div>
+    </>
+  );
+};
+
+const AssistantScreen = () => {
+  return (
+    <div className="p-2">
+      <div className="mb-2.5 flex items-center gap-1.5 text-xs font-bold">
+        <Bot size={14} className="text-[#059669]" aria-hidden="true" />
+        AI Assistant
+      </div>
+
+      <div className="flex flex-col gap-2">
+        <div className="rounded-[10px_10px_10px_2px] border border-[#e2e8f0] bg-white p-2 text-[9px] leading-[1.4] text-[#475569] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]">
+          <Lightbulb size={11} className="mr-1 inline text-[#059669]" aria-hidden="true" />
+          Save ৳500 more/week to finish 2 months early!
+        </div>
+        <div className="rounded-[10px_10px_2px_10px] bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] p-2 text-right text-[9px] leading-[1.4] text-white">
+          How much do I need to save for Hajj?
+        </div>
+        <div className="rounded-[10px_10px_10px_2px] border border-[#e2e8f0] bg-white p-2 text-[9px] leading-[1.4] text-[#475569] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]">
+          <Landmark size={11} className="mr-1 inline text-[#059669]" aria-hidden="true" />
+          Hajj 2026 package avg ৳6.5 Lakh. With your current ৳10k/mo, you&apos;ll
+          be ready in 42 months.
+        </div>
+      </div>
+
+      <div className="mt-2.5 rounded-lg border border-[#e2e8f0] bg-white p-2 dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+        <div className="mb-1.5 flex items-center gap-1.5 text-[9px] font-bold">
+          <Bell size={11} className="text-[#059669]" aria-hidden="true" />
+          Reminders
+        </div>
+        <div className="flex items-center gap-1 border-b border-[#e2e8f0] py-1 text-[8px] text-[#94a3b8] dark:border-[#1e2d3d]">
+          <CalendarDays size={9} aria-hidden="true" />
+          Wed deposit due in 2 days
+        </div>
+        <div className="flex items-center gap-1 py-1 text-[8px] text-[#94a3b8]">
+          <Target size={9} aria-hidden="true" />
+          Wedding goal: 72% complete
+        </div>
+      </div>
+    </div>
   );
 };
 

@@ -1,496 +1,320 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React from "react";
 import Link from "next/link";
 import {
-  Users,
-  Target,
-  Globe,
-  TrendingUp,
-  Shield,
-  Sparkles,
-  Heart,
-  Eye,
-  Lock,
-  Calendar,
-  Rocket,
-  Award,
-  CheckCircle,
   ArrowRight,
-  Quote,
-  Star,
+  BarChart3,
   Briefcase,
+  CheckCircle,
   Code,
+  Globe,
+  Handshake,
+  Leaf,
+  Lock,
+  Moon,
   Palette,
-  BarChart,
+  Target,
+  Users,
 } from "lucide-react";
 
-const AboutUsPage = () => {
-  const [isDark, setIsDark] = useState(false);
+const stats = [
+  { value: "47,000+", label: "Active Members" },
+  { value: "৳2.4 Cr+", label: "Total Saved" },
+  { value: "1,200+", label: "Savings Circles" },
+  { value: "64", label: "Districts Covered" },
+];
 
-  const stats = [
-    {
-      value: "47,000+",
-      label: "Active Members",
-      icon: <Users size={24} />,
-      delay: 0,
-    },
-    {
-      value: "৳2.4 Cr+",
-      label: "Total Saved",
-      icon: <TrendingUp size={24} />,
-      delay: 0.1,
-    },
-    {
-      value: "1,200+",
-      label: "Savings Circles",
-      icon: <Target size={24} />,
-      delay: 0.2,
-    },
-    {
-      value: "64",
-      label: "Districts Covered",
-      icon: <Globe size={24} />,
-      delay: 0.3,
-    },
-  ];
+const values = [
+  {
+    icon: Handshake,
+    title: "Amanah (Trust)",
+    desc: "We operate with complete transparency. No hidden fees, no unclear terms, no surprise deductions. Every taka you deposit is tracked and accounted for.",
+  },
+  {
+    icon: Globe,
+    title: "Inclusive Access",
+    desc: "From a ৳500 starter plan to a ৳5,000/month Platinum tier, we built Amanah so that anyone, at any income level, can start saving today.",
+  },
+  {
+    icon: Moon,
+    title: "Halal First",
+    desc: "Islamic savings mode is available on every plan. We operate without interest (riba) and ensure all features comply with Halal finance principles.",
+  },
+  {
+    icon: Users,
+    title: "Community Power",
+    desc: "Savings circles, leaderboards, referrals, and streaks, we believe saving together is more powerful than saving alone.",
+  },
+  {
+    icon: Lock,
+    title: "Privacy & Security",
+    desc: "256-bit encryption, NID-verified KYC, and 2FA on all accounts. Your data and savings information stay private, always.",
+  },
+  {
+    icon: Target,
+    title: "Goal-Focused",
+    desc: "Every feature is built around your goals, not ours. The AI assistant, streak system, and progress tracking all exist to keep you on track.",
+  },
+];
 
-  const values = [
-    {
-      icon: <Shield size={28} />,
-      title: "Sanchoy Bondhu (Trust)",
-      desc: "We operate with complete transparency. No hidden fees, no unclear terms, no surprise deductions.",
-    },
-    {
-      icon: <Globe size={28} />,
-      title: "Inclusive Access",
-      desc: "From ৳500 starter to ৳5,000/month Platinum — anyone at any income level can start saving today.",
-    },
-    {
-      icon: <Star size={28} />,
-      title: "Halal First",
-      desc: "Islamic savings mode on every plan. We operate without interest (riba) and comply with Halal finance principles.",
-    },
-    {
-      icon: <Users size={28} />,
-      title: "Community Power",
-      desc: "Circles, leaderboards, referrals, and streaks — saving together is more powerful than saving alone.",
-    },
-    {
-      icon: <Lock size={28} />,
-      title: "Privacy & Security",
-      desc: "256-bit encryption, NID-verified KYC, and 2FA on all accounts. Your data stays private — always.",
-    },
-    {
-      icon: <Target size={28} />,
-      title: "Goal-Focused",
-      desc: "Every feature is built around your goals — AI assistant, streak system, progress tracking all exist to keep you on track.",
-    },
-  ];
+const team = [
+  {
+    name: "Rafiqul Islam",
+    role: "Co-Founder & CEO",
+    bio: "Former fintech analyst at BRAC Bank. Passionate about financial inclusion for rural Bangladesh.",
+    icon: Briefcase,
+  },
+  {
+    name: "Nusrat Jahan",
+    role: "Co-Founder & CTO",
+    bio: "10 years in software engineering. Built scalable platforms used by millions across South Asia.",
+    icon: Code,
+  },
+  {
+    name: "Arif Hossain",
+    role: "Head of Design",
+    bio: "UX designer with a love for building products that feel as good as they work.",
+    icon: Palette,
+  },
+  {
+    name: "Fatema Khanam",
+    role: "Head of Operations",
+    bio: "Oversees member relations, KYC processes, and community circle management across all 64 districts.",
+    icon: BarChart3,
+  },
+];
 
-  const team = [
-    {
-      name: "Rafiqul Islam",
-      role: "Co-Founder & CEO",
-      bio: "Former fintech analyst at BRAC Bank. Passionate about financial inclusion for rural Bangladesh.",
-      icon: <Briefcase size={32} />,
-      color: "from-emerald-500 to-teal-500",
-    },
-    {
-      name: "Nusrat Jahan",
-      role: "Co-Founder & CTO",
-      bio: "10 years in software engineering. Built scalable platforms used by millions across South Asia.",
-      icon: <Code size={32} />,
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      name: "Arif Hossain",
-      role: "Head of Design",
-      bio: "UX designer with a love for building products that feel as good as they work.",
-      icon: <Palette size={32} />,
-      color: "from-purple-500 to-pink-500",
-    },
-    {
-      name: "Fatema Khanam",
-      role: "Head of Operations",
-      bio: "Oversees member relations, KYC processes, and community circle management across all 64 districts.",
-      icon: <BarChart size={32} />,
-      color: "from-orange-500 to-amber-500",
-    },
-  ];
+const timeline = [
+  {
+    year: "January 2024",
+    title: "The Idea",
+    desc: "Rafiqul and Nusrat sketch the first concept of Amanah over tea in Dhaka.",
+  },
+  {
+    year: "April 2024",
+    title: "Beta Launch",
+    desc: "First 200 beta members join, all from word of mouth. ৳8 lakh saved in first month.",
+  },
+  {
+    year: "August 2024",
+    title: "Circles Launch",
+    desc: "Savings Circles feature goes live, 100 circles formed in first 48 hours.",
+  },
+  {
+    year: "January 2025",
+    title: "10,000 Members",
+    desc: "Crossed 10,000 active members. Launched AI savings assistant for Gold/Platinum.",
+  },
+  {
+    year: "May 2026",
+    title: "47,000 Members & Growing",
+    desc: "৳2.4 crore saved. Present in all 64 districts. Islamic mode launched nationwide.",
+  },
+];
 
-  const timeline = [
-    {
-      year: "January 2024",
-      title: "The Idea",
-      desc: "Rafiqul and Nusrat sketch the first concept of Sanchoy Bondhu over tea in Dhaka.",
-      icon: <Sparkles size={20} />,
-    },
-    {
-      year: "April 2024",
-      title: "Beta Launch",
-      desc: "First 200 beta members join — all from word of mouth. ৳8 lakh saved in first month.",
-      icon: <Rocket size={20} />,
-    },
-    {
-      year: "August 2024",
-      title: "Circles Launch",
-      desc: "Savings Circles feature goes live — 100 circles formed in first 48 hours.",
-      icon: <Users size={20} />,
-    },
-    {
-      year: "January 2025",
-      title: "10,000 Members",
-      desc: "Crossed 10,000 active members. Launched AI savings assistant for Gold/Platinum.",
-      icon: <Award size={20} />,
-    },
-    {
-      year: "May 2026",
-      title: "47,000 Members & Growing",
-      desc: "৳2.4 crore saved. Present in all 64 districts. Islamic mode launched nationwide.",
-      icon: <TrendingUp size={20} />,
-    },
-  ];
-
-  const achievements = [
-    { label: "Member Satisfaction", value: "98%", icon: <Heart size={20} /> },
-    { label: "Goal Completion Rate", value: "87%", icon: <CheckCircle size={20} /> },
-    { label: "Active Daily Users", value: "12K+", icon: <Users size={20} /> },
-    { label: "Referral Success", value: "45%", icon: <TrendingUp size={20} /> },
-  ];
-
+function SectionLabel({ children }) {
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary to-primary-dark pt-20 pb-16 sm:py-20 text-center overflow-hidden">
-        <div className="relative z-10 max-w-4xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-white text-sm mb-6">
-            <Eye size={14} />
-            <span>Our Story</span>
+    <div className="mb-3 inline-flex rounded-full bg-[#0596691f] px-3.5 py-1 text-xs font-bold uppercase tracking-[.5px] text-[#059669]">
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({ children, className = "" }) {
+  return (
+    <h2
+      className={`mb-4 text-[clamp(28px,4vw,42px)] font-extrabold leading-tight text-[#0f172a] dark:text-[#f1f5f9] ${className}`}
+    >
+      {children}
+    </h2>
+  );
+}
+
+const AboutUsPage = () => {
+  return (
+    <div className="min-h-screen bg-[#f8fafc] font-['Segoe_UI',system-ui,sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
+      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#059669,#0891b2)] px-6 py-20 text-center">
+        <div className="absolute inset-0 opacity-100 [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,.08)_1px,transparent_0)] [background-size:60px_60px]" />
+        <div className="relative z-10 mx-auto max-w-[960px]">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-4 py-1.5 text-[13px] font-semibold text-white">
+            <Leaf className="h-4 w-4" />
+            Our Story
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
+          <h1 className="mb-4 text-[clamp(32px,5vw,56px)] font-black leading-tight text-white">
             Built for Bangladesh&apos;s Savers
           </h1>
-          <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto mb-12">
-            We started Sanchoy Bondhu because we believed every Bangladeshi deserves a
-            trusted, transparent, and community-powered way to save for what
-            matters most.
+          <p className="mx-auto mb-8 max-w-[560px] text-[17px] leading-relaxed text-white/85">
+            We started Amanah because we believed every Bangladeshi deserves a trusted,
+            transparent, and community-powered way to save for what matters most.
           </p>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {stats.map((stat, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: stat.delay }}
-                className="bg-white/10 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20"
+          <div className="mx-auto grid max-w-[900px] grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="min-w-0 rounded-2xl border border-white/20 bg-white/15 p-4 text-center backdrop-blur md:p-6"
               >
-                <div className="text-white mb-2 flex justify-center">
-                  {stat.icon}
-                </div>
-                <div className="text-2xl sm:text-3xl font-bold text-white">
+                <div className="whitespace-nowrap text-[28px] font-black leading-tight text-white md:text-4xl">
                   {stat.value}
                 </div>
-                <div className="text-xs text-white/80">{stat.label}</div>
-              </motion.div>
+                <div className="mt-1 text-xs text-white/80 md:text-[13px]">{stat.label}</div>
+              </div>
             ))}
           </div>
         </div>
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-12">
-            <path d="M0,60 C300,0 900,0 1200,60 L1200,60 L0,60 Z" fill="var(--background)" />
+          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="h-[60px] w-full">
+            <path className="fill-[#f8fafc] dark:fill-[#0a0f1e]" d="M0,60 C300,0 900,0 1200,60 L1200,60 L0,60 Z" />
           </svg>
         </div>
       </section>
 
-      {/* Mission Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-            >
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-                <Target size={12} />
-                <span>Our Mission</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-                Savings for Every Dream
-              </h2>
-              <p className="text-foreground/70 mb-4 leading-relaxed">
-                Sonchoy Bondhu Community was founded in 2024 with a single
-                belief: that saving money should be simple, social, and
-                accessible to every Bangladeshi — whether they live in Dhaka or
-                a remote village.
-              </p>
-              <p className="text-foreground/70 mb-4 leading-relaxed">
-                We are not a bank, an investment platform, or a financial
-                institution. We are a digital savings community that helps
-                members set goals, track progress, and stay accountable through
-                the power of community circles.
-              </p>
-              <p className="text-foreground/70 leading-relaxed">
-                Every feature we build — from the AI savings assistant to the
-                gamified streak system — is designed with one purpose: to help
-                you reach your financial goals, one deposit at a time.
-              </p>
-            </motion.div>
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5 }}
-              className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-8 text-center text-white"
-            >
-              <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mx-auto mb-4">
-                <Shield size={40} />
-              </div>
-              <div className="text-2xl font-bold">Sonchoy Bondhu</div>
-              <div className="text-white/80 mt-2">Trusted Savings Community</div>
-              <div className="mt-4 flex justify-center gap-2">
-                <CheckCircle size={16} className="text-white/60" />
-                <span className="text-sm text-white/70">100% Transparent</span>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Values Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-secondary/20">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-              <Heart size={12} />
-              <span>Our Values</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              What We Stand For
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {values.map((value, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                whileHover={{ y: -4 }}
-                className="bg-card border border-border rounded-xl p-6 hover:border-primary/40 transition-all"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-4">
-                  {value.icon}
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-2">
-                  {value.title}
-                </h3>
-                <p className="text-foreground/60 text-sm leading-relaxed">
-                  {value.desc}
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <SectionLabel>Our Mission</SectionLabel>
+              <SectionTitle>Savings for Every Dream</SectionTitle>
+              <div className="space-y-4 text-base leading-[1.8] text-[#64748b] dark:text-[#94a3b8]">
+                <p>
+                  Amanah Savings Community was founded in 2024 with a single belief: that saving
+                  money should be simple, social, and accessible to every Bangladeshi, whether they
+                  live in Dhaka or a remote village.
                 </p>
-              </motion.div>
-            ))}
+                <p>
+                  We are not a bank, an investment platform, or a financial institution. We are a
+                  digital savings community that helps members set goals, track progress, and stay
+                  accountable through the power of community circles.
+                </p>
+                <p>
+                  Every feature we build, from the AI savings assistant to the gamified streak
+                  system, is designed with one purpose: to help you reach your financial goals, one
+                  deposit at a time.
+                </p>
+              </div>
+            </div>
+            <div className="rounded-3xl bg-[linear-gradient(135deg,#059669,#0891b2)] p-12 text-center">
+              <Leaf className="mx-auto mb-4 h-20 w-20 text-white" strokeWidth={1.6} />
+              <div className="text-xl font-bold text-white">Amanah Savings</div>
+              <div className="mt-2 text-sm text-white/70">Trusted savings community</div>
+              <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-white/85">
+                <CheckCircle className="h-4 w-4" />
+                100% Transparent
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Achievements Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-              <Award size={12} />
-              <span>Our Achievements</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              Impact by the Numbers
-            </h2>
+      <section className="border-y border-[#e2e8f0] bg-white px-6 py-20 dark:border-[#1e2d3d] dark:bg-[#131e2e]">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="mb-12 text-center">
+            <SectionLabel>Our Values</SectionLabel>
+            <SectionTitle>What We Stand For</SectionTitle>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
-            {achievements.map((achievement, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-card border border-border rounded-xl p-6 text-center"
-              >
-                <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
-                  {achievement.icon}
-                </div>
-                <div className="text-2xl font-bold text-primary">{achievement.value}</div>
-                <div className="text-xs text-foreground/60 mt-1">{achievement.label}</div>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {values.map((value) => {
+              const Icon = value.icon;
+              return (
+                <article
+                  key={value.title}
+                  className="rounded-2xl border border-[#e2e8f0] bg-white p-8 transition hover:-translate-y-1 hover:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#131e2e]"
+                >
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#0596691f] text-[#059669]">
+                    <Icon className="h-7 w-7" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-bold text-[#0f172a] dark:text-[#f1f5f9]">{value.title}</h3>
+                  <p className="text-sm leading-[1.7] text-[#64748b] dark:text-[#94a3b8]">{value.desc}</p>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Team Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-secondary/20">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-              <Users size={12} />
-              <span>Meet the Team</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              The People Behind Sanchoy Bondhu
-            </h2>
-            <p className="text-foreground/60 max-w-2xl mx-auto">
-              A small, passionate team from Bangladesh — building the savings
-              platform we wished we had.
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="mb-12 text-center">
+            <SectionLabel>Meet the Team</SectionLabel>
+            <SectionTitle>The People Behind Amanah</SectionTitle>
+            <p className="mx-auto max-w-[600px] text-base leading-[1.7] text-[#64748b] dark:text-[#94a3b8]">
+              A small, passionate team from Bangladesh, building the savings platform we wished we
+              had.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {team.map((member, idx) => (
-              <motion.div
-                key={idx}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: idx * 0.1 }}
-                whileHover={{ y: -4 }}
-                className="bg-card border border-border rounded-xl p-6 text-center hover:border-primary/40 transition-all"
-              >
-                <div className={`w-20 h-20 rounded-full bg-gradient-to-br ${member.color} flex items-center justify-center text-white mx-auto mb-4`}>
-                  {member.icon}
-                </div>
-                <h3 className="font-bold text-foreground">{member.name}</h3>
-                <p className="text-primary text-sm font-semibold mb-2">
-                  {member.role}
-                </p>
-                <p className="text-foreground/60 text-xs leading-relaxed">
-                  {member.bio}
-                </p>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {team.map((member) => {
+              const Icon = member.icon;
+              return (
+                <article
+                  key={member.name}
+                  className="rounded-2xl border border-[#e2e8f0] bg-white p-7 text-center transition hover:-translate-y-1 hover:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#131e2e]"
+                >
+                  <div className="mx-auto mb-4 flex h-[72px] w-[72px] items-center justify-center rounded-full bg-[linear-gradient(135deg,#059669,#0891b2)] text-white">
+                    <Icon className="h-8 w-8" />
+                  </div>
+                  <h3 className="mb-1 text-base font-bold text-[#0f172a] dark:text-[#f1f5f9]">{member.name}</h3>
+                  <p className="mb-2 text-[13px] font-semibold text-[#059669]">{member.role}</p>
+                  <p className="text-xs leading-[1.6] text-[#64748b] dark:text-[#94a3b8]">{member.bio}</p>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Timeline Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-            >
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-                <Calendar size={12} />
-                <span>Our Journey</span>
-              </div>
-              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-                From Idea to 47,000 Members
-              </h2>
-              <p className="text-foreground/60">
-                A timeline of our growth and milestones that shaped Sanchoy Bondhu into
-                what it is today.
-              </p>
-            </motion.div>
-            <div className="relative pl-6 border-l-2 border-primary">
-              {timeline.map((item, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, x: 20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  className="relative mb-8 last:mb-0"
-                >
-                  <div className="absolute -left-9 w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white border-4 border-background">
-                    {item.icon}
-                  </div>
-                  <div className="text-primary text-xs font-semibold mb-1 ml-4">
-                    {item.year}
-                  </div>
-                  <h3 className="font-bold text-foreground mb-1 ml-4">
-                    {item.title}
-                  </h3>
-                  <p className="text-foreground/60 text-sm ml-4">{item.desc}</p>
-                </motion.div>
+      <section className="border-y border-[#e2e8f0] bg-white px-6 py-20 dark:border-[#1e2d3d] dark:bg-[#131e2e]">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="grid items-start gap-16 lg:grid-cols-2">
+            <div>
+              <SectionLabel>Our Journey</SectionLabel>
+              <SectionTitle>From Idea to 47,000 Members</SectionTitle>
+            </div>
+            <div className="relative pl-8">
+              <div className="absolute bottom-0 left-2 top-0 w-0.5 bg-[linear-gradient(135deg,#059669,#0891b2)]" />
+              {timeline.map((item) => (
+                <div key={item.title} className="relative mb-10 last:mb-0">
+                  <div className="absolute left-[-28px] top-1 h-4 w-4 rounded-full border-[3px] border-white bg-[linear-gradient(135deg,#059669,#0891b2)] dark:border-[#131e2e]" />
+                  <div className="mb-1 text-xs font-bold text-[#059669]">{item.year}</div>
+                  <h3 className="mb-1 text-base font-bold text-[#0f172a] dark:text-[#f1f5f9]">{item.title}</h3>
+                  <p className="text-sm text-[#64748b] dark:text-[#94a3b8]">{item.desc}</p>
+                </div>
               ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonial Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-secondary/20">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-3 py-1 text-primary text-xs font-semibold mb-4">
-              <Quote size={12} />
-              <span>Testimonials</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-              What Our Members Say
-            </h2>
-          </div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-card border border-border rounded-2xl p-8 text-center"
-          >
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary mx-auto mb-4">
-              <Quote size={32} />
-            </div>
-            <p className="text-foreground/80 text-lg italic mb-6">
-              &quot;Sanchoy Bondhu changed how I save money. The circle system keeps me
-              accountable, and I&apos;ve already reached my first goal of ৳50,000!&quot;
-            </p>
-            <div>
-              <div className="font-bold text-foreground">Mohammad Rahim</div>
-              <div className="text-sm text-foreground/50">Gold Member • Dhaka</div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* CTA Banner */}
-      <section className="py-16 px-4">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-8 sm:p-12 text-center text-white"
-          >
-            <h2 className="text-2xl sm:text-3xl font-bold mb-2">
-              Join Our Community
-            </h2>
-            <p className="text-white/90 mb-6">
-              Start your savings journey today — it takes less than 5 minutes to
-              open a free account.
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-[1200px]">
+          <div className="rounded-3xl bg-[linear-gradient(135deg,#059669,#0891b2)] p-8 text-center text-white md:p-[60px]">
+            <h2 className="mb-3 text-[clamp(24px,3vw,36px)] font-black">Join Our Community</h2>
+            <p className="mb-8 text-base text-white/85">
+              Start your savings journey today, it takes less than 5 minutes to open a free account.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary rounded-xl font-semibold hover:bg-gray-100 transition"
+                className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-3.5 text-[15px] font-bold text-[#059669]"
               >
-                Open Free Account
-                <ArrowRight size={18} />
+                Open Free Account <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/contact"
-                className="inline-flex items-center gap-2 px-6 py-3 border-2 border-white/50 text-white rounded-xl font-semibold hover:bg-white/10 transition"
+                className="rounded-xl border-2 border-white/60 px-8 py-3.5 text-[15px] font-semibold text-white transition hover:bg-white/10"
               >
                 Talk to Us
               </Link>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
+
+      <footer className="border-t border-[#e2e8f0] bg-white px-6 py-8 text-center dark:border-[#1e2d3d] dark:bg-[#131e2e]">
+        <p className="text-[13px] text-[#64748b] dark:text-[#94a3b8]">
+          © 2026 Amanah Savings Community. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 };

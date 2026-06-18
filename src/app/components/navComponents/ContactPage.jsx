@@ -1,23 +1,62 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
-import Link from "next/link";
 import {
-  MessageCircle,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Globe,
+  Loader2,
   Mail,
   MapPin,
-  Clock,
-  Send,
-  CheckCircle,
-  AlertCircle,
-  Loader2,
+  MessageCircle,
   Phone,
-  Globe,
-  Twitter,
+  Send,
 } from "lucide-react";
 import axiosInstance from "../../components/shared/AxiosInstance/AxiosInstance";
-import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+
+const contactCards = [
+  {
+    icon: MessageCircle,
+    label: "WhatsApp Support",
+    value: "+880 1700-AMANAH",
+    note: "Fastest response, usually within 1 hour",
+    button: "Chat on WhatsApp",
+    href: "https://wa.me/8801700262624",
+    buttonClass: "bg-[#25D366] text-white",
+  },
+  {
+    icon: Mail,
+    label: "Email Support",
+    value: "support@amanah.com.bd",
+    note: "For account issues, KYC, and billing queries",
+    button: "Send Email",
+    href: "mailto:support@amanah.com.bd",
+    buttonClass: "bg-[#05966926] text-[#059669]",
+  },
+  {
+    icon: MapPin,
+    label: "Office Address",
+    value: "House 12, Road 4, Banani, Dhaka-1213",
+    note: "Walk-in appointments available by prior arrangement",
+  },
+  {
+    icon: Globe,
+    label: "Social Media",
+    value: "@AmanahSavingsBD",
+    note: "Facebook · Instagram · LinkedIn",
+  },
+];
+
+const supportHours = [
+  ["Sunday - Thursday", "9:00 AM - 8:00 PM"],
+  ["Friday", "2:00 PM - 8:00 PM"],
+  ["Saturday", "10:00 AM - 6:00 PM"],
+  ["WhatsApp (urgent)", "24/7"],
+];
+
+const inputClass =
+  "w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-[#f8fafc] px-3.5 py-3 text-sm text-[#0f172a] outline-none transition focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]";
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -27,20 +66,30 @@ const ContactPage = () => {
     topic: "",
     message: "",
   });
+  const [toast, setToast] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.id]: e.target.value });
+  const handleChange = (event) => {
+    setFormData((current) => ({
+      ...current,
+      [event.target.id]: event.target.value,
+    }));
     setError("");
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.name || !formData.message) {
-      setError("Name and message are required.");
+  const showToast = (message) => {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 3500);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!formData.name.trim() || !formData.message.trim()) {
+      const message = "Name and message are required.";
+      setError(message);
+      showToast(message);
       return;
     }
 
@@ -49,246 +98,150 @@ const ContactPage = () => {
 
     try {
       const response = await axiosInstance.post("/contact/submit", formData);
-      
+
       if (response.data.success) {
         setSubmitted(true);
+        showToast("Message sent! We'll reach out within 24 hours.");
         setFormData({ name: "", phone: "", email: "", topic: "", message: "" });
-        setTimeout(() => {
-          setSubmitted(false);
-        }, 5000);
+        window.setTimeout(() => setSubmitted(false), 5000);
+      } else {
+        const message = response.data.message || "Failed to send message. Please try again.";
+        setError(message);
+        showToast(message);
       }
     } catch (err) {
       console.error("Contact form error:", err);
-      setError(err.response?.data?.message || "Failed to send message. Please try again.");
+      const message = err.response?.data?.message || "Failed to send message. Please try again.";
+      setError(message);
+      showToast(message);
     } finally {
       setLoading(false);
     }
   };
 
-  const contactCards = [
-    {
-      icon: <MessageCircle size={24} />,
-      label: "WhatsApp Support",
-      value: "+880 1700-000000",
-      note: "Fastest response — usually within 1 hour",
-      button: "Chat on WhatsApp",
-      link: "https://wa.me/8801700262624",
-      btnColor: "bg-[#25D366]",
-    },
-    {
-      icon: <Mail size={24} />,
-      label: "Email Support",
-      value: "sanchoybondhu@gmail.com",
-      note: "For account issues, KYC, and billing queries",
-      button: "Send Email",
-      link: "mailto:sanchoybondhu@gmail.com",
-      btnColor: "bg-primary/15 text-primary",
-    },
-    {
-      icon: <MapPin size={24} />,
-      label: "Office Address",
-      value: "House 12, Road 4, Banani, Dhaka-1213",
-      note: "Walk-in appointments available by prior arrangement",
-      button: null,
-    },
-    {
-      icon: <Globe size={24} />,
-      label: "Social Media",
-      value: "@SachoyBondhuBD",
-      note: "Facebook · Instagram · LinkedIn",
-      button: null,
-    },
-  ];
-
-  const socialLinks = [
-    { icon: <FaFacebook size={20} />, label: "Facebook", link: "https://facebook.com/sanchoybondhu", color: "bg-[#1877f2]" },
-    { icon: <FaInstagram size={20} />, label: "Instagram", link: "https://instagram.com/sanchoybondhu", color: "bg-[#e4405f]" },
-    { icon: <FaLinkedin size={20} />, label: "LinkedIn", link: "https://linkedin.com/company/sanchoybondhu", color: "bg-[#0a66c2]" },
-    { icon: <FaTwitter size={20} />, label: "Twitter", link: "https://twitter.com/sanchoybondhu", color: "bg-[#1da1f2]" },
-  ];
-
-  const hours = [
-    { day: "Sunday – Thursday", time: "9:00 AM – 8:00 PM", open: true },
-    { day: "Friday", time: "2:00 PM – 8:00 PM", open: true },
-    { day: "Saturday", time: "10:00 AM – 6:00 PM", open: true },
-    { day: "WhatsApp (urgent)", time: "24/7", open: true },
-  ];
-
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-primary to-primary-dark pt-20 pb-16 text-center overflow-hidden">
-        <div className="relative z-10 max-w-4xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-white text-sm mb-6">
-            <MessageCircle size={14} />
-            <span>Get in Touch</span>
+    <div className="min-h-screen overflow-x-hidden bg-[#f8fafc] font-['Segoe_UI',system-ui,sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
+      <section className="relative overflow-hidden bg-[linear-gradient(135deg,#059669,#0891b2)] px-6 pb-20 pt-16 text-center">
+        <div className="relative z-10 mx-auto max-w-[720px]">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/20 px-4 py-1.5 text-[13px] font-semibold text-white">
+            <Phone className="h-4 w-4" />
+            Get in Touch
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4">
+          <h1 className="mb-3 text-[clamp(28px,4vw,48px)] font-black text-white">
             We&apos;re Here to Help
           </h1>
-          <p className="text-white/90 text-base sm:text-lg max-w-2xl mx-auto">
-            Have a question about your account, a plan, or just want to say
-            hello? Our team responds within 24 hours.
+          <p className="mx-auto max-w-[500px] text-base text-white/85">
+            Have a question about your account, a plan, or just want to say hello? Our team
+            responds within 24 hours.
           </p>
         </div>
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="w-full h-12">
-            <path d="M0,60 C300,0 900,0 1200,60 L1200,60 L0,60 Z" fill="var(--background)" />
+          <svg viewBox="0 0 1200 60" preserveAspectRatio="none" className="h-[60px] w-full">
+            <path className="fill-[#f8fafc] dark:fill-[#0a0f1e]" d="M0,60 C300,0 900,0 1200,60 L1200,60 L0,60 Z" />
           </svg>
         </div>
       </section>
 
-      {/* Main Content */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-8">
-            {/* Left Column - Contact Info */}
-            <div className="space-y-5">
-              {contactCards.map((card, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: idx * 0.1 }}
-                  whileHover={{ y: -2 }}
-                  className="bg-card border border-border rounded-xl p-5 flex gap-4 items-start hover:border-primary/40 transition-all"
-                >
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                    {card.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs text-foreground/60 font-semibold uppercase tracking-wide mb-1">
-                      {card.label}
-                    </div>
-                    <div className="text-base font-semibold text-foreground mb-1 break-words">
-                      {card.value}
-                    </div>
-                    {card.note && (
-                      <div className="text-xs text-foreground/50 mb-2">
-                        {card.note}
+      <section className="px-6 py-[72px] max-md:px-4 max-md:py-14">
+        <div className="mx-auto max-w-[1100px]">
+          <div className="grid min-w-0 grid-cols-1 items-start gap-12 lg:grid-cols-[1fr_1.4fr]">
+            <div>
+              <div className="flex flex-col gap-4">
+                {contactCards.map((card) => {
+                  const Icon = card.icon;
+                  return (
+                    <article
+                      key={card.label}
+                      className="flex min-w-0 items-start gap-4 rounded-2xl border border-[#e2e8f0] bg-white p-6 transition hover:-translate-y-0.5 hover:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#131e2e]"
+                    >
+                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#0596691f] text-[#059669]">
+                        <Icon className="h-[22px] w-[22px]" />
                       </div>
-                    )}
-                    {card.button && (
-                      <a
-                        href={card.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition hover:opacity-90 ${
-                          card.btnColor === "bg-[#25D366]" 
-                            ? "bg-[#25D366] text-white" 
-                            : "bg-primary/15 text-primary hover:bg-primary/25"
-                        }`}
-                      >
-                        <MessageCircle size={14} />
-                        {card.button}
-                      </a>
-                    )}
+                      <div className="min-w-0">
+                        <div className="mb-1 text-xs font-semibold uppercase tracking-[.5px] text-[#64748b] dark:text-[#94a3b8]">
+                          {card.label}
+                        </div>
+                        <div className="mb-1 break-words text-[15px] font-semibold text-[#0f172a] dark:text-[#f1f5f9]">
+                          {card.value}
+                        </div>
+                        <div className="text-xs text-[#64748b] dark:text-[#94a3b8]">{card.note}</div>
+                        {card.button && (
+                          <a
+                            href={card.href}
+                            target={card.href.startsWith("http") ? "_blank" : undefined}
+                            rel={card.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                            className={`mt-2 inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-[13px] font-semibold ${card.buttonClass}`}
+                          >
+                            {card.label.includes("WhatsApp") ? (
+                              <MessageCircle className="h-3.5 w-3.5" />
+                            ) : (
+                              <Mail className="h-3.5 w-3.5" />
+                            )}
+                            {card.button}
+                          </a>
+                        )}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              <div className="mt-4 rounded-2xl border border-[#e2e8f0] bg-white p-6 dark:border-[#1e2d3d] dark:bg-[#131e2e]">
+                <div className="mb-3 flex items-center gap-2 text-sm font-bold text-[#0f172a] dark:text-[#f1f5f9]">
+                  <Clock className="h-4 w-4 text-[#059669]" />
+                  Support Hours
+                </div>
+                {supportHours.map(([day, time]) => (
+                  <div
+                    key={day}
+                    className="flex justify-between border-b border-[#e2e8f0] py-1.5 text-[13px] last:border-0 dark:border-[#1e2d3d]"
+                  >
+                    <span className="text-[#64748b] dark:text-[#94a3b8]">{day}</span>
+                    <span className="font-semibold text-[#059669]">{time}</span>
                   </div>
-                </motion.div>
-              ))}
-
-              {/* Social Media Links */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.35 }}
-                whileHover={{ y: -2 }}
-                className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-all"
-              >
-                <div className="text-sm font-bold text-foreground mb-3">
-                  Follow Us
-                </div>
-                <div className="flex gap-3">
-                  {socialLinks.map((social, idx) => (
-                    <a
-                      key={idx}
-                      href={social.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`w-10 h-10 rounded-full ${social.color} flex items-center justify-center text-white hover:opacity-90 transition`}
-                    >
-                      {social.icon}
-                    </a>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Support Hours */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.4 }}
-                whileHover={{ y: -2 }}
-                className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition-all"
-              >
-                <div className="flex items-center gap-2 text-sm font-bold text-foreground mb-3">
-                  <Clock size={18} />
-                  <span>Support Hours</span>
-                </div>
-                <div className="space-y-2">
-                  {hours.map((hour, idx) => (
-                    <div
-                      key={idx}
-                      className="flex justify-between text-sm border-b border-border pb-2 last:border-0 last:pb-0"
-                    >
-                      <span className="text-foreground/60">{hour.day}</span>
-                      <span className="text-primary font-semibold">
-                        {hour.time}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
+                ))}
+              </div>
             </div>
 
-            {/* Right Column - Contact Form */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="bg-card border border-border rounded-xl p-6 sm:p-8"
-            >
-              <h2 className="text-2xl font-bold text-foreground mb-2">
+            <div className="min-w-0 rounded-2xl border border-[#e2e8f0] bg-white p-9 dark:border-[#1e2d3d] dark:bg-[#131e2e] max-md:p-6">
+              <h2 className="mb-1.5 text-[22px] font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">
                 Send Us a Message
               </h2>
-              <p className="text-foreground/60 text-sm mb-6">
+              <p className="mb-7 text-sm text-[#64748b] dark:text-[#94a3b8]">
                 Fill out the form below and we&apos;ll get back to you within 24 hours.
               </p>
 
               {submitted ? (
-                <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-6 text-center">
-                  <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle size={32} className="text-green-500" />
+                <div className="rounded-xl border border-green-500/30 bg-green-500/10 p-6 text-center">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
+                    <CheckCircle className="h-8 w-8 text-green-500" />
                   </div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">
+                  <h3 className="mb-2 text-lg font-bold text-[#0f172a] dark:text-[#f1f5f9]">
                     Message Sent!
                   </h3>
-                  <p className="text-foreground/60 text-sm">
+                  <p className="text-sm text-[#64748b] dark:text-[#94a3b8]">
                     We&apos;ll reach out to you within 24 hours. Thank you for contacting us.
                   </p>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit}>
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="mb-4">
-                      <label htmlFor="name" className="block text-sm font-semibold text-foreground/70 mb-1">
-                        Your Name *
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="mb-5">
+                      <label htmlFor="name" className="mb-1.5 block text-[13px] font-semibold text-[#64748b] dark:text-[#94a3b8]">
+                        Your Name
                       </label>
                       <input
                         type="text"
                         id="name"
+                        autoComplete="name"
                         value={formData.name}
                         onChange={handleChange}
-                        placeholder="Enter your name"
-                        className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
+                        placeholder="Fatema Khanam"
+                        className={inputClass}
                       />
                     </div>
-                    <div className="mb-4">
-                      <label htmlFor="phone" className="block text-sm font-semibold text-foreground/70 mb-1">
+                    <div className="mb-5">
+                      <label htmlFor="phone" className="mb-1.5 block text-[13px] font-semibold text-[#64748b] dark:text-[#94a3b8]">
                         Phone Number
                       </label>
                       <input
@@ -297,36 +250,32 @@ const ContactPage = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         placeholder="+880 17XXXXXXXX"
-                        className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
+                        className={inputClass}
                       />
                     </div>
                   </div>
 
-                  <div className="mb-4">
-                    <label htmlFor="email" className="block text-sm font-semibold text-foreground/70 mb-1">
+                  <div className="mb-5">
+                    <label htmlFor="email" className="mb-1.5 block text-[13px] font-semibold text-[#64748b] dark:text-[#94a3b8]">
                       Email Address
                     </label>
                     <input
                       type="email"
                       id="email"
+                      autoComplete="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="your@email.com"
-                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
+                      placeholder="fatema@example.com"
+                      className={inputClass}
                     />
                   </div>
 
-                  <div className="mb-4">
-                    <label htmlFor="topic" className="block text-sm font-semibold text-foreground/70 mb-1">
+                  <div className="mb-5">
+                    <label htmlFor="topic" className="mb-1.5 block text-[13px] font-semibold text-[#64748b] dark:text-[#94a3b8]">
                       Topic
                     </label>
-                    <select
-                      id="topic"
-                      value={formData.topic}
-                      onChange={handleChange}
-                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
-                    >
-                      <option value="">— Choose a topic —</option>
+                    <select id="topic" value={formData.topic} onChange={handleChange} className={inputClass}>
+                      <option value="">- Choose a topic -</option>
                       <option value="account">Account & KYC</option>
                       <option value="deposit">Deposit / Withdrawal</option>
                       <option value="plan">Plan Upgrade</option>
@@ -336,23 +285,22 @@ const ContactPage = () => {
                     </select>
                   </div>
 
-                  <div className="mb-6">
-                    <label htmlFor="message" className="block text-sm font-semibold text-foreground/70 mb-1">
-                      Message *
+                  <div className="mb-5">
+                    <label htmlFor="message" className="mb-1.5 block text-[13px] font-semibold text-[#64748b] dark:text-[#94a3b8]">
+                      Message
                     </label>
                     <textarea
                       id="message"
                       value={formData.message}
                       onChange={handleChange}
-                      placeholder="Write your message here..."
-                      rows="5"
-                      className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition resize-vertical"
+                      placeholder="Write your message..."
+                      className={`${inputClass} min-h-[120px] resize-y`}
                     />
                   </div>
 
                   {error && (
-                    <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2">
-                      <AlertCircle size={16} className="text-red-500" />
+                    <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-3">
+                      <AlertCircle className="h-4 w-4 text-red-500" />
                       <span className="text-sm text-red-500">{error}</span>
                     </div>
                   )}
@@ -360,41 +308,40 @@ const ContactPage = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-gradient-to-r from-primary to-primary-dark text-white rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[linear-gradient(135deg,#059669,#0891b2)] p-3.5 text-[15px] font-bold text-white transition hover:-translate-y-px hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? (
                       <>
-                        <Loader2 size={18} className="animate-spin" />
+                        <Loader2 className="h-4 w-4 animate-spin" />
                         Sending...
                       </>
                     ) : (
                       <>
-                        <Send size={18} />
+                        <Send className="h-4 w-4" />
                         Send Message
                       </>
                     )}
                   </button>
                 </form>
               )}
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
-      {/* Map Section */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
-            <div className="h-64 bg-secondary/20 flex items-center justify-center">
-              <div className="text-center">
-                <MapPin size={32} className="text-primary mx-auto mb-2" />
-                <p className="text-foreground/60">Interactive Map Coming Soon</p>
-                <p className="text-xs text-foreground/40 mt-1">House 12, Road 4, Banani, Dhaka-1213</p>
-              </div>
             </div>
           </div>
         </div>
       </section>
+
+      <footer className="border-t border-[#e2e8f0] bg-white px-6 py-8 text-center dark:border-[#1e2d3d] dark:bg-[#131e2e]">
+        <p className="text-[13px] text-[#64748b] dark:text-[#94a3b8]">
+          © 2026 Amanah Savings Community. All rights reserved.
+        </p>
+      </footer>
+
+      <div
+        className={`fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl bg-[#059669] px-6 py-3 text-sm font-semibold text-white transition ${
+          toast ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0"
+        }`}
+      >
+        {toast}
+      </div>
     </div>
   );
 };

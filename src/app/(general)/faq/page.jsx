@@ -1,12 +1,7 @@
-import FaqPage from "../..//components/navComponents/FaqPage";
-import React from "react";
+import FaqPage from "../../components/navComponents/FaqPage";
 
 const Faq = () => {
-  return (
-    <div>
-      <FaqPage />
-    </div>
-  );
+  return <FaqPage />;
 };
 
 export default Faq;

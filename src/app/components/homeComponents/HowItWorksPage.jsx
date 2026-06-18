@@ -1,164 +1,132 @@
 "use client";
 
-import React from "react";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import {
-  UserPlus,
-  ShieldCheck,
-  Target,
   CreditCard,
+  FilePenLine,
+  IdCard,
+  Target,
   Trophy,
-  ArrowRight,
-  Sparkles,
-  CheckCircle,
 } from "lucide-react";
 
 const steps = [
   {
     id: 1,
-    icon: <UserPlus size={28} />,
-    title: "Register",
+    Icon: FilePenLine,
+    title: "1. Register",
     description: "Create your account with phone or email in under 2 minutes",
   },
   {
     id: 2,
-    icon: <ShieldCheck size={28} />,
-    title: "Verify",
+    Icon: IdCard,
+    title: "2. Verify",
     description: "Complete NID & phone verification for maximum security",
   },
   {
     id: 3,
-    icon: <Target size={28} />,
-    title: "Choose Goal",
+    Icon: Target,
+    title: "3. Choose Goal",
     description: "Pick a savings goal or join an active community circle",
   },
   {
     id: 4,
-    icon: <CreditCard size={28} />,
-    title: "Deposit",
+    Icon: CreditCard,
+    title: "4. Deposit",
     description: "Send weekly or monthly via bKash, Nagad, or bank transfer",
   },
   {
     id: 5,
-    icon: <Trophy size={28} />,
-    title: "Complete",
+    Icon: Trophy,
+    title: "5. Complete",
     description: "Reach your goal maturity and withdraw your full savings",
   },
 ];
 
+const stats = [
+  { value: "12,400+", label: "Verified member" },
+  { value: "৳48 Cr+", label: "Community savings" },
+  { value: "1,240+", label: "Active circle" },
+  { value: "98%", label: "Completion rate" },
+];
+
 const HowItWorksPage = () => {
   return (
-    <section className="relative overflow-hidden bg-background py-16 sm:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-12 sm:mb-16 lg:mb-24 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-primary">
-            <Sparkles size={14} />
-            <span>Simple Process</span>
-          </div>
+    <>
+      <section
+        id="how-it-works"
+        className="bg-white py-16 font-['Inter','Noto_Sans_Bengali',sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9] md:py-24"
+      >
+        <div className="mx-auto max-w-[1200px] px-6 text-center">
+          <span className="mb-4 inline-block rounded-full border border-[#059669]/15 bg-[#059669]/[0.08] px-4 py-1.5 text-[13px] font-semibold text-[#059669]">
+            Simple Process
+          </span>
 
-          <h2 className="mt-6 sm:mt-8 text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
-            How <span className="text-primary">Sanchoy Bondhu</span> Works
+          <h2 className="mb-4 text-[clamp(28px,4vw,42px)] font-extrabold leading-[1.2] tracking-normal">
+            How <span className="text-[#059669]">Sanchoy Bondhu</span> Works
           </h2>
 
-          <p className="mt-4 sm:mt-6 max-w-2xl mx-auto text-base sm:text-lg md:text-xl text-foreground/60">
+          <p className="mx-auto max-w-[580px] text-lg leading-[1.6] text-[#475569] dark:text-[#94a3b8]">
             Five simple steps to start your savings journey with community
             discipline and digital security.
           </p>
-        </div>
 
-        {/* Timeline */}
-        <div className="relative">
-          {/* Horizontal Line - Hidden on mobile/tablet */}
-          <div className="absolute left-0 right-0 top-9 hidden h-0.5 bg-primary/20 lg:block" />
+          <div className="relative mt-14 flex items-start justify-between gap-4 max-md:flex-col max-md:items-center max-md:gap-6">
+            <div className="absolute left-[10%] right-[10%] top-7 z-0 h-0.5 bg-[linear-gradient(90deg,#059669,#3b82f6)] opacity-30 max-md:hidden" />
 
-          <div className="grid gap-10 md:gap-12 lg:gap-6 md:grid-cols-2 lg:grid-cols-5">
             {steps.map((step, index) => (
-              <motion.div
-                key={step.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="relative flex flex-col items-center text-center group"
-              >
-                {/* Step Number Badge - Mobile */}
-                <div className="lg:hidden absolute -top-3 -left-3 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-white shadow-lg">
-                  {step.id}
-                </div>
-
-                {/* Circle */}
-                <div className="relative z-10 flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-gradient-to-br from-primary to-primary-dark text-white shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform duration-300">
-                  {step.icon}
-                </div>
-
-                {/* Desktop Step Number */}
-                <div className="hidden lg:block absolute -top-8 left-1/2 -translate-x-1/2 text-sm font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  Step {step.id}
-                </div>
-
-                {/* Content */}
-                <h3 className="mt-5 sm:mt-6 text-xl sm:text-2xl font-bold text-foreground">
-                  {step.title}
-                </h3>
-
-                <p className="mt-2 sm:mt-3 max-w-xs text-sm sm:text-base leading-relaxed sm:leading-7 text-foreground/60">
-                  {step.description}
-                </p>
-
-                {/* Connector Line - Mobile/Tablet */}
-                {index < steps.length - 1 && (
-                  <div className="lg:hidden absolute -bottom-6 left-1/2 h-8 w-0.5 bg-primary/20 transform -translate-x-1/2" />
-                )}
-              </motion.div>
+              <StepItem key={step.id} step={step} index={index} />
             ))}
           </div>
         </div>
+      </section>
 
-        {/* Features Highlight */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          viewport={{ once: true }}
-          className="mt-16 grid grid-cols-1 sm:grid-cols-3 gap-6"
-        >
-          {[
-            { icon: <ShieldCheck size={20} />, text: "100% Secure & Encrypted" },
-            { icon: <CheckCircle size={20} />, text: "No Hidden Fees" },
-            { icon: <Sparkles size={20} />, text: "24/7 Community Support" },
-          ].map((feature, idx) => (
-            <div key={idx} className="flex items-center justify-center gap-2 text-sm text-foreground/60">
-              <span className="text-primary">{feature.icon}</span>
-              <span>{feature.text}</span>
-            </div>
+      <section className="bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] py-16 font-['Inter','Noto_Sans_Bengali',sans-serif] text-white">
+        <div className="mx-auto grid max-w-[1200px] grid-cols-2 gap-6 px-6 text-center md:grid-cols-4">
+          {stats.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.06 }}
+              viewport={{ once: true, margin: "-60px" }}
+            >
+              <div className="text-[34px] font-black leading-none tracking-normal sm:text-[42px]">
+                {stat.value}
+              </div>
+              <div className="mt-4 text-sm leading-none text-white/80 sm:text-[14px]">
+                {stat.label}
+              </div>
+            </motion.div>
           ))}
-        </motion.div>
+        </div>
+      </section>
+    </>
+  );
+};
 
-        {/* CTA Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          viewport={{ once: true }}
-          className="mt-12 sm:mt-16 lg:mt-20 text-center"
-        >
-          <Link
-            href="/register"
-            className="group relative inline-flex items-center gap-2 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary to-primary-dark px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-semibold text-white shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all duration-300 hover:scale-105"
-          >
-            Start Your Journey Today
-            <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-300" />
-          </Link>
-        </motion.div>
+const StepItem = ({ step, index }) => {
+  const { Icon } = step;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.08 }}
+      viewport={{ once: true, margin: "-80px" }}
+      className="group relative z-10 flex-1 text-center max-md:w-full max-md:max-w-[320px]"
+    >
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] text-white shadow-[0_8px_24px_rgba(5,150,105,0.3)] transition-transform duration-300 group-hover:scale-110">
+        <Icon size={24} strokeWidth={2.2} aria-hidden="true" />
       </div>
 
-      {/* Glow Effects */}
-      <div className="absolute left-1/2 top-0 h-64 sm:h-80 lg:h-96 w-64 sm:w-80 lg:w-96 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-0 right-0 h-56 sm:h-64 lg:h-80 w-56 sm:w-64 lg:w-80 rounded-full bg-primary-light/5 blur-3xl" />
-      <div className="absolute top-1/4 left-0 h-48 sm:h-56 lg:h-64 w-48 sm:w-56 lg:w-64 rounded-full bg-primary/5 blur-3xl" />
-    </section>
+      <h3 className="mb-2 text-base font-bold text-[#0f172a] dark:text-[#f1f5f9]">
+        {step.title}
+      </h3>
+
+      <p className="text-[13px] leading-[1.5] text-[#475569] dark:text-[#94a3b8]">
+        {step.description}
+      </p>
+    </motion.div>
   );
 };
 

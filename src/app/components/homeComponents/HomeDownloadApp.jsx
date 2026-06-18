@@ -1,369 +1,234 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
 import {
-  Download,
-  Smartphone,
   Apple,
-  Globe,
-  Star,
-  Users,
-  HardDrive,
-  ChevronRight,
-  Award,
-  TrendingUp,
+  Bot,
   CheckCircle,
+  CreditCard,
+  Flame,
+  Globe,
+  GraduationCap,
+  Home,
+  Target,
+  Wallet,
   Zap,
 } from "lucide-react";
-import { FaChrome } from "react-icons/fa";
+
+const platformBadges = [
+  {
+    Icon: Bot,
+    eyebrow: "Download",
+    title: "Android APK",
+    variant: "default",
+  },
+  {
+    Icon: Apple,
+    eyebrow: "Coming soon",
+    title: "iOS App",
+    variant: "default",
+  },
+  {
+    Icon: Globe,
+    eyebrow: "Available now",
+    title: "Web App (PWA)",
+    variant: "active",
+  },
+];
+
+const installSteps = [
+  "Open this site in Chrome or Safari",
+  'Choose "Add to Home Screen" from your browser menu',
+  "Find the Amanah icon on your home screen — that's it!",
+];
+
+const appStats = [
+  { value: "4.8★", label: "Rating" },
+  { value: "47K+", label: "Members" },
+  { value: "5MB", label: "Size" },
+];
 
 const HomeDownloadApp = () => {
-  const platforms = [
-    {
-      name: "Android APK",
-      icon: <Smartphone size={24} />,
-      status: "Available now",
-      color: "from-green-500 to-emerald-500",
-      bgColor: "bg-green-500/10",
-      buttonText: "Download APK",
-    },
-    {
-      name: "iOS App",
-      icon: <Apple size={24} />,
-      status: "Coming soon",
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-blue-500/10",
-      buttonText: "Notify Me",
-    },
-    {
-      name: "Web App (PWA)",
-      icon: <Globe size={24} />,
-      status: "Available now",
-      color: "from-purple-500 to-pink-500",
-      bgColor: "bg-purple-500/10",
-      buttonText: "Open Web App",
-    },
-  ];
-
-  const steps = [
-    {
-      step: "1",
-      title: "Open this site",
-      description: "Open sanchoybondhu.com in Chrome or Safari browser",
-    },
-    {
-      step: "2",
-      title: "Select Add to Home Screen",
-      description:
-        "Tap the share icon and select 'Add to Home Screen' from the browser menu",
-    },
-    {
-      step: "3",
-      title: "Find the Sanchoy Bondhu Icon",
-      description:
-        "You'll see the Sanchoy Bondhu icon on your home screen — that's it!",
-    },
-  ];
-
-  const stats = [
-    { value: "4.8★", label: "Rating", icon: <Star size={16} /> },
-    { value: "47K+", label: "Members", icon: <Users size={16} /> },
-    { value: "5MB", label: "Size", icon: <HardDrive size={16} /> },
-  ];
-
-  const features = [
-    { icon: <Zap size={14} />, text: "Lightning fast" },
-    { icon: <CheckCircle size={14} />, text: "Offline access" },
-    { icon: <TrendingUp size={14} />, text: "Real-time sync" },
-  ];
-
   return (
-    <section className="min-h-screen bg-background py-16 sm:py-20 lg:py-28 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute bottom-20 left-10 w-96 h-96 bg-primary-light/5 rounded-full blur-3xl"
-        />
-      </div>
+    <section
+      id="app-download"
+      className="overflow-hidden bg-[#f8fafc] py-16 font-['Inter','Noto_Sans_Bengali',sans-serif] text-[#0f172a] dark:bg-[#111827] dark:text-[#f1f5f9] md:py-24"
+    >
+      <div className="mx-auto max-w-[1200px] px-6">
+        <div className="grid items-center gap-8 md:grid-cols-[minmax(0,1fr)_minmax(280px,0.9fr)] md:gap-14">
+          <div>
+            <span className="mb-4 inline-block rounded-full border border-[#059669]/15 bg-[#059669]/[0.08] px-4 py-1.5 text-[13px] font-semibold text-[#059669]">
+              App Download
+            </span>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-          {/* Left Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            viewport={{ once: true }}
-          >
-            {/* Badge */}
-            <motion.div
-              initial={{ scale: 0 }}
-              whileInView={{ scale: 1 }}
-              transition={{ duration: 0.4, type: "spring" }}
-              viewport={{ once: true }}
-              className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-md px-4 py-1.5 rounded-full border border-primary/20 mb-6"
-            >
-              <Download size={14} className="text-primary" />
-              <span className="text-xs sm:text-sm font-medium tracking-wide text-primary">
-                Download the app
-              </span>
-            </motion.div>
-
-            {/* Heading */}
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
-              Use Sanchoy Bondhu on{" "}
-              <span className="bg-linear-to-r from-primary to-primary-light bg-clip-text text-transparent">
-                any device
-              </span>
+            <h2 className="mb-3 text-[clamp(28px,4vw,42px)] font-extrabold leading-[1.2] tracking-normal">
+              Use Amanah
+              <br />
+              <span className="text-[#059669]">On Any Device</span>
             </h2>
 
-            {/* Description */}
-            <p className="text-base sm:text-lg text-foreground/70 mb-8">
-              Use directly from Android, iPhone or any browser. Add to home
-              screen without an app store.
+            <p className="mb-7 max-w-[580px] text-[15px] leading-[1.7] text-[#475569] dark:text-[#94a3b8]">
+              Use Amanah directly from Android, iPhone, or any browser. Add it
+              to your home screen without visiting an app store.
             </p>
 
-            {/* Platform Cards */}
-            <div className="space-y-4 mb-8">
-              {platforms.map((platform, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: idx * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ x: 5 }}
-                  className={`${platform.bgColor} rounded-xl p-4 border border-primary/20`}
+            <div className="mb-8 flex flex-wrap gap-3">
+              {platformBadges.map(({ Icon, eyebrow, title, variant }) => (
+                <a
+                  key={title}
+                  href="#app-download"
+                  className={
+                    variant === "active"
+                      ? "flex min-w-0 flex-1 basis-[170px] items-center gap-2.5 rounded-xl border-[1.5px] border-[#059669]/30 bg-[linear-gradient(135deg,rgba(5,150,105,.1),rgba(8,145,178,.1))] px-[18px] py-3 no-underline transition-all duration-200 hover:border-[#059669]"
+                      : "flex min-w-0 flex-1 basis-[170px] items-center gap-2.5 rounded-xl border-[1.5px] border-[#e2e8f0] bg-white px-[18px] py-3 no-underline transition-all duration-200 hover:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235]"
+                  }
                 >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-12 h-12 bg-linear-to-r ${platform.color} rounded-xl flex items-center justify-center text-white`}
-                      >
-                        {platform.icon}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-foreground text-base sm:text-lg">
-                          {platform.name}
-                        </h3>
-                        <p className="text-sm text-foreground/60">
-                          {platform.status}
-                        </p>
-                      </div>
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${
-                        platform.status === "Available now"
-                          ? "bg-linear-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20"
-                          : "border border-primary text-primary hover:bg-primary/10"
+                  <Icon size={24} className="shrink-0 text-[#059669]" />
+                  <div>
+                    <div
+                      className={`text-[10px] ${
+                        variant === "active"
+                          ? "font-semibold text-[#059669]"
+                          : "text-[#475569] dark:text-[#94a3b8]"
                       }`}
                     >
-                      {platform.buttonText}
-                    </motion.button>
+                      {eyebrow}
+                    </div>
+                    <div className="text-sm font-bold text-[#0f172a] dark:text-[#f1f5f9]">
+                      {title}
+                    </div>
                   </div>
-                </motion.div>
+                </a>
               ))}
             </div>
 
-            {/* Steps Section */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-xl p-6"
-            >
-              <div className="flex items-center gap-2 mb-4">
-                <FaChrome size={20} className="text-primary" />
-                <h3 className="font-semibold text-foreground">
-                  Add to home screen (PWA)
-                </h3>
+            <div className="rounded-2xl border border-[#e2e8f0] bg-white p-5 dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+              <div className="mb-3.5 flex items-center gap-2 text-[13px] font-bold">
+                <Globe size={16} className="text-[#059669]" />
+                Add to Home Screen (PWA)
               </div>
 
-              <div className="space-y-4">
-                {steps.map((step, idx) => (
-                  <div key={idx} className="flex gap-3">
-                    <div className="w-6 h-6 rounded-full bg-primary/20 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                      {step.step}
+              <div className="flex flex-col gap-3">
+                {installSteps.map((step, index) => (
+                  <div key={step} className="flex items-start gap-3">
+                    <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] text-[11px] font-bold text-white">
+                      {index + 1}
                     </div>
-                    <div>
-                      <p className="font-medium text-foreground text-sm">
-                        {step.title}
-                      </p>
-                      <p className="text-foreground/60 text-xs">
-                        {step.description}
-                      </p>
+                    <div className="text-[13px] leading-[1.6] text-[#475569] dark:text-[#94a3b8]">
+                      {step}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <button className="mt-4 text-primary text-sm font-semibold flex items-center gap-1 hover:gap-2 transition-all">
-                Detailed install guide <ChevronRight size={14} />
-              </button>
-            </motion.div>
+              <a
+                href="#app-download"
+                className="mt-4 block rounded-[10px] bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] p-[11px] text-center text-[13px] font-bold text-white no-underline"
+              >
+                Detailed Install Guide →
+              </a>
+            </div>
+          </div>
 
-            {/* Features Row */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              viewport={{ once: true }}
-              className="flex flex-wrap gap-4 mt-6"
-            >
-              {features.map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-1 text-xs text-foreground/60">
-                  <span className="text-primary">{feature.icon}</span>
-                  <span>{feature.text}</span>
+          <div className="min-w-0 text-center max-md:mx-auto max-md:max-w-[300px]">
+            <div className="relative inline-block">
+              <div className="relative mx-auto h-[420px] w-[220px] overflow-hidden rounded-[36px] border-[3px] border-[#e2e8f0] bg-white shadow-[0_24px_64px_rgba(0,0,0,0.2)] dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+                <div className="flex h-20 flex-col items-center justify-end bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] pb-2.5">
+                  <div className="text-[10px] text-white/80">Amanah Savings</div>
+                  <div className="text-[22px] font-black text-white">৳ 2,45,500</div>
                 </div>
-              ))}
-            </motion.div>
-          </motion.div>
 
-          {/* Right Side - Phone Mockup */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut", delay: 0.2 }}
-            viewport={{ once: true }}
-            className="flex justify-center lg:justify-end"
-          >
-            <motion.div
-              whileHover={{ y: -10, scale: 1.02 }}
-              transition={{ type: "spring", stiffness: 300 }}
-              className="relative"
-            >
-              {/* Phone Mockup */}
-              <div className="relative w-70 sm:w-[320px] bg-card rounded-[3rem] p-3 shadow-2xl border border-border">
-                <div className="bg-background rounded-[2.5rem] overflow-hidden">
-                  {/* Dynamic Island */}
-                  <div className="h-8 bg-background flex items-center justify-center relative">
-                    <div className="w-32 h-4 bg-foreground/10 rounded-full"></div>
+                <div className="flex flex-col gap-2 px-2.5 py-3">
+                  <div className="flex gap-1.5">
+                    <PhoneAction Icon={CreditCard} label="Deposit" color="#059669" />
+                    <PhoneAction Icon={Wallet} label="Withdraw" color="#0891b2" />
+                    <PhoneAction Icon={Target} label="Goal" color="#8b5cf6" />
                   </div>
 
-                  {/* App Interface Preview */}
-                  <div className="p-5">
-                    {/* App Header */}
-                    <div className="flex items-center justify-between mb-6">
-                      <div>
-                        <div className="text-xs text-foreground/60">
-                          Good Morning
-                        </div>
-                        <div className="font-semibold text-foreground">
-                          Rahima Akter
-                        </div>
-                      </div>
-                      <div className="w-10 h-10 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-semibold">
-                        R
-                      </div>
-                    </div>
+                  <GoalRow
+                    Icon={Home}
+                    title="Home Buying Dream"
+                    percent="45%"
+                    width="45%"
+                    color="#059669"
+                  />
+                  <GoalRow
+                    Icon={GraduationCap}
+                    title="Education Fund"
+                    percent="72%"
+                    width="72%"
+                    color="#8b5cf6"
+                    gradient="linear-gradient(90deg,#8b5cf6,#6366f1)"
+                  />
 
-                    {/* Balance Card */}
-                    <div className="bg-linear-to-r from-primary to-primary-light rounded-2xl p-4 text-white mb-6">
-                      <div className="text-xs opacity-90">Total Savings</div>
-                      <div className="text-2xl font-bold mt-1">৳ 2,45,500</div>
-                      <div className="mt-3 flex justify-between text-xs">
-                        <span>Monthly Goal: ৳10,000</span>
-                        <span>65%</span>
-                      </div>
-                      <div className="mt-2 h-1.5 bg-white/30 rounded-full overflow-hidden">
-                        <motion.div
-                          initial={{ width: 0 }}
-                          whileInView={{ width: "65%" }}
-                          transition={{ duration: 1 }}
-                          className="h-full bg-white rounded-full"
-                        />
-                      </div>
+                  <div className="rounded-lg bg-[#059669]/[0.08] p-2 text-center">
+                    <div className="flex items-center justify-center gap-1 text-[9px] text-[#475569] dark:text-[#94a3b8]">
+                      <Zap size={10} className="text-[#059669]" />
+                      Auto-save · Monday · ৳500
                     </div>
-
-                    {/* Quick Actions */}
-                    <div className="grid grid-cols-2 gap-3 mb-6">
-                      <div className="bg-card-hover rounded-xl p-3 text-center">
-                        <div className="text-2xl mb-1">📊</div>
-                        <div className="text-xs text-foreground/70">
-                          Progress
-                        </div>
-                      </div>
-                      <div className="bg-card-hover rounded-xl p-3 text-center">
-                        <div className="text-2xl mb-1">🏆</div>
-                        <div className="text-xs text-foreground/70">
-                          Achievements
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="flex justify-between">
-                      {stats.map((stat, idx) => (
-                        <div key={idx} className="text-center">
-                          <div className="flex items-center justify-center gap-1 text-primary mb-1">
-                            {stat.icon}
-                          </div>
-                          <div className="font-bold text-foreground text-sm">
-                            {stat.value}
-                          </div>
-                          <div className="text-xs text-foreground/60">
-                            {stat.label}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Home Indicator */}
-                  <div className="h-5 flex items-center justify-center">
-                    <div className="w-32 h-1 bg-foreground/20 rounded-full"></div>
                   </div>
                 </div>
               </div>
 
-              {/* Floating Badge - Rating */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5, type: "spring" }}
-                className="absolute -top-4 -right-4 bg-linear-to-r from-yellow-500 to-amber-500 rounded-full px-3 py-1.5 shadow-lg"
-              >
-                <div className="flex items-center gap-1 text-white text-sm font-bold">
-                  <Star size={14} fill="white" />
-                  4.8★
+              <div className="absolute right-[-50px] top-[30px] whitespace-nowrap rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 shadow-[0_4px_16px_rgba(0,0,0,.12)] dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+                <div className="flex items-center gap-1 text-[10px] font-bold">
+                  <Flame size={12} className="text-[#059669]" />
+                  90-day streak
                 </div>
-              </motion.div>
+              </div>
+              <div className="absolute bottom-[60px] left-[-60px] whitespace-nowrap rounded-xl border border-[#e2e8f0] bg-white px-3 py-2 shadow-[0_4px_16px_rgba(0,0,0,.12)] dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+                <div className="flex items-center gap-1 text-[10px] font-bold text-[#059669]">
+                  <CheckCircle size={12} />
+                  KYC verified
+                </div>
+              </div>
+            </div>
 
-              {/* Floating Badge - Download Count */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.7, type: "spring" }}
-                className="absolute -bottom-4 -left-4 bg-card border border-border rounded-full px-3 py-1.5 shadow-lg"
-              >
-                <div className="flex items-center gap-1 text-foreground text-xs font-semibold">
-                  <Download size={12} className="text-primary" />
-                  47K+ Downloads
+            <div className="mt-7 grid grid-cols-3 gap-3">
+              {appStats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-xl border border-[#e2e8f0] bg-white px-2 py-3.5 text-center dark:border-[#1e2d3d] dark:bg-[#1a2235]"
+                >
+                  <div className="text-xl font-black">{stat.value}</div>
+                  <div className="mt-0.5 text-[10px] text-[#475569] dark:text-[#94a3b8]">
+                    {stat.label}
+                  </div>
                 </div>
-              </motion.div>
-            </motion.div>
-          </motion.div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 };
+
+const PhoneAction = ({ Icon, label, color }) => (
+  <div
+    className="flex-1 rounded-lg p-2 text-center"
+    style={{ background: `${color}14` }}
+  >
+    <Icon size={16} className="mx-auto" style={{ color }} />
+    <div className="mt-1 text-[8px] font-bold">{label}</div>
+  </div>
+);
+
+const GoalRow = ({ Icon, title, percent, width, color, gradient }) => (
+  <div className="flex items-center gap-2 rounded-lg bg-[#e2e8f0] p-2.5 dark:bg-[#1e2d3d]">
+    <Icon size={16} className="shrink-0" style={{ color }} />
+    <div className="min-w-0 flex-1">
+      <div className="text-[9px] font-bold">{title}</div>
+      <div className="mt-1 h-1 overflow-hidden rounded-sm bg-white/40">
+        <div
+          className="h-full rounded-sm"
+          style={{ width, background: gradient || "linear-gradient(135deg,#059669,#0891b2)" }}
+        />
+      </div>
+    </div>
+    <div className="text-[9px] font-bold" style={{ color }}>
+      {percent}
+    </div>
+  </div>
+);
 
 export default HomeDownloadApp;

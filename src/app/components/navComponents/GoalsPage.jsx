@@ -1,333 +1,561 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
-import { 
-  Search, X, Sun, Moon, Filter, 
-  Users, Calendar, TrendingUp, Target, 
-  Gem, Star, Shield, GraduationCap, 
-  Smartphone, Briefcase, Heart, 
-  Flame, Award, CheckCircle, ArrowRight,
-  Crown, DollarSign, Clock, Lock
+import {
+  ArrowRight,
+  Baby,
+  Bike,
+  Briefcase,
+  Calendar,
+  CheckSquare,
+  Edit3,
+  Flame,
+  Gem,
+  GraduationCap,
+  Heart,
+  Lock,
+  Moon,
+  Search,
+  Share2,
+  Shield,
+  Smartphone,
+  Sparkles,
+  Star,
+  Target,
+  Trash2,
+  Users,
+  Wallet,
+  X,
 } from "lucide-react";
+
+const filters = [
+  { id: "all", label: "All Goals", icon: Star },
+  { id: "family", label: "Family", icon: Users },
+  { id: "islamic", label: "Islamic", icon: Moon },
+  { id: "education", label: "Education", icon: GraduationCap },
+  { id: "tech", label: "Tech & Gadget", icon: Smartphone },
+  { id: "lifestyle", label: "Lifestyle", icon: Sparkles },
+  { id: "emergency", label: "Emergency", icon: Shield },
+  { id: "business", label: "Business", icon: Briefcase },
+];
+
+const goals = [
+  {
+    id: "wedding",
+    name: "Wedding Fund",
+    desc: "Save for your dream wedding. Join a circle or create a private goal with your partner.",
+    category: "family lifestyle",
+    icon: Gem,
+    glow: "#f472b6",
+    progressColor: "linear-gradient(90deg,#059669,#0891b2)",
+    badge: "Open",
+    badgeType: "open",
+    members: 3240,
+    memberText: "3,236 more saving",
+    progress: 68,
+    monthly: "৳5k-৳30k",
+    duration: "12-36 mo",
+    avatars: [
+      ["F", "linear-gradient(135deg,#f472b6,#ec4899)"],
+      ["N", "linear-gradient(135deg,#059669,#0891b2)"],
+      ["R", "linear-gradient(135deg,#f59e0b,#f97316)"],
+      ["+", "linear-gradient(135deg,#8b5cf6,#6366f1)"],
+    ],
+  },
+  {
+    id: "hajj",
+    name: "Hajj Fund",
+    desc: "Perform Hajj with complete peace of mind. Riba-free savings circle with Islamic mode enabled.",
+    category: "islamic",
+    icon: Moon,
+    glow: "#10b981",
+    progressColor: "linear-gradient(90deg,#059669,#10b981)",
+    badge: "Open · Islamic",
+    badgeType: "open",
+    members: 1890,
+    memberText: "1,887 saving for Hajj",
+    progress: 42,
+    monthly: "৳10k-৳20k",
+    duration: "24-48 mo",
+    avatars: [
+      ["A", "linear-gradient(135deg,#059669,#0891b2)"],
+      ["K", "linear-gradient(135deg,#f59e0b,#f97316)"],
+      ["+", "linear-gradient(135deg,#8b5cf6,#6366f1)"],
+    ],
+  },
+  {
+    id: "emergency",
+    name: "Emergency Fund",
+    desc: "Build a 6-month financial safety net. The most important savings goal anyone can have.",
+    category: "emergency",
+    icon: Shield,
+    glow: "#f59e0b",
+    progressColor: "linear-gradient(90deg,#f59e0b,#f97316)",
+    badge: "Most Popular",
+    badgeType: "open",
+    members: 5610,
+    memberText: "5,607 building safety nets",
+    progress: 55,
+    monthly: "৳500-৳5k",
+    duration: "6-12 mo",
+    avatars: [
+      ["S", "linear-gradient(135deg,#f59e0b,#f97316)"],
+      ["T", "linear-gradient(135deg,#059669,#0891b2)"],
+      ["+", "linear-gradient(135deg,#ef4444,#f97316)"],
+    ],
+  },
+  {
+    id: "education",
+    name: "Education Fund",
+    desc: "Invest in your future. Save for university fees, professional courses, or children's education.",
+    category: "education",
+    icon: GraduationCap,
+    glow: "#8b5cf6",
+    progressColor: "linear-gradient(90deg,#8b5cf6,#6366f1)",
+    badge: "Open",
+    badgeType: "open",
+    members: 2140,
+    memberText: "2,138 investing in education",
+    progress: 38,
+    monthly: "৳2k-৳15k",
+    duration: "12-60 mo",
+    avatars: [
+      ["M", "linear-gradient(135deg,#8b5cf6,#6366f1)"],
+      ["J", "linear-gradient(135deg,#3b82f6,#06b6d4)"],
+    ],
+  },
+  {
+    id: "gadget",
+    name: "Gadget & Device Fund",
+    desc: "Save for laptops, phones, or any tech gadget. Short-term, high-discipline savings.",
+    category: "tech",
+    icon: Smartphone,
+    glow: "#3b82f6",
+    progressColor: "linear-gradient(90deg,#3b82f6,#06b6d4)",
+    badge: "Filling Fast",
+    badgeType: "filling",
+    members: 4320,
+    memberText: "4,318 saving for devices",
+    progress: 74,
+    monthly: "৳1k-৳10k",
+    duration: "3-12 mo",
+    avatars: [
+      ["P", "linear-gradient(135deg,#3b82f6,#06b6d4)"],
+      ["Q", "linear-gradient(135deg,#059669,#0891b2)"],
+    ],
+  },
+  {
+    id: "business",
+    name: "Business Startup Fund",
+    desc: "Build your capital to launch your business. For entrepreneurs and small business owners.",
+    category: "business",
+    icon: Briefcase,
+    glow: "#06b6d4",
+    progressColor: "linear-gradient(90deg,#06b6d4,#3b82f6)",
+    badge: "Open",
+    badgeType: "open",
+    members: 980,
+    memberText: "978 building businesses",
+    progress: 28,
+    monthly: "৳5k-৳50k",
+    duration: "12-48 mo",
+    avatars: [
+      ["B", "linear-gradient(135deg,#06b6d4,#3b82f6)"],
+      ["C", "linear-gradient(135deg,#f59e0b,#f97316)"],
+    ],
+  },
+  {
+    id: "bike",
+    name: "Bike / Vehicle Fund",
+    desc: "Save for your dream bike or vehicle. Short to medium-term savings goal.",
+    category: "lifestyle",
+    icon: Bike,
+    glow: "#f97316",
+    progressColor: "linear-gradient(90deg,#f97316,#f59e0b)",
+    badge: "Open",
+    badgeType: "open",
+    members: 1620,
+    memberText: "1,618 saving for rides",
+    progress: 61,
+    monthly: "৳2k-৳15k",
+    duration: "6-24 mo",
+    avatars: [
+      ["D", "linear-gradient(135deg,#f97316,#f59e0b)"],
+      ["E", "linear-gradient(135deg,#059669,#0891b2)"],
+    ],
+  },
+  {
+    id: "kids",
+    name: "Kids Future Fund",
+    desc: "Secure your child's future today. Education, career, marriage, start saving early.",
+    category: "family education",
+    icon: Baby,
+    glow: "#a78bfa",
+    progressColor: "linear-gradient(90deg,#a78bfa,#8b5cf6)",
+    badge: "New",
+    badgeType: "open",
+    members: 640,
+    memberText: "639 saving for kids",
+    progress: 18,
+    monthly: "৳1k-৳20k",
+    duration: "36-120 mo",
+    avatars: [["L", "linear-gradient(135deg,#a78bfa,#8b5cf6)"]],
+  },
+  {
+    id: "umrah",
+    name: "Umrah Fund",
+    desc: "Save for your Umrah journey. Halal, riba-free savings with Islamic mode fully enabled.",
+    category: "islamic",
+    icon: Star,
+    glow: "#065f46",
+    progressColor: "linear-gradient(90deg,#065f46,#059669)",
+    badge: "Islamic",
+    badgeType: "open",
+    members: 720,
+    memberText: "719 saving for Umrah",
+    progress: 33,
+    monthly: "৳3k-৳10k",
+    duration: "12-24 mo",
+    avatars: [["U", "linear-gradient(135deg,#065f46,#059669)"]],
+  },
+];
+
+const challenges = [
+  {
+    id: "30-day",
+    icon: Flame,
+    title: "30-Day Savings Streak",
+    desc: "Make a deposit every day for 30 consecutive days and earn the Streak Warrior badge.",
+    tags: [
+      ["Active", "green"],
+      ["Any amount", "blue"],
+    ],
+    participants: "2,840 participants",
+  },
+  {
+    id: "ramadan",
+    icon: Moon,
+    title: "Ramadan Savings Challenge",
+    desc: "Save a little every day of Ramadan. Special seasonal badge + community milestone celebration.",
+    tags: [
+      ["Seasonal", "gold"],
+      ["Islamic Mode", "green"],
+    ],
+    participants: "1,240 participants",
+  },
+  {
+    id: "100tk",
+    icon: Target,
+    title: "Daily ৳100 Challenge",
+    desc: "Save just ৳100 every single day. Prove that small, consistent steps build big savings.",
+    tags: [
+      ["Beginner Friendly", "blue"],
+      ["Active", "green"],
+    ],
+    participants: "4,120 participants",
+  },
+];
+
+const sortGoals = (items, sortBy) => {
+  const sorted = [...items];
+  if (sortBy === "progress-desc") return sorted.sort((a, b) => b.progress - a.progress);
+  if (sortBy === "progress-asc") return sorted.sort((a, b) => a.progress - b.progress);
+  if (sortBy === "members-desc") return sorted.sort((a, b) => b.members - a.members);
+  if (sortBy === "newest") return sorted.reverse();
+  return sorted;
+};
+
+function Tag({ type, children }) {
+  const styles = {
+    green: "bg-[#0596691a] text-[#059669]",
+    blue: "bg-[#3b82f61a] text-[#3b82f6]",
+    gold: "bg-[#f59e0b1a] text-[#d97706]",
+  };
+
+  return (
+    <span className={`rounded-[7px] px-2 py-1 text-[11px] font-semibold ${styles[type]}`}>
+      {children}
+    </span>
+  );
+}
+
+function GoalCard({ goal, bulkMode, selected, onSelect, onJoin }) {
+  const Icon = goal.icon;
+
+  return (
+    <article
+      onClick={bulkMode ? onSelect : undefined}
+      className={`group relative cursor-pointer overflow-hidden rounded-[20px] border bg-white transition-all duration-200 hover:-translate-y-[5px] hover:border-transparent hover:shadow-[0_16px_48px_rgba(0,0,0,.10)] dark:bg-[#1a2235] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,.45)] ${
+        selected ? "border-[#059669] ring-2 ring-[#059669]" : "border-[#e2e8f0] dark:border-[#1e2d3d]"
+      }`}
+    >
+      {bulkMode && (
+        <input
+          type="checkbox"
+          readOnly
+          checked={selected}
+          className="absolute left-3 top-3 z-10 h-[18px] w-[18px] accent-[#059669]"
+        />
+      )}
+      <div className="relative px-5 pb-0 pt-5">
+        <div
+          className="absolute right-[-20px] top-[-20px] h-[100px] w-[100px] rounded-full opacity-[0.07] transition-all duration-300 group-hover:scale-125 group-hover:opacity-[0.14]"
+          style={{ background: `radial-gradient(circle,${goal.glow},transparent)` }}
+        />
+        <div className="relative mb-2.5 flex items-start justify-between">
+          <div className="flex h-[46px] w-[46px] items-center justify-center rounded-[14px] bg-[#f8fafc] text-[#059669] dark:bg-[#111827]">
+            <Icon className="h-7 w-7" />
+          </div>
+          <span
+            className={`rounded-lg px-[9px] py-[3px] text-[11px] font-semibold ${
+              goal.badgeType === "filling"
+                ? "bg-[#f59e0b1a] text-[#d97706]"
+                : "bg-[#0596691a] text-[#059669]"
+            }`}
+          >
+            {goal.badge}
+          </span>
+        </div>
+        <h3 className="relative mb-1 text-lg font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">
+          {goal.name}
+        </h3>
+        <p className="relative mb-3 text-[13px] leading-normal text-[#475569] dark:text-[#94a3b8]">
+          {goal.desc}
+        </p>
+      </div>
+      <div className="px-5 pb-5">
+        <div className="mb-1.5 flex justify-between text-xs text-[#475569] dark:text-[#94a3b8]">
+          <span>{goal.members.toLocaleString()} members</span>
+          <span className="font-bold text-[#059669]">{goal.progress}%</span>
+        </div>
+        <div className="mb-3 h-[7px] overflow-hidden rounded bg-[#e2e8f0] dark:bg-[#1e2d3d]">
+          <div className="h-full rounded transition-all duration-1000" style={{ width: `${goal.progress}%`, background: goal.progressColor }} />
+        </div>
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          <div className="rounded-[9px] bg-[#f8fafc] px-2.5 py-2 dark:bg-[#111827]">
+            <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-[.4px] text-[#94a3b8]">
+              Monthly
+            </div>
+            <div className="text-[13px] font-bold text-[#0f172a] dark:text-[#f1f5f9]">{goal.monthly}</div>
+          </div>
+          <div className="rounded-[9px] bg-[#f8fafc] px-2.5 py-2 dark:bg-[#111827]">
+            <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-[.4px] text-[#94a3b8]">
+              Duration
+            </div>
+            <div className="text-[13px] font-bold text-[#0f172a] dark:text-[#f1f5f9]">{goal.duration}</div>
+          </div>
+        </div>
+        <div className="mb-3.5 flex items-center gap-1.5">
+          <div className="flex">
+            {goal.avatars.map(([letter, background], index) => (
+              <div
+                key={`${goal.id}-${letter}-${index}`}
+                className={`flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white dark:border-[#1a2235] ${
+                  index === 0 ? "" : "-ml-1.5"
+                }`}
+                style={{ background }}
+              >
+                {letter}
+              </div>
+            ))}
+          </div>
+          <span className="text-xs font-medium text-[#94a3b8]">{goal.memberText}</span>
+        </div>
+        <div className="mb-2 flex gap-1.5">
+          {[
+            ["Details", Search, "/goal-detail"],
+            ["Edit", Edit3, "/goal-edit"],
+            ["Share", Share2, "/goal-share"],
+          ].map(([label, ActionIcon, href]) => (
+            <Link
+              key={label}
+              href={href}
+              onClick={(event) => event.stopPropagation()}
+              className="flex flex-1 items-center justify-center gap-1 rounded-[9px] border border-[#e2e8f0] bg-white p-2 text-xs font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+            >
+              <ActionIcon className="h-3 w-3" />
+              {label}
+            </Link>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onJoin(goal.id);
+          }}
+          className="w-full rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[11px] text-[13px] font-bold text-white shadow-[0_3px_10px_rgba(5,150,105,.25)] transition hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(5,150,105,.35)]"
+        >
+          Join {goal.name.split(" ")[0]} Circle →
+        </button>
+      </div>
+    </article>
+  );
+}
 
 const GoalsPage = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("default");
-  const [isDark, setIsDark] = useState(false);
   const [joinModalOpen, setJoinModalOpen] = useState(null);
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedGoals, setSelectedGoals] = useState(new Set());
+  const [joinedChallenges, setJoinedChallenges] = useState(new Set());
 
-  const goals = [
-    {
-      id: "wedding",
-      name: "Wedding Fund",
-      category: "family lifestyle",
-      icon: <Gem size={28} />,
-      members: 3240,
-      progress: 68,
-      monthly: "৳5k–৳30k",
-      duration: "12–36 mo",
-      status: "open",
-      badge: "Open",
-      color: "from-pink-500 to-rose-500",
-    },
-    {
-      id: "hajj",
-      name: "Hajj Fund",
-      category: "islamic",
-      icon: <Star size={28} />,
-      members: 1890,
-      progress: 42,
-      monthly: "৳10k–৳20k",
-      duration: "24–48 mo",
-      status: "open",
-      badge: "Islamic",
-      color: "from-emerald-500 to-teal-500",
-    },
-    {
-      id: "emergency",
-      name: "Emergency Fund",
-      category: "emergency",
-      icon: <Shield size={28} />,
-      members: 5610,
-      progress: 55,
-      monthly: "৳500–৳5k",
-      duration: "6–12 mo",
-      status: "open",
-      badge: "Most Popular",
-      color: "from-amber-500 to-orange-500",
-    },
-    {
-      id: "education",
-      name: "Education Fund",
-      category: "education",
-      icon: <GraduationCap size={28} />,
-      members: 2140,
-      progress: 38,
-      monthly: "৳2k–৳15k",
-      duration: "12–60 mo",
-      status: "open",
-      badge: "Open",
-      color: "from-purple-500 to-indigo-500",
-    },
-    {
-      id: "gadget",
-      name: "Gadget & Device Fund",
-      category: "tech",
-      icon: <Smartphone size={28} />,
-      members: 4320,
-      progress: 74,
-      monthly: "৳1k–৳10k",
-      duration: "3–12 mo",
-      status: "filling",
-      badge: "Filling Fast",
-      color: "from-blue-500 to-cyan-500",
-    },
-    {
-      id: "business",
-      name: "Business Startup Fund",
-      category: "business",
-      icon: <Briefcase size={28} />,
-      members: 980,
-      progress: 28,
-      monthly: "৳5k–৳50k",
-      duration: "12–48 mo",
-      status: "open",
-      badge: "Open",
-      color: "from-cyan-500 to-blue-500",
-    },
-    {
-      id: "bike",
-      name: "Bike / Vehicle Fund",
-      category: "lifestyle",
-      icon: <Target size={28} />,
-      members: 1620,
-      progress: 61,
-      monthly: "৳2k–৳15k",
-      duration: "6–24 mo",
-      status: "open",
-      badge: "Open",
-      color: "from-orange-500 to-amber-500",
-    },
-    {
-      id: "kids",
-      name: "Kids Future Fund",
-      category: "family education",
-      icon: <Heart size={28} />,
-      members: 640,
-      progress: 18,
-      monthly: "৳1k–৳20k",
-      duration: "36–120 mo",
-      status: "new",
-      badge: "New",
-      color: "from-violet-500 to-purple-500",
-    },
-    {
-      id: "umrah",
-      name: "Umrah Fund",
-      category: "islamic",
-      icon: <Star size={28} />,
-      members: 720,
-      progress: 33,
-      monthly: "৳3k–৳10k",
-      duration: "12–24 mo",
-      status: "open",
-      badge: "Islamic",
-      color: "from-emerald-600 to-emerald-500",
-    },
-  ];
+  const filteredGoals = useMemo(() => {
+    const filtered = goals
+      .filter((goal) => activeFilter === "all" || goal.category.includes(activeFilter))
+      .filter((goal) => goal.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    return sortGoals(filtered, sortBy);
+  }, [activeFilter, searchQuery, sortBy]);
 
-  const challenges = [
-    {
-      id: "streak",
-      icon: <Flame size={24} />,
-      title: "30-Day Savings Streak",
-      desc: "Make a deposit every day for 30 consecutive days and earn the Streak Warrior badge.",
-      tag: "Active",
-      tagColor: "green",
-      participants: 2840,
-    },
-    {
-      id: "ramadan",
-      icon: <Star size={24} />,
-      title: "Ramadan Savings Challenge",
-      desc: "Save a little every day of Ramadan. Special seasonal badge + community milestone celebration.",
-      tag: "Seasonal",
-      tagColor: "gold",
-      participants: 1240,
-    },
-    {
-      id: "daily",
-      icon: <Target size={24} />,
-      title: "Daily ৳100 Challenge",
-      desc: "Save just ৳100 every single day. Prove that small, consistent steps build big savings.",
-      tag: "Beginner Friendly",
-      tagColor: "blue",
-      participants: 4120,
-    },
-  ];
+  const selectedGoal = goals.find((goal) => goal.id === joinModalOpen);
 
-  const filters = [
-    { id: "all", label: "All Goals" },
-    { id: "family", label: "Family" },
-    { id: "islamic", label: "Islamic" },
-    { id: "education", label: "Education" },
-    { id: "tech", label: "Tech & Gadget" },
-    { id: "lifestyle", label: "Lifestyle" },
-    { id: "emergency", label: "Emergency" },
-    { id: "business", label: "Business" },
-  ];
-
-  const filteredGoals = goals
-    .filter(
-      (goal) => activeFilter === "all" || goal.category.includes(activeFilter),
-    )
-    .filter(
-      (goal) =>
-        goal.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
-    .sort((a, b) => {
-      if (sortBy === "progress-desc") return b.progress - a.progress;
-      if (sortBy === "progress-asc") return a.progress - b.progress;
-      if (sortBy === "members-desc") return b.members - a.members;
-      return 0;
+  const toggleGoalSelection = (id) => {
+    setSelectedGoals((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
     });
-
-  const toggleBulkSelect = (index) => {
-    const newSelected = new Set(selectedGoals);
-    if (newSelected.has(index)) newSelected.delete(index);
-    else newSelected.add(index);
-    setSelectedGoals(newSelected);
   };
 
-  const selectAll = () => {
-    if (selectedGoals.size === filteredGoals.length) {
-      setSelectedGoals(new Set());
-    } else {
-      const all = new Set();
-      filteredGoals.forEach((_, i) => all.add(i));
-      setSelectedGoals(all);
-    }
+  const toggleSelectAll = () => {
+    setSelectedGoals((current) =>
+      current.size === filteredGoals.length ? new Set() : new Set(filteredGoals.map((goal) => goal.id)),
+    );
+  };
+
+  const closeBulkMode = () => {
+    setBulkMode(false);
+    setSelectedGoals(new Set());
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Hero Section */}
-      <section className="bg-linear-to-br from-primary/5 via-background to-background pt-20 pb-16 text-center">
-        <div className="max-w-4xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-1.5 text-primary text-sm mb-6">
-            <Target size={14} />
+    <div className="min-h-screen bg-white font-['Inter',sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
+      <section className="bg-[linear-gradient(135deg,#ecfdf5,#eff6ff)] px-6 py-[72px] pb-[52px] text-center dark:bg-[linear-gradient(135deg,#022c22,#0c1a3a)]">
+        <div className="mx-auto max-w-[1160px]">
+          <div className="mb-3.5 inline-flex items-center gap-1.5 rounded-full border border-[#05966926] bg-[#05966914] px-3.5 py-1.5 text-xs font-semibold text-[#059669]">
+            <Target className="h-3.5 w-3.5" />
             Savings Goals & Circles
           </div>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-4">
-            Save Toward What <span className="text-primary">Truly Matters</span>
+          <h1 className="mb-3 text-[clamp(28px,4.5vw,48px)] font-black leading-[1.15] tracking-[-.8px]">
+            Save Toward What{" "}
+            <span className="bg-[linear-gradient(135deg,#059669,#0891b2)] bg-clip-text text-transparent">
+              Truly Matters
+            </span>
           </h1>
-          <p className="text-foreground/70 text-base sm:text-lg max-w-2xl mx-auto mb-8">
-            Join community savings circles for specific goals. Locked savings,
-            AI-powered insights, and 12,000+ motivated members.
+          <p className="mx-auto mb-7 max-w-[560px] text-[17px] leading-[1.7] text-[#475569] dark:text-[#94a3b8]">
+            Join community savings circles for specific goals. Locked savings, AI-powered insights,
+            and 12,000+ motivated members.
           </p>
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-2.5">
             <Link
               href="/register"
-              className="px-6 py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition inline-flex items-center gap-2"
+              className="inline-flex items-center gap-2 rounded-[9px] bg-[linear-gradient(135deg,#059669,#0891b2)] px-6 py-3 text-sm font-semibold text-white shadow-[0_3px_10px_rgba(5,150,105,.25)]"
             >
-              Join a Circle <ArrowRight size={16} />
+              Join a Circle <ArrowRight className="h-4 w-4" />
             </Link>
             <button
+              type="button"
               onClick={() => setCreateModalOpen(true)}
-              className="px-6 py-3 border border-border rounded-xl font-semibold hover:border-primary hover:text-primary transition inline-flex items-center gap-2"
+              className="inline-flex items-center gap-2 rounded-[9px] border border-[#e2e8f0] bg-transparent px-6 py-3 text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:text-[#f1f5f9]"
             >
-              + Create Custom Goal
+              <Sparkles className="h-4 w-4" />
+              Create Custom Goal
             </button>
           </div>
         </div>
       </section>
 
-      {/* Filter Bar */}
-      <div className="sticky top-12 z-40 bg-background border-b border-border py-4">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-hide">
-            {filters.map((filter) => (
-              <button
-                key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition ${activeFilter === filter.id ? "bg-linear-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20" : "border border-border text-foreground/70 hover:border-primary"}`}
-              >
-                {filter.label}
-              </button>
-            ))}
-            <div className="flex items-center gap-2 ml-auto">
-              <div className="flex items-center gap-2 px-3 py-2 border border-border rounded-full">
-                <Search size={14} className="text-foreground/50" />
-                <input
-                  type="text"
-                  placeholder="Search goals..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent outline-none text-sm w-32"
-                />
-              </div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-border rounded-full text-sm bg-background text-foreground outline-none cursor-pointer"
-              >
-                <option value="default">Default</option>
-                <option value="progress-desc">Progress (High→Low)</option>
-                <option value="progress-asc">Progress (Low→High)</option>
-                <option value="members-desc">Members (High→Low)</option>
-              </select>
-              <button
-                onClick={() => setBulkMode(!bulkMode)}
-                className="px-3 py-2 border border-border rounded-full text-sm hover:border-primary transition"
-              >
-                Select
-              </button>
+      <div className="sticky top-16 z-30 border-b border-[#e2e8f0] bg-white py-4 shadow-[0_2px_8px_rgba(0,0,0,.04)] dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+        <div className="mx-auto max-w-[1160px] px-6">
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
+            {filters.map((filter) => {
+              const Icon = filter.icon;
+              const active = activeFilter === filter.id;
+              return (
+                <button
+                  key={filter.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveFilter(filter.id);
+                    setSelectedGoals(new Set());
+                  }}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full border-[1.5px] px-4 py-2 text-[13px] font-semibold transition ${
+                    active
+                      ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white shadow-[0_3px_10px_rgba(5,150,105,.25)]"
+                      : "border-[#e2e8f0] bg-white text-[#475569] hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {filter.label}
+                </button>
+              );
+            })}
+            <div className="ml-auto flex shrink-0 items-center gap-2 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-2 dark:border-[#1e2d3d] dark:bg-[#0a0f1e]">
+              <Search className="h-3.5 w-3.5 text-[#94a3b8]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Search goals..."
+                className="w-32 bg-transparent text-[13px] text-[#0f172a] outline-none placeholder:text-[#94a3b8] dark:text-[#f1f5f9]"
+              />
             </div>
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              className="shrink-0 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3 py-2 text-[13px] font-semibold text-[#0f172a] outline-none dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#f1f5f9]"
+            >
+              <option value="default">Default</option>
+              <option value="progress-desc">Progress high to low</option>
+              <option value="progress-asc">Progress low to high</option>
+              <option value="members-desc">Members high to low</option>
+              <option value="newest">Newest first</option>
+            </select>
           </div>
         </div>
       </div>
 
-      {/* Bulk Toolbar */}
       {bulkMode && (
-        <div className="sticky top-15 z-30 bg-linear-to-r from-primary to-primary-light py-3 px-4">
-          <div className="max-w-7xl mx-auto flex items-center gap-4 flex-wrap">
-            <label className="flex items-center gap-2 text-white text-sm font-semibold cursor-pointer">
+        <div className="sticky top-32 z-30 bg-[linear-gradient(135deg,#059669,#0891b2)] px-6 py-2.5">
+          <div className="mx-auto flex max-w-[1160px] flex-wrap items-center gap-3">
+            <label className="flex cursor-pointer items-center gap-2 text-[13px] font-bold text-white">
               <input
                 type="checkbox"
-                checked={
-                  selectedGoals.size === filteredGoals.length &&
-                  filteredGoals.length > 0
-                }
-                onChange={selectAll}
-                className="w-4 h-4 cursor-pointer rounded"
+                checked={selectedGoals.size === filteredGoals.length && filteredGoals.length > 0}
+                onChange={toggleSelectAll}
+                className="h-4 w-4 accent-white"
               />
-              <span>{selectedGoals.size} selected</span>
+              {selectedGoals.size} selected
             </label>
             <div className="h-5 w-px bg-white/30" />
-            <button className="px-3 py-1.5 bg-white/20 rounded-lg text-white text-sm font-semibold hover:bg-white/30 transition">
-              Deposit
-            </button>
-            <button className="px-3 py-1.5 bg-white/20 rounded-lg text-white text-sm font-semibold hover:bg-white/30 transition">
-              Pause
-            </button>
-            <button className="px-3 py-1.5 bg-white/20 rounded-lg text-white text-sm font-semibold hover:bg-white/30 transition">
-              Share
-            </button>
-            <button className="px-3 py-1.5 bg-red-500/30 rounded-lg text-white text-sm font-semibold hover:bg-red-500/50 transition">
-              Delete
-            </button>
+            {[
+              ["Deposit", Wallet],
+              ["Pause", Lock],
+              ["Share", Share2],
+              ["Delete", Trash2],
+            ].map(([label, Icon]) => (
+              <button
+                key={label}
+                type="button"
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-bold text-white ${
+                  label === "Delete"
+                    ? "border-red-400/50 bg-red-500/30"
+                    : "border-white/30 bg-white/20"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
             <button
-              onClick={() => {
-                setBulkMode(false);
-                setSelectedGoals(new Set());
-              }}
-              className="ml-auto px-3 py-1.5 bg-white/15 rounded-lg text-white text-sm hover:bg-white/25 transition"
+              type="button"
+              onClick={closeBulkMode}
+              className="ml-auto rounded-lg border border-white/20 bg-white/15 px-3.5 py-2 text-xs text-white"
             >
               Cancel
             </button>
@@ -335,320 +563,280 @@ const GoalsPage = () => {
         </div>
       )}
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Featured Circle */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bg-linear-to-r from-primary to-primary-light rounded-2xl p-6 mb-8 text-white relative overflow-hidden"
-        >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32" />
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 bg-white/20 rounded-full px-3 py-1 text-xs font-semibold mb-3">
-              <Crown size={12} />
-              Featured Circle · Most Popular
-            </div>
-            <h3 className="text-2xl font-bold mb-2">
-              Grand Wedding Fund 2026
-            </h3>
-            <p className="text-white/90 text-sm mb-4 max-w-xl">
-              Bangladesh's largest wedding savings circle. 850+ members
-              saving together for the perfect wedding.
-            </p>
-            <div className="flex gap-6 mb-4">
-              <div>
-                <div className="text-2xl font-bold">857</div>
-                <div className="text-xs opacity-80">Members</div>
+      <main className="px-6 py-10">
+        <div className="mx-auto max-w-[1160px]">
+          <section className="relative mb-8 overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-7 text-white">
+            <div className="absolute right-[-80px] top-[-80px] h-[300px] w-[300px] rounded-full bg-white/[.06]" />
+            <div className="relative">
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-[14px] border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-bold backdrop-blur">
+                <Star className="h-3.5 w-3.5 fill-white" />
+                Featured Circle · Most Popular
               </div>
-              <div>
-                <div className="text-2xl font-bold">৳4.2 Cr</div>
-                <div className="text-xs opacity-80">Total Saved</div>
+              <h2 className="mb-1.5 text-[22px] font-black">Grand Wedding Fund 2026</h2>
+              <p className="mb-4 max-w-[500px] text-sm leading-relaxed text-white/85">
+                Bangladesh&apos;s largest wedding savings circle. 850+ members saving together for
+                the perfect wedding. Monthly deposits from ৳5,000 to ৳30,000.
+              </p>
+              <div className="mb-5 flex flex-wrap gap-6">
+                {[
+                  ["857", "Members"],
+                  ["৳4.2 Cr", "Total Saved"],
+                  ["24 mo", "Duration"],
+                  ["68%", "Progress"],
+                ].map(([value, label]) => (
+                  <div key={label}>
+                    <div className="text-xl font-extrabold">{value}</div>
+                    <div className="mt-px text-[11px] text-white/75">{label}</div>
+                  </div>
+                ))}
               </div>
-              <div>
-                <div className="text-2xl font-bold">68%</div>
-                <div className="text-xs opacity-80">Progress</div>
+              <div className="mb-2 h-2 rounded bg-white/20">
+                <div className="h-full w-[68%] rounded bg-white" />
               </div>
-            </div>
-            <div className="w-full h-2 bg-white/20 rounded-full mb-2">
-              <div className="w-[68%] h-full bg-white rounded-full" />
-            </div>
-            <div className="flex gap-3 mt-4">
-              <button
-                onClick={() => setJoinModalOpen("wedding")}
-                className="px-5 py-2 bg-white text-primary rounded-lg font-semibold text-sm hover:bg-gray-100 transition inline-flex items-center gap-2"
-              >
-                Join This Circle <ArrowRight size={14} />
-              </button>
-              <button className="px-5 py-2 bg-white/20 rounded-lg font-semibold text-sm hover:bg-white/30 transition">
-                View Details
-              </button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Goals Grid */}
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-foreground">
-            All Savings Goals
-          </h2>
-          <span className="text-sm text-foreground/50">
-            {filteredGoals.length} goals
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredGoals.map((goal, idx) => (
-            <motion.div
-              key={goal.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.05 }}
-              whileHover={{ y: -4 }}
-              className={`relative bg-card border rounded-xl overflow-hidden transition-all ${bulkMode ? "cursor-pointer" : "hover:border-primary/40"} ${selectedGoals.has(idx) && bulkMode ? "ring-2 ring-primary" : "border-border"}`}
-              onClick={() => bulkMode && toggleBulkSelect(idx)}
-            >
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                    {goal.icon}
-                  </div>
-                  <span
-                    className={`text-xs font-semibold px-2 py-1 rounded-full ${goal.status === "filling" ? "bg-orange-500/20 text-orange-500" : goal.badge === "Islamic" ? "bg-emerald-500/20 text-emerald-500" : goal.badge === "Most Popular" ? "bg-amber-500/20 text-amber-500" : "bg-primary/20 text-primary"}`}
-                  >
-                    {goal.badge}
-                  </span>
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-1">
-                  {goal.name}
-                </h3>
-                <p className="text-foreground/60 text-sm mb-3">
-                  Save consistently with community support.
-                </p>
-                <div className="flex justify-between text-xs mb-1">
-                  <span className="flex items-center gap-1">
-                    <Users size={10} /> {goal.members.toLocaleString()} members
-                  </span>
-                  <span className="text-primary font-semibold">
-                    {goal.progress}%
-                  </span>
-                </div>
-                <div className="w-full h-1.5 bg-border rounded-full mb-3 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full bg-linear-to-r ${goal.color}`}
-                    style={{ width: `${goal.progress}%` }}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2 mb-3">
-                  <div className="bg-background rounded-lg p-2">
-                    <div className="text-[10px] text-foreground/50 flex items-center gap-1">
-                      <DollarSign size={10} /> Monthly
-                    </div>
-                    <div className="text-xs font-semibold">{goal.monthly}</div>
-                  </div>
-                  <div className="bg-background rounded-lg p-2">
-                    <div className="text-[10px] text-foreground/50 flex items-center gap-1">
-                      <Clock size={10} /> Duration
-                    </div>
-                    <div className="text-xs font-semibold">{goal.duration}</div>
-                  </div>
-                </div>
+              <p className="mb-4 text-xs text-white/75">৳2.8 Cr saved · ৳1.4 Cr remaining · 143 spots left</p>
+              <div className="flex flex-wrap gap-2.5">
                 <button
-                  onClick={() => setJoinModalOpen(goal.id)}
-                  className="block w-full py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-lg text-center text-sm font-semibold hover:opacity-90 transition"
+                  type="button"
+                  onClick={() => setJoinModalOpen("wedding")}
+                  className="inline-flex items-center gap-2 rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-bold text-[#059669] transition hover:-translate-y-px"
                 >
-                  Join {goal.name.split(" ")[0]} Circle →
+                  Join This Circle <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  className="rounded-[10px] border-[1.5px] border-white/30 bg-white/15 px-5 py-2.5 text-[13px] font-bold text-white transition hover:bg-white/25"
+                >
+                  View Details
                 </button>
               </div>
-            </motion.div>
-          ))}
-        </div>
+            </div>
+          </section>
 
-        {/* Create Banner */}
-        <div className="mt-8 p-6 bg-card border border-border rounded-xl text-center">
-          <h3 className="text-xl font-bold text-foreground mb-2">
-            Don't see your goal?
-          </h3>
-          <p className="text-foreground/60 mb-4">
-            Create a completely custom savings goal with your own target amount,
-            timeline, and circle name.
-          </p>
-          <button
-            onClick={() => setCreateModalOpen(true)}
-            className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-lg font-semibold hover:opacity-90 transition inline-flex items-center gap-2"
-          >
-            + Create Custom Goal
-          </button>
-        </div>
-      </div>
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-[19px] font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">
+                All Savings Goals
+              </h2>
+              <p className="text-[13px] text-[#94a3b8]">Showing {filteredGoals.length} goals</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setBulkMode(true)}
+              className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#e2e8f0] bg-transparent px-3 py-1.5 text-xs font-semibold text-[#475569] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:text-[#94a3b8]"
+            >
+              <CheckSquare className="h-3.5 w-3.5" />
+              Select
+            </button>
+          </div>
 
-      {/* Challenges Section */}
-      <section className="bg-secondary/20 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-1 text-primary text-sm font-semibold mb-4">
-            <Flame size={14} />
+          <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {filteredGoals.map((goal) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                bulkMode={bulkMode}
+                selected={selectedGoals.has(goal.id)}
+                onSelect={() => toggleGoalSelection(goal.id)}
+                onJoin={setJoinModalOpen}
+              />
+            ))}
+          </div>
+
+          <section className="mt-4 rounded-[20px] border border-[#e2e8f0] bg-[#f8fafc] p-7 text-center dark:border-[#1e2d3d] dark:bg-[#111827]">
+            <h3 className="mb-2 text-xl font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">
+              Don&apos;t see your goal?
+            </h3>
+            <p className="mb-5 text-sm text-[#475569] dark:text-[#94a3b8]">
+              Create a completely custom savings goal with your own target amount, timeline, and
+              circle name.
+            </p>
+            <button
+              type="button"
+              onClick={() => setCreateModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] px-7 py-3 text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
+            >
+              <Sparkles className="h-4 w-4" />
+              Create Custom Goal
+            </button>
+          </section>
+        </div>
+      </main>
+
+      <section className="bg-[linear-gradient(135deg,#ecfdf5,#eff6ff)] px-6 py-14 text-center dark:bg-[linear-gradient(135deg,#022c22,#0c1a3a)]">
+        <div className="mx-auto max-w-[1160px]">
+          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#05966926] bg-[#05966914] px-3.5 py-1.5 text-xs font-semibold text-[#059669]">
+            <Flame className="h-3.5 w-3.5" />
             Community Challenges
           </div>
-          <h2 className="text-3xl font-bold text-foreground mb-2">
-            Stay Motivated. <span className="text-primary">Win Badges.</span>
+          <h2 className="mb-2 text-[clamp(24px,3.5vw,36px)] font-black">
+            Stay Motivated. <span className="text-[#059669]">Win Badges.</span>
           </h2>
-          <p className="text-foreground/60 max-w-md mx-auto mb-8">
-            Join community challenges to earn achievement badges, climb the
-            leaderboard, and hit your goals faster.
+          <p className="mx-auto max-w-[520px] text-[15px] text-[#475569] dark:text-[#94a3b8]">
+            Join community challenges to earn achievement badges, climb the leaderboard, and hit your
+            goals faster.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {challenges.map((challenge, idx) => (
-              <motion.div
-                key={challenge.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className="bg-card border border-border rounded-xl p-5 hover:border-primary/40 transition"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
-                  {challenge.icon}
-                </div>
-                <h3 className="font-bold text-foreground mb-1">
-                  {challenge.title}
-                </h3>
-                <p className="text-foreground/60 text-sm mb-3">
-                  {challenge.desc}
-                </p>
-                <div className="flex justify-center gap-2 mb-3">
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${challenge.tagColor === "green" ? "bg-primary/20 text-primary" : challenge.tagColor === "gold" ? "bg-amber-500/20 text-amber-500" : "bg-blue-500/20 text-blue-500"}`}
-                  >
-                    {challenge.tag}
-                  </span>
-                </div>
-                <div className="text-xs text-foreground/50 mb-3 flex items-center justify-center gap-1">
-                  <Users size={12} />
-                  {challenge.participants.toLocaleString()} participants
-                </div>
-                <button
-                  onClick={() => setJoinModalOpen("challenge")}
-                  className="block w-full py-2 border border-primary/30 text-primary rounded-lg text-sm font-semibold hover:bg-primary/10 transition"
+          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {challenges.map((challenge) => {
+              const Icon = challenge.icon;
+              const joined = joinedChallenges.has(challenge.id);
+              return (
+                <article
+                  key={challenge.id}
+                  className="rounded-2xl border border-[#e2e8f0] bg-white p-[22px] text-left transition hover:-translate-y-[3px] hover:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235]"
                 >
-                  Join Challenge
-                </button>
-              </motion.div>
-            ))}
+                  <div className="mb-2.5 flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#05966914] text-[#059669]">
+                    <Icon className="h-7 w-7" />
+                  </div>
+                  <h3 className="mb-1.5 text-base font-bold text-[#0f172a] dark:text-[#f1f5f9]">
+                    {challenge.title}
+                  </h3>
+                  <p className="mb-3 text-[13px] leading-normal text-[#475569] dark:text-[#94a3b8]">
+                    {challenge.desc}
+                  </p>
+                  <div className="mb-3.5 flex flex-wrap gap-2.5">
+                    {challenge.tags.map(([label, type]) => (
+                      <Tag key={label} type={type}>
+                        {label}
+                      </Tag>
+                    ))}
+                  </div>
+                  <div className="mb-3 flex items-center gap-1.5 text-xs text-[#94a3b8]">
+                    <Users className="h-3.5 w-3.5" />
+                    {challenge.participants}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setJoinedChallenges((current) => new Set(current).add(challenge.id))
+                    }
+                    className={`w-full rounded-[9px] border p-2.5 text-xs font-bold transition ${
+                      joined
+                        ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white"
+                        : "border-[#05966933] bg-[#05966914] text-[#059669] hover:border-transparent hover:bg-[linear-gradient(135deg,#059669,#0891b2)] hover:text-white"
+                    }`}
+                  >
+                    {joined ? "Joined!" : "Join Challenge"}
+                  </button>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Join Modal */}
-      <AnimatePresence>
-        {joinModalOpen && (
+      {joinModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
+          onClick={() => setJoinModalOpen(null)}
+        >
           <div
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-            onClick={() => setJoinModalOpen(null)}
+            className="relative w-full max-w-[480px] rounded-[20px] bg-white p-8 shadow-[0_40px_100px_rgba(0,0,0,.2)] dark:bg-[#1a2235]"
+            onClick={(event) => event.stopPropagation()}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-card rounded-2xl max-w-md w-full p-6 relative"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              onClick={() => setJoinModalOpen(null)}
+              className="absolute right-4 top-4 flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-[#e2e8f0] bg-white dark:border-[#1e2d3d] dark:bg-[#0a0f1e]"
             >
-              <button
-                onClick={() => setJoinModalOpen(null)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#05966914] text-[#059669]">
+              {selectedGoal ? <selectedGoal.icon className="h-8 w-8" /> : <Target className="h-8 w-8" />}
+            </div>
+            <h3 className="mb-1.5 text-center text-xl font-black text-[#0f172a] dark:text-[#f1f5f9]">
+              Join {selectedGoal?.name || "Savings"} Circle
+            </h3>
+            <p className="mb-5 text-center text-[13px] text-[#475569] dark:text-[#94a3b8]">
+              You need an active account to join this circle.
+            </p>
+            <div className="mb-4 rounded-xl bg-[#f8fafc] p-4 text-[13px] leading-relaxed text-[#475569] dark:bg-[#111827] dark:text-[#94a3b8]">
+              <Lock className="mr-1 inline h-3.5 w-3.5" />
+              Savings are <strong className="text-[#0f172a] dark:text-[#f1f5f9]">locked until goal maturity</strong>.
+              Early withdrawal requires admin approval. No interest, no profit guarantees.
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <Link
+                href="/register"
+                className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
               >
-                <X size={16} />
-              </button>
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
-                <Target size={32} />
-              </div>
-              <h3 className="text-xl font-bold text-center mb-2">
-                Join Savings Circle
-              </h3>
-              <p className="text-foreground/60 text-sm text-center mb-4">
-                You need an active account to join this circle.
-              </p>
-              <div className="bg-background rounded-xl p-4 text-xs text-foreground/60 mb-4">
-                <Lock size={12} className="inline mr-1" />
-                Savings are locked until goal maturity. Early withdrawal
-                requires admin approval. No interest, no profit guarantees.
-              </div>
-              <div className="flex flex-col gap-3">
-                <Link
-                  href="/register"
-                  className="py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl text-center font-semibold hover:opacity-90 transition"
-                >
-                  Create Account to Join
-                </Link>
-                <Link
-                  href="/login"
-                  className="py-3 border border-border rounded-xl text-center font-semibold hover:border-primary hover:text-primary transition"
-                >
-                  Already a member? Log In
-                </Link>
-              </div>
-            </motion.div>
+                Create Account to Join
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-[11px] border-[1.5px] border-[#e2e8f0] bg-white p-3 text-center text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+              >
+                Already a member? Log In
+              </Link>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
 
-      {/* Create Modal */}
-      <AnimatePresence>
-        {createModalOpen && (
+      {createModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
+          onClick={() => setCreateModalOpen(false)}
+        >
           <div
-            className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4"
-            onClick={() => setCreateModalOpen(false)}
+            className="relative w-full max-w-[520px] rounded-[20px] bg-white p-8 shadow-[0_40px_100px_rgba(0,0,0,.2)] dark:bg-[#1a2235]"
+            onClick={(event) => event.stopPropagation()}
           >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-card rounded-2xl max-w-md w-full p-6 relative"
-              onClick={(e) => e.stopPropagation()}
+            <button
+              type="button"
+              onClick={() => setCreateModalOpen(false)}
+              className="absolute right-4 top-4 flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-[#e2e8f0] bg-white dark:border-[#1e2d3d] dark:bg-[#0a0f1e]"
             >
-              <button
-                onClick={() => setCreateModalOpen(false)}
-                className="absolute top-4 right-4 w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
-              >
-                <X size={16} />
-              </button>
-              <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mx-auto mb-3">
-                <Target size={32} />
-              </div>
-              <h3 className="text-xl font-bold mb-1 text-center">Create Custom Goal</h3>
-              <p className="text-foreground/60 text-sm text-center mb-5">
-                Define your own savings goal with a custom name, target, and
-                timeline.
-              </p>
-              <div className="space-y-4 mb-5">
+              <X className="h-4 w-4" />
+            </button>
+            <h3 className="mb-1.5 text-xl font-black text-[#0f172a] dark:text-[#f1f5f9]">
+              Create Custom Goal
+            </h3>
+            <p className="mb-5 text-[13px] text-[#475569] dark:text-[#94a3b8]">
+              Define your own savings goal with a custom name, target, and timeline.
+            </p>
+            <div className="mb-4 flex flex-col gap-3">
+              <div>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
+                  Goal Name
+                </label>
                 <input
                   type="text"
-                  placeholder="Goal Name e.g. My Dream Home"
-                  className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
+                  placeholder="e.g. My Dream Home"
+                  className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
                 />
-                <div className="grid grid-cols-2 gap-3">
+              </div>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
+                    Target (৳)
+                  </label>
                   <input
                     type="number"
-                    placeholder="Target (৳)"
-                    className="p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
+                    placeholder="e.g. 500000"
+                    className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
                   />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
+                    Monthly (৳)
+                  </label>
                   <input
                     type="number"
-                    placeholder="Monthly (৳)"
-                    className="p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
+                    placeholder="e.g. 10000"
+                    className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
                   />
                 </div>
               </div>
-              <Link
-                href="/register"
-                className="block w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl text-center font-semibold hover:opacity-90 transition"
-              >
-                Create Account to Save →
-              </Link>
-            </motion.div>
+            </div>
+            <Link
+              href="/register"
+              className="block rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white"
+            >
+              Create Account to Save →
+            </Link>
           </div>
-        )}
-      </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 };

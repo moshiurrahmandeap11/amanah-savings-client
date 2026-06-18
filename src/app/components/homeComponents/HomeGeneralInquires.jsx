@@ -1,285 +1,107 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  MessageCircle,
-  ChevronDown,
-  HelpCircle,
-  Banknote,
-  Wallet,
-  Calendar,
-  Users,
-  CheckCircle,
-  Shield,
-  ArrowRight,
-} from "lucide-react";
-import { FaMosque } from "react-icons/fa";
-import Link from "next/link";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+
+const faqs = [
+  {
+    question: "Is Amanah a bank or investment company?",
+    answer:
+      "No. Amanah Savings Community is a digital savings circle platform. We are NOT a bank, investment firm, or licensed financial institution. We do not offer loans, interest, guaranteed returns, or investment products. We are a community savings management tool that helps members save money toward personal goals with discipline and accountability.",
+  },
+  {
+    question: "Can I withdraw my money anytime?",
+    answer:
+      "Savings are locked until your chosen goal maturity date. This is by design — it encourages discipline and prevents impulsive spending. Emergency early withdrawals are possible but require admin approval and may take 5-7 business days. This is clearly stated when you join any savings circle.",
+  },
+  {
+    question: "How do I deposit money into my savings?",
+    answer:
+      "We currently support bKash, Nagad, and bank transfer. After making a payment, upload your transaction screenshot via the dashboard and our admin team will verify and credit your savings within 2-4 hours. We are working on automated payment integration.",
+  },
+  {
+    question: "Is this platform halal (Islamic finance compliant)?",
+    answer:
+      "Amanah's Islamic Savings Mode operates on a pure savings model with no interest (riba). Members save their own money toward goals — there is no lending, no interest, and no financial speculation. Our platform is structured as a savings community, which is fully permissible in Islamic finance. Consult your local scholar for your specific situation.",
+  },
+  {
+    question: "What happens if I miss a monthly deposit?",
+    answer:
+      'Missing a deposit will pause your savings streak and delay your goal completion date. You will receive reminders 3 days before, 1 day before, and on the due date. You can use the "Emergency Pause Mode" to temporarily pause your circle for up to 2 months with admin approval (e.g., illness or financial hardship).',
+  },
+  {
+    question: "How does the referral system work?",
+    answer:
+      "When someone registers using your referral link and completes their first deposit, you both earn referral rewards. Rewards are credited as savings bonuses to your account. This is a community growth incentive — not an MLM or pyramid structure. Referrals have no impact on savings distribution.",
+  },
+];
 
 const HomeGeneralInquiries = () => {
   const [openIndex, setOpenIndex] = useState(null);
 
-  const faqs = [
-    {
-      question: "Is Sanchoy Bondhu a bank or investment company?",
-      answer:
-        "No, Sanchoy Bondhu is not a bank or investment company. It's a digital savings community that helps members save money together toward specific goals. We don't lend money or invest your savings. We simply help you stay disciplined and connected with your savings journey.",
-      icon: <Banknote size={20} />,
-    },
-    {
-      question: "Can I withdraw money at any time?",
-      answer:
-        "Savings are locked until your selected goal maturity date to maintain discipline. However, emergency withdrawals are possible with admin review and may incur a small penalty. This policy helps all members stay committed to their savings goals.",
-      icon: <Wallet size={20} />,
-    },
-    {
-      question: "How do I deposit money into savings?",
-      answer:
-        "You can deposit via bKash, Nagad, Rocket, or bank transfer. Simply go to your dashboard, select your active goal, and choose the payment method. You'll receive instant confirmation and your savings progress will update automatically.",
-      icon: <MessageCircle size={20} />,
-    },
-    {
-      question: "Is this platform Halal or Islamic Finance-compliant?",
-      answer:
-        "Yes, Sanchoy Bondhu operates on Islamic principles. We don't charge interest (riba), we don't invest in haram activities, and all transactions are transparent. Our savings circles are based on mutual cooperation (ta'awun), making them Shariah-compliant.",
-      icon: <FaMosque size={20} />,
-    },
-    {
-      question: "What happens if I miss a monthly deposit?",
-      answer:
-        "You'll receive reminder notifications 3 days before your due date. If you miss a deposit, you have a 7-day grace period. After that, your streak resets, but your savings remain safe. Multiple missed deposits may affect your goal timeline.",
-      icon: <Calendar size={20} />,
-    },
-    {
-      question: "How does the referral system work?",
-      answer:
-        "Refer friends and family to Sanchoy Bondhu. When they complete their first month of savings, you both earn bonus rewards. Top referrers get featured on our leaderboard and receive additional benefits like reduced fees or exclusive badges.",
-      icon: <Users size={20} />,
-    },
-  ];
-
-  const toggleFAQ = (index) => {
-    setOpenIndex(openIndex === index ? null : index);
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: "easeOut" },
-    },
+  const toggleFaq = (index) => {
+    setOpenIndex((current) => (current === index ? null : index));
   };
 
   return (
-    <section className="min-h-screen bg-background py-16 sm:py-20 lg:py-28 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-20 left-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            opacity: [0.2, 0.4, 0.2],
-          }}
-          transition={{ duration: 10, repeat: Infinity }}
-          className="absolute bottom-20 right-10 w-96 h-96 bg-primary-light/5 rounded-full blur-3xl"
-        />
-      </div>
+    <section
+      id="faq"
+      className="bg-white py-16 font-['Inter','Noto_Sans_Bengali',sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9] md:py-24"
+    >
+      <div className="mx-auto max-w-[1200px] px-6 text-center">
+        <span className="mb-4 inline-block rounded-full border border-[#059669]/15 bg-[#059669]/[0.08] px-4 py-1.5 text-[13px] font-semibold text-[#059669]">
+          FAQ
+        </span>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="flex flex-col items-center text-center mb-12 sm:mb-16"
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            whileInView={{ scale: 1 }}
-            transition={{ duration: 0.4, type: "spring" }}
-            viewport={{ once: true }}
-            className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-md px-4 sm:px-5 py-1.5 sm:py-2 rounded-full border border-primary/20 mb-5 sm:mb-6"
-          >
-            <HelpCircle size={14} className="text-primary" />
-            <span className="text-xs sm:text-sm font-medium tracking-wider text-primary">
-              General Inquiries
-            </span>
-          </motion.div>
+        <h2 className="mb-4 text-[clamp(28px,4vw,42px)] font-extrabold leading-[1.2] tracking-normal">
+          Frequently Asked <span className="text-[#059669]">Questions</span>
+        </h2>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-4">
-            General Questions & Answers
-          </h2>
+        <p className="mx-auto max-w-[580px] text-lg leading-[1.6] text-[#475569] dark:text-[#94a3b8]">
+          Everything you need to know before joining the Amanah community.
+        </p>
 
-          <p className="text-base sm:text-lg text-foreground/70 max-w-2xl">
-            What you need to know before joining the Sanchoy Bondhucommunity.
-          </p>
-        </motion.div>
+        <div className="mx-auto mt-12 max-w-[720px] text-left">
+          {faqs.map((faq, index) => {
+            const isOpen = openIndex === index;
 
-        {/* FAQ Section */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="space-y-3 sm:space-y-4"
-        >
-          {faqs.map((faq, index) => (
-            <motion.div
-              key={index}
-              variants={itemVariants}
-              className="bg-card border border-border rounded-xl sm:rounded-2xl overflow-hidden hover:border-primary/30 transition-all duration-300"
-            >
-              <button
-                onClick={() => toggleFAQ(index)}
-                className="w-full px-5 sm:px-6 py-4 sm:py-5 flex items-center justify-between gap-4 text-left hover:bg-primary/5 transition-colors duration-200 group"
+            return (
+              <div
+                key={faq.question}
+                className={`mb-3 overflow-hidden rounded-xl border transition-all duration-300 ${
+                  isOpen
+                    ? "border-[#059669]"
+                    : "border-[#e2e8f0] dark:border-[#1e2d3d]"
+                }`}
               >
-                <div className="flex items-start gap-3 sm:gap-4 flex-1">
-                  <div className="text-primary mt-0.5 group-hover:scale-110 transition-transform duration-200">
-                    {faq.icon}
-                  </div>
-                  <span className="text-foreground font-semibold text-sm sm:text-base md:text-lg">
-                    {faq.question}
-                  </span>
-                </div>
-                <motion.div
-                  animate={{ rotate: openIndex === index ? 180 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-primary shrink-0"
+                <button
+                  type="button"
+                  onClick={() => toggleFaq(index)}
+                  className="flex w-full items-center justify-between gap-4 bg-transparent px-5 py-[18px] text-left text-[15px] font-semibold text-[#0f172a] transition-colors duration-200 hover:bg-[#059669]/[0.03] dark:text-[#f1f5f9]"
                 >
-                  <ChevronDown size={20} />
-                </motion.div>
-              </button>
+                  <span>{faq.question}</span>
+                  <ChevronDown
+                    size={18}
+                    className={`shrink-0 text-[#94a3b8] transition-transform duration-300 ${
+                      isOpen ? "rotate-180 text-[#059669]" : ""
+                    }`}
+                    aria-hidden="true"
+                  />
+                </button>
 
-              <AnimatePresence>
-                {openIndex === index && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
-                    className="border-t border-border"
-                  >
-                    <div className="px-5 sm:px-6 py-4 sm:py-5">
-                      <p className="text-foreground/70 text-sm sm:text-base leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Still Have Questions Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="mt-12 sm:mt-16 p-6 sm:p-8 bg-linear-to-r from-primary/10 to-primary-light/10 rounded-2xl sm:rounded-3xl border border-primary/20"
-        >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
-            <div className="flex-1">
-              <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                <Shield size={24} className="text-primary" />
-                <h3 className="text-xl sm:text-2xl font-bold text-foreground">
-                  Still have questions?
-                </h3>
+                <div
+                  className={`overflow-hidden transition-[max-height] duration-350 ease-in-out ${
+                    isOpen ? "max-h-[300px]" : "max-h-0"
+                  }`}
+                >
+                  <div className="px-5 pb-[18px] text-sm leading-[1.7] text-[#475569] dark:text-[#94a3b8]">
+                    {faq.answer}
+                  </div>
+                </div>
               </div>
-              <p className="text-foreground/70 text-sm sm:text-base">
-                Our support team is here to help you 24/7. Get in touch with us
-                anytime.
-              </p>
-            </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
-              className="group inline-flex items-center gap-2 bg-linear-to-r from-primary to-primary-light text-white px-6 py-3 rounded-xl font-semibold text-sm sm:text-base shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all whitespace-nowrap"
-            >
-              <Link href={"/register"} className="flex items-center justify-center gap-4">
-              
-              Contact Support
-              <ArrowRight
-                size={18}
-                className="group-hover:translate-x-1 transition-transform"
-              />
-              </Link>
-            </motion.button>
-          </div>
-        </motion.div>
-
-        {/* Quick Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.5 }}
-          viewport={{ once: true }}
-          className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 text-center"
-        >
-          {[
-            {
-              value: "24/7",
-              label: "Support Available",
-              icon: <MessageCircle size={16} />,
-            },
-            {
-              value: "< 2hrs",
-              label: "Avg Response Time",
-              icon: <CheckCircle size={16} />,
-            },
-            {
-              value: "50,000+",
-              label: "Questions Answered",
-              icon: <HelpCircle size={16} />,
-            },
-            {
-              value: "98%",
-              label: "Satisfaction Rate",
-              icon: <Users size={16} />,
-            },
-          ].map((stat, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.6 + idx * 0.1 }}
-              viewport={{ once: true }}
-              whileHover={{ scale: 1.05 }}
-              className="bg-card border border-border rounded-xl p-4"
-            >
-              <div className="text-primary mb-1 flex justify-center">
-                {stat.icon}
-              </div>
-              <h4 className="text-lg sm:text-xl font-bold text-foreground">
-                {stat.value}
-              </h4>
-              <p className="text-xs text-foreground/60">{stat.label}</p>
-            </motion.div>
-          ))}
-        </motion.div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );

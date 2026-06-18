@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create instance
 const axiosInstance = axios.create({
-  baseURL: "http:api.sanchoybondhu.com/api", 
+  baseURL: process.env.NEXT_PUBLIC_BASE_URL, 
   withCredentials: true, 
 });
 

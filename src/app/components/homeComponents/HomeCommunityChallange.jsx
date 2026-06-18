@@ -1,80 +1,93 @@
-import React from 'react';
 import {
-  Flame,
-  Moon,
-  Wallet,
-  Trophy,
-  Medal,
-  Sparkles,
-  TrendingUp,
-  Award,
-  Target,
-  Users,
-  Crown,
   ArrowRight,
-  CheckCircle,
-  Zap,
-} from 'lucide-react';
-import Link from 'next/link';
+  Bot,
+  Crown,
+  Flame,
+  Lightbulb,
+  Medal,
+  Moon,
+  Trophy,
+  TrendingUp,
+  Wallet,
+} from "lucide-react";
+import Link from "next/link";
 
 const challenges = [
   {
-    icon: <Flame size={22} />,
-    name: '30-day savings streak',
-    desc: 'Earn the Gold Streak badge by saving every day for 30 days.',
-    badge: 'Active',
-    badgeColor: 'bg-primary text-white',
+    Icon: Flame,
+    title: "30-Day Savings Streak",
+    description: "Save every day for 30 days and earn a Gold Streak Badge",
+    badge: "Active",
   },
   {
-    icon: <Moon size={22} />,
-    name: 'Ramadan Savings Challenge',
-    desc: 'Special 30-day Ramadan challenge with community milestones',
-    badge: 'Seasonal',
-    badgeColor: 'bg-primary/15 text-primary border border-primary/30',
+    Icon: Moon,
+    title: "Ramadan Savings Challenge",
+    description: "Special 30-day Ramadan challenge with community milestones",
+    badge: "Seasonal",
   },
   {
-    icon: <Wallet size={22} />,
-    name: 'Daily ৳100 Challenge',
-    desc: 'Save just ৳100 every day — small steps, big dreams',
-    badge: 'Popular',
-    badgeColor: 'bg-primary/15 text-primary border border-primary/30',
+    Icon: Wallet,
+    title: "Daily ৳100 Challenge",
+    description: "Save just ৳100 every day — small steps, big dreams",
+    badge: "Popular",
   },
 ];
 
 const leaderboard = [
-  { medal: <Crown size={18} className="text-amber-500" />, name: 'Rahima K.', streak: '192-day streak', amount: '৳1,24,000' },
-  { medal: <Medal size={18} className="text-gray-400" />, name: 'Karim A.', streak: '145-day streak', amount: '৳98,500' },
-  { medal: <Medal size={18} className="text-amber-600" />, name: 'Nadia H.', streak: '120-day streak', amount: '৳87,000' },
+  {
+    Icon: Crown,
+    iconColor: "#f59e0b",
+    rowClass: "border-[rgba(245,158,11,0.15)] bg-[rgba(245,158,11,0.06)]",
+    name: "Rahima K.",
+    streak: "192-day streak",
+    amount: "৳1,24,000",
+  },
+  {
+    Icon: Medal,
+    iconColor: "#94a3b8",
+    rowClass: "border-[#e2e8f0] bg-[rgba(148,163,184,0.06)] dark:border-[#1e2d3d]",
+    name: "Karim A.",
+    streak: "145-day streak",
+    amount: "৳98,500",
+  },
+  {
+    Icon: Medal,
+    iconColor: "#cd7f32",
+    rowClass: "border-[rgba(205,127,50,0.15)] bg-[rgba(205,127,50,0.06)]",
+    name: "Nadia H.",
+    streak: "120-day streak",
+    amount: "৳87,000",
+  },
 ];
 
-const aiInsights = [
+const insights = [
   {
-    icon: <Sparkles size={18} className="text-primary" />,
-    text: (
+    Icon: Lightbulb,
+    content: (
       <>
-        <strong>Rahima,</strong> you can achieve your Hajj goal by saving an
-        additional ৳500 per week{' '}
-        <span className="text-primary font-semibold">2 months in advance</span>
+        <strong className="text-[#0f172a] dark:text-[#f1f5f9]">Rahima,</strong>{" "}
+        you can complete your Hajj goal{" "}
+        <strong className="text-[#059669]">2 months earlier</strong> by saving
+        ৳500 more per week.
       </>
     ),
   },
   {
-    icon: <TrendingUp size={18} className="text-primary" />,
-    text: (
+    Icon: Flame,
+    content: (
       <>
-        Your savings streak has reached{' '}
-        <span className="text-primary font-semibold">90 days</span>! You are
-        in the top 5% of savers this month.
+        Your savings streak reached{" "}
+        <strong className="text-[#059669]">90 days</strong>! You&apos;re in the
+        top 5% of savers this month.
       </>
     ),
   },
   {
-    icon: <Award size={18} className="text-primary" />,
-    text: (
+    Icon: TrendingUp,
+    content: (
       <>
-        You saved{' '}
-        <span className="text-primary font-semibold">28% more consistently</span>{' '}
-        this month than last month.
+        You saved <strong className="text-[#059669]">28% more consistently</strong>{" "}
+        this month compared to last month.
       </>
     ),
   },
@@ -82,147 +95,112 @@ const aiInsights = [
 
 const HomeCommunityChallange = () => {
   return (
-    <section className="bg-background py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Decoration */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-64 h-64 bg-primary-light/5 rounded-full blur-3xl" />
-      </div>
-
-      <div className="max-w-6xl mx-auto relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-          {/* ───── LEFT COLUMN ───── */}
+    <section className="bg-[#f8fafc] py-16 font-['Inter','Noto_Sans_Bengali',sans-serif] text-[#0f172a] dark:bg-[#111827] dark:text-[#f1f5f9] md:py-24">
+      <div className="mx-auto max-w-[1200px] px-6">
+        <div className="grid items-center gap-8 md:grid-cols-2">
           <div>
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 dark:bg-primary/20 text-primary text-xs sm:text-sm font-semibold border border-primary/20 mb-5">
-              <Target size={14} />
-              <span>Community Challenge</span>
-            </div>
+            <span className="mb-4 inline-block rounded-full border border-[#059669]/15 bg-[#059669]/[0.08] px-4 py-1.5 text-[13px] font-semibold text-[#059669]">
+              Community Challenges
+            </span>
 
-            {/* Headline */}
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground leading-tight mb-4">
-              Save more,{' '}
-              <span className="bg-linear-to-r from-primary to-primary-light bg-clip-text text-transparent">
-                earn badges
-              </span>
+            <h2 className="mb-4 text-[clamp(28px,4vw,42px)] font-extrabold leading-[1.2] tracking-normal">
+              Save More, <span className="text-[#059669]">Earn Badges</span>
             </h2>
 
-            {/* Subtitle */}
-            <p className="text-foreground/60 text-sm sm:text-base leading-relaxed mb-8 max-w-lg">
+            <p className="mb-7 max-w-[580px] text-base leading-[1.7] text-[#475569] dark:text-[#94a3b8]">
               Stay motivated with savings streaks, community challenges,
               achievement badges, and leaderboards. Every deposit keeps your
-              streak going.
+              streak alive.
             </p>
 
-            {/* Challenge Cards */}
-            <div className="flex flex-col gap-3 mb-8">
-              {challenges.map((c, idx) => (
+            <div className="mb-7 flex flex-col gap-3.5">
+              {challenges.map(({ Icon, title, description, badge }) => (
                 <div
-                  key={c.name}
-                  className="group bg-card border border-border rounded-2xl px-5 py-4 flex items-center gap-4 hover:border-primary/40 transition-all duration-300 hover:shadow-md"
+                  key={title}
+                  className="flex items-center gap-3.5 rounded-xl border border-[#e2e8f0] bg-white p-3.5 dark:border-[#1e2d3d] dark:bg-[#1a2235]"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 group-hover:scale-110 transition-transform duration-300">
-                    {c.icon}
+                  <Icon
+                    size={28}
+                    className="shrink-0 text-[#059669]"
+                    aria-hidden="true"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[15px] font-bold">{title}</div>
+                    <div className="text-[13px] leading-[1.5] text-[#475569] dark:text-[#94a3b8]">
+                      {description}
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground font-bold text-sm sm:text-base">
-                      {c.name}
-                    </p>
-                    <p className="text-foreground/50 text-xs sm:text-sm mt-0.5 leading-snug">
-                      {c.desc}
-                    </p>
-                  </div>
-                  <span
-                    className={`shrink-0 px-3 py-1 rounded-full text-xs font-semibold ${c.badgeColor}`}
-                  >
-                    {c.badge}
+                  <span className="ml-auto inline-flex shrink-0 items-center rounded-full border border-[#059669]/20 bg-[#059669]/10 px-3 py-1 text-xs font-semibold text-[#059669]">
+                    {badge}
                   </span>
                 </div>
               ))}
             </div>
 
-            {/* CTA */}
             <Link
               href="/register"
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary hover:bg-primary-dark text-white font-semibold text-sm sm:text-base rounded-xl transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-primary/20 hover:shadow-primary/40"
+              className="inline-flex items-center gap-2 rounded-xl bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] px-6 py-3 text-[15px] font-semibold text-white shadow-[0_4px_15px_rgba(5,150,105,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(5,150,105,0.45)]"
             >
-              Join the challenge
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              Join a Challenge
+              <ArrowRight size={16} aria-hidden="true" />
             </Link>
           </div>
 
-          {/* ───── RIGHT COLUMN ───── */}
-          <div className="flex flex-col gap-5">
-            {/* Leaderboard Card */}
-            <div className="bg-card border border-border rounded-2xl p-6 hover:border-primary/40 transition-all duration-300">
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Trophy size={18} className="text-primary" />
-                  </div>
-                  <h3 className="text-foreground font-bold text-base sm:text-lg">
-                    Best saver of the month
-                  </h3>
+          <div className="flex flex-col gap-4">
+            <div className="rounded-[16px] border border-[#e2e8f0] bg-white p-7 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-base font-bold">
+                  <Trophy size={20} className="text-[#059669]" aria-hidden="true" />
+                  Top Savers This Month
                 </div>
-                <span className="text-foreground/40 text-xs sm:text-sm flex items-center gap-1">
-                  <Users size={12} />
-                  Leaderboard
-                </span>
+                <span className="text-xs text-[#94a3b8]">Community Leaderboard</span>
               </div>
 
-              <div className="flex flex-col gap-3">
-                {leaderboard.map((item, idx) => (
+              <div className="flex flex-col gap-2.5">
+                {leaderboard.map(({ Icon, iconColor, rowClass, name, streak, amount }) => (
                   <div
-                    key={item.name}
-                    className="bg-background rounded-xl px-4 py-3.5 flex items-center gap-3 hover:bg-primary/5 transition-colors duration-200"
+                    key={name}
+                    className={`flex items-center gap-3 rounded-[10px] border p-2.5 ${rowClass}`}
                   >
-                    <span className="w-6 shrink-0 text-center">{item.medal}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-foreground font-semibold text-sm">
-                        {item.name}
-                      </p>
-                      <p className="text-foreground/50 text-xs mt-0.5 flex items-center gap-1">
-                        <Zap size={10} className="text-primary" />
-                        {item.streak}
-                      </p>
+                    <Icon
+                      size={20}
+                      className="shrink-0"
+                      style={{ color: iconColor }}
+                      aria-hidden="true"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-semibold">{name}</div>
+                      <div className="text-xs text-[#94a3b8]">{streak}</div>
                     </div>
-                    <span className="text-primary font-bold text-sm sm:text-base shrink-0">
-                      {item.amount}
-                    </span>
+                    <div className="shrink-0 text-sm font-bold text-[#059669]">
+                      {amount}
+                    </div>
                   </div>
                 ))}
               </div>
-
-              <button className="mt-4 text-center w-full text-sm text-primary/70 hover:text-primary transition-colors duration-200 flex items-center justify-center gap-1">
-                View full leaderboard
-                <ArrowRight size={14} />
-              </button>
             </div>
 
-            {/* AI Assistant Card */}
-            <div className="bg-card border border-border rounded-2xl p-6 hover:border-primary/40 transition-all duration-300">
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Sparkles size={18} className="text-primary" />
-                </div>
-                <h3 className="text-foreground font-bold text-base sm:text-lg">
-                  AI savings assistant
-                </h3>
-                <span className="px-2.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30 text-xs font-semibold">
+            <div className="rounded-[16px] border border-[#059669]/20 bg-[linear-gradient(135deg,rgba(5,150,105,0.05),rgba(59,130,246,0.05))] p-7 shadow-[0_4px_24px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-1 hover:shadow-[0_20px_60px_rgba(0,0,0,0.10)] dark:bg-[linear-gradient(135deg,rgba(5,150,105,0.08),rgba(59,130,246,0.08))] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] dark:hover:shadow-[0_20px_60px_rgba(0,0,0,0.5)]">
+              <div className="mb-3 flex items-center gap-2.5">
+                <Bot size={24} className="text-[#059669]" aria-hidden="true" />
+                <div className="font-bold">AI Savings Assistant</div>
+                <span className="inline-flex items-center rounded-full border border-[#059669]/20 bg-[#059669]/10 px-3 py-1 text-xs font-semibold text-[#059669]">
                   Beta
                 </span>
               </div>
 
-              <div className="flex flex-col gap-3">
-                {aiInsights.map((insight, i) => (
+              <div className="flex flex-col gap-2.5">
+                {insights.map(({ Icon, content }, index) => (
                   <div
-                    key={i}
-                    className="bg-background rounded-xl px-4 py-3.5 flex gap-3 items-start hover:bg-primary/5 transition-colors duration-200"
+                    key={index}
+                    className="flex items-start gap-2.5 rounded-[10px] border border-[#e2e8f0] bg-white px-3.5 py-2.5 text-[13px] leading-[1.6] text-[#475569] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]"
                   >
-                    <span className="text-primary mt-0.5 shrink-0">{insight.icon}</span>
-                    <p className="text-foreground/80 text-sm leading-relaxed">
-                      {insight.text}
-                    </p>
+                    <Icon
+                      size={16}
+                      className="mt-0.5 shrink-0 text-[#059669]"
+                      aria-hidden="true"
+                    />
+                    <div>{content}</div>
                   </div>
                 ))}
               </div>
