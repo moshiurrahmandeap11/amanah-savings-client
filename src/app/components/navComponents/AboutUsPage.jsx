@@ -405,7 +405,7 @@ const AboutUsPage = () => {
               </Link>
               <Link
                 href="/contact"
-                className="rounded-xl border-2 border-white/60 px-8 py-3.5 text-[15px] font-semibold text-white transition hover:bg-white/10"
+                className="rounded-xl  border-2 border-white/60 px-8 py-3.5 text-[15px] font-semibold text-white transition hover:bg-white/10"
               >
                 {t('ctaButton2', lang)}
               </Link>
