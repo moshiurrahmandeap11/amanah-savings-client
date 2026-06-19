@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { 
   Shield, 
   Heart, 
@@ -115,6 +116,7 @@ const translations = {
 
 const Footer = () => {
   const [language, setLanguage] = useState('en');
+  const pathname = usePathname();
 
   // Get language from localStorage
   useEffect(() => {
@@ -127,25 +129,65 @@ const Footer = () => {
     return translations[language]?.[key] || translations.en[key] || key;
   };
 
+  // Handle scroll to section
+  const handleScrollToSection = (e, targetId) => {
+    e.preventDefault();
+    
+    // Check if we're on the home page
+    if (pathname === '/') {
+      // If on home page, scroll directly
+      const element = document.getElementById(targetId);
+      if (element) {
+        // Add offset for fixed header if needed
+        const headerOffset = 80;
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth"
+        });
+      }
+    } else {
+      // If not on home page, navigate to home page first
+      window.location.href = `/#${targetId}`;
+    }
+  };
+
   // Get footer sections with translations
   const footerSections = [
     {
       title: t('sectionPlatform'),
       links: [
         { name: t('linkHowItWorks'), href: "/how-it-works" },
-        { name: t('linkSavingsPlan'), href: "/savings-plan" },
-        { name: t('linkSavingsGoal'), href: "/savings-goal" },
-        { name: t('linkCommunityCircle'), href: "/community-circle" },
-        { name: t('linkSecurity'), href: "/security" },
+        { 
+          name: t('linkSavingsPlan'), 
+          href: "/#savings-plan",
+          isScroll: true,
+          targetId: "savings-plan"
+        },
+              { 
+        name: t('linkSavingsGoal'), 
+        href: "/#savings-goal",
+        isScroll: true,
+        targetId: "savings-goal" 
+      },
+        { name: t('linkCommunityCircle'), href: "/goals" },
+              { 
+        name: t('linkSecurity'), 
+        href: "/#security-trust",  
+        isScroll: true,
+        targetId: "security-trust"  
+      },
       ],
     },
     {
       title: t('sectionCompany'),
       links: [
-        { name: t('linkAbout'), href: "/about" },
+        { name: t('linkAbout'), href: "/about-us" },
         { name: t('linkContact'), href: "/contact" },
-        { name: t('linkBlog'), href: "/blog" },
-        { name: t('linkCareer'), href: "/career" },
+        { name: t('linkBlog'), href: "/blogs" },
+        { name: t('linkCareer'), href: "/about-us" },
         { name: t('linkPress'), href: "/press" },
       ],
     },
@@ -153,10 +195,10 @@ const Footer = () => {
       title: t('sectionSupport'),
       links: [
         { name: t('linkFAQ'), href: "/faq" },
-        { name: t('linkHelpCenter'), href: "/help" },
+        { name: t('linkHelpCenter'), href: "/faq" },
         { name: t('linkPrivacy'), href: "/privacy" },
         { name: t('linkTerms'), href: "/terms" },
-        { name: t('linkWithdrawal'), href: "/withdrawal" },
+        { name: t('linkWithdrawal'), href: "/terms" },
       ],
     },
   ];
@@ -172,8 +214,8 @@ const Footer = () => {
   const bottomLinks = [
     { name: t('bottomPrivacy'), href: "/privacy" },
     { name: t('bottomTerms'), href: "/terms" },
-    { name: t('bottomWithdrawal'), href: "/withdrawal" },
-    { name: t('bottomAnnouncement'), href: "/announcement" },
+    { name: t('bottomWithdrawal'), href: "/terms" },
+    { name: t('bottomAnnouncement'), href: "/terms" },
   ];
 
   const containerVariants = {
@@ -255,13 +297,26 @@ const Footer = () => {
               <motion.ul variants={containerVariants} className="space-y-2">
                 {section.links.map((link, linkIdx) => (
                   <motion.li key={linkIdx} variants={itemVariants}>
-                    <Link
-                      href={link.href}
-                      className="text-foreground/60 text-sm hover:text-primary transition-colors duration-200 flex items-center gap-1 group"
-                    >
-                      <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                      {link.name}
-                    </Link>
+                    {link.isScroll ? (
+                      // Scroll link for Savings Plan
+                      <a
+                        href={link.href}
+                        onClick={(e) => handleScrollToSection(e, link.targetId)}
+                        className="text-foreground/60 text-sm hover:text-primary transition-colors duration-200 flex items-center gap-1 group cursor-pointer"
+                      >
+                        <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {link.name}
+                      </a>
+                    ) : (
+                      // Normal links
+                      <Link
+                        href={link.href}
+                        className="text-foreground/60 text-sm hover:text-primary transition-colors duration-200 flex items-center gap-1 group"
+                      >
+                        <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                        {link.name}
+                      </Link>
+                    )}
                   </motion.li>
                 ))}
               </motion.ul>

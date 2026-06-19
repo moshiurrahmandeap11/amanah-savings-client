@@ -15,11 +15,17 @@ export default function Home() {
     <div>
       <Banner />
       <HowItWorksPage />
-      <HomePlan />
-      <HomeGoal />
+      <div id="savings-plan">
+        <HomePlan />
+      </div>
+            <div id="savings-goal">
+        <HomeGoal />
+      </div>
       <HomeCommunityChallange />
       <HomeMobileApp />
-      <HomeSecurityTrust />
+            <div id="security-trust">
+        <HomeSecurityTrust />
+      </div>
       <HomeCommunityStories />
       <HomeGeneralInquires />
       <HomeDownloadApp />
