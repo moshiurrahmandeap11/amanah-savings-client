@@ -207,15 +207,15 @@ const Navbar = () => {
           </div>
 
           {/* Desktop Menu - Center */}
-          <nav className="hidden md:block absolute left-1/2 transform -translate-x-1/2">
-            <ul className="flex items-center gap-6 lg:gap-8">
+          <nav className="hidden md:flex flex-1 justify-center min-w-0 mx-4">
+            <ul className="flex items-center gap-4 lg:gap-6 xl:gap-8">
               {navItems.map((item) => {
                 const isActive = isActivePath(item.path);
                 return (
                   <li key={item.id} className="relative group">
                     <Link
                       href={item.path}
-                      className={`text-sm font-semibold transition duration-300 relative py-2 ${
+                      className={`text-sm font-semibold transition duration-300 relative py-2 whitespace-nowrap ${
                         isActive
                           ? "text-primary"
                           : "text-foreground/80 hover:text-primary"
@@ -244,7 +244,7 @@ const Navbar = () => {
           </nav>
 
           {/* Right Section */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Language Switcher */}
             <LanguageSwitcher />
 
