@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { 
@@ -15,36 +15,148 @@ import {
 } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 
+// Translations
+const translations = {
+  en: {
+    // Brand
+    brandName: "Sanchoy Bondhu",
+    brandDesc: "Bangladesh's trusted digital savings community platform. Save together, achieve goals, build your future — in a halal and disciplined way.",
+    
+    // Announcement
+    announcementBadge: "Important Announcement:",
+    announcementText: "Sonchoy Bondhu Community is a savings circle management platform. We are not a bank, investment company or financial institution. We do not guarantee any returns or profits. Savings are locked in according to the member's own and circle terms.",
+    
+    // Sections
+    sectionPlatform: "Platform",
+    sectionCompany: "Company",
+    sectionSupport: "Support",
+    
+    // Platform Links
+    linkHowItWorks: "How it works",
+    linkSavingsPlan: "Savings plan",
+    linkSavingsGoal: "Savings goal",
+    linkCommunityCircle: "Community Circle",
+    linkSecurity: "Security and trust",
+    
+    // Company Links
+    linkAbout: "About us",
+    linkContact: "Contact",
+    linkBlog: "Blog",
+    linkCareer: "Career",
+    linkPress: "Press",
+    
+    // Support Links
+    linkFAQ: "Q&A",
+    linkHelpCenter: "Help Center",
+    linkPrivacy: "Privacy Policy",
+    linkTerms: "Terms of Use",
+    linkWithdrawal: "Withdrawal policy",
+    
+    // Contact
+    supportLabel: "Support",
+    emailLabel: "Email",
+    emailAddress: "sanchoybondhu@gmail.com",
+    
+    // Bottom
+    copyright: "© 2025 Sonchoy Bondhu Community. All rights reserved. Bangladesh.",
+    bottomPrivacy: "Privacy",
+    bottomTerms: "Terms and conditions",
+    bottomWithdrawal: "Withdrawal policy",
+    bottomAnnouncement: "Announcement",
+  },
+  bn: {
+    // Brand
+    brandName: "সঞ্চয় বন্ধু",
+    brandDesc: "বাংলাদেশের বিশ্বস্ত ডিজিটাল সঞ্চয় সম্প্রদায় প্ল্যাটফর্ম। একসাথে সঞ্চয় করুন, লক্ষ্য অর্জন করুন, আপনার ভবিষ্যত গড়ুন — একটি হালাল ও সুশৃঙ্খল উপায়ে।",
+    
+    // Announcement
+    announcementBadge: "গুরুত্বপূর্ণ ঘোষণা:",
+    announcementText: "সঞ্চয় বন্ধু সম্প্রদায় একটি সঞ্চয় সার্কেল ব্যবস্থাপনা প্ল্যাটফর্ম। আমরা ব্যাংক, বিনিয়োগ কোম্পানি বা আর্থিক প্রতিষ্ঠান নই। আমরা কোনো রিটার্ন বা মুনাফার গ্যারান্টি দিই না। সঞ্চয় সদস্যের নিজস্ব এবং সার্কেল শর্তাবলী অনুযায়ী লক করা থাকে।",
+    
+    // Sections
+    sectionPlatform: "প্ল্যাটফর্ম",
+    sectionCompany: "কোম্পানি",
+    sectionSupport: "সাপোর্ট",
+    
+    // Platform Links
+    linkHowItWorks: "কীভাবে কাজ করে",
+    linkSavingsPlan: "সঞ্চয় প্ল্যান",
+    linkSavingsGoal: "সঞ্চয় লক্ষ্য",
+    linkCommunityCircle: "কমিউনিটি সার্কেল",
+    linkSecurity: "নিরাপত্তা ও বিশ্বাস",
+    
+    // Company Links
+    linkAbout: "আমাদের সম্পর্কে",
+    linkContact: "যোগাযোগ",
+    linkBlog: "ব্লগ",
+    linkCareer: "ক্যারিয়ার",
+    linkPress: "প্রেস",
+    
+    // Support Links
+    linkFAQ: "প্রশ্নোত্তর",
+    linkHelpCenter: "সাহায্য কেন্দ্র",
+    linkPrivacy: "গোপনীয়তা নীতি",
+    linkTerms: "ব্যবহারের শর্তাবলী",
+    linkWithdrawal: "উত্তোলন নীতি",
+    
+    // Contact
+    supportLabel: "সাপোর্ট",
+    emailLabel: "ইমেইল",
+    emailAddress: "sanchoybondhu@gmail.com",
+    
+    // Bottom
+    copyright: "© ২০২৫ সঞ্চয় বন্ধু সম্প্রদায়। সর্বস্বত্ব সংরক্ষিত। বাংলাদেশ।",
+    bottomPrivacy: "গোপনীয়তা",
+    bottomTerms: "শর্তাবলী",
+    bottomWithdrawal: "উত্তোলন নীতি",
+    bottomAnnouncement: "ঘোষণা",
+  }
+};
+
 const Footer = () => {
+  const [language, setLanguage] = useState('en');
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLanguage(savedLang);
+  }, []);
+
+  // Translation function
+  const t = (key) => {
+    return translations[language]?.[key] || translations.en[key] || key;
+  };
+
+  // Get footer sections with translations
   const footerSections = [
     {
-      title: "Platform",
+      title: t('sectionPlatform'),
       links: [
-        { name: "How it works", href: "/how-it-works" },
-        { name: "Savings plan", href: "/savings-plan" },
-        { name: "Savings goal", href: "/savings-goal" },
-        { name: "Community Circle", href: "/community-circle" },
-        { name: "Security and trust", href: "/security" },
+        { name: t('linkHowItWorks'), href: "/how-it-works" },
+        { name: t('linkSavingsPlan'), href: "/savings-plan" },
+        { name: t('linkSavingsGoal'), href: "/savings-goal" },
+        { name: t('linkCommunityCircle'), href: "/community-circle" },
+        { name: t('linkSecurity'), href: "/security" },
       ],
     },
     {
-      title: "Company",
+      title: t('sectionCompany'),
       links: [
-        { name: "About us", href: "/about" },
-        { name: "Contact", href: "/contact" },
-        { name: "Blog", href: "/blog" },
-        { name: "Career", href: "/career" },
-        { name: "Press", href: "/press" },
+        { name: t('linkAbout'), href: "/about" },
+        { name: t('linkContact'), href: "/contact" },
+        { name: t('linkBlog'), href: "/blog" },
+        { name: t('linkCareer'), href: "/career" },
+        { name: t('linkPress'), href: "/press" },
       ],
     },
     {
-      title: "Support",
+      title: t('sectionSupport'),
       links: [
-        { name: "Q&A", href: "/faq" },
-        { name: "Help Center", href: "/help" },
-        { name: "Privacy Policy", href: "/privacy" },
-        { name: "Terms of Use", href: "/terms" },
-        { name: "Withdrawal policy", href: "/withdrawal" },
+        { name: t('linkFAQ'), href: "/faq" },
+        { name: t('linkHelpCenter'), href: "/help" },
+        { name: t('linkPrivacy'), href: "/privacy" },
+        { name: t('linkTerms'), href: "/terms" },
+        { name: t('linkWithdrawal'), href: "/withdrawal" },
       ],
     },
   ];
@@ -56,11 +168,12 @@ const Footer = () => {
     { icon: <FaInstagram size={18} />, href: "#", color: "hover:bg-pink-500" },
   ];
 
+  // Get bottom links with translations
   const bottomLinks = [
-    { name: "Privacy", href: "/privacy" },
-    { name: "Terms and conditions", href: "/terms" },
-    { name: "Withdrawal policy", href: "/withdrawal" },
-    { name: "Announcement", href: "/announcement" },
+    { name: t('bottomPrivacy'), href: "/privacy" },
+    { name: t('bottomTerms'), href: "/terms" },
+    { name: t('bottomWithdrawal'), href: "/withdrawal" },
+    { name: t('bottomAnnouncement'), href: "/announcement" },
   ];
 
   const containerVariants = {
@@ -106,8 +219,7 @@ const Footer = () => {
               </Link>
               
               <p className="text-foreground/70 text-sm sm:text-base leading-relaxed mb-6 max-w-md">
-                Bangladesh&apos;s trusted digital savings community platform. Save together, 
-                achieve goals, build your future — in a halal and disciplined way.
+                {t('brandDesc')}
               </p>
 
               {/* Important Announcement */}
@@ -116,11 +228,8 @@ const Footer = () => {
                   <Shield className="text-primary shrink-0 mt-0.5" size={18} />
                   <div>
                     <p className="text-xs text-red-400 leading-relaxed">
-                      <span className="font-semibold text-red-400">Important Announcement:</span>{" "}
-                      Sonchoy Bondhu Community is a savings circle management platform. 
-                      We are not a bank, investment company or financial institution. 
-                      We do not guarantee any returns or profits. Savings are locked in 
-                      according to the member&apos;s own and circle terms.
+                      <span className="font-semibold text-red-400">{t('announcementBadge')}</span>{" "}
+                      {t('announcementText')}
                     </p>
                   </div>
                 </div>
@@ -173,7 +282,7 @@ const Footer = () => {
                 <Phone size={18} className="text-primary" />
               </div>
               <div>
-                <p className="text-xs text-foreground/60">Support</p>
+                <p className="text-xs text-foreground/60">{t('supportLabel')}</p>
                 <p className="text-foreground font-semibold text-sm">+880 1XXX-XXXXXX</p>
               </div>
             </div>
@@ -183,8 +292,8 @@ const Footer = () => {
                 <Mail size={18} className="text-primary" />
               </div>
               <div>
-                <p className="text-xs text-foreground/60">Email</p>
-                <p className="text-foreground font-semibold text-sm">sanchoybondhu@gmail.com</p>
+                <p className="text-xs text-foreground/60">{t('emailLabel')}</p>
+                <p className="text-foreground font-semibold text-sm">{t('emailAddress')}</p>
               </div>
             </div>
           </div>
@@ -214,7 +323,7 @@ const Footer = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <p className="text-xs text-foreground/50">
-              © 2025 Sonchoy Bondhu Community. All rights reserved. Bangladesh.
+              {t('copyright')}
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">

@@ -5,6 +5,148 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Share2 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Hero
+    pageTitle: "🌿 Savings Wall",
+    pageSubtitle: "See what your community is saving for. Share your goal anonymously and inspire others. Every dream matters!",
+    
+    // Compose
+    shareYourGoal: "✍️ Share your savings goal",
+    composePlaceholder: "What are you saving for? e.g., 'InshaAllah saving for Hajj in 2027 🕌'",
+    anonymous: "Anonymous",
+    showName: "Show name",
+    postToWall: "🌿 Post to Wall",
+    
+    // Filters
+    allGoals: "🌿 All Goals",
+    hajjUmrah: "🕌 Hajj/Umrah",
+    travel: "✈️ Travel",
+    education: "🎓 Education",
+    home: "🏡 Home",
+    milestones: "🎉 Milestones",
+    
+    // Post Labels
+    progress: "Progress",
+    support: "Support",
+    progressBar: "Progress Bar",
+    encourage: "Encourage",
+    share: "Share",
+    linkCopied: "🔗 Link copied!",
+    
+    // Toast Messages
+    writeMore: "⚠️ Please write a bit more (at least 10 characters)",
+    posted: "🌿 Your goal has been posted to the Savings Wall!",
+    encouragement: "❤️ Your encouragement will give them strength!",
+    randomEncouragement1: "💪 Great! You can do it!",
+    randomEncouragement2: "🌿 Stay committed to your goal!",
+    randomEncouragement3: "⭐ Amazing saving mindset!",
+    randomEncouragement4: "🔥 Keep going!",
+    
+    // Empty State
+    noPosts: "No posts yet. Be the first to share your savings goal!",
+    
+    // Loading
+    loading: "Loading...",
+    
+    // Post Labels
+    goalLabel: "Goal",
+    anonymousUser: "Anonymous",
+    
+    // Location
+    location: "Location",
+    
+    // Time
+    justNow: "Just now",
+    minutesAgo: "{m}m ago",
+    hoursAgo: "{h}h ago",
+    daysAgo: "{d}d ago",
+    recently: "Recently",
+    
+    // Emoji Labels
+    hajjLabel: "Hajj/Umrah",
+    travelLabel: "Travel",
+    educationLabel: "Education",
+    techLabel: "Tech",
+    homeLabel: "Home",
+    weddingLabel: "Wedding",
+    vehicleLabel: "Vehicle",
+    businessLabel: "Business",
+    healthcareLabel: "Healthcare",
+    otherLabel: "Other",
+  },
+  bn: {
+    // Hero
+    pageTitle: "🌿 সঞ্চয় ওয়াল",
+    pageSubtitle: "আপনার কমিউনিটি কী জন্য সঞ্চয় করছে তা দেখুন। বেনামে আপনার লক্ষ্য শেয়ার করুন এবং অন্যদের অনুপ্রাণিত করুন। প্রতিটি স্বপ্ন গুরুত্বপূর্ণ!",
+    
+    // Compose
+    shareYourGoal: "✍️ আপনার সঞ্চয়ের লক্ষ্য শেয়ার করুন",
+    composePlaceholder: "আপনি কী জন্য সঞ্চয় করছেন? যেমন: 'ইনশাআল্লাহ ২০২৭ সালে হজ্জ করার জন্য সঞ্চয় করছি 🕌'",
+    anonymous: "বেনামে",
+    showName: "নাম দেখান",
+    postToWall: "🌿 ওয়ালে পোস্ট করুন",
+    
+    // Filters
+    allGoals: "🌿 সব লক্ষ্য",
+    hajjUmrah: "🕌 হজ/ওমরাহ",
+    travel: "✈️ ভ্রমণ",
+    education: "🎓 শিক্ষা",
+    home: "🏡 ঘর",
+    milestones: "🎉 মাইলফলক",
+    
+    // Post Labels
+    progress: "অগ্রগতি",
+    support: "সাপোর্ট",
+    progressBar: "অগ্রগতি বার",
+    encourage: "উৎসাহ দিন",
+    share: "শেয়ার",
+    linkCopied: "🔗 লিংক কপি করা হয়েছে!",
+    
+    // Toast Messages
+    writeMore: "⚠️ অনুগ্রহ করে একটু বেশি লিখুন (কমপক্ষে ১০ অক্ষর)",
+    posted: "🌿 আপনার লক্ষ্য সঞ্চয় ওয়ালে পোস্ট হয়েছে!",
+    encouragement: "❤️ আপনার অনুপ্রেরণা তাকে শক্তি দেবে!",
+    randomEncouragement1: "💪 দারুণ! আপনি পারবেন!",
+    randomEncouragement2: "🌿 লক্ষ্যে অবিচল থাকুন!",
+    randomEncouragement3: "⭐ অসাধারণ সঞ্চয় মনোভাব!",
+    randomEncouragement4: "🔥 চালিয়ে যান!",
+    
+    // Empty State
+    noPosts: "কোন পোস্ট নেই। প্রথম আপনার সঞ্চয় লক্ষ্য শেয়ার করুন!",
+    
+    // Loading
+    loading: "লোড হচ্ছে...",
+    
+    // Post Labels
+    goalLabel: "লক্ষ্য",
+    anonymousUser: "নাম প্রকাশে অনিচ্ছুক",
+    
+    // Location
+    location: "অবস্থান",
+    
+    // Time
+    justNow: "এইমাত্র",
+    minutesAgo: "{m} মিনিট আগে",
+    hoursAgo: "{h} ঘণ্টা আগে",
+    daysAgo: "{d} দিন আগে",
+    recently: "সম্প্রতি",
+    
+    // Emoji Labels
+    hajjLabel: "হজ/ওমরাহ",
+    travelLabel: "ভ্রমণ",
+    educationLabel: "শিক্ষা",
+    techLabel: "টেক",
+    homeLabel: "ঘর",
+    weddingLabel: "বিয়ে",
+    vehicleLabel: "গাড়ি",
+    businessLabel: "ব্যবসা",
+    healthcareLabel: "স্বাস্থ্যসেবা",
+    otherLabel: "অন্যান্য",
+  }
+};
+
 const SavingsWallPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState("🕌");
@@ -16,27 +158,43 @@ const SavingsWallPage = () => {
   const [likedPosts, setLikedPosts] = useState({});
   const [tickerItems, setTickerItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState("en");
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   const emojis = [
-    { emoji: "🕌", label: "Hajj/Umrah" },
-    { emoji: "✈️", label: "Travel" },
-    { emoji: "🎓", label: "Education" },
-    { emoji: "📱", label: "Tech" },
-    { emoji: "🏡", label: "Home" },
-    { emoji: "💍", label: "Wedding" },
-    { emoji: "🚗", label: "Vehicle" },
-    { emoji: "💼", label: "Business" },
-    { emoji: "🏥", label: "Healthcare" },
-    { emoji: "🌟", label: "Other" },
+    { emoji: "🕌", label: t('hajjLabel') },
+    { emoji: "✈️", label: t('travelLabel') },
+    { emoji: "🎓", label: t('educationLabel') },
+    { emoji: "📱", label: t('techLabel') },
+    { emoji: "🏡", label: t('homeLabel') },
+    { emoji: "💍", label: t('weddingLabel') },
+    { emoji: "🚗", label: t('vehicleLabel') },
+    { emoji: "💼", label: t('businessLabel') },
+    { emoji: "🏥", label: t('healthcareLabel') },
+    { emoji: "🌟", label: t('otherLabel') },
   ];
 
   const filters = [
-    { id: "all", label: "🌿 All Goals" },
-    { id: "hajj", label: "🕌 Hajj/Umrah" },
-    { id: "travel", label: "✈️ Travel" },
-    { id: "education", label: "🎓 Education" },
-    { id: "home", label: "🏡 Home" },
-    { id: "milestone", label: "🎉 Milestones" },
+    { id: "all", label: t('allGoals') },
+    { id: "hajj", label: t('hajjUmrah') },
+    { id: "travel", label: t('travel') },
+    { id: "education", label: t('education') },
+    { id: "home", label: t('home') },
+    { id: "milestone", label: t('milestones') },
   ];
 
   const getGoalEmoji = (goalType) => {
@@ -88,7 +246,7 @@ const SavingsWallPage = () => {
   };
 
   const timeAgo = (dateString) => {
-    if (!dateString) return "Recently";
+    if (!dateString) return t('recently');
     const now = new Date();
     const then = new Date(dateString);
     const diffMs = now - then;
@@ -96,11 +254,11 @@ const SavingsWallPage = () => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 30) return `${diffDays}d ago`;
-    return "Recently";
+    if (diffMins < 1) return t('justNow');
+    if (diffMins < 60) return t('minutesAgo', { m: diffMins });
+    if (diffHours < 24) return t('hoursAgo', { h: diffHours });
+    if (diffDays < 30) return t('daysAgo', { d: diffDays });
+    return t('recently');
   };
 
   const fetchWallData = useCallback(async () => {
@@ -123,11 +281,11 @@ const SavingsWallPage = () => {
           posts.push({
             id: `goal_${g._id || g.id || Math.random()}`,
             emoji,
-            user: g.userName || "নাম প্রকাশে অনিচ্ছুক",
+            user: g.userName || t('anonymousUser'),
             location: g.location || "Bangladesh",
             time: timeAgo(g.createdAt || g.updatedAt),
             message: g.description || `Saving for ${g.goalName || g.name || "a goal"}`,
-            goal: g.goalName || g.name || "সঞ্চয় লক্ষ্য",
+            goal: g.goalName || g.name || t('goalLabel'),
             progress: Math.min(progress, 100),
             likes: g.likes || Math.floor(Math.random() * 50),
             bg: getGoalColor(g.goalType || g.type || "other"),
@@ -156,7 +314,7 @@ const SavingsWallPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -181,34 +339,34 @@ const SavingsWallPage = () => {
         prev.map((p) => (p.id === postId ? { ...p, likes: p.likes + 1 } : p)),
       );
       setLikedPosts((prev) => ({ ...prev, [postId]: true }));
-      showToast("❤️ আপনার অনুপ্রেরণা তাকে শক্তি দেবে!");
+      showToast(t('encouragement'));
     }
   };
 
   const handleEncourage = () => {
     const messages = [
-      "💪 দারুণ! আপনি পারবেন!",
-      "🌿 লক্ষ্যে অবিচল থাকুন!",
-      "⭐ অসাধারণ সঞ্চয় মনোভাব!",
-      "🔥 চালিয়ে যান!",
+      t('randomEncouragement1'),
+      t('randomEncouragement2'),
+      t('randomEncouragement3'),
+      t('randomEncouragement4'),
     ];
     showToast(messages[Math.floor(Math.random() * messages.length)]);
   };
 
   const handlePost = () => {
     if (postText.length < 10) {
-      showToast("⚠️ অনুগ্রহ করে একটু বেশি লিখুন (কমপক্ষে ১০ অক্ষর)");
+      showToast(t('writeMore'));
       return;
     }
 
     const newPost = {
       id: Date.now(),
       emoji: selectedEmoji,
-      user: isAnonymous ? "নাম প্রকাশে অনিচ্ছুক" : "আপনি",
+      user: isAnonymous ? t('anonymousUser') : "আপনি",
       location: "Dhaka",
-      time: "এখনই",
+      time: t('justNow'),
       message: postText,
-      goal: "সঞ্চয় লক্ষ্য",
+      goal: t('goalLabel'),
       progress: 5,
       likes: 0,
       bg: "from-primary to-primary-light",
@@ -217,7 +375,7 @@ const SavingsWallPage = () => {
 
     setWallPosts((prev) => [newPost, ...prev]);
     setPostText("");
-    showToast("🌿 আপনার লক্ষ্য Savings Wall-এ পোস্ট হয়েছে!");
+    showToast(t('posted'));
   };
 
   const filteredPosts = wallPosts.filter((post) => {
@@ -242,11 +400,10 @@ const SavingsWallPage = () => {
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-            🌿 Savings Wall
+            {t('pageTitle')}
           </h1>
           <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto">
-            See what your community is saving for. Share your goal anonymously
-            and inspire others. Every dream matters!
+            {t('pageSubtitle')}
           </p>
         </div>
       </div>
@@ -287,7 +444,7 @@ const SavingsWallPage = () => {
       <div className="max-w-6xl mx-auto px-4 mt-8">
         <div className="bg-card border border-border rounded-xl p-6 shadow-lg">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2 text-base">
-            ✍️ আপনার সঞ্চয়ের লক্ষ্য শেয়ার করুন
+            {t('shareYourGoal')}
           </div>
           <div className="flex gap-2 flex-wrap mb-4">
             {emojis.map((item) => (
@@ -310,7 +467,7 @@ const SavingsWallPage = () => {
             onChange={(e) => setPostText(e.target.value.slice(0, 200))}
             rows={3}
             maxLength={200}
-            placeholder="আপনি কী জন্য সঞ্চয় করছেন? যেমন: 'ইনশাআল্লাহ ২০২৭ সালে হজ্জ করার জন্য সঞ্চয় করছি 🕌'"
+            placeholder={t('composePlaceholder')}
             className="w-full p-3 rounded-xl border border-border bg-surface2 text-foreground outline-none focus:border-primary transition resize-none text-sm"
           />
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-3">
@@ -328,14 +485,14 @@ const SavingsWallPage = () => {
                   />
                 </div>
                 <span className="text-sm">
-                  {isAnonymous ? "Anonymous" : "Show name"}
+                  {isAnonymous ? t('anonymous') : t('showName')}
                 </span>
               </label>
               <button
                 onClick={handlePost}
                 className="px-5 py-2 bg-linear-to-r from-primary to-primary-light text-white rounded-lg font-semibold text-sm"
               >
-                🌿 Post to Wall
+                {t('postToWall')}
               </button>
             </div>
           </div>
@@ -364,12 +521,12 @@ const SavingsWallPage = () => {
       {/* Wall Grid */}
       <div className="max-w-6xl mx-auto px-4 py-8">
         {loading ? (
-          <div className="text-center py-12 text-foreground/50">Loading...</div>
+          <div className="text-center py-12 text-foreground/50">{t('loading')}</div>
         ) : filteredPosts.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-4xl mb-4">🌿</div>
             <div className="text-lg font-semibold text-foreground/70">
-              No posts yet. Be the first to share your savings goal!
+              {t('noPosts')}
             </div>
           </div>
         ) : (
@@ -417,7 +574,7 @@ const SavingsWallPage = () => {
                         {post.progress}%
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold">
-                        অগ্রগতি
+                        {t('progress')}
                       </div>
                     </div>
                     <div className="flex-1 text-center border-l border-border">
@@ -425,7 +582,7 @@ const SavingsWallPage = () => {
                         {post.likes}
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold">
-                        সাপোর্ট
+                        {t('support')}
                       </div>
                     </div>
                     <div className="flex-1 text-center border-l border-border">
@@ -438,7 +595,7 @@ const SavingsWallPage = () => {
                         </div>
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold mt-1">
-                        Progress Bar
+                        {t('progressBar')}
                       </div>
                     </div>
                   </div>
@@ -462,14 +619,14 @@ const SavingsWallPage = () => {
                       className="flex-1 py-2 rounded-lg text-xs font-semibold bg-surface2 text-foreground/60 hover:bg-primary/10 hover:text-primary transition flex items-center justify-center gap-1"
                     >
                       <span>💪</span>
-                      Encourage
+                      {t('encourage')}
                     </button>
                     <button
-                      onClick={() => showToast("🔗 Link copied!")}
+                      onClick={() => showToast(t('linkCopied'))}
                       className="flex-1 py-2 rounded-lg text-xs font-semibold bg-linear-to-r from-primary to-primary-light text-white flex items-center justify-center gap-1"
                     >
                       <Share2 size={14} />
-                      Share
+                      {t('share')}
                     </button>
                   </div>
                 </motion.div>

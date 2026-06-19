@@ -1,47 +1,96 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Menu, Moon, Sun, Bell, AlertTriangle, Globe } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  ArrowLeft,
+  Moon,
+  Sun,
+  Bell,
+  AlertTriangle,
+  Globe,
+  Menu,
+} from "lucide-react";
 import Link from "next/link";
 import useSocket from "../../../hooks/useSocket";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
+import LanguageSwitcher from "../../shared/LanguageSwitcher";
+
+// Translations
+const translations = {
+  en: {
+    adminDashboard: "Admin Dashboard",
+    fraudAlerts: "Fraud Alerts",
+    notifications: "Notifications",
+    noAlerts: "No Alerts",
+    themeToggle: "Theme",
+    adminAvatar: "Admin",
+    // Days
+    sunday: "Sunday",
+    monday: "Monday",
+    tuesday: "Tuesday",
+    wednesday: "Wednesday",
+    thursday: "Thursday",
+    friday: "Friday",
+    saturday: "Saturday",
+    // Months
+    january: "January",
+    february: "February",
+    march: "March",
+    april: "April",
+    may: "May",
+    june: "June",
+    july: "July",
+    august: "August",
+    september: "September",
+    october: "October",
+    november: "November",
+    december: "December",
+  },
+  bn: {
+    adminDashboard: "অ্যাডমিন ড্যাশবোর্ড",
+    fraudAlerts: "জালিয়াতি সতর্কতা",
+    notifications: "বিজ্ঞপ্তি",
+    noAlerts: "কোন সতর্কতা নেই",
+    themeToggle: "থিম",
+    adminAvatar: "অ্যাডমিন",
+    // Days
+    sunday: "রবিবার",
+    monday: "সোমবার",
+    tuesday: "মঙ্গলবার",
+    wednesday: "বুধবার",
+    thursday: "বৃহস্পতিবার",
+    friday: "শুক্রবার",
+    saturday: "শনিবার",
+    // Months
+    january: "জানুয়ারি",
+    february: "ফেব্রুয়ারি",
+    march: "মার্চ",
+    april: "এপ্রিল",
+    may: "মে",
+    june: "জুন",
+    july: "জুলাই",
+    august: "আগস্ট",
+    september: "সেপ্টেম্বর",
+    october: "অক্টোবর",
+    november: "নভেম্বর",
+    december: "ডিসেম্বর",
+  }
+};
 
 const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [currentLang, setCurrentLang] = useState("en");
   const [fraudCount, setFraudCount] = useState(0);
   
-  // Fetch real fraud count from API - FIXED ENDPOINT
+  // Translation function
+  const t = (key) => {
+    return translations[currentLang]?.[key] || translations.en[key] || key;
+  };
+
+  // Fetch real fraud count
   useEffect(() => {
     const fetchFraudCount = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-        
-        // Fixed: Use correct endpoint /admin/security/events
-        const res = await axiosInstance.get("/admin/security/events", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        
-        if (res.data.success && res.data.data?.events) {
-          // Count high risk events
-          const count = res.data.data.events.filter(
-            (e) => e.status === "danger" || e.severity === "high" || e.severity === "critical"
-          ).length;
-          setFraudCount(count);
-        }
-      } catch (err) {
-        console.error("Fraud count fetch error:", err);
-        // Set fallback count or keep existing
-        setFraudCount(0);
-      }
-    };
-    fetchFraudCount();
-  }, []);
-  
-  // Also fetch fraud alerts count from fraud endpoint
-  useEffect(() => {
-    const fetchFraudAlerts = async () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) return;
@@ -60,11 +109,11 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
         console.error("Fraud alerts fetch error:", err);
       }
     };
-    fetchFraudAlerts();
+    fetchFraudCount();
   }, []);
   
-  // Admin socket for real-time alerts (admin role, no specific userId needed for admin room)
-  const { notifications: adminNotifications, isConnected } = useSocket("admin", "admin");
+  // Socket for real-time alerts
+  const { notifications: adminNotifications } = useSocket("admin", "admin");
   const [alertCount, setAlertCount] = useState(0);
 
   useEffect(() => {
@@ -73,54 +122,26 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
     }
   }, [adminNotifications]);
 
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "en";
+    setCurrentLang(savedLang);
+  }, []);
+
   useEffect(() => {
     const now = new Date();
     const days = [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      t('sunday'), t('monday'), t('tuesday'), t('wednesday'),
+      t('thursday'), t('friday'), t('saturday'),
     ];
     const months = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
+      t('january'), t('february'), t('march'), t('april'),
+      t('may'), t('june'), t('july'), t('august'),
+      t('september'), t('october'), t('november'), t('december'),
     ];
     const formattedDate = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
     setCurrentDate(formattedDate);
-  }, []);
-
-  const toggleLang = () => {
-    const newLang = currentLang === "en" ? "bn" : "en";
-    setCurrentLang(newLang);
-    document.documentElement.lang = newLang;
-    localStorage.setItem("admin_lang", newLang);
-  };
-
-  // Get language text
-  const getText = (key) => {
-    const texts = {
-      en: {
-        fraudAlerts: "Fraud Alerts"
-      },
-      bn: {
-        fraudAlerts: "জালিয়াতি সতর্কতা"
-      }
-    };
-    return texts[currentLang][key] || texts.en[key];
-  };
+  }, [currentLang]);
 
   return (
     <header className="sticky top-0 z-40 bg-card border-b border-border">
@@ -134,11 +155,8 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
             <Menu size={18} />
           </button>
           <div className="min-w-0">
-            <div
-              className="text-sm font-bold text-foreground truncate"
-              id="adminPageTitle"
-            >
-              Admin Dashboard
+            <div className="text-sm font-bold text-foreground truncate">
+              {t('adminDashboard')}
             </div>
             <div className="text-xs text-foreground/50">{currentDate}</div>
           </div>
@@ -153,14 +171,14 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
           >
             <AlertTriangle size={12} />
             {fraudCount > 0 ? (
-              <span>{fraudCount} {getText("fraudAlerts")}</span>
+              <span>{fraudCount} {t('fraudAlerts')}</span>
             ) : (
-              <span>{getText("fraudAlerts")}</span>
+              <span>{t('fraudAlerts')}</span>
             )}
           </button>
 
           {/* Notifications Button */}
-          <Link href={"/admin/notifications"} className="relative w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition">
+          <Link href="/admin/notifications" className="relative w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition">
             <Bell size={16} />
             {alertCount > 0 && (
               <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center">
@@ -169,24 +187,23 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
             )}
           </Link>
 
-          {/* Language Toggle */}
-          <button
-            onClick={toggleLang}
-            className="px-3 py-1.5 rounded-lg border border-border text-xs font-bold hover:border-primary transition"
-          >
-            {currentLang === "en" ? "BN" : "EN"}
-          </button>
+          {/* Language Switcher (Imported Component) */}
+          <LanguageSwitcher />
 
           {/* Theme Toggle */}
           <button
             onClick={toggleTheme}
             className="w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
+            title={t('themeToggle')}
           >
             {isDark ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
           {/* Admin Avatar */}
-          <div className="w-8 h-8 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm">
+          <div 
+            className="w-8 h-8 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm"
+            title={t('adminDashboard')}
+          >
             A
           </div>
         </div>

@@ -26,10 +26,111 @@ import {
   Contact
 } from "lucide-react";
 
+// Translations
+const translations = {
+  en: {
+    // App Name
+    sanchoyBondhu: "Sanchoy Bondhu",
+    admin: "ADMIN",
+    adminControlPanel: "Admin Control Panel",
+    
+    // Sections
+    overview: "Overview",
+    members: "Members",
+    financial: "Financial",
+    security: "Security",
+    operations: "Operations",
+    
+    // Nav Items - Overview
+    dashboard: "Dashboard",
+    analytics: "Analytics",
+    contact: "Contact",
+    
+    // Nav Items - Members
+    userManagement: "User Management",
+    kycReview: "KYC Review",
+    
+    // Nav Items - Financial
+    savingsManagement: "Savings Management",
+    depositApprovals: "Deposit Approvals",
+    withdrawals: "Withdrawals",
+    revenue: "Revenue",
+    
+    // Nav Items - Security
+    fraudAlerts: "Fraud Alerts",
+    securityLogs: "Security Logs",
+    
+    // Nav Items - Operations
+    notifications: "Notifications",
+    cms: "CMS",
+    reports: "Reports",
+    supportTickets: "Support Tickets",
+    blogManagement: "Blog Management",
+    withdrawalApprovals: "Withdrawal Approvals",
+    settings: "Settings",
+    
+    // Footer
+    logout: "Logout",
+  },
+  bn: {
+    // App Name
+    sanchoyBondhu: "সঞ্চয় বন্ধু",
+    admin: "অ্যাডমিন",
+    adminControlPanel: "অ্যাডমিন নিয়ন্ত্রণ প্যানেল",
+    
+    // Sections
+    overview: "ওভারভিউ",
+    members: "সদস্য",
+    financial: "আর্থিক",
+    security: "নিরাপত্তা",
+    operations: "অপারেশন",
+    
+    // Nav Items - Overview
+    dashboard: "ড্যাশবোর্ড",
+    analytics: "বিশ্লেষণ",
+    contact: "যোগাযোগ",
+    
+    // Nav Items - Members
+    userManagement: "ব্যবহারকারী ব্যবস্থাপনা",
+    kycReview: "কেওয়াইসি পর্যালোচনা",
+    
+    // Nav Items - Financial
+    savingsManagement: "সঞ্চয় ব্যবস্থাপনা",
+    depositApprovals: "ডিপোজিট অনুমোদন",
+    withdrawals: "উত্তোলন",
+    revenue: "আয়",
+    
+    // Nav Items - Security
+    fraudAlerts: "জালিয়াতি সতর্কতা",
+    securityLogs: "নিরাপত্তা লগ",
+    
+    // Nav Items - Operations
+    notifications: "বিজ্ঞপ্তি",
+    cms: "সিএমএস",
+    reports: "প্রতিবেদন",
+    supportTickets: "সাপোর্ট টিকেট",
+    blogManagement: "ব্লগ ব্যবস্থাপনা",
+    withdrawalApprovals: "উত্তোলন অনুমোদন",
+    settings: "সেটিংস",
+    
+    // Footer
+    logout: "লগআউট",
+  }
+};
+
 const AdminSidebar = ({ closeSidebar }) => {
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(false);
   const [currentLang, setCurrentLang] = useState("en");
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[currentLang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
@@ -38,24 +139,25 @@ const AdminSidebar = ({ closeSidebar }) => {
     setCurrentLang(savedLang);
   }, []);
 
-  const navItems = [
+  // Get nav items with translations
+  const getNavItems = () => [
     {
-      section: "Overview",
+      section: t('overview'),
       items: [
         {
-          name: "Dashboard",
+          name: t('dashboard'),
           icon: <LayoutDashboard size={18} />,
           href: "/admin",
           id: "overview",
         },
         {
-          name: "Analytics",
+          name: t('analytics'),
           icon: <TrendingUp size={18} />,
           href: "/admin/analytics",
           id: "analytics",
         },
         {
-          name: "Contact",
+          name: t('contact'),
           icon: <Contact size={18} />,
           href: "/admin/contacts",
           id: "contacts",
@@ -63,10 +165,10 @@ const AdminSidebar = ({ closeSidebar }) => {
       ],
     },
     {
-      section: "Members",
+      section: t('members'),
       items: [
         {
-          name: "User Management",
+          name: t('userManagement'),
           icon: <Users size={18} />,
           href: "/admin/users",
           id: "users",
@@ -74,7 +176,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           badgeColor: "green",
         },
         {
-          name: "KYC Review",
+          name: t('kycReview'),
           icon: <Shield size={18} />,
           href: "/admin/kyc",
           id: "kyc",
@@ -84,16 +186,16 @@ const AdminSidebar = ({ closeSidebar }) => {
       ],
     },
     {
-      section: "Financial",
+      section: t('financial'),
       items: [
         {
-          name: "Savings Management",
+          name: t('savingsManagement'),
           icon: <Database size={18} />,
           href: "/admin/savings",
           id: "savings",
         },
         {
-          name: "Deposit Approvals",
+          name: t('depositApprovals'),
           icon: <CreditCard size={18} />,
           href: "/admin/deposits",
           id: "deposits",
@@ -101,7 +203,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           badgeColor: "yellow",
         },
         {
-          name: "Withdrawals",
+          name: t('withdrawals'),
           icon: <Wallet size={18} />,
           href: "/admin/withdrawals",
           id: "withdrawals",
@@ -109,7 +211,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           badgeColor: "yellow",
         },
         {
-          name: "Revenue",
+          name: t('revenue'),
           icon: <DollarSign size={18} />,
           href: "/admin/revenue",
           id: "revenue",
@@ -117,10 +219,10 @@ const AdminSidebar = ({ closeSidebar }) => {
       ],
     },
     {
-      section: "Security",
+      section: t('security'),
       items: [
         {
-          name: "Fraud Alerts",
+          name: t('fraudAlerts'),
           icon: <AlertTriangle size={18} />,
           href: "/admin/fraud",
           id: "fraud",
@@ -128,7 +230,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           badgeColor: "red",
         },
         {
-          name: "Security Logs",
+          name: t('securityLogs'),
           icon: <Eye size={18} />,
           href: "/admin/security",
           id: "security",
@@ -136,28 +238,28 @@ const AdminSidebar = ({ closeSidebar }) => {
       ],
     },
     {
-      section: "Operations",
+      section: t('operations'),
       items: [
         {
-          name: "Notifications",
+          name: t('notifications'),
           icon: <Bell size={18} />,
           href: "/admin/notifications",
           id: "notifications",
         },
         {
-          name: "CMS",
+          name: t('cms'),
           icon: <FileText size={18} />,
           href: "/admin/cms",
           id: "cms",
         },
         {
-          name: "Reports",
+          name: t('reports'),
           icon: <PieChart size={18} />,
           href: "/admin/reports",
           id: "reports",
         },
         {
-          name: "Support Tickets",
+          name: t('supportTickets'),
           icon: <HelpCircle size={18} />,
           href: "/admin/support",
           id: "support",
@@ -165,13 +267,13 @@ const AdminSidebar = ({ closeSidebar }) => {
           badgeColor: "red",
         },
         {
-          name: "Blog Management",
+          name: t('blogManagement'),
           icon: <Newspaper size={18} />,
           href: "/admin/blog",
           id: "blog",
         },
         {
-          name: "Withdrawal Approvals",
+          name: t('withdrawalApprovals'),
           icon: <Receipt size={18} />,
           href: "/admin/withdrawal-approvals",
           id: "withdrawal-approvals",
@@ -179,7 +281,7 @@ const AdminSidebar = ({ closeSidebar }) => {
           badgeColor: "yellow",
         },
         {
-          name: "Settings",
+          name: t('settings'),
           icon: <Settings size={18} />,
           href: "/admin/settings",
           id: "settings",
@@ -187,6 +289,8 @@ const AdminSidebar = ({ closeSidebar }) => {
       ],
     },
   ];
+
+  const navItems = getNavItems();
 
   const isActive = (href) => {
     if (href === "/admin") return pathname === href;
@@ -206,25 +310,40 @@ const AdminSidebar = ({ closeSidebar }) => {
     }
   };
 
+  // Handle logout
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/login";
+  };
+
   return (
-    <aside className="w-64 h-full bg-sidebar text-sidebar-text flex flex-col shadow-xl">
+    <aside className={`w-64 h-full flex flex-col shadow-xl ${
+      isDark 
+        ? 'bg-sidebar text-sidebar-text' 
+        : 'bg-white text-gray-800 border-r border-gray-200'
+    }`}>
       {/* Logo */}
-      <div className="p-4 border-b border-sidebar-border">
+      <div className={`p-4 border-b ${
+        isDark ? 'border-sidebar-border' : 'border-gray-200'
+      }`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white">
               🏦
             </div>
-            <div className="font-bold text-white text-sm">
-              Sanchoy <span className="text-primary-light">Bondhu</span>
+            <div className={`font-bold text-sm ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}>
+              {t('sanchoyBondhu')}
             </div>
           </div>
           <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 text-[10px] font-bold">
-            ADMIN
+            {t('admin')}
           </span>
         </div>
         <div className="mt-3 px-2 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-1.5 text-xs font-semibold text-red-400">
-          <Shield size={12} /> Admin Control Panel
+          <Shield size={12} /> {t('adminControlPanel')}
         </div>
       </div>
 
@@ -232,7 +351,9 @@ const AdminSidebar = ({ closeSidebar }) => {
       <nav className="flex-1 overflow-y-auto py-4">
         {navItems.map((section, idx) => (
           <div key={idx}>
-            <div className="px-4 py-2 text-[10px] font-bold text-sidebar-text/40 uppercase tracking-wider">
+            <div className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider ${
+              isDark ? 'text-sidebar-text/40' : 'text-gray-400'
+            }`}>
               {section.section}
             </div>
             {section.items.map((item) => (
@@ -242,8 +363,12 @@ const AdminSidebar = ({ closeSidebar }) => {
                 onClick={closeSidebar}
                 className={`flex items-center gap-2 px-4 py-2 mx-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                   isActive(item.href)
-                    ? "bg-primary/20 text-primary-light"
-                    : "text-sidebar-text hover:bg-sidebar-hover hover:text-white"
+                    ? isDark 
+                      ? 'bg-primary/20 text-primary-light' 
+                      : 'bg-primary/10 text-primary'
+                    : isDark
+                      ? 'text-sidebar-text hover:bg-sidebar-hover hover:text-white'
+                      : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                 }`}
               >
                 <span className="w-4">{item.icon}</span>
@@ -262,9 +387,18 @@ const AdminSidebar = ({ closeSidebar }) => {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-sidebar-border">
-        <button className="w-full py-2 rounded-lg bg-sidebar-hover text-sidebar-text text-xs font-medium flex items-center justify-center gap-2 hover:text-white transition">
-          <LogOut size={14} /> Logout
+      <div className={`p-4 border-t ${
+        isDark ? 'border-sidebar-border' : 'border-gray-200'
+      }`}>
+        <button 
+          onClick={handleLogout}
+          className={`w-full py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-2 transition ${
+            isDark 
+              ? 'bg-sidebar-hover text-sidebar-text hover:text-white'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+          }`}
+        >
+          <LogOut size={14} /> {t('logout')}
         </button>
       </div>
     </aside>

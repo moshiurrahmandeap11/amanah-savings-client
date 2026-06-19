@@ -7,6 +7,160 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    pageTitle: "Auto-Save",
+    automaticSavings: "Automatic Savings",
+    autoSaveDesc: "Set it once — Sanchoy Bondhu does the rest",
+    
+    // Statistics
+    totalSaved: "Total Saved",
+    totalRules: "Total Rules",
+    activeRules: "Active Rules",
+    
+    // Active Rules Section
+    activeAutoSaves: "Active Auto-Saves",
+    saved: "Saved",
+    times: "Times",
+    next: "Next",
+    
+    // New Rule Setup
+    createNewAutoSave: "Create New Auto-Save",
+    whichGoal: "Which goal?",
+    howOften: "How often?",
+    whichDay: "Which day?",
+    whichDate: "Which date?",
+    howMuchEachTime: "How much each time?",
+    paymentMethod: "Payment method?",
+    startDate: "Start date",
+    projection: "Projection",
+    perSave: "Per save",
+    estMonthly: "Est. monthly",
+    estYearly: "Est. yearly",
+    
+    // Buttons
+    enableAutoSave: "Enable Auto-Save",
+    createGoal: "Create a Goal",
+    goToDashboard: "Go to Dashboard",
+    createAnother: "Create Another",
+    
+    // Modal
+    autoSaveEnabled: "Auto-Save Enabled!",
+    
+    // Placeholders
+    noActiveGoals: "No Active Goals",
+    noActiveGoalsDesc: "Create a goal first to set up auto-save",
+    
+    // Frequencies
+    daily: "Daily",
+    weekly: "Weekly",
+    monthly: "Monthly",
+    dailyLower: "daily",
+    weeklyLower: "weekly",
+    monthlyLower: "monthly",
+    
+    // Status
+    paused: "Paused",
+    today: "Today",
+    tomorrow: "Tomorrow",
+    
+    // Toasts
+    autoSaveEnabledToast: "Auto-save enabled",
+    autoSavePaused: "Auto-save paused",
+    minAmountError: "Minimum amount is ৳10",
+    selectGoalError: "Please select a goal",
+    selectDateError: "Please select start date",
+    failedToUpdate: "Failed to update rule",
+    failedToCreate: "Failed to create auto-save rule",
+    
+    // Days
+    sun: "Sun",
+    mon: "Mon",
+    tue: "Tue",
+    wed: "Wed",
+    thu: "Thu",
+    fri: "Fri",
+    sat: "Sat",
+  },
+  bn: {
+    // Header
+    pageTitle: "অটো-সেভ",
+    automaticSavings: "স্বয়ংক্রিয় সঞ্চয়",
+    autoSaveDesc: "একবার সেট করুন — সঞ্চয় বন্ধু বাকিটা করে দেয়",
+    
+    // Statistics
+    totalSaved: "মোট সঞ্চয়",
+    totalRules: "মোট নিয়ম",
+    activeRules: "সক্রিয় নিয়ম",
+    
+    // Active Rules Section
+    activeAutoSaves: "সক্রিয় অটো-সেভ",
+    saved: "সঞ্চিত",
+    times: "বার",
+    next: "পরবর্তী",
+    
+    // New Rule Setup
+    createNewAutoSave: "নতুন অটো-সেভ তৈরি করুন",
+    whichGoal: "কোন লক্ষ্য?",
+    howOften: "কতবার?",
+    whichDay: "কোন দিন?",
+    whichDate: "কোন তারিখ?",
+    howMuchEachTime: "প্রতিবার কত টাকা?",
+    paymentMethod: "পেমেন্ট পদ্ধতি?",
+    startDate: "শুরুর তারিখ",
+    projection: "আনুমানিক হিসাব",
+    perSave: "প্রতি সেভ",
+    estMonthly: "আনু. মাসিক",
+    estYearly: "আনু. বার্ষিক",
+    
+    // Buttons
+    enableAutoSave: "অটো-সেভ চালু করুন",
+    createGoal: "একটি লক্ষ্য তৈরি করুন",
+    goToDashboard: "ড্যাশবোর্ডে যান",
+    createAnother: "আরেকটি তৈরি করুন",
+    
+    // Modal
+    autoSaveEnabled: "অটো-সেভ চালু হয়েছে!",
+    
+    // Placeholders
+    noActiveGoals: "কোন সক্রিয় লক্ষ্য নেই",
+    noActiveGoalsDesc: "অটো-সেভ সেটআপ করতে প্রথমে একটি লক্ষ্য তৈরি করুন",
+    
+    // Frequencies
+    daily: "দৈনিক",
+    weekly: "সাপ্তাহিক",
+    monthly: "মাসিক",
+    dailyLower: "প্রতিদিন",
+    weeklyLower: "সাপ্তাহিক",
+    monthlyLower: "মাসিক",
+    
+    // Status
+    paused: "বন্ধ",
+    today: "আজ",
+    tomorrow: "আগামীকাল",
+    
+    // Toasts
+    autoSaveEnabledToast: "অটো-সেভ চালু হয়েছে",
+    autoSavePaused: "অটো-সেভ বন্ধ করা হয়েছে",
+    minAmountError: "সর্বনিম্ন পরিমাণ ৳১০",
+    selectGoalError: "অনুগ্রহ করে একটি লক্ষ্য নির্বাচন করুন",
+    selectDateError: "অনুগ্রহ করে শুরুর তারিখ নির্বাচন করুন",
+    failedToUpdate: "নিয়ম আপডেট করতে ব্যর্থ হয়েছে",
+    failedToCreate: "অটো-সেভ তৈরি করতে ব্যর্থ হয়েছে",
+    
+    // Days
+    sun: "রবি",
+    mon: "সোম",
+    tue: "মঙ্গল",
+    wed: "বুধ",
+    thu: "বৃহঃ",
+    fri: "শুক্র",
+    sat: "শনি",
+  }
+};
+
 const AutoSavePage = () => {
   const router = useRouter();
   const [isDark, setIsDark] = useState(false);
@@ -30,7 +184,11 @@ const AutoSavePage = () => {
   });
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const daysBn = ["রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি"];
+
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
 
   // Fetch user's goals
   const fetchGoals = async () => {
@@ -82,6 +240,10 @@ const AutoSavePage = () => {
     const today = new Date();
     today.setDate(today.getDate() + 1);
     setStartDate(today.toISOString().slice(0, 10));
+
+    // Get language from localStorage
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
   }, []);
 
   const toggleTheme = () => {
@@ -107,15 +269,15 @@ const AutoSavePage = () => {
     try {
       if (isActive) {
         await axiosInstance.patch(`/auto-save/${ruleId}/resume`);
-        showToast("Auto-save enabled", "success");
+        showToast(t('autoSaveEnabledToast'), "success");
       } else {
         await axiosInstance.patch(`/auto-save/${ruleId}/pause`);
-        showToast("Auto-save paused", "success");
+        showToast(t('autoSavePaused'), "success");
       }
       await fetchAutoSaveRules();
     } catch (error) {
       console.error("Toggle rule error:", error);
-      showToast(error.response?.data?.message || "Failed to update rule", "error");
+      showToast(error.response?.data?.message || t('failedToUpdate'), "error");
     }
   };
 
@@ -165,17 +327,17 @@ const AutoSavePage = () => {
     const amt = parseFloat(amount) || 0;
     
     if (amt < 10) {
-      showToast("Minimum amount is ৳10", "error");
+      showToast(t('minAmountError'), "error");
       return;
     }
 
     if (!selGoal) {
-      showToast("Please select a goal", "error");
+      showToast(t('selectGoalError'), "error");
       return;
     }
 
     if (!startDate) {
-      showToast("Please select start date", "error");
+      showToast(t('selectDateError'), "error");
       return;
     }
 
@@ -204,15 +366,15 @@ const AutoSavePage = () => {
         setShowModal(true);
         await fetchAutoSaveRules();
         Swal.fire({
-          title: "Auto-Save Enabled!",
-          text: `${formatCurrency(amt)} will be auto-saved ${selFreq === "daily" ? "daily" : selFreq === "weekly" ? "weekly" : "monthly"}`,
+          title: t('autoSaveEnabled'),
+          text: `${formatCurrency(amt)} will be auto-saved ${selFreq === "daily" ? t('dailyLower') : selFreq === "weekly" ? t('weeklyLower') : t('monthlyLower')}`,
           icon: "success",
           confirmButtonColor: "#059669",
         });
       }
     } catch (error) {
       console.error("Create auto-save error:", error);
-      showToast(error.response?.data?.message || "Failed to create auto-save rule", "error");
+      showToast(error.response?.data?.message || t('failedToCreate'), "error");
     } finally {
       setSubmitting(false);
     }
@@ -233,13 +395,13 @@ const AutoSavePage = () => {
   };
 
   const getFrequencyText = (frequency, rule) => {
-    if (frequency === "daily") return lang === "bn" ? "প্রতিদিন" : "Daily";
+    if (frequency === "daily") return t('dailyLower');
     if (frequency === "weekly") {
       if (rule?.weeklyDays) {
-        const dayNames = rule.weeklyDays.map(d => lang === "bn" ? daysBn[d] : days[d]).join(", ");
+        const dayNames = rule.weeklyDays.map(d => t(days[d].toLowerCase())).join(", ");
         return lang === "bn" ? `সাপ্তাহিক (${dayNames})` : `Weekly (${dayNames})`;
       }
-      return lang === "bn" ? "সাপ্তাহিক" : "Weekly";
+      return t('weekly');
     }
     if (frequency === "monthly") {
       const date = rule?.monthlyDate || selDate;
@@ -251,14 +413,14 @@ const AutoSavePage = () => {
   };
 
   const getNextExecutionText = (nextDate) => {
-    if (!nextDate) return lang === "bn" ? "বন্ধ" : "Paused";
+    if (!nextDate) return t('paused');
     const date = new Date(nextDate);
     const today = new Date();
     const diff = date - today;
     const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
     
-    if (daysLeft === 0) return lang === "bn" ? "আজ" : "Today";
-    if (daysLeft === 1) return lang === "bn" ? "আগামীকাল" : "Tomorrow";
+    if (daysLeft === 0) return t('today');
+    if (daysLeft === 1) return t('tomorrow');
     if (daysLeft < 7) return lang === "bn" ? `${daysLeft} দিন পরে` : `in ${daysLeft} days`;
     
     return date.toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", {
@@ -297,15 +459,15 @@ const AutoSavePage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Target size={48} className="text-foreground/30 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-foreground mb-2">No Active Goals</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">{t('noActiveGoals')}</h3>
           <p className="text-foreground/60 mb-4">
-            Create a goal first to set up auto-save
+            {t('noActiveGoalsDesc')}
           </p>
           <button
             onClick={() => router.push("/dashboard/goals")}
             className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold"
           >
-            Create a Goal
+            {t('createGoal')}
           </button>
         </div>
       </div>
@@ -323,7 +485,7 @@ const AutoSavePage = () => {
           <ArrowLeft size={18} />
         </button>
         <h1 className="text-white text-lg font-bold flex-1 flex items-center gap-2 min-w-0">
-          <Zap size={20} /> Auto-Save
+          <Zap size={20} /> {t('pageTitle')}
         </h1>
         <button
           onClick={toggleTheme}
@@ -332,7 +494,11 @@ const AutoSavePage = () => {
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <button
-          onClick={() => setLang(lang === "bn" ? "en" : "bn")}
+          onClick={() => {
+            const newLang = lang === "bn" ? "en" : "bn";
+            setLang(newLang);
+            localStorage.setItem('appLanguage', newLang);
+          }}
           className="px-3 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold hover:bg-white/30 transition"
         >
           {lang === "bn" ? "EN" : "BN"}
@@ -345,10 +511,10 @@ const AutoSavePage = () => {
           <Zap size={32} className="text-white" />
         </div>
         <div className="text-white text-xl font-bold mb-1">
-          Automatic Savings
+          {t('automaticSavings')}
         </div>
         <div className="text-white/80 text-sm">
-          Set it once — Sanchoy Bondhu does the rest
+          {t('autoSaveDesc')}
         </div>
       </div>
 
@@ -358,17 +524,17 @@ const AutoSavePage = () => {
           <div className="bg-card border border-border rounded-xl p-3 text-center">
             <Wallet size={16} className="text-primary mx-auto mb-1" />
             <div className="text-lg font-bold text-primary">{formatCurrency(statistics.totalSaved)}</div>
-            <div className="text-[10px] text-foreground/50">Total Saved</div>
+            <div className="text-[10px] text-foreground/50">{t('totalSaved')}</div>
           </div>
           <div className="bg-card border border-border rounded-xl p-3 text-center">
             <Repeat size={16} className="text-foreground/50 mx-auto mb-1" />
             <div className="text-lg font-bold text-foreground">{statistics.totalRules}</div>
-            <div className="text-[10px] text-foreground/50">Total Rules</div>
+            <div className="text-[10px] text-foreground/50">{t('totalRules')}</div>
           </div>
           <div className="bg-card border border-border rounded-xl p-3 text-center">
             <CheckCircle size={16} className="text-green-500 mx-auto mb-1" />
             <div className="text-lg font-bold text-green-500">{statistics.activeRules}</div>
-            <div className="text-[10px] text-foreground/50">Active Rules</div>
+            <div className="text-[10px] text-foreground/50">{t('activeRules')}</div>
           </div>
         </div>
 
@@ -376,7 +542,7 @@ const AutoSavePage = () => {
         {activeRules.length > 0 && (
           <>
             <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-              <Zap size={16} className="text-primary" /> Active Auto-Saves
+              <Zap size={16} className="text-primary" /> {t('activeAutoSaves')}
             </div>
             {activeRules.map((rule) => (
               <div
@@ -416,19 +582,19 @@ const AutoSavePage = () => {
                     <div className="font-bold text-sm text-foreground">
                       {formatCurrency(rule.totalSaved)}
                     </div>
-                    <div className="text-[10px] text-foreground/50">Saved</div>
+                    <div className="text-[10px] text-foreground/50">{t('saved')}</div>
                   </div>
                   <div className="text-center">
                     <div className="font-bold text-sm text-foreground">
                       {rule.timesRun}
                     </div>
-                    <div className="text-[10px] text-foreground/50">Times</div>
+                    <div className="text-[10px] text-foreground/50">{t('times')}</div>
                   </div>
                   <div className="text-center">
                     <div className="font-bold text-sm text-foreground">
                       {getNextExecutionText(rule.nextExecutionDate)}
                     </div>
-                    <div className="text-[10px] text-foreground/50">Next</div>
+                    <div className="text-[10px] text-foreground/50">{t('next')}</div>
                   </div>
                 </div>
               </div>
@@ -438,13 +604,13 @@ const AutoSavePage = () => {
 
         {/* New Rule Setup */}
         <div className="font-bold text-foreground mb-3 mt-5 flex items-center gap-2">
-          <Target size={16} className="text-primary" /> Create New Auto-Save
+          <Target size={16} className="text-primary" /> {t('createNewAutoSave')}
         </div>
 
         {/* Goal Selection */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <Target size={16} /> Which goal?
+            <Target size={16} /> {t('whichGoal')}
           </div>
           <div className="space-y-2">
             {goals.map((goal) => (
@@ -477,7 +643,7 @@ const AutoSavePage = () => {
         {/* Frequency Selection */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <Repeat size={16} /> How often?
+            <Repeat size={16} /> {t('howOften')}
           </div>
           <div className="grid grid-cols-3 gap-2 mb-4">
             {["daily", "weekly", "monthly"].map((freq) => (
@@ -488,9 +654,9 @@ const AutoSavePage = () => {
                   selFreq === freq ? "border-primary text-primary bg-primary/5" : "border-border text-foreground/60 hover:border-primary/50"
                 }`}
               >
-                {freq === "daily" && "Daily"}
-                {freq === "weekly" && "Weekly"}
-                {freq === "monthly" && "Monthly"}
+                {freq === "daily" && t('daily')}
+                {freq === "weekly" && t('weekly')}
+                {freq === "monthly" && t('monthly')}
               </button>
             ))}
           </div>
@@ -499,7 +665,7 @@ const AutoSavePage = () => {
           {selFreq === "weekly" && (
             <div>
               <div className="text-xs font-semibold text-foreground/60 mb-2">
-                Which day?
+                {t('whichDay')}
               </div>
               <div className="flex gap-2 flex-wrap">
                 {days.map((day, idx) => (
@@ -510,7 +676,7 @@ const AutoSavePage = () => {
                       selDays.has(idx) ? "border-primary bg-primary text-white" : "border-border text-foreground/60 hover:border-primary/50"
                     }`}
                   >
-                    {lang === "bn" ? daysBn[idx] : day}
+                    {t(day.toLowerCase())}
                   </button>
                 ))}
               </div>
@@ -521,7 +687,7 @@ const AutoSavePage = () => {
           {selFreq === "monthly" && (
             <div>
               <div className="text-xs font-semibold text-foreground/60 mb-2">
-                Which date?
+                {t('whichDate')}
               </div>
               <div className="grid grid-cols-7 gap-2">
                 {Array.from({ length: 28 }, (_, i) => i + 1).map((date) => (
@@ -543,7 +709,7 @@ const AutoSavePage = () => {
         {/* Amount Selection */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <DollarSign size={16} /> How much each time?
+            <DollarSign size={16} /> {t('howMuchEachTime')}
           </div>
           <div className="relative mb-3">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-2xl font-bold">
@@ -576,7 +742,7 @@ const AutoSavePage = () => {
         {/* Payment Method */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <Smartphone size={16} /> Payment method?
+            <Smartphone size={16} /> {t('paymentMethod')}
           </div>
           <div className="grid grid-cols-2 gap-2 mb-3">
             {["bkash", "nagad"].map((method) => (
@@ -593,7 +759,7 @@ const AutoSavePage = () => {
           </div>
           <div>
             <label className="block text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-              <CalendarDays size={14} /> Start date
+              <CalendarDays size={14} /> {t('startDate')}
             </label>
             <input
               type="date"
@@ -607,23 +773,23 @@ const AutoSavePage = () => {
         {/* Projection */}
         <div className="bg-gradient-to-r from-primary/5 to-primary-light/5 border border-primary/20 rounded-xl p-4 mb-4">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            <TrendingUp size={16} className="text-primary" /> Projection
+            <TrendingUp size={16} className="text-primary" /> {t('projection')}
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Per save</span>
+              <span className="text-foreground/60">{t('perSave')}</span>
               <span className="font-semibold">
                 {formatCurrency(projection.per)}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Est. monthly</span>
+              <span className="text-foreground/60">{t('estMonthly')}</span>
               <span className="font-semibold">
                 {formatCurrency(projection.monthly)}
               </span>
             </div>
             <div className="flex justify-between text-base pt-2 border-t border-dashed border-primary/20">
-              <span className="text-foreground/60">Est. yearly</span>
+              <span className="text-foreground/60">{t('estYearly')}</span>
               <span className="font-bold text-primary text-lg">
                 {formatCurrency(projection.yearly)}
               </span>
@@ -640,7 +806,7 @@ const AutoSavePage = () => {
           className="w-full max-w-5xl mx-auto block py-4 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap size={18} />}
-          Enable Auto-Save
+          {t('enableAutoSave')}
         </button>
       </div>
 
@@ -662,34 +828,34 @@ const AutoSavePage = () => {
                 <CheckCircle size={32} className="text-green-500" />
               </div>
               <div className="text-2xl font-bold text-foreground mb-2">
-                Auto-Save Enabled!
+                {t('autoSaveEnabled')}
               </div>
               <div className="text-sm text-foreground/60 mb-4">
-                {formatCurrency(parseFloat(amount) || 0)} will be auto-saved {selFreq === "daily" ? "daily" : selFreq === "weekly" ? "weekly" : "monthly"}
+                {formatCurrency(parseFloat(amount) || 0)} will be auto-saved {selFreq === "daily" ? t('dailyLower') : selFreq === "weekly" ? t('weeklyLower') : t('monthlyLower')}
               </div>
               <div className="bg-background border border-border rounded-xl p-3 mb-5 text-left space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">Goal</span>
+                  <span className="text-foreground/60">{t('whichGoal')}</span>
                   <span className="font-semibold">{selectedGoal?.goalName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">Frequency</span>
-                  <span className="font-semibold">{selFreq === "daily" ? "Daily" : selFreq === "weekly" ? "Weekly" : "Monthly"}</span>
+                  <span className="text-foreground/60">{t('howOften')}</span>
+                  <span className="font-semibold">{selFreq === "daily" ? t('daily') : selFreq === "weekly" ? t('weekly') : t('monthly')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">Amount</span>
+                  <span className="text-foreground/60">{t('howMuchEachTime')}</span>
                   <span className="font-bold text-primary">{formatCurrency(parseFloat(amount) || 0)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">Starts</span>
-                  <span className="font-semibold">{new Date(startDate).toLocaleDateString()}</span>
+                  <span className="text-foreground/60">{t('startDate')}</span>
+                  <span className="font-semibold">{new Date(startDate).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US")}</span>
                 </div>
               </div>
               <button
                 onClick={() => router.push("/dashboard")}
                 className="w-full py-3 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-semibold mb-3"
               >
-                Go to Dashboard
+                {t('goToDashboard')}
               </button>
               <button
                 onClick={() => {
@@ -698,7 +864,7 @@ const AutoSavePage = () => {
                 }}
                 className="w-full py-3 border-2 border-border text-foreground rounded-xl font-semibold hover:border-primary/50 transition"
               >
-                Create Another
+                {t('createAnother')}
               </button>
             </motion.div>
           </div>

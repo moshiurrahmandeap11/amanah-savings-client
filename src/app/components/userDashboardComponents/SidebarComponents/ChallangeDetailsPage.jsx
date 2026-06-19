@@ -24,6 +24,164 @@ import {
 import Swal from "sweetalert2";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    back: "Back",
+    copyLink: "Copied!",
+    linkCopied: "Challenge link copied to clipboard",
+    
+    // Status
+    activeChallenge: "Active Challenge",
+    comingSoon: "Coming Soon",
+    challengeCompleted: "Challenge Completed",
+    cancelled: "Cancelled",
+    unknown: "Unknown",
+    
+    // Hero
+    participants: "Participants",
+    
+    // Progress
+    yourProgress: "Your Progress",
+    keepSaving: "Keep saving to complete the challenge!",
+    complete: "Complete",
+    totalSaved: "Total Saved",
+    daysActive: "Days Active",
+    dayStreak: "Day Streak",
+    
+    // Tabs
+    overview: "📋 Overview",
+    leaderboard: "🏆 Leaderboard",
+    rewards: "🎁 Rewards",
+    
+    // Overview
+    duration: "Duration",
+    days: "Days",
+    challengeProgress: "Challenge Progress",
+    daysRemaining: "days remaining",
+    community: "Community",
+    haveCompleted: "have completed",
+    aboutThisChallenge: "About this Challenge",
+    targetSavings: "Target Savings:",
+    dailyTarget: "Daily Target:",
+    perDay: "/day",
+    joinChallenge: "🔥 Join Challenge",
+    challengeStartsOn: "This challenge starts on {date}. Check back then to join!",
+    congratulations: "Congratulations! You completed this challenge.",
+    
+    // Leaderboard
+    topSavers: "🏆 Top Savers",
+    highestSavers: "Highest savers in this challenge",
+    noParticipants: "No participants yet",
+    beFirstToJoin: "Be the first to join!",
+    dayStreakLabel: "day streak",
+    daysLabel: "days",
+    
+    // Rewards
+    completionReward: "Completion Reward",
+    whatYoullGet: "What you'll get for completing this challenge",
+    rewardDetails: "Reward Details",
+    maximumReward: "Maximum Reward:",
+    howToEarnRewards: "How to Earn Rewards",
+    step1Title: "Join the Challenge",
+    step1Desc: "Enroll before the challenge ends",
+    step2Title: "Save Consistently",
+    step2Desc: "Make regular deposits to your goal",
+    step3Title: "Complete the Challenge",
+    step3Desc: "Reach the target or complete all days",
+    completed: "Completed",
+    successRate: "Success Rate",
+    
+    // Toast/Alert
+    error: "Error!",
+    failedToLoad: "Failed to load challenge",
+    success: "Success!",
+    joinedChallenge: "You joined the {name} challenge!",
+    failedToJoin: "Failed to join challenge",
+    loadingDetails: "Loading challenge details...",
+    challengeNotFound: "Challenge not found",
+    backToChallenges: "Back to Challenges",
+  },
+  bn: {
+    // Header
+    back: "পিছনে",
+    copyLink: "কপি করা হয়েছে!",
+    linkCopied: "চ্যালেঞ্জ লিংক ক্লিপবোর্ডে কপি করা হয়েছে",
+    
+    // Status
+    activeChallenge: "সক্রিয় চ্যালেঞ্জ",
+    comingSoon: "শীঘ্রই আসছে",
+    challengeCompleted: "চ্যালেঞ্জ সম্পূর্ণ",
+    cancelled: "বাতিল করা হয়েছে",
+    unknown: "অজানা",
+    
+    // Hero
+    participants: "অংশগ্রহণকারী",
+    
+    // Progress
+    yourProgress: "আপনার অগ্রগতি",
+    keepSaving: "চ্যালেঞ্জ সম্পূর্ণ করতে সঞ্চয় চালিয়ে যান!",
+    complete: "সম্পূর্ণ",
+    totalSaved: "মোট সঞ্চয়",
+    daysActive: "সক্রিয় দিন",
+    dayStreak: "দিনের স্ট্রিক",
+    
+    // Tabs
+    overview: "📋 সংক্ষিপ্ত বিবরণ",
+    leaderboard: "🏆 লিডারবোর্ড",
+    rewards: "🎁 পুরস্কার",
+    
+    // Overview
+    duration: "মেয়াদ",
+    days: "দিন",
+    challengeProgress: "চ্যালেঞ্জ অগ্রগতি",
+    daysRemaining: "দিন বাকি",
+    community: "কমিউনিটি",
+    haveCompleted: "সম্পন্ন করেছেন",
+    aboutThisChallenge: "এই চ্যালেঞ্জ সম্পর্কে",
+    targetSavings: "লক্ষ্য সঞ্চয়:",
+    dailyTarget: "দৈনিক লক্ষ্য:",
+    perDay: "/দিন",
+    joinChallenge: "🔥 চ্যালেঞ্জে যোগ দিন",
+    challengeStartsOn: "এই চ্যালেঞ্জ শুরু হবে {date} তারিখে। তখন যোগ দিতে আসুন!",
+    congratulations: "অভিনন্দন! আপনি এই চ্যালেঞ্জ সম্পন্ন করেছেন।",
+    
+    // Leaderboard
+    topSavers: "🏆 শীর্ষ সঞ্চয়কারী",
+    highestSavers: "এই চ্যালেঞ্জের শীর্ষ সঞ্চয়কারী",
+    noParticipants: "কোন অংশগ্রহণকারী নেই",
+    beFirstToJoin: "প্রথম যোগ দিন!",
+    dayStreakLabel: "দিনের স্ট্রিক",
+    daysLabel: "দিন",
+    
+    // Rewards
+    completionReward: "সম্পূর্ণতা পুরস্কার",
+    whatYoullGet: "এই চ্যালেঞ্জ সম্পূর্ণ করলে যা পাবেন",
+    rewardDetails: "পুরস্কারের বিবরণ",
+    maximumReward: "সর্বোচ্চ পুরস্কার:",
+    howToEarnRewards: "কীভাবে পুরস্কার অর্জন করবেন",
+    step1Title: "চ্যালেঞ্জে যোগ দিন",
+    step1Desc: "চ্যালেঞ্জ শেষ হওয়ার আগে নিবন্ধন করুন",
+    step2Title: "নিয়মিত সঞ্চয় করুন",
+    step2Desc: "আপনার লক্ষ্যে নিয়মিত জমা দিন",
+    step3Title: "চ্যালেঞ্জ সম্পূর্ণ করুন",
+    step3Desc: "লক্ষ্যে পৌঁছান বা সব দিন সম্পূর্ণ করুন",
+    completed: "সম্পন্ন",
+    successRate: "সাফল্যের হার",
+    
+    // Toast/Alert
+    error: "ত্রুটি!",
+    failedToLoad: "চ্যালেঞ্জ লোড করতে ব্যর্থ হয়েছে",
+    success: "সফল!",
+    joinedChallenge: "আপনি {name} চ্যালেঞ্জে যোগ দিয়েছেন!",
+    failedToJoin: "চ্যালেঞ্জে যোগ দিতে ব্যর্থ হয়েছে",
+    loadingDetails: "চ্যালেঞ্জের বিবরণ লোড হচ্ছে...",
+    challengeNotFound: "চ্যালেঞ্জ পাওয়া যায়নি",
+    backToChallenges: "চ্যালেঞ্জে ফিরে যান",
+  }
+};
+
 const ChallengeDetailsPage = () => {
   const params = useParams();
   const router = useRouter();
@@ -35,6 +193,18 @@ const ChallengeDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [lang, setLang] = useState("en");
+
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   // Fetch challenge details
   const fetchChallengeDetails = async () => {
@@ -49,8 +219,8 @@ const ChallengeDetailsPage = () => {
     } catch (error) {
       console.error("Fetch challenge error:", error);
       Swal.fire({
-        title: "Error!",
-        text: error.response?.data?.message || "Failed to load challenge",
+        title: t('error'),
+        text: error.response?.data?.message || t('failedToLoad'),
         icon: "error",
         confirmButtonColor: "#059669",
       }).then(() => {
@@ -73,8 +243,8 @@ const ChallengeDetailsPage = () => {
       const response = await axiosInstance.post(`/challenges/${challengeId}/join`);
       if (response.data.success) {
         Swal.fire({
-          title: "Success!",
-          text: `You joined the ${challenge.name} challenge!`,
+          title: t('success'),
+          text: t('joinedChallenge').replace('{name}', challenge.name),
           icon: "success",
           timer: 2000,
           showConfirmButton: false,
@@ -84,8 +254,8 @@ const ChallengeDetailsPage = () => {
     } catch (error) {
       console.error("Join challenge error:", error);
       Swal.fire({
-        title: "Error!",
-        text: error.response?.data?.message || "Failed to join challenge",
+        title: t('error'),
+        text: error.response?.data?.message || t('failedToJoin'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -96,11 +266,12 @@ const ChallengeDetailsPage = () => {
 
   const formatDate = (date) => {
     if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-US", {
+    const options = {
       year: "numeric",
       month: "long",
       day: "numeric",
-    });
+    };
+    return new Date(date).toLocaleDateString(lang === "bn" ? "bn-BD" : "en-US", options);
   };
 
   const getDaysRemaining = () => {
@@ -131,11 +302,11 @@ const ChallengeDetailsPage = () => {
   };
 
   const getStatusText = () => {
-    if (!challenge) return "Unknown";
-    if (challenge.status === "active") return "Active Challenge";
-    if (challenge.status === "upcoming") return "Coming Soon";
-    if (challenge.status === "completed") return "Challenge Completed";
-    return "Cancelled";
+    if (!challenge) return t('unknown');
+    if (challenge.status === "active") return t('activeChallenge');
+    if (challenge.status === "upcoming") return t('comingSoon');
+    if (challenge.status === "completed") return t('challengeCompleted');
+    return t('cancelled');
   };
 
   if (loading) {
@@ -143,7 +314,7 @@ const ChallengeDetailsPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">Loading challenge details...</p>
+          <p className="text-foreground/60">{t('loadingDetails')}</p>
         </div>
       </div>
     );
@@ -154,12 +325,12 @@ const ChallengeDetailsPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="text-4xl mb-4">🏆</div>
-          <p className="text-foreground/60">Challenge not found</p>
+          <p className="text-foreground/60">{t('challengeNotFound')}</p>
           <button
             onClick={() => router.push("/dashboard/challenges")}
             className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
           >
-            Back to Challenges
+            {t('backToChallenges')}
           </button>
         </div>
       </div>
@@ -191,8 +362,8 @@ const ChallengeDetailsPage = () => {
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
               Swal.fire({
-                title: "Copied!",
-                text: "Challenge link copied to clipboard",
+                title: t('copyLink'),
+                text: t('linkCopied'),
                 icon: "success",
                 timer: 1500,
                 showConfirmButton: false,
@@ -228,7 +399,7 @@ const ChallengeDetailsPage = () => {
             </span>
             <span className="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-semibold">
               <Users size={12} className="inline mr-1" />
-              {challenge.participants?.toLocaleString()} Participants
+              {challenge.participants?.toLocaleString()} {t('participants')}
             </span>
           </div>
         </div>
@@ -241,14 +412,14 @@ const ChallengeDetailsPage = () => {
           <div className="bg-card border border-border rounded-xl p-5 mb-6">
             <div className="flex justify-between items-center mb-3">
               <div>
-                <h3 className="font-bold text-foreground">Your Progress</h3>
+                <h3 className="font-bold text-foreground">{t('yourProgress')}</h3>
                 <p className="text-xs text-foreground/50">
-                  Keep saving to complete the challenge!
+                  {t('keepSaving')}
                 </p>
               </div>
               <div className="text-right">
                 <div className="text-2xl font-bold text-primary">{userProgress}%</div>
-                <div className="text-xs text-foreground/50">Complete</div>
+                <div className="text-xs text-foreground/50">{t('complete')}</div>
               </div>
             </div>
             <div className="h-3 bg-border rounded-full overflow-hidden mb-4">
@@ -262,20 +433,20 @@ const ChallengeDetailsPage = () => {
                 <div className="text-lg font-bold text-primary">
                   ৳{userSaved.toLocaleString()}
                 </div>
-                <div className="text-[10px] text-foreground/50">Total Saved</div>
+                <div className="text-[10px] text-foreground/50">{t('totalSaved')}</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-primary">
                   {userDaysCompleted}
                 </div>
-                <div className="text-[10px] text-foreground/50">Days Active</div>
+                <div className="text-[10px] text-foreground/50">{t('daysActive')}</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-primary flex items-center justify-center gap-1">
                   <Flame size={16} className="text-orange-500" />
                   {userStreak}
                 </div>
-                <div className="text-[10px] text-foreground/50">Day Streak</div>
+                <div className="text-[10px] text-foreground/50">{t('dayStreak')}</div>
               </div>
             </div>
           </div>
@@ -284,9 +455,9 @@ const ChallengeDetailsPage = () => {
         {/* Tabs */}
         <div className="flex gap-1 bg-background rounded-xl p-1 border border-border mb-6">
           {[
-            { id: "overview", label: "📋 Overview" },
-            { id: "leaderboard", label: "🏆 Leaderboard" },
-            { id: "rewards", label: "🎁 Rewards" },
+            { id: "overview", label: t('overview') },
+            { id: "leaderboard", label: t('leaderboard') },
+            { id: "rewards", label: t('rewards') },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -310,10 +481,10 @@ const ChallengeDetailsPage = () => {
               <div className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Calendar size={18} className="text-primary" />
-                  <span className="text-xs text-foreground/50">Duration</span>
+                  <span className="text-xs text-foreground/50">{t('duration')}</span>
                 </div>
                 <div className="font-bold text-foreground">
-                  {challenge.days} Days
+                  {challenge.days} {t('days')}
                 </div>
                 <div className="text-xs text-foreground/50 mt-1">
                   {formatDate(challenge.startDate)} - {formatDate(challenge.endDate)}
@@ -322,7 +493,7 @@ const ChallengeDetailsPage = () => {
               <div className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Target size={18} className="text-primary" />
-                  <span className="text-xs text-foreground/50">Challenge Progress</span>
+                  <span className="text-xs text-foreground/50">{t('challengeProgress')}</span>
                 </div>
                 <div className="font-bold text-foreground">
                   {progressPercentage.toFixed(1)}%
@@ -334,42 +505,42 @@ const ChallengeDetailsPage = () => {
                   />
                 </div>
                 <div className="text-xs text-foreground/50 mt-2">
-                  {daysRemaining} days remaining
+                  {daysRemaining} {t('daysRemaining')}
                 </div>
               </div>
               <div className="bg-card border border-border rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Users size={18} className="text-primary" />
-                  <span className="text-xs text-foreground/50">Community</span>
+                  <span className="text-xs text-foreground/50">{t('community')}</span>
                 </div>
                 <div className="font-bold text-foreground">
                   {challenge.participants?.toLocaleString()}
                 </div>
                 <div className="text-xs text-foreground/50 mt-1">
-                  {challenge.completedCount || 0} have completed
+                  {challenge.completedCount || 0} {t('haveCompleted')}
                 </div>
               </div>
             </div>
 
             {/* Challenge Description */}
             <div className="bg-card border border-border rounded-xl p-5">
-              <h3 className="font-bold text-foreground mb-3">About this Challenge</h3>
+              <h3 className="font-bold text-foreground mb-3">{t('aboutThisChallenge')}</h3>
               <p className="text-sm text-foreground/70 leading-relaxed">
                 {challenge.description}
               </p>
               {challenge.targetAmount > 0 && (
                 <div className="mt-4 p-3 bg-primary/5 rounded-lg">
                   <div className="flex justify-between text-sm">
-                    <span className="text-foreground/60">Target Savings:</span>
+                    <span className="text-foreground/60">{t('targetSavings')}</span>
                     <span className="font-bold text-primary">
                       ৳{challenge.targetAmount.toLocaleString()}
                     </span>
                   </div>
                   {challenge.dailyTarget > 0 && (
                     <div className="flex justify-between text-sm mt-2">
-                      <span className="text-foreground/60">Daily Target:</span>
+                      <span className="text-foreground/60">{t('dailyTarget')}</span>
                       <span className="font-bold text-primary">
-                        ৳{challenge.dailyTarget.toLocaleString()}/day
+                        ৳{challenge.dailyTarget.toLocaleString()}{t('perDay')}
                       </span>
                     </div>
                   )}
@@ -384,7 +555,7 @@ const ChallengeDetailsPage = () => {
                 disabled={joining}
                 className="w-full py-4 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-bold text-lg hover:opacity-90 transition disabled:opacity-50"
               >
-                {joining ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : "🔥 Join Challenge"}
+                {joining ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : t('joinChallenge')}
               </button>
             )}
 
@@ -392,8 +563,7 @@ const ChallengeDetailsPage = () => {
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-center">
                 <Lock size={24} className="mx-auto mb-2 text-amber-500" />
                 <p className="text-sm text-foreground/70">
-                  This challenge starts on {formatDate(challenge.startDate)}. 
-                  Check back then to join!
+                  {t('challengeStartsOn').replace('{date}', formatDate(challenge.startDate))}
                 </p>
               </div>
             )}
@@ -402,7 +572,7 @@ const ChallengeDetailsPage = () => {
               <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 text-center">
                 <CheckCircle size={24} className="mx-auto mb-2 text-green-500" />
                 <p className="text-sm text-foreground/70">
-                  Congratulations! You completed this challenge.
+                  {t('congratulations')}
                 </p>
               </div>
             )}
@@ -413,17 +583,17 @@ const ChallengeDetailsPage = () => {
         {activeTab === "leaderboard" && (
           <div className="bg-card border border-border rounded-xl overflow-hidden">
             <div className="p-4 border-b border-border">
-              <h3 className="font-bold text-foreground">🏆 Top Savers</h3>
+              <h3 className="font-bold text-foreground">{t('topSavers')}</h3>
               <p className="text-xs text-foreground/50">
-                Highest savers in this challenge
+                {t('highestSavers')}
               </p>
             </div>
             <div className="divide-y divide-border">
               {leaderboard.length === 0 ? (
                 <div className="p-8 text-center">
                   <div className="text-4xl mb-2">🏆</div>
-                  <p className="text-foreground/50">No participants yet</p>
-                  <p className="text-xs text-foreground/40">Be the first to join!</p>
+                  <p className="text-foreground/50">{t('noParticipants')}</p>
+                  <p className="text-xs text-foreground/40">{t('beFirstToJoin')}</p>
                 </div>
               ) : (
                 leaderboard.map((entry, index) => (
@@ -454,8 +624,8 @@ const ChallengeDetailsPage = () => {
                         {entry.name}
                       </div>
                       <div className="text-xs text-foreground/50 flex items-center gap-2">
-                        <span>🔥 {entry.streak || 0} day streak</span>
-                        <span>📅 {entry.daysCompleted || 0} days</span>
+                        <span>🔥 {entry.streak || 0} {t('dayStreakLabel')}</span>
+                        <span>📅 {entry.daysCompleted || 0} {t('daysLabel')}</span>
                       </div>
                     </div>
                     <div className="text-right">
@@ -478,22 +648,22 @@ const ChallengeDetailsPage = () => {
                   🏆
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground">Completion Reward</h3>
+                  <h3 className="font-bold text-foreground">{t('completionReward')}</h3>
                   <p className="text-xs text-foreground/50">
-                    What you'll get for completing this challenge
+                    {t('whatYoullGet')}
                   </p>
                 </div>
               </div>
               <div className="bg-primary/5 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Award size={18} className="text-primary" />
-                  <span className="font-semibold text-foreground">Reward Details</span>
+                  <span className="font-semibold text-foreground">{t('rewardDetails')}</span>
                 </div>
                 <p className="text-sm text-foreground/70">{challenge.reward}</p>
                 {challenge.maxReward && (
                   <div className="mt-3 pt-3 border-t border-primary/20">
                     <div className="flex justify-between text-sm">
-                      <span className="text-foreground/60">Maximum Reward:</span>
+                      <span className="text-foreground/60">{t('maximumReward')}</span>
                       <span className="font-bold text-primary">{challenge.maxReward}</span>
                     </div>
                   </div>
@@ -502,27 +672,27 @@ const ChallengeDetailsPage = () => {
             </div>
 
             <div className="bg-card border border-border rounded-xl p-5">
-              <h3 className="font-bold text-foreground mb-3">How to Earn Rewards</h3>
+              <h3 className="font-bold text-foreground mb-3">{t('howToEarnRewards')}</h3>
               <div className="space-y-3">
                 <div className="flex gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">1</div>
                   <div>
-                    <div className="font-semibold text-sm text-foreground">Join the Challenge</div>
-                    <div className="text-xs text-foreground/50">Enroll before the challenge ends</div>
+                    <div className="font-semibold text-sm text-foreground">{t('step1Title')}</div>
+                    <div className="text-xs text-foreground/50">{t('step1Desc')}</div>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">2</div>
                   <div>
-                    <div className="font-semibold text-sm text-foreground">Save Consistently</div>
-                    <div className="text-xs text-foreground/50">Make regular deposits to your goal</div>
+                    <div className="font-semibold text-sm text-foreground">{t('step2Title')}</div>
+                    <div className="text-xs text-foreground/50">{t('step2Desc')}</div>
                   </div>
                 </div>
                 <div className="flex gap-3">
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">3</div>
                   <div>
-                    <div className="font-semibold text-sm text-foreground">Complete the Challenge</div>
-                    <div className="text-xs text-foreground/50">Reach the target or complete all days</div>
+                    <div className="font-semibold text-sm text-foreground">{t('step3Title')}</div>
+                    <div className="text-xs text-foreground/50">{t('step3Desc')}</div>
                   </div>
                 </div>
               </div>
@@ -534,13 +704,13 @@ const ChallengeDetailsPage = () => {
                 <div className="text-2xl font-bold text-primary">
                   {challenge.completedCount || 0}
                 </div>
-                <div className="text-xs text-foreground/50">Completed</div>
+                <div className="text-xs text-foreground/50">{t('completed')}</div>
               </div>
               <div className="bg-card border border-border rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold text-primary">
                   {Math.round((challenge.completedCount / (challenge.participants || 1)) * 100)}%
                 </div>
-                <div className="text-xs text-foreground/50">Success Rate</div>
+                <div className="text-xs text-foreground/50">{t('successRate')}</div>
               </div>
             </div>
           </div>

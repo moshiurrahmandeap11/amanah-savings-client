@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
@@ -17,6 +17,98 @@ import {
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    withdrawalApprovals: "🏧 Withdrawal Approvals",
+    all: "All",
+    pending: "Pending",
+    approved: "Approved",
+    completed: "Completed",
+    rejected: "Rejected",
+    searchPlaceholder: "Search by user, goal, amount...",
+    pendingText: "⏳ Pending",
+    approvedText: "✅ Approved",
+    completedText: "🎉 Completed",
+    rejectedText: "❌ Rejected",
+    approve: "Approve",
+    reject: "Reject",
+    complete: "Complete Withdrawal",
+    viewUserDetails: "View User Details",
+    user: "User",
+    amount: "Amount",
+    goal: "Goal",
+    method: "Method",
+    reason: "Reason",
+    status: "Status",
+    remarks: "Remarks",
+    approveWithdrawal: "Approve Withdrawal?",
+    rejectWithdrawal: "Reject Withdrawal",
+    completeWithdrawal: "Complete Withdrawal",
+    reasonForRejection: "Reason for rejection",
+    transactionId: "Transaction ID",
+    provideReason: "Please provide a reason",
+    enterTransactionId: "Enter transaction ID",
+    yesApprove: "Yes, approve",
+    yesReject: "Yes, reject",
+    yesComplete: "Yes, complete",
+    cancel: "Cancel",
+    withdrawalApproved: "Withdrawal approved successfully",
+    withdrawalRejected: "Withdrawal rejected",
+    withdrawalCompleted: "Withdrawal completed",
+    failedToLoad: "Failed to load withdrawals",
+    actionFailed: "Action failed",
+    noWithdrawals: "No withdrawals found",
+    previous: "Previous",
+    next: "Next",
+    page: "Page",
+  },
+  bn: {
+    withdrawalApprovals: "🏧 উত্তোলন অনুমোদন",
+    all: "সব",
+    pending: "পেন্ডিং",
+    approved: "অনুমোদিত",
+    completed: "সম্পন্ন",
+    rejected: "প্রত্যাখ্যাত",
+    searchPlaceholder: "সদস্য, গোল বা পরিমাণ দিয়ে খুঁজুন...",
+    pendingText: "⏳ পেন্ডিং",
+    approvedText: "✅ অনুমোদিত",
+    completedText: "🎉 সম্পন্ন",
+    rejectedText: "❌ প্রত্যাখ্যাত",
+    approve: "অনুমোদন",
+    reject: "প্রত্যাখ্যান",
+    complete: "উত্তোলন সম্পন্ন করুন",
+    viewUserDetails: "সদস্যের তথ্য দেখুন",
+    user: "সদস্য",
+    amount: "পরিমাণ",
+    goal: "গোল",
+    method: "পদ্ধতি",
+    reason: "কারণ",
+    status: "স্ট্যাটাস",
+    remarks: "মন্তব্য",
+    approveWithdrawal: "উত্তোলন অনুমোদন করবেন?",
+    rejectWithdrawal: "উত্তোলন প্রত্যাখ্যান",
+    completeWithdrawal: "উত্তোলন সম্পন্ন করুন",
+    reasonForRejection: "প্রত্যাখ্যানের কারণ",
+    transactionId: "লেনদেন আইডি",
+    provideReason: "কারণ দিন",
+    enterTransactionId: "লেনদেন আইডি দিন",
+    yesApprove: "হ্যাঁ, অনুমোদন করুন",
+    yesReject: "হ্যাঁ, প্রত্যাখ্যান করুন",
+    yesComplete: "হ্যাঁ, সম্পন্ন করুন",
+    cancel: "বাতিল",
+    withdrawalApproved: "উত্তোলন অনুমোদিত হয়েছে",
+    withdrawalRejected: "উত্তোলন প্রত্যাখ্যাত হয়েছে",
+    withdrawalCompleted: "উত্তোলন সম্পন্ন হয়েছে",
+    failedToLoad: "উত্তোলন লোড করতে ব্যর্থ হয়েছে",
+    actionFailed: "অ্যাকশন ব্যর্থ হয়েছে",
+    noWithdrawals: "কোনো উত্তোলন পাওয়া যায়নি",
+    previous: "পূর্ববর্তী",
+    next: "পরবর্তী",
+    page: "পৃষ্ঠা",
+  }
+};
+
 const WithdrawalApprovalsPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
@@ -25,7 +117,6 @@ const WithdrawalApprovalsPage = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [withdrawals, setWithdrawals] = useState([]);
-  console.log("withdrawal approval :", withdrawals);
   const [statistics, setStatistics] = useState({
     pending: { count: 0, totalAmount: 0 },
     approved: { count: 0, totalAmount: 0 },
@@ -39,7 +130,25 @@ const WithdrawalApprovalsPage = () => {
     itemsPerPage: 20,
   });
 
-  // Fetch withdrawals from API
+  // Load theme and language
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    setIsDark(savedTheme === "dark");
+    if (savedTheme === "dark") document.documentElement.classList.add("dark");
+
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
+
+  const toggleTheme = () => {
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", newTheme);
+  };
+
   const fetchWithdrawals = async (status = "all", page = 1) => {
     try {
       setLoading(true);
@@ -60,7 +169,7 @@ const WithdrawalApprovalsPage = () => {
       if (error.response?.status === 401) {
         window.location.href = "/login";
       }
-      showToast("Failed to load withdrawals", "error");
+      showToast(t('failedToLoad'), "error");
     } finally {
       setLoading(false);
     }
@@ -69,19 +178,6 @@ const WithdrawalApprovalsPage = () => {
   useEffect(() => {
     fetchWithdrawals(activeFilter, pagination.currentPage);
   }, [activeFilter, pagination.currentPage]);
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
-    if (savedTheme === "dark") document.documentElement.classList.add("dark");
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem("theme", newTheme ? "dark" : "light");
-    document.documentElement.classList.toggle("dark", newTheme);
-  };
 
   const showToast = (message, type = "success") => {
     Swal.fire({
@@ -99,21 +195,21 @@ const WithdrawalApprovalsPage = () => {
     if (processing) return;
     
     const result = await Swal.fire({
-      title: lang === "bn" ? "উত্তোলন অনুমোদন করবেন?" : "Approve Withdrawal?",
+      title: t('approveWithdrawal'),
       html: `
         <div class="text-left">
-          <p><strong>${lang === "bn" ? "সদস্য" : "User"}:</strong> ${withdrawal.user?.name || "Unknown"}</p>
-          <p><strong>${lang === "bn" ? "পরিমাণ" : "Amount"}:</strong> ৳${withdrawal.withdrawalAmount.toLocaleString()}</p>
-          <p><strong>${lang === "bn" ? "গোল" : "Goal"}:</strong> ${withdrawal.goalName}</p>
-          <p><strong>${lang === "bn" ? "পদ্ধতি" : "Method"}:</strong> ${withdrawal.paymentMethod}</p>
+          <p><strong>${t('user')}:</strong> ${withdrawal.user?.name || "Unknown"}</p>
+          <p><strong>${t('amount')}:</strong> ৳${withdrawal.withdrawalAmount.toLocaleString()}</p>
+          <p><strong>${t('goal')}:</strong> ${withdrawal.goalName}</p>
+          <p><strong>${t('method')}:</strong> ${withdrawal.paymentMethod}</p>
         </div>
       `,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#059669",
       cancelButtonColor: "#d33",
-      confirmButtonText: lang === "bn" ? "হ্যাঁ, অনুমোদন করুন" : "Yes, approve",
-      cancelButtonText: lang === "bn" ? "বাতিল" : "Cancel",
+      confirmButtonText: t('yesApprove'),
+      cancelButtonText: t('cancel'),
     });
     
     if (!result.isConfirmed) return;
@@ -126,20 +222,12 @@ const WithdrawalApprovalsPage = () => {
       });
       
       if (response.data.success) {
-        showToast(
-          lang === "bn" 
-            ? `✅ ${withdrawal.withdrawalAmount.toLocaleString()} টাকার উত্তোলন অনুমোদিত হয়েছে`
-            : `✅ Withdrawal of ৳${withdrawal.withdrawalAmount.toLocaleString()} approved`,
-          "success"
-        );
+        showToast(t('withdrawalApproved'), "success");
         fetchWithdrawals(activeFilter, pagination.currentPage);
       }
     } catch (error) {
       console.error("Error approving withdrawal:", error);
-      showToast(
-        error.response?.data?.message || "Failed to approve withdrawal",
-        "error"
-      );
+      showToast(error.response?.data?.message || t('actionFailed'), "error");
     } finally {
       setProcessing(false);
     }
@@ -149,33 +237,27 @@ const WithdrawalApprovalsPage = () => {
     if (processing) return;
     
     const { value: remarks } = await Swal.fire({
-      title: lang === "bn" ? "উত্তোলন প্রত্যাখ্যান" : "Reject Withdrawal",
+      title: t('rejectWithdrawal'),
       html: `
         <div class="text-left">
-          <p><strong>${lang === "bn" ? "সদস্য" : "User"}:</strong> ${withdrawal.user?.name || "Unknown"}</p>
-          <p><strong>${lang === "bn" ? "পরিমাণ" : "Amount"}:</strong> ৳${withdrawal.withdrawalAmount.toLocaleString()}</p>
+          <p><strong>${t('user')}:</strong> ${withdrawal.user?.name || "Unknown"}</p>
+          <p><strong>${t('amount')}:</strong> ৳${withdrawal.withdrawalAmount.toLocaleString()}</p>
         </div>
         <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            ${lang === "bn" ? "প্রত্যাখ্যানের কারণ:" : "Reason for rejection:"}
-          </label>
-          <textarea id="remarks" class="swal2-textarea" placeholder="${
-            lang === "bn" ? "কারণ লিখুন..." : "Enter reason..."
-          }"></textarea>
+          <label class="block text-sm font-medium text-gray-700 mb-2">${t('reasonForRejection')}:</label>
+          <textarea id="remarks" class="swal2-textarea" placeholder="${t('provideReason')}"></textarea>
         </div>
       `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: lang === "bn" ? "হ্যাঁ, প্রত্যাখ্যান করুন" : "Yes, reject",
-      cancelButtonText: lang === "bn" ? "বাতিল" : "Cancel",
+      confirmButtonText: t('yesReject'),
+      cancelButtonText: t('cancel'),
       preConfirm: () => {
         const remarks = document.getElementById("remarks").value;
         if (!remarks) {
-          Swal.showValidationMessage(
-            lang === "bn" ? "কারণ লিখতে হবে" : "Please provide a reason"
-          );
+          Swal.showValidationMessage(t('provideReason'));
         }
         return remarks;
       }
@@ -191,20 +273,12 @@ const WithdrawalApprovalsPage = () => {
       });
       
       if (response.data.success) {
-        showToast(
-          lang === "bn" 
-            ? `❌ উত্তোলন প্রত্যাখ্যান করা হয়েছে`
-            : `❌ Withdrawal rejected`,
-          "error"
-        );
+        showToast(t('withdrawalRejected'), "error");
         fetchWithdrawals(activeFilter, pagination.currentPage);
       }
     } catch (error) {
       console.error("Error rejecting withdrawal:", error);
-      showToast(
-        error.response?.data?.message || "Failed to reject withdrawal",
-        "error"
-      );
+      showToast(error.response?.data?.message || t('actionFailed'), "error");
     } finally {
       setProcessing(false);
     }
@@ -214,33 +288,27 @@ const WithdrawalApprovalsPage = () => {
     if (processing) return;
     
     const { value: transactionId } = await Swal.fire({
-      title: lang === "bn" ? "উত্তোলন সম্পন্ন করুন" : "Complete Withdrawal",
+      title: t('completeWithdrawal'),
       html: `
         <div class="text-left">
-          <p><strong>${lang === "bn" ? "সদস্য" : "User"}:</strong> ${withdrawal.user?.name || "Unknown"}</p>
-          <p><strong>${lang === "bn" ? "পরিমাণ" : "Amount"}:</strong> ৳${withdrawal.withdrawalAmount.toLocaleString()}</p>
+          <p><strong>${t('user')}:</strong> ${withdrawal.user?.name || "Unknown"}</p>
+          <p><strong>${t('amount')}:</strong> ৳${withdrawal.withdrawalAmount.toLocaleString()}</p>
         </div>
         <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
-            ${lang === "bn" ? "লেনদেন আইডি:" : "Transaction ID:"}
-          </label>
-          <input type="text" id="transactionId" class="swal2-input" placeholder="${
-            lang === "bn" ? "লেনদেন আইডি দিন" : "Enter transaction ID"
-          }">
+          <label class="block text-sm font-medium text-gray-700 mb-2">${t('transactionId')}:</label>
+          <input type="text" id="transactionId" class="swal2-input" placeholder="${t('enterTransactionId')}">
         </div>
       `,
       icon: "info",
       showCancelButton: true,
       confirmButtonColor: "#059669",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: lang === "bn" ? "হ্যাঁ, সম্পন্ন করুন" : "Yes, complete",
-      cancelButtonText: lang === "bn" ? "বাতিল" : "Cancel",
+      confirmButtonText: t('yesComplete'),
+      cancelButtonText: t('cancel'),
       preConfirm: () => {
         const transactionId = document.getElementById("transactionId").value;
         if (!transactionId) {
-          Swal.showValidationMessage(
-            lang === "bn" ? "লেনদেন আইডি দিন" : "Please provide transaction ID"
-          );
+          Swal.showValidationMessage(t('enterTransactionId'));
         }
         return transactionId;
       }
@@ -257,20 +325,12 @@ const WithdrawalApprovalsPage = () => {
       });
       
       if (response.data.success) {
-        showToast(
-          lang === "bn" 
-            ? `✅ উত্তোলন সম্পন্ন হয়েছে`
-            : `✅ Withdrawal completed`,
-          "success"
-        );
+        showToast(t('withdrawalCompleted'), "success");
         fetchWithdrawals(activeFilter, pagination.currentPage);
       }
     } catch (error) {
       console.error("Error completing withdrawal:", error);
-      showToast(
-        error.response?.data?.message || "Failed to complete withdrawal",
-        "error"
-      );
+      showToast(error.response?.data?.message || t('actionFailed'), "error");
     } finally {
       setProcessing(false);
     }
@@ -278,13 +338,13 @@ const WithdrawalApprovalsPage = () => {
 
   const viewUser = (withdrawal) => {
     Swal.fire({
-      title: lang === "bn" ? "সদস্যের তথ্য" : "User Details",
+      title: t('viewUserDetails'),
       html: `
         <div class="text-left">
-          <p><strong>${lang === "bn" ? "নাম" : "Name"}:</strong> ${withdrawal.user?.fullName || "N/A"}</p>
-          <p><strong>${lang === "bn" ? "ইমেইল" : "Email"}:</strong> ${withdrawal.user?.email || "N/A"}</p>
-          <p><strong>${lang === "bn" ? "ফোন" : "Phone"}:</strong> ${withdrawal.user?.phone || "N/A"}</p>
-          <p><strong>${lang === "bn" ? "যোগদান" : "Joined"}:</strong> ${withdrawal.user?.createdAt ? new Date(withdrawal.user.createdAt).toLocaleDateString() : "N/A"}</p>
+          <p><strong>${t('user')}:</strong> ${withdrawal.user?.fullName || "N/A"}</p>
+          <p><strong>Email:</strong> ${withdrawal.user?.email || "N/A"}</p>
+          <p><strong>Phone:</strong> ${withdrawal.user?.phone || "N/A"}</p>
+          <p><strong>Joined:</strong> ${withdrawal.user?.createdAt ? new Date(withdrawal.user.createdAt).toLocaleDateString() : "N/A"}</p>
         </div>
       `,
       icon: "info",
@@ -295,37 +355,27 @@ const WithdrawalApprovalsPage = () => {
   const getStatusBadge = (status) => {
     switch(status) {
       case "pending":
-        return { icon: Clock, text: lang === "bn" ? "পেন্ডিং" : "Pending", color: "text-amber-500 bg-amber-500/10", border: "border-amber-500/20" };
+        return { icon: Clock, text: t('pendingText'), color: "text-amber-500 bg-amber-500/10", border: "border-amber-500/20" };
       case "approved":
-        return { icon: CheckCircle, text: lang === "bn" ? "অনুমোদিত" : "Approved", color: "text-green-500 bg-green-500/10", border: "border-green-500/20" };
+        return { icon: CheckCircle, text: t('approvedText'), color: "text-green-500 bg-green-500/10", border: "border-green-500/20" };
       case "rejected":
-        return { icon: XCircle, text: lang === "bn" ? "প্রত্যাখ্যাত" : "Rejected", color: "text-red-500 bg-red-500/10", border: "border-red-500/20" };
+        return { icon: XCircle, text: t('rejectedText'), color: "text-red-500 bg-red-500/10", border: "border-red-500/20" };
       case "completed":
-        return { icon: CheckCircle, text: lang === "bn" ? "সম্পন্ন" : "Completed", color: "text-blue-500 bg-blue-500/10", border: "border-blue-500/20" };
+        return { icon: CheckCircle, text: t('completedText'), color: "text-blue-500 bg-blue-500/10", border: "border-blue-500/20" };
       default:
         return { icon: AlertTriangle, text: "Unknown", color: "text-gray-500 bg-gray-500/10", border: "border-gray-500/20" };
     }
   };
 
   const getPaymentIcon = (method) => {
-    const icons = {
-      bkash: "💜",
-      nagad: "🟠",
-      bank: "🏦",
-    };
+    const icons = { bkash: "💜", nagad: "🟠", bank: "🏦" };
     return icons[method?.toLowerCase()] || "💰";
   };
 
   const getGoalIcon = (goalType) => {
     const icons = {
-      wedding: "💒",
-      education: "📚",
-      travel: "✈️",
-      hajj: "🕌",
-      home: "🏠",
-      business: "💼",
-      emergency: "🚨",
-      other: "🎯",
+      wedding: "💒", education: "📚", travel: "✈️", hajj: "🕌",
+      home: "🏠", business: "💼", emergency: "🚨", other: "🎯"
     };
     return icons[goalType?.toLowerCase()] || "🎯";
   };
@@ -340,8 +390,8 @@ const WithdrawalApprovalsPage = () => {
 
     if (minutes < 1) return lang === "bn" ? "এই মাত্র" : "Just now";
     if (minutes < 60) return `${minutes} ${lang === "bn" ? "মিনিট আগে" : "min ago"}`;
-    if (hours < 24) return `${hours} ${lang === "bn" ? "ঘন্টা আগে" : "hour${hours > 1 ? 's' : ''} ago"}`;
-    if (days < 7) return `${days} ${lang === "bn" ? "দিন আগে" : "day${days > 1 ? 's' : ''} ago"}`;
+    if (hours < 24) return `${hours} ${lang === "bn" ? "ঘন্টা আগে" : "hour ago"}`;
+    if (days < 7) return `${days} ${lang === "bn" ? "দিন আগে" : "day ago"}`;
     return new Date(date).toLocaleDateString();
   };
 
@@ -351,11 +401,11 @@ const WithdrawalApprovalsPage = () => {
     }
   };
 
-  const stats = [
-    { value: statistics.pending.count, label: lang === "bn" ? "পেন্ডিং" : "Pending", color: "yellow" },
-    { value: `৳ ${(statistics.approved.totalAmount + statistics.completed.totalAmount).toLocaleString()}`, label: lang === "bn" ? "অনুমোদিত" : "Approved", color: "green" },
-    { value: statistics.rejected.count, label: lang === "bn" ? "প্রত্যাখ্যাত" : "Rejected", color: "red" },
-    { value: `${Math.round((statistics.completed.totalAmount / (statistics.approved.totalAmount + statistics.completed.totalAmount || 1)) * 100)}%`, label: lang === "bn" ? "সফলতা" : "Success Rate", color: "blue" },
+  const statsData = [
+    { value: statistics.pending.count, label: t('pending'), color: "yellow" },
+    { value: `৳ ${(statistics.approved.totalAmount + statistics.completed.totalAmount).toLocaleString()}`, label: t('approved'), color: "green" },
+    { value: statistics.rejected.count, label: t('rejected'), color: "red" },
+    { value: `${Math.round((statistics.completed.totalAmount / (statistics.approved.totalAmount + statistics.completed.totalAmount || 1)) * 100)}%`, label: "Success Rate", color: "blue" },
   ];
 
   if (loading) {
@@ -363,9 +413,7 @@ const WithdrawalApprovalsPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">
-            {lang === "bn" ? "লোড হচ্ছে..." : "Loading..."}
-          </p>
+          <p className="text-foreground/60">{lang === "bn" ? "লোড হচ্ছে..." : "Loading..."}</p>
         </div>
       </div>
     );
@@ -382,7 +430,7 @@ const WithdrawalApprovalsPage = () => {
           <ArrowLeft size={16} />
         </button>
         <h1 className="text-base font-bold text-foreground flex-1">
-          🏧 {lang === "bn" ? "উত্তোলন অনুমোদন" : "Withdrawal Approvals"}
+          🏧 {t('withdrawalApprovals')}
         </h1>
         <span className="px-2 py-1 rounded-md bg-red-500/15 text-red-400 text-[10px] font-bold">
           ADMIN
@@ -403,24 +451,12 @@ const WithdrawalApprovalsPage = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4 max-w-6xl mx-auto">
-        {stats.map((stat, idx) => (
-          <div
-            key={idx}
-            className="bg-card border border-border rounded-xl p-3 text-center"
-          >
-            <div
-              className={`text-xl font-bold ${
-                stat.color === "yellow" ? "text-amber-400" : 
-                stat.color === "green" ? "text-green-400" : 
-                stat.color === "red" ? "text-red-400" : 
-                "text-blue-400"
-              }`}
-            >
+        {statsData.map((stat, idx) => (
+          <div key={idx} className="bg-card border border-border rounded-xl p-3 text-center">
+            <div className={`text-xl font-bold ${stat.color === "yellow" ? "text-amber-400" : stat.color === "green" ? "text-green-400" : stat.color === "red" ? "text-red-400" : "text-blue-400"}`}>
               {stat.value}
             </div>
-            <div className="text-[10px] text-foreground/50 mt-1">
-              {stat.label}
-            </div>
+            <div className="text-[10px] text-foreground/50 mt-1">{stat.label}</div>
           </div>
         ))}
       </div>
@@ -428,11 +464,11 @@ const WithdrawalApprovalsPage = () => {
       {/* Filter Tabs */}
       <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide max-w-6xl mx-auto">
         {[
-          { id: "all", label: `${lang === "bn" ? "সব" : "All"} (${statistics.pending.count + statistics.approved.count + statistics.rejected.count + statistics.completed.count})` },
-          { id: "pending", label: `⏳ ${lang === "bn" ? "পেন্ডিং" : "Pending"} (${statistics.pending.count})` },
-          { id: "approved", label: `✅ ${lang === "bn" ? "অনুমোদিত" : "Approved"} (${statistics.approved.count})` },
-          { id: "completed", label: `🎉 ${lang === "bn" ? "সম্পন্ন" : "Completed"} (${statistics.completed.count})` },
-          { id: "rejected", label: `❌ ${lang === "bn" ? "প্রত্যাখ্যাত" : "Rejected"} (${statistics.rejected.count})` },
+          { id: "all", label: `${t('all')} (${statistics.pending.count + statistics.approved.count + statistics.rejected.count + statistics.completed.count})` },
+          { id: "pending", label: `⏳ ${t('pendingText')} (${statistics.pending.count})` },
+          { id: "approved", label: `✅ ${t('approvedText')} (${statistics.approved.count})` },
+          { id: "completed", label: `🎉 ${t('completedText')} (${statistics.completed.count})` },
+          { id: "rejected", label: `❌ ${t('rejectedText')} (${statistics.rejected.count})` },
         ].map((filter) => (
           <button
             key={filter.id}
@@ -454,19 +490,12 @@ const WithdrawalApprovalsPage = () => {
       {/* Search */}
       <div className="px-4 pb-3 max-w-6xl mx-auto">
         <div className="relative">
-          <Search
-            size={14}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50"
-          />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={
-              lang === "bn"
-                ? "সদস্য, গোল বা পরিমাণ দিয়ে খুঁজুন..."
-                : "Search by user, goal, amount..."
-            }
+            placeholder={t('searchPlaceholder')}
             className="w-full py-2 pl-9 pr-3 rounded-lg border border-border bg-card text-foreground text-sm outline-none focus:border-primary transition"
           />
         </div>
@@ -477,9 +506,7 @@ const WithdrawalApprovalsPage = () => {
         {withdrawals.length === 0 ? (
           <div className="text-center py-12 bg-card rounded-xl border border-border">
             <div className="text-4xl mb-3">📭</div>
-            <div className="text-foreground/50">
-              {lang === "bn" ? "কোন উত্তোলন পাওয়া যায়নি" : "No withdrawals found"}
-            </div>
+            <div className="text-foreground/50">{t('noWithdrawals')}</div>
           </div>
         ) : (
           withdrawals
@@ -494,17 +521,10 @@ const WithdrawalApprovalsPage = () => {
               const StatusIcon = statusBadge.icon;
               
               return (
-                <div
-                  key={withdrawal._id}
-                  className={`bg-card border rounded-xl overflow-hidden transition ${
-                    withdrawal.status === "pending" ? "border-l-4 border-l-amber-500" : "border-border"
-                  }`}
-                >
+                <div key={withdrawal._id} className={`bg-card border rounded-xl overflow-hidden transition ${withdrawal.status === "pending" ? "border-l-4 border-l-amber-500" : "border-border"}`}>
                   <div className="p-4">
                     <div className="flex flex-wrap gap-3">
-                      <div
-                        className={`w-10 h-10 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm shrink-0`}
-                      >
+                      <div className={`w-10 h-10 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm shrink-0`}>
                         {withdrawal.user?.name?.charAt(0)?.toUpperCase() || "U"}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -522,33 +542,25 @@ const WithdrawalApprovalsPage = () => {
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
                       <div className="bg-background rounded-lg p-2">
-                        <div className="text-[9px] text-foreground/50">
-                          {lang === "bn" ? "পদ্ধতি" : "Method"}
-                        </div>
+                        <div className="text-[9px] text-foreground/50">{t('method')}</div>
                         <div className="text-xs font-semibold">
                           {getPaymentIcon(withdrawal.paymentMethod)} {withdrawal.paymentMethod?.toUpperCase()}
                         </div>
                       </div>
                       <div className="bg-background rounded-lg p-2">
-                        <div className="text-[9px] text-foreground/50">
-                          {lang === "bn" ? "গোল" : "Goal"}
-                        </div>
+                        <div className="text-[9px] text-foreground/50">{t('goal')}</div>
                         <div className="text-xs font-semibold">
                           {getGoalIcon(withdrawal.goalType)} {withdrawal.goalName}
                         </div>
                       </div>
                       <div className="bg-background rounded-lg p-2">
-                        <div className="text-[9px] text-foreground/50">
-                          {lang === "bn" ? "কারণ" : "Reason"}
-                        </div>
+                        <div className="text-[9px] text-foreground/50">{t('reason')}</div>
                         <div className="text-xs font-semibold truncate">
                           {withdrawal.reason || "—"}
                         </div>
                       </div>
                       <div className="bg-background rounded-lg p-2">
-                        <div className="text-[9px] text-foreground/50">
-                          {lang === "bn" ? "স্ট্যাটাস" : "Status"}
-                        </div>
+                        <div className="text-[9px] text-foreground/50">{t('status')}</div>
                         <div className={`text-xs font-semibold ${statusBadge.color}`}>
                           <StatusIcon size={10} className="inline mr-1" />
                           {statusBadge.text}
@@ -559,50 +571,31 @@ const WithdrawalApprovalsPage = () => {
                     {withdrawal.remarks && (
                       <div className="mt-2 p-2 bg-amber-500/10 rounded-lg">
                         <div className="text-xs">
-                          <strong>{lang === "bn" ? "মন্তব্য:" : "Remarks:"}</strong> {withdrawal.remarks}
+                          <strong>{t('remarks')}:</strong> {withdrawal.remarks}
                         </div>
                       </div>
                     )}
 
                     {withdrawal.status === "pending" && (
                       <div className="grid grid-cols-2 gap-2 mt-3">
-                        <button
-                          onClick={() => approveWithdrawal(withdrawal)}
-                          disabled={processing}
-                          className="py-2 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50"
-                        >
-                          <CheckCircle size={12} className="inline mr-1" />
-                          {lang === "bn" ? "অনুমোদন" : "Approve"}
+                        <button onClick={() => approveWithdrawal(withdrawal)} disabled={processing} className="py-2 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50">
+                          <CheckCircle size={12} className="inline mr-1" /> {t('approve')}
                         </button>
-                        <button
-                          onClick={() => rejectWithdrawal(withdrawal)}
-                          disabled={processing}
-                          className="py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50"
-                        >
-                          <XCircle size={12} className="inline mr-1" />
-                          {lang === "bn" ? "প্রত্যাখ্যান" : "Reject"}
+                        <button onClick={() => rejectWithdrawal(withdrawal)} disabled={processing} className="py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50">
+                          <XCircle size={12} className="inline mr-1" /> {t('reject')}
                         </button>
                       </div>
                     )}
 
                     {withdrawal.status === "approved" && (
-                      <button
-                        onClick={() => completeWithdrawal(withdrawal)}
-                        disabled={processing}
-                        className="w-full mt-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50"
-                      >
-                        <CheckCircle size={12} className="inline mr-1" />
-                        {lang === "bn" ? "উত্তোলন সম্পন্ন করুন" : "Complete Withdrawal"}
+                      <button onClick={() => completeWithdrawal(withdrawal)} disabled={processing} className="w-full mt-3 py-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50">
+                        <CheckCircle size={12} className="inline mr-1" /> {t('complete')}
                       </button>
                     )}
 
                     {(withdrawal.status === "rejected" || withdrawal.status === "completed") && (
-                      <button
-                        onClick={() => viewUser(withdrawal)}
-                        className="w-full mt-3 py-2 rounded-lg border border-border text-foreground/60 text-xs font-semibold hover:border-primary transition"
-                      >
-                        <User size={12} className="inline mr-1" />
-                        {lang === "bn" ? "সদস্যের তথ্য দেখুন" : "View User Details"}
+                      <button onClick={() => viewUser(withdrawal)} className="w-full mt-3 py-2 rounded-lg border border-border text-foreground/60 text-xs font-semibold hover:border-primary transition">
+                        <User size={12} className="inline mr-1" /> {t('viewUserDetails')}
                       </button>
                     )}
                   </div>
@@ -615,22 +608,14 @@ const WithdrawalApprovalsPage = () => {
       {/* Pagination */}
       {pagination.totalPages > 1 && (
         <div className="flex justify-center gap-2 mt-6 pb-20">
-          <button
-            onClick={() => handlePageChange(pagination.currentPage - 1)}
-            disabled={pagination.currentPage === 1}
-            className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
-          >
-            {lang === "bn" ? "পূর্ববর্তী" : "Previous"}
+          <button onClick={() => handlePageChange(pagination.currentPage - 1)} disabled={pagination.currentPage === 1} className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition">
+            {t('previous')}
           </button>
           <span className="px-4 py-2 text-foreground">
-            {lang === "bn" ? "পৃষ্ঠা" : "Page"} {pagination.currentPage} of {pagination.totalPages}
+            {t('page')} {pagination.currentPage} of {pagination.totalPages}
           </span>
-          <button
-            onClick={() => handlePageChange(pagination.currentPage + 1)}
-            disabled={pagination.currentPage === pagination.totalPages}
-            className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
-          >
-            {lang === "bn" ? "পরবর্তী" : "Next"}
+          <button onClick={() => handlePageChange(pagination.currentPage + 1)} disabled={pagination.currentPage === pagination.totalPages} className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition">
+            {t('next')}
           </button>
         </div>
       )}

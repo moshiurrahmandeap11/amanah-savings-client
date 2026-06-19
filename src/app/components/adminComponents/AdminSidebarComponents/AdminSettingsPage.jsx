@@ -23,6 +23,224 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    systemSettings: "System Settings",
+    
+    // Buttons
+    save: "Save",
+    cancel: "Cancel",
+    en: "EN",
+    bn: "BN",
+    
+    // Panels
+    general: "General",
+    savingsRules: "Savings Rules",
+    paymentGateway: "Payment Gateway",
+    notifications: "Notifications",
+    security: "Security",
+    maintenance: "Maintenance",
+    
+    // General Panel
+    siteInformation: "Site Information",
+    updatePlatformBasics: "Update the platform basics",
+    platformName: "Platform Name",
+    platformNameDesc: "What users will see",
+    websiteUrl: "Website URL",
+    websiteUrlDesc: "Primary domain address",
+    contactEmail: "Contact Email",
+    contactEmailDesc: "Support email address",
+    language: "Language",
+    languageDesc: "Default platform language",
+    currency: "Currency",
+    currencyDesc: "Transaction currency",
+    systemStatus: "System Status",
+    
+    // Savings Panel
+    savingsLimitsRules: "Savings Limits & Rules",
+    depositWithdrawalLimits: "Deposit and withdrawal limits",
+    minDeposit: "Minimum Deposit Amount",
+    minDepositDesc: "Minimum amount per deposit",
+    maxSingleDeposit: "Maximum Single Deposit",
+    maxSingleDepositDesc: "Highest deposit at once",
+    dailyDepositLimit: "Daily Deposit Limit",
+    dailyDepositLimitDesc: "Maximum total deposit per day",
+    minWithdrawal: "Minimum Withdrawal",
+    minWithdrawalDesc: "Minimum withdrawal amount",
+    islamicMode: "Islamic Mode",
+    islamicModeDesc: "Enable interest-free savings option",
+    goalLock: "Goal Lock Feature",
+    goalLockDesc: "Block withdrawals before goal completion",
+    
+    // Payment Panel
+    paymentGatewayTitle: "Payment Gateway",
+    manageActiveMethods: "Manage active payment methods",
+    depositFee: "Deposit Fee",
+    depositFeeDesc: "Deduction on each deposit (%)",
+    withdrawalFee: "Withdrawal Fee",
+    withdrawalFeeDesc: "Deduction on each withdrawal (%)",
+    feeStructure: "Fee Structure",
+    
+    // Notifications Panel
+    notificationSettings: "Notification Settings",
+    emailNotification: "Email Notification",
+    emailNotificationDesc: "Send transaction updates via email",
+    smsNotification: "SMS Notification",
+    smsNotificationDesc: "Important updates via SMS",
+    pushNotification: "Push Notification",
+    pushNotificationDesc: "App push notifications",
+    monthlyReport: "Monthly Report",
+    monthlyReportDesc: "Monthly savings report via email",
+    marketingEmail: "Marketing Email",
+    marketingEmailDesc: "Offers and promotional messages",
+    
+    // Security Panel
+    securitySettings: "Security Settings",
+    twoFactorAuth: "Two-Step Verification (2FA)",
+    twoFactorAuthDesc: "OTP required for login",
+    pinRequired: "PIN Required",
+    pinRequiredDesc: "PIN verification for transactions",
+    sessionTimeout: "Session Timeout (minutes)",
+    sessionTimeoutDesc: "Automatic logout after inactivity",
+    maxLoginAttempts: "Maximum Login Attempts",
+    maxLoginAttemptsDesc: "Max failures before blocking",
+    ipLogging: "IP Logging",
+    ipLoggingDesc: "Record login IP address",
+    
+    // Maintenance Panel
+    warning: "Warning",
+    maintenanceWarning: "When maintenance mode is enabled, all users will be temporarily unable to use the platform.",
+    maintenanceMode: "Maintenance Mode",
+    maintenanceModeDesc: "Keep the site temporarily closed",
+    maintenanceMessage: "Maintenance Message",
+    maintenanceMessagePlaceholder: "Enter maintenance message...",
+    
+    // Toast Messages
+    settingsSaved: "✅ Settings saved successfully",
+    settingsLoadFailed: "Failed to load settings",
+    saveFailed: "Save failed",
+    backupDownloadComplete: "✅ Backup download complete!",
+    cacheCleared: "🗑️ Cache cleared",
+    logsDeleted: "🗑️ All logs have been deleted",
+    changesCancelled: "↩️ Changes cancelled",
+    
+    // Status
+    enabled: "Enabled",
+    disabled: "Disabled",
+    active: "Active",
+    inactive: "Inactive",
+  },
+  bn: {
+    // Page Title
+    systemSettings: "সিস্টেম সেটিংস",
+    
+    // Buttons
+    save: "সংরক্ষণ",
+    cancel: "বাতিল",
+    en: "EN",
+    bn: "BN",
+    
+    // Panels
+    general: "সাধারণ",
+    savingsRules: "সঞ্চয় নিয়ম",
+    paymentGateway: "পেমেন্ট গেটওয়ে",
+    notifications: "বিজ্ঞপ্তি",
+    security: "নিরাপত্তা",
+    maintenance: "রক্ষণাবেক্ষণ",
+    
+    // General Panel
+    siteInformation: "সাইট তথ্য",
+    updatePlatformBasics: "প্ল্যাটফর্মের মৌলিক তথ্য পরিবর্তন করুন",
+    platformName: "প্ল্যাটফর্মের নাম",
+    platformNameDesc: "ব্যবহারকারীরা যা দেখবেন",
+    websiteUrl: "ওয়েবসাইট URL",
+    websiteUrlDesc: "মূল ডোমেইন ঠিকানা",
+    contactEmail: "যোগাযোগ ইমেইল",
+    contactEmailDesc: "সাপোর্ট ইমেইল ঠিকানা",
+    language: "ভাষা",
+    languageDesc: "ডিফল্ট প্ল্যাটফর্ম ভাষা",
+    currency: "মুদ্রা",
+    currencyDesc: "লেনদেনের মুদ্রা",
+    systemStatus: "সিস্টেম অবস্থা",
+    
+    // Savings Panel
+    savingsLimitsRules: "সঞ্চয় সীমা ও নিয়ম",
+    depositWithdrawalLimits: "জমা ও উত্তোলনের সীমাবদ্ধতা",
+    minDeposit: "সর্বনিম্ন জমা পরিমাণ",
+    minDepositDesc: "প্রতিটি জমার ন্যূনতম টাকা",
+    maxSingleDeposit: "সর্বোচ্চ একক জমা",
+    maxSingleDepositDesc: "একবারে সর্বোচ্চ জমা",
+    dailyDepositLimit: "দৈনিক জমা সীমা",
+    dailyDepositLimitDesc: "প্রতিদিন সর্বোচ্চ মোট জমা",
+    minWithdrawal: "সর্বনিম্ন উত্তোলন",
+    minWithdrawalDesc: "সর্বনিম্ন উত্তোলন পরিমাণ",
+    islamicMode: "ইসলামিক মোড",
+    islamicModeDesc: "সুদমুক্ত সঞ্চয় বিকল্প চালু",
+    goalLock: "লক্ষ্য লক বৈশিষ্ট্য",
+    goalLockDesc: "লক্ষ্য পূরণের আগে উত্তোলন বন্ধ",
+    
+    // Payment Panel
+    paymentGatewayTitle: "পেমেন্ট গেটওয়ে",
+    manageActiveMethods: "সক্রিয় পেমেন্ট পদ্ধতি পরিচালনা",
+    depositFee: "জমা ফি",
+    depositFeeDesc: "প্রতিটি জমায় কর্তন (%)",
+    withdrawalFee: "উত্তোলন ফি",
+    withdrawalFeeDesc: "প্রতিটি উত্তোলনে কর্তন (%)",
+    feeStructure: "ফি কাঠামো",
+    
+    // Notifications Panel
+    notificationSettings: "বিজ্ঞপ্তি সেটিংস",
+    emailNotification: "ইমেইল বিজ্ঞপ্তি",
+    emailNotificationDesc: "ইমেইলে লেনদেন আপডেট পাঠানো",
+    smsNotification: "SMS বিজ্ঞপ্তি",
+    smsNotificationDesc: "SMS-এ গুরুত্বপূর্ণ আপডেট",
+    pushNotification: "পুশ নোটিফিকেশন",
+    pushNotificationDesc: "অ্যাপ পুশ বিজ্ঞপ্তি",
+    monthlyReport: "মাসিক রিপোর্ট",
+    monthlyReportDesc: "মাসিক সঞ্চয় রিপোর্ট ইমেইল",
+    marketingEmail: "মার্কেটিং ইমেইল",
+    marketingEmailDesc: "অফার ও প্রচারমূলক বার্তা",
+    
+    // Security Panel
+    securitySettings: "নিরাপত্তা সেটিংস",
+    twoFactorAuth: "দুই-ধাপ যাচাই (2FA)",
+    twoFactorAuthDesc: "লগইনে OTP বাধ্যতামূলক",
+    pinRequired: "PIN প্রয়োজন",
+    pinRequiredDesc: "লেনদেনে PIN যাচাই",
+    sessionTimeout: "সেশন সময়সীমা (মিনিট)",
+    sessionTimeoutDesc: "নিষ্ক্রিয়তায় স্বয়ংক্রিয় লগআউট",
+    maxLoginAttempts: "সর্বোচ্চ লগইন প্রচেষ্টা",
+    maxLoginAttemptsDesc: "ব্লক করার আগে সর্বোচ্চ ব্যর্থতা",
+    ipLogging: "IP লগিং",
+    ipLoggingDesc: "লগইন IP ঠিকানা রেকর্ড",
+    
+    // Maintenance Panel
+    warning: "সতর্কতা",
+    maintenanceWarning: "রক্ষণাবেক্ষণ মোড চালু করলে সকল ব্যবহারকারী সাময়িক প্ল্যাটফর্ম ব্যবহার করতে পারবে না।",
+    maintenanceMode: "রক্ষণাবেক্ষণ মোড",
+    maintenanceModeDesc: "সাইট সাময়িক বন্ধ রাখুন",
+    maintenanceMessage: "রক্ষণাবেক্ষণ বার্তা",
+    maintenanceMessagePlaceholder: "রক্ষণাবেক্ষণ বার্তা লিখুন...",
+    
+    // Toast Messages
+    settingsSaved: "✅ সেটিংস সফলভাবে সংরক্ষিত হয়েছে",
+    settingsLoadFailed: "সেটিংস লোড করতে ব্যর্থ হয়েছে",
+    saveFailed: "সংরক্ষণ করতে ব্যর্থ হয়েছে",
+    backupDownloadComplete: "✅ ব্যাকআপ ডাউনলোড সম্পন্ন!",
+    cacheCleared: "🗑️ ক্যাশ পরিষ্কার করা হয়েছে",
+    logsDeleted: "🗑️ সকল লগ মুছে ফেলা হয়েছে",
+    changesCancelled: "↩️ পরিবর্তন বাতিল করা হয়েছে",
+    
+    // Status
+    enabled: "সক্রিয়",
+    disabled: "নিষ্ক্রিয়",
+    active: "সক্রিয়",
+    inactive: "নিষ্ক্রিয়",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -44,15 +262,28 @@ const AdminSettingsPage = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
   const fetchSettings = useCallback(async () => {
     setLoading(true);
     try {
-      // FIXED: Correct endpoint path (without /admin prefix because route already has it)
       const res = await axiosInstance.get("/admin/settings", { headers: getAuthHeaders() });
       if (res.data.success) {
         const backendData = res.data.data;
         
-        // Transform backend data to frontend expected format
         setSettings({
           general: {
             platformName: backendData.general?.name || "Sonchoy Bondhu",
@@ -101,7 +332,7 @@ const AdminSettingsPage = () => {
       }
     } catch (err) {
       console.error("Fetch settings error:", err);
-      showToast(err.response?.data?.message || "Failed to load settings");
+      showToast(err.response?.data?.message || t('settingsLoadFailed'));
     } finally {
       setLoading(false);
     }
@@ -143,7 +374,6 @@ const AdminSettingsPage = () => {
   const saveSettings = async () => {
     setSaving(true);
     try {
-      // Transform frontend data to backend expected format
       const payload = {
         general: {
           name: settings.general.platformName,
@@ -192,20 +422,15 @@ const AdminSettingsPage = () => {
         },
       };
 
-      // FIXED: Correct endpoint path
       const res = await axiosInstance.put("/admin/settings", payload, { headers: getAuthHeaders() });
       
       if (res.data.success) {
-        showToast(
-          lang === "bn"
-            ? "✅ সেটিংস সফলভাবে সংরক্ষিত হয়েছে"
-            : "✅ Settings saved successfully",
-        );
-        fetchSettings(); // Refresh to get latest
+        showToast(t('settingsSaved'));
+        fetchSettings();
       }
     } catch (err) {
       console.error("Save settings error:", err);
-      showToast(err.response?.data?.message || "Save failed");
+      showToast(err.response?.data?.message || t('saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -227,98 +452,73 @@ const AdminSettingsPage = () => {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    showToast(
-      lang === "bn"
-        ? "✅ ব্যাকআপ ডাউনলোড সম্পন্ন!"
-        : "✅ Backup download complete!",
-    );
+    showToast(t('backupDownloadComplete'));
   };
 
   const clearCache = () => {
-    showToast(
-      lang === "bn" 
-        ? "🗑️ ক্যাশ পরিষ্কার করা হয়েছে" 
-        : "🗑️ Cache cleared",
-    );
+    showToast(t('cacheCleared'));
   };
 
   const deleteLogs = () => {
-    showToast(
-      lang === "bn"
-        ? "🗑️ সকল লগ মুছে ফেলা হয়েছে"
-        : "🗑️ All logs have been deleted",
-    );
+    showToast(t('logsDeleted'));
   };
 
   const cancelChanges = () => {
-    fetchSettings(); // Reload from server
-    showToast(
-      lang === "bn"
-        ? "↩️ পরিবর্তন বাতিল করা হয়েছে"
-        : "↩️ Changes cancelled",
-    );
+    fetchSettings();
+    showToast(t('changesCancelled'));
   };
 
   const panels = [
     {
       id: "general",
-      label: "সাধারণ",
+      label: t('general'),
       icon: <Settings size={16} />,
       labelEn: "General",
     },
     {
       id: "savings",
-      label: "সঞ্চয় নিয়ম",
+      label: t('savingsRules'),
       icon: <Database size={16} />,
       labelEn: "Savings Rules",
     },
     {
       id: "payments",
-      label: "পেমেন্ট গেটওয়ে",
+      label: t('paymentGateway'),
       icon: <CreditCard size={16} />,
       labelEn: "Payment Gateway",
     },
     {
       id: "notifications",
-      label: "বিজ্ঞপ্তি",
+      label: t('notifications'),
       icon: <Bell size={16} />,
       labelEn: "Notifications",
     },
     {
       id: "security",
-      label: "নিরাপত্তা",
+      label: t('security'),
       icon: <Shield size={16} />,
       labelEn: "Security",
     },
     {
       id: "maintenance",
-      label: "রক্ষণাবেক্ষণ",
+      label: t('maintenance'),
       icon: <Wrench size={16} />,
       labelEn: "Maintenance",
     },
   ];
 
-  // Rest of the render functions remain the same...
-  // (renderGeneralPanel, renderSavingsPanel, etc. - they stay as is)
-
   const renderGeneralPanel = () => (
     <div className="space-y-5">
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">
-            {lang === "bn" ? "সাইট তথ্য" : "Site Information"}
-          </h3>
-          <p className="text-xs text-foreground/50">
-            {lang === "bn"
-              ? "প্ল্যাটফর্মের মৌলিক তথ্য পরিবর্তন করুন"
-              : "Update the platform basics"}
-          </p>
+          <h3 className="font-semibold text-foreground">{t('siteInformation')}</h3>
+          <p className="text-xs text-foreground/50">{t('updatePlatformBasics')}</p>
         </div>
         <div className="p-4 space-y-4">
           {[
-            { key: "platformName", labelBn: "প্ল্যাটফর্মের নাম", labelEn: "Platform Name", descBn: "ব্যবহারকারীরা যা দেখবেন", descEn: "What users will see" },
-            { key: "websiteUrl", labelBn: "ওয়েবসাইট URL", labelEn: "Website URL", descBn: "মূল ডোমেইন ঠিকানা", descEn: "Primary domain address" },
-            { key: "contactEmail", labelBn: "যোগাযোগ ইমেইল", labelEn: "Contact Email", descBn: "সাপোর্ট ইমেইল ঠিকানা", descEn: "Support email address" },
+            { key: "platformName", labelBn: t('platformName'), labelEn: "Platform Name", descBn: t('platformNameDesc'), descEn: "What users will see" },
+            { key: "websiteUrl", labelBn: t('websiteUrl'), labelEn: "Website URL", descBn: t('websiteUrlDesc'), descEn: "Primary domain address" },
+            { key: "contactEmail", labelBn: t('contactEmail'), labelEn: "Contact Email", descBn: t('contactEmailDesc'), descEn: "Support email address" },
           ].map((field) => (
             <div key={field.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
@@ -338,12 +538,8 @@ const AdminSettingsPage = () => {
           ))}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "ভাষা" : "Language"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn" ? "ডিফল্ট প্ল্যাটফর্ম ভাষা" : "Default platform language"}
-              </div>
+              <div className="font-medium text-sm text-foreground">{t('language')}</div>
+              <div className="text-xs text-foreground/50">{t('languageDesc')}</div>
             </div>
             <select
               value={settings.general?.language || "bn"}
@@ -356,12 +552,8 @@ const AdminSettingsPage = () => {
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "মুদ্রা" : "Currency"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn" ? "লেনদেনের মুদ্রা" : "Transaction currency"}
-              </div>
+              <div className="font-medium text-sm text-foreground">{t('currency')}</div>
+              <div className="text-xs text-foreground/50">{t('currencyDesc')}</div>
             </div>
             <select
               value={settings.general?.currency || "BDT"}
@@ -375,9 +567,7 @@ const AdminSettingsPage = () => {
       </div>
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">
-            {lang === "bn" ? "সিস্টেম অবস্থা" : "System Status"}
-          </h3>
+          <h3 className="font-semibold text-foreground">{t('systemStatus')}</h3>
         </div>
       </div>
     </div>
@@ -386,21 +576,15 @@ const AdminSettingsPage = () => {
   const renderSavingsPanel = () => (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-5 py-4 border-b border-border">
-        <h3 className="font-semibold text-foreground">
-          {lang === "bn" ? "সঞ্চয় সীমা ও নিয়ম" : "Savings Limits & Rules"}
-        </h3>
-        <p className="text-xs text-foreground/50">
-          {lang === "bn"
-            ? "জমা ও উত্তোলনের সীমাবদ্ধতা"
-            : "Deposit and withdrawal limits"}
-        </p>
+        <h3 className="font-semibold text-foreground">{t('savingsLimitsRules')}</h3>
+        <p className="text-xs text-foreground/50">{t('depositWithdrawalLimits')}</p>
       </div>
       <div className="p-4 space-y-4">
         {[
-          { key: "minDeposit", labelBn: "সর্বনিম্ন জমা পরিমাণ", labelEn: "Minimum Deposit Amount", descBn: "প্রতিটি জমার ন্যূনতম টাকা", descEn: "Minimum amount per deposit" },
-          { key: "maxSingleDeposit", labelBn: "সর্বোচ্চ একক জমা", labelEn: "Maximum Single Deposit", descBn: "একবারে সর্বোচ্চ জমা", descEn: "Highest deposit at once" },
-          { key: "dailyDepositLimit", labelBn: "দৈনিক জমা সীমা", labelEn: "Daily Deposit Limit", descBn: "প্রতিদিন সর্বোচ্চ মোট জমা", descEn: "Maximum total deposit per day" },
-          { key: "withdrawalDelay", labelBn: "সর্বনিম্ন উত্তোলন", labelEn: "Minimum Withdrawal", descBn: "সর্বনিম্ন উত্তোলন পরিমাণ", descEn: "Minimum withdrawal amount" },
+          { key: "minDeposit", labelBn: t('minDeposit'), labelEn: "Minimum Deposit Amount", descBn: t('minDepositDesc'), descEn: "Minimum amount per deposit" },
+          { key: "maxSingleDeposit", labelBn: t('maxSingleDeposit'), labelEn: "Maximum Single Deposit", descBn: t('maxSingleDepositDesc'), descEn: "Highest deposit at once" },
+          { key: "dailyDepositLimit", labelBn: t('dailyDepositLimit'), labelEn: "Daily Deposit Limit", descBn: t('dailyDepositLimitDesc'), descEn: "Maximum total deposit per day" },
+          { key: "withdrawalDelay", labelBn: t('minWithdrawal'), labelEn: "Minimum Withdrawal", descBn: t('minWithdrawalDesc'), descEn: "Minimum withdrawal amount" },
         ].map((field) => (
           <div key={field.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
@@ -420,8 +604,8 @@ const AdminSettingsPage = () => {
           </div>
         ))}
         {[
-          { key: "islamicMode", labelBn: "ইসলামিক মোড", labelEn: "Islamic Mode", descBn: "সুদমুক্ত সঞ্চয় বিকল্প চালু", descEn: "Enable interest-free savings option" },
-          { key: "goalLock", labelBn: "লক্ষ্য লক বৈশিষ্ট্য", labelEn: "Goal Lock Feature", descBn: "লক্ষ্য পূরণের আগে উত্তোলন বন্ধ", descEn: "Block withdrawals before goal completion" },
+          { key: "islamicMode", labelBn: t('islamicMode'), labelEn: "Islamic Mode", descBn: t('islamicModeDesc'), descEn: "Enable interest-free savings option" },
+          { key: "goalLock", labelBn: t('goalLock'), labelEn: "Goal Lock Feature", descBn: t('goalLockDesc'), descEn: "Block withdrawals before goal completion" },
         ].map((field) => (
           <div key={field.key} className="flex items-center justify-between">
             <div>
@@ -450,14 +634,8 @@ const AdminSettingsPage = () => {
     <div className="space-y-5">
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">
-            {lang === "bn" ? "পেমেন্ট গেটওয়ে" : "Payment Gateway"}
-          </h3>
-          <p className="text-xs text-foreground/50">
-            {lang === "bn"
-              ? "সক্রিয় পেমেন্ট পদ্ধতি পরিচালনা"
-              : "Manage active payment methods"}
-          </p>
+          <h3 className="font-semibold text-foreground">{t('paymentGatewayTitle')}</h3>
+          <p className="text-xs text-foreground/50">{t('manageActiveMethods')}</p>
         </div>
         <div className="p-4 space-y-4">
           {[
@@ -466,14 +644,9 @@ const AdminSettingsPage = () => {
             { key: "rocketEnabled", label: "Rocket", desc: "ডাচ বাংলা রকেট" },
             { key: "bankEnabled", label: "ব্যাংক ট্রান্সফার", desc: "সরাসরি ব্যাংক অ্যাকাউন্ট ট্রান্সফার" },
           ].map((gateway) => (
-            <div
-              key={gateway.key}
-              className="flex items-center justify-between"
-            >
+            <div key={gateway.key} className="flex items-center justify-between">
               <div>
-                <div className="font-medium text-sm text-foreground">
-                  {gateway.label}
-                </div>
+                <div className="font-medium text-sm text-foreground">{gateway.label}</div>
                 <div className="text-xs text-foreground/50">{gateway.desc}</div>
               </div>
               <div className="flex items-center gap-3">
@@ -492,21 +665,13 @@ const AdminSettingsPage = () => {
       </div>
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">
-            {lang === "bn" ? "ফি কাঠামো" : "Fee Structure"}
-          </h3>
+          <h3 className="font-semibold text-foreground">{t('feeStructure')}</h3>
         </div>
         <div className="p-4 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "জমা ফি" : "Deposit Fee"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn"
-                  ? "প্রতিটি জমায় কর্তন (%)"
-                  : "Deduction on each deposit (%)"}
-              </div>
+              <div className="font-medium text-sm text-foreground">{t('depositFee')}</div>
+              <div className="text-xs text-foreground/50">{t('depositFeeDesc')}</div>
             </div>
             <div className="flex items-center gap-1">
               <input
@@ -520,14 +685,8 @@ const AdminSettingsPage = () => {
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "উত্তোলন ফি" : "Withdrawal Fee"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn"
-                  ? "প্রতিটি উত্তোলনে কর্তন (%)"
-                  : "Deduction on each withdrawal (%)"}
-              </div>
+              <div className="font-medium text-sm text-foreground">{t('withdrawalFee')}</div>
+              <div className="text-xs text-foreground/50">{t('withdrawalFeeDesc')}</div>
             </div>
             <div className="flex items-center gap-1">
               <input
@@ -547,23 +706,19 @@ const AdminSettingsPage = () => {
   const renderNotificationsPanel = () => (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-5 py-4 border-b border-border">
-        <h3 className="font-semibold text-foreground">
-          {lang === "bn" ? "বিজ্ঞপ্তি সেটিংস" : "Notification Settings"}
-        </h3>
+        <h3 className="font-semibold text-foreground">{t('notificationSettings')}</h3>
       </div>
       <div className="p-4 space-y-4">
         {[
-          { key: "emailNotification", label: "ইমেইল বিজ্ঞপ্তি", desc: "ইমেইলে লেনদেন আপডেট পাঠানো" },
-          { key: "smsNotification", label: "SMS বিজ্ঞপ্তি", desc: "SMS-এ গুরুত্বপূর্ণ আপডেট" },
-          { key: "pushNotification", label: "পুশ নোটিফিকেশন", desc: "অ্যাপ পুশ বিজ্ঞপ্তি" },
-          { key: "monthlyReport", label: "মাসিক রিপোর্ট", desc: "মাসিক সঞ্চয় রিপোর্ট ইমেইল" },
-          { key: "marketingEmail", label: "মার্কেটিং ইমেইল", desc: "অফার ও প্রচারমূলক বার্তা" },
+          { key: "emailNotification", label: t('emailNotification'), desc: t('emailNotificationDesc') },
+          { key: "smsNotification", label: t('smsNotification'), desc: t('smsNotificationDesc') },
+          { key: "pushNotification", label: t('pushNotification'), desc: t('pushNotificationDesc') },
+          { key: "monthlyReport", label: t('monthlyReport'), desc: t('monthlyReportDesc') },
+          { key: "marketingEmail", label: t('marketingEmail'), desc: t('marketingEmailDesc') },
         ].map((notif) => (
           <div key={notif.key} className="flex items-center justify-between">
             <div>
-              <div className="font-medium text-sm text-foreground">
-                {notif.label}
-              </div>
+              <div className="font-medium text-sm text-foreground">{notif.label}</div>
               <div className="text-xs text-foreground/50">{notif.desc}</div>
             </div>
             <button
@@ -583,23 +738,13 @@ const AdminSettingsPage = () => {
   const renderSecurityPanel = () => (
     <div className="bg-card border border-border rounded-xl overflow-hidden">
       <div className="px-5 py-4 border-b border-border">
-        <h3 className="font-semibold text-foreground">
-          {lang === "bn" ? "নিরাপত্তা সেটিংস" : "Security Settings"}
-        </h3>
+        <h3 className="font-semibold text-foreground">{t('securitySettings')}</h3>
       </div>
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn"
-                ? "দুই-ধাপ যাচাই (2FA)"
-                : "Two-Step Verification (2FA)"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "লগইনে OTP বাধ্যতামূলক"
-                : "OTP required for login"}
-            </div>
+            <div className="font-medium text-sm text-foreground">{t('twoFactorAuth')}</div>
+            <div className="text-xs text-foreground/50">{t('twoFactorAuthDesc')}</div>
           </div>
           <button
             onClick={() => handleToggle("security", "twoFactorAuth")}
@@ -612,14 +757,8 @@ const AdminSettingsPage = () => {
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn" ? "PIN প্রয়োজন" : "PIN Required"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "লেনদেনে PIN যাচাই"
-                : "PIN verification for transactions"}
-            </div>
+            <div className="font-medium text-sm text-foreground">{t('pinRequired')}</div>
+            <div className="text-xs text-foreground/50">{t('pinRequiredDesc')}</div>
           </div>
           <button
             onClick={() => handleToggle("security", "pinRequired")}
@@ -632,16 +771,8 @@ const AdminSettingsPage = () => {
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn"
-                ? "সেশন সময়সীমা (মিনিট)"
-                : "Session Timeout (minutes)"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "নিষ্ক্রিয়তায় স্বয়ংক্রিয় লগআউট"
-                : "Automatic logout after inactivity"}
-            </div>
+            <div className="font-medium text-sm text-foreground">{t('sessionTimeout')}</div>
+            <div className="text-xs text-foreground/50">{t('sessionTimeoutDesc')}</div>
           </div>
           <input
             type="number"
@@ -652,16 +783,8 @@ const AdminSettingsPage = () => {
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn"
-                ? "সর্বোচ্চ লগইন প্রচেষ্টা"
-                : "Maximum Login Attempts"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "ব্লক করার আগে সর্বোচ্চ ব্যর্থতা"
-                : "Max failures before blocking"}
-            </div>
+            <div className="font-medium text-sm text-foreground">{t('maxLoginAttempts')}</div>
+            <div className="text-xs text-foreground/50">{t('maxLoginAttemptsDesc')}</div>
           </div>
           <input
             type="number"
@@ -672,14 +795,8 @@ const AdminSettingsPage = () => {
         </div>
         <div className="flex items-center justify-between">
           <div>
-            <div className="font-medium text-sm text-foreground">
-              {lang === "bn" ? "IP লগিং" : "IP Logging"}
-            </div>
-            <div className="text-xs text-foreground/50">
-              {lang === "bn"
-                ? "লগইন IP ঠিকানা রেকর্ড"
-                : "Record login IP address"}
-            </div>
+            <div className="font-medium text-sm text-foreground">{t('ipLogging')}</div>
+            <div className="text-xs text-foreground/50">{t('ipLoggingDesc')}</div>
           </div>
           <button
             onClick={() => handleToggle("security", "ipLogging")}
@@ -699,33 +816,19 @@ const AdminSettingsPage = () => {
       <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-3">
         <AlertTriangle size={18} className="text-amber-500 shrink-0" />
         <div>
-          <strong className="text-sm text-foreground">
-            {lang === "bn" ? "সতর্কতা" : "Warning"}
-          </strong>
-          <p className="text-xs text-foreground/60">
-            {lang === "bn"
-              ? "রক্ষণাবেক্ষণ মোড চালু করলে সকল ব্যবহারকারী সাময়িক প্ল্যাটফর্ম ব্যবহার করতে পারবে না।"
-              : "When maintenance mode is enabled, all users will be temporarily unable to use the platform."}
-          </p>
+          <strong className="text-sm text-foreground">{t('warning')}</strong>
+          <p className="text-xs text-foreground/60">{t('maintenanceWarning')}</p>
         </div>
       </div>
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">
-            {lang === "bn" ? "রক্ষণাবেক্ষণ মোড" : "Maintenance Mode"}
-          </h3>
+          <h3 className="font-semibold text-foreground">{t('maintenanceMode')}</h3>
         </div>
         <div className="p-4 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium text-sm text-foreground">
-                {lang === "bn" ? "রক্ষণাবেক্ষণ মোড" : "Maintenance Mode"}
-              </div>
-              <div className="text-xs text-foreground/50">
-                {lang === "bn"
-                  ? "সাইট সাময়িক বন্ধ রাখুন"
-                  : "Keep the site temporarily closed"}
-              </div>
+              <div className="font-medium text-sm text-foreground">{t('maintenanceMode')}</div>
+              <div className="text-xs text-foreground/50">{t('maintenanceModeDesc')}</div>
             </div>
             <button
               onClick={() => handleToggle("maintenance", "maintenanceMode")}
@@ -737,13 +840,12 @@ const AdminSettingsPage = () => {
             </button>
           </div>
           <div>
-            <div className="font-medium text-sm text-foreground mb-1">
-              {lang === "bn" ? "রক্ষণাবেক্ষণ বার্তা" : "Maintenance Message"}
-            </div>
+            <div className="font-medium text-sm text-foreground mb-1">{t('maintenanceMessage')}</div>
             <textarea
               value={settings.maintenance?.maintenanceMessage || ""}
               onChange={(e) => handleInputChange("maintenance", "maintenanceMessage", e.target.value)}
               rows={3}
+              placeholder={t('maintenanceMessagePlaceholder')}
               className="w-full p-3 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary resize-none"
             />
           </div>
@@ -775,9 +877,7 @@ const AdminSettingsPage = () => {
     <div className="min-h-screen bg-background">
       {/* Topbar */}
       <div className="bg-card border-b border-border px-4 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sticky top-0 z-50">
-        <h1 className="text-base font-bold text-foreground">
-          {lang === "bn" ? "সিস্টেম সেটিংস" : "System Settings"}
-        </h1>
+        <h1 className="text-base font-bold text-foreground">{t('systemSettings')}</h1>
         <div className="flex gap-2">
           <button
             onClick={() => setLang(lang === "bn" ? "en" : "bn")}
@@ -795,7 +895,7 @@ const AdminSettingsPage = () => {
             onClick={cancelChanges}
             className="px-3 py-1.5 rounded-lg border border-border text-foreground/70 text-xs font-semibold hover:border-primary transition"
           >
-            {lang === "bn" ? "বাতিল" : "Cancel"}
+            {t('cancel')}
           </button>
           <button
             onClick={saveSettings}
@@ -803,7 +903,7 @@ const AdminSettingsPage = () => {
             className="px-3 py-1.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
           >
             {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} />}
-            {lang === "bn" ? "সংরক্ষণ" : "Save"}
+            {t('save')}
           </button>
         </div>
       </div>

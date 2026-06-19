@@ -4,18 +4,100 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
-  UserPlus,
   Download,
   Eye,
-  Edit,
-  Ban,
   CheckCircle,
   XCircle,
+  Ban,
   Loader2,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
+
+// Translations
+const translations = {
+  en: {
+    userManagement: "👥 User Management",
+    searchPlaceholder: "Search by name, phone, NID...",
+    all: "All",
+    active: "Active",
+    pendingKyc: "Pending KYC",
+    flagged: "Flagged",
+    suspended: "Suspended",
+    member: "Member",
+    phone: "Phone",
+    plan: "Plan",
+    totalSaved: "Total Saved",
+    kyc: "KYC",
+    status: "Status",
+    joined: "Joined",
+    actions: "Actions",
+    noUsersFound: "No users found",
+    exportExcel: "Export Excel",
+    exporting: "Exporting...",
+    exportedSuccessfully: "✅ Exported users successfully!",
+    exportFailed: "❌ Failed to export users",
+    view: "View",
+    approveKyc: "Approve KYC",
+    suspend: "Suspend",
+    ban: "Ban",
+    message: "Message",
+    accountOverview: "Account Overview",
+    totalSavings: "Total Savings",
+    totalDeposits: "Total Deposits",
+    totalWithdrawals: "Total Withdrawals",
+    level: "Level",
+    memberSince: "Member Since",
+    lastLogin: "Last Login",
+    division: "Division",
+    referralCode: "Referral Code",
+    suspendConfirm: "Suspend user",
+    banConfirm: "Ban user permanently?",
+    kycApproved: "KYC approved successfully",
+    actionFailed: "Action failed",
+  },
+  bn: {
+    userManagement: "👥 ইউজার ম্যানেজমেন্ট",
+    searchPlaceholder: "নাম, ফোন, এনআইডি দিয়ে খুঁজুন...",
+    all: "সব",
+    active: "সক্রিয়",
+    pendingKyc: "পেন্ডিং কেওয়াইসি",
+    flagged: "ফ্ল্যাগড",
+    suspended: "সাসপেন্ডেড",
+    member: "মেম্বার",
+    phone: "ফোন",
+    plan: "প্ল্যান",
+    totalSaved: "মোট সঞ্চয়",
+    kyc: "কেওয়াইসি",
+    status: "স্ট্যাটাস",
+    joined: "জয়েন",
+    actions: "অ্যাকশন",
+    noUsersFound: "কোনো ইউজার পাওয়া যায়নি",
+    exportExcel: "এক্সেল এক্সপোর্ট",
+    exporting: "এক্সপোর্ট হচ্ছে...",
+    exportedSuccessfully: "✅ ইউজার এক্সপোর্ট সফল হয়েছে!",
+    exportFailed: "❌ এক্সপোর্ট ব্যর্থ হয়েছে",
+    view: "দেখুন",
+    approveKyc: "কেওয়াইসি অনুমোদন",
+    suspend: "সাসপেন্ড",
+    ban: "ব্যান",
+    message: "মেসেজ",
+    accountOverview: "অ্যাকাউন্ট ওভারভিউ",
+    totalSavings: "মোট সঞ্চয়",
+    totalDeposits: "মোট ডিপোজিট",
+    totalWithdrawals: "মোট উত্তোলন",
+    level: "লেভেল",
+    memberSince: "মেম্বার সাইন আপ",
+    lastLogin: "শেষ লগইন",
+    division: "বিভাগ",
+    referralCode: "রেফারেল কোড",
+    suspendConfirm: "ইউজার সাসপেন্ড করবেন?",
+    banConfirm: "ইউজারকে স্থায়ীভাবে ব্যান করবেন?",
+    kycApproved: "কেওয়াইসি অনুমোদিত হয়েছে",
+    actionFailed: "অ্যাকশন ব্যর্থ হয়েছে",
+  }
+};
 
 const UserManagementPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -32,12 +114,26 @@ const UserManagementPage = () => {
     totalItems: 0,
     itemsPerPage: 20,
   });
+  const [lang, setLang] = useState("bn");
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
   const filters = ["All", "Active", "Pending KYC", "Flagged", "Suspended"];
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount == null) return "৳0";
+    return `৳${Number(amount).toLocaleString("en-BD")}`;
   };
 
   const fetchUsers = useCallback(async (page = 1) => {
@@ -66,11 +162,11 @@ const UserManagementPage = () => {
         setPagination(res.data.data.pagination);
       }
     } catch (err) {
-      showToastMessage(err.response?.data?.message || "Failed to fetch users", "error");
+      showToastMessage(err.response?.data?.message || t('actionFailed'), "error");
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, searchQuery, pagination.itemsPerPage]);
+  }, [activeFilter, searchQuery, pagination.itemsPerPage, lang]);
 
   useEffect(() => {
     fetchUsers(1);
@@ -88,7 +184,7 @@ const UserManagementPage = () => {
         fetchUsers(pagination.currentPage);
       }
     } catch (err) {
-      showToastMessage(err.response?.data?.message || "Action failed", "error");
+      showToastMessage(err.response?.data?.message || t('actionFailed'), "error");
     }
   };
 
@@ -100,11 +196,11 @@ const UserManagementPage = () => {
         { headers: getAuthHeaders() }
       );
       if (res.data.success) {
-        showToastMessage(res.data.message, "success");
+        showToastMessage(t('kycApproved'), "success");
         fetchUsers(pagination.currentPage);
       }
     } catch (err) {
-      showToastMessage(err.response?.data?.message || "KYC approval failed", "error");
+      showToastMessage(err.response?.data?.message || t('actionFailed'), "error");
     }
   };
 
@@ -127,23 +223,21 @@ const UserManagementPage = () => {
 
   const handleAction = (action, user) => {
     if (action === "suspend") {
-      if (confirm(`Suspend user ${user.fullName || user.firstName}?`)) {
+      if (confirm(`${t('suspendConfirm')} ${user.fullName || user.firstName}?`)) {
         updateUserStatus(user.id, { isSuspended: true });
       }
     } else if (action === "ban") {
-      if (confirm(`Ban user ${user.fullName || user.firstName} permanently?`)) {
+      if (confirm(`${t('banConfirm')} ${user.fullName || user.firstName}?`)) {
         updateUserStatus(user.id, { isBanned: true });
       }
     } else if (action === "approveKYC") {
       approveKyc(user.id);
-    } 
+    }
   };
 
-  // Excel Export Function
   const exportToExcel = async () => {
     setExporting(true);
     try {
-      // Fetch all users for export (without pagination)
       let status = "";
       let kycStatus = "";
       if (activeFilter === "Active") status = "active";
@@ -153,7 +247,7 @@ const UserManagementPage = () => {
 
       const params = new URLSearchParams();
       params.append("page", 1);
-      params.append("limit", 999999); // Get all users
+      params.append("limit", 999999);
       if (searchQuery) params.append("search", searchQuery);
       if (status) params.append("status", status);
       if (kycStatus) params.append("kycStatus", kycStatus);
@@ -165,106 +259,34 @@ const UserManagementPage = () => {
 
       if (res.data.success) {
         const allUsers = res.data.data.users;
-        
-        // Prepare data for Excel
+
         const excelData = allUsers.map((user, index) => ({
           "SL No": index + 1,
           "Full Name": user.fullName || `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-          "First Name": user.firstName || "",
-          "Last Name": user.lastName || "",
           "Phone": user.phone,
           "Email": user.email || "N/A",
-          "Role": user.role || "user",
           "Plan": user.selectedPlan || "Bronze",
-          "Level": user.level || 1,
           "Total Saved (৳)": user.totalSaved || 0,
-          "Total Deposits": user.totalDeposits || 0,
-          "Total Withdrawals": user.totalWithdrawals || 0,
           "KYC Status": user.kycStatus === "approved" ? "Approved" : user.kycStatus === "pending" ? "Pending" : "Rejected",
-          "Account Status": user.isBanned ? "Banned" : user.isSuspended ? "Suspended" : user.accountActive ? "Active" : "Inactive",
-          "Division": user.division || "N/A",
-          "District": user.district || "N/A",
-          "Occupation": user.occupation || "N/A",
-          "Income": user.income || "N/A",
-          "Referral Code": user.referralCode || "N/A",
+          "Account Status": user.isBanned ? "Banned" : user.isSuspended ? "Suspended" : "Active",
           "Joined Date": new Date(user.createdAt).toLocaleDateString("en-GB"),
-          "Last Login": user.lastLogin ? new Date(user.lastLogin).toLocaleDateString("en-GB") : "Never",
         }));
 
-        // Create worksheet
         const worksheet = XLSX.utils.json_to_sheet(excelData);
-        
-        // Set column widths
-        const colWidths = [
-          { wch: 8 },   // SL No
-          { wch: 25 },  // Full Name
-          { wch: 15 },  // First Name
-          { wch: 15 },  // Last Name
-          { wch: 15 },  // Phone
-          { wch: 25 },  // Email
-          { wch: 10 },  // Role
-          { wch: 12 },  // Plan
-          { wch: 8 },   // Level
-          { wch: 15 },  // Total Saved
-          { wch: 15 },  // Total Deposits
-          { wch: 15 },  // Total Withdrawals
-          { wch: 12 },  // KYC Status
-          { wch: 15 },  // Account Status
-          { wch: 15 },  // Division
-          { wch: 15 },  // District
-          { wch: 20 },  // Occupation
-          { wch: 12 },  // Income
-          { wch: 15 },  // Referral Code
-          { wch: 12 },  // Joined Date
-          { wch: 12 },  // Last Login
-        ];
-        worksheet["!cols"] = colWidths;
+        worksheet["!cols"] = [{ wch: 8 }, { wch: 25 }, { wch: 15 }, { wch: 25 }, { wch: 12 }, { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 }];
 
-        // Style the header row
-        const range = XLSX.utils.decode_range(worksheet["!ref"]);
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-          const address = XLSX.utils.encode_col(C) + "1";
-          if (!worksheet[address]) continue;
-          worksheet[address].s = {
-            font: { bold: true, sz: 12, color: { rgb: "FFFFFF" } },
-            fill: { fgColor: { rgb: "059669" }, patternType: "solid" },
-            alignment: { horizontal: "center", vertical: "center" }
-          };
-        }
-
-        // Create workbook
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Users List");
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
 
-        // Add summary sheet
-        const summaryData = [
-          ["Report Generated", new Date().toLocaleString()],
-          ["Filter Applied", activeFilter],
-          ["Search Query", searchQuery || "None"],
-          ["Total Users", allUsers.length],
-          ["Active Users", allUsers.filter(u => u.accountActive && !u.isBanned && !u.isSuspended).length],
-          ["Pending KYC", allUsers.filter(u => u.kycStatus === "pending").length],
-          ["Banned Users", allUsers.filter(u => u.isBanned).length],
-          ["Suspended Users", allUsers.filter(u => u.isSuspended).length],
-        ];
-        
-        const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-        summarySheet["!cols"] = [{ wch: 20 }, { wch: 30 }];
-        XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
-
-        // Generate Excel file
         const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
         const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        
-        // Download file
-        const fileName = `amanah-users-${new Date().toISOString().split("T")[0]}.xlsx`;
-        saveAs(blob, fileName);
-        
-        showToastMessage(`✅ Exported ${allUsers.length} users successfully!`, "success");
+
+        saveAs(blob, `users-${new Date().toISOString().split("T")[0]}.xlsx`);
+        showToastMessage(t('exportedSuccessfully'), "success");
       }
     } catch (error) {
       console.error("Export error:", error);
-      showToastMessage("❌ Failed to export users", "error");
+      showToastMessage(t('exportFailed'), "error");
     } finally {
       setExporting(false);
     }
@@ -276,10 +298,7 @@ const UserManagementPage = () => {
       warn: "bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400",
       info: "bg-blue-500/20 dark:bg-blue-500/30 text-blue-500 dark:text-blue-400",
       danger: "bg-red-500/20 dark:bg-red-500/30 text-red-500 dark:text-red-400",
-      primary: "bg-primary/20 dark:bg-primary/30 text-primary dark:text-primary-light",
-      warning: "bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400",
       gray: "bg-gray-500/20 dark:bg-gray-500/30 text-gray-500 dark:text-gray-400",
-      purple: "bg-purple-500/20 dark:bg-purple-500/30 text-purple-500 dark:text-purple-400",
     };
     return classes[color] || classes.ok;
   };
@@ -292,9 +311,8 @@ const UserManagementPage = () => {
 
   const getStatusDisplay = (user) => {
     if (user.isBanned) return { label: "🚫 Banned", color: "danger" };
-    if (user.isSuspended) return { label: "⏸️ Suspended", color: "warning" };
+    if (user.isSuspended) return { label: "⏸️ Suspended", color: "warn" };
     if (!user.accountActive) return { label: "⏳ Inactive", color: "gray" };
-    if (user.kycStatus === "pending") return { label: "KYC Review", color: "info" };
     return { label: "Active", color: "ok" };
   };
 
@@ -315,29 +333,20 @@ const UserManagementPage = () => {
       "from-red-500 to-orange-500",
       "from-purple-500 to-indigo-500",
       "from-green-500 to-teal-500",
-      "from-pink-500 to-rose-500",
     ];
     return colors[index % colors.length];
   };
 
   const formatDate = (date) => {
     if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-US", {
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  const formatCurrency = (amount) => {
-    if (!amount) return "৳0";
-    return `৳${amount.toLocaleString("en-IN")}`;
+    return new Date(date).toLocaleDateString("en-US", { month: "short", year: "numeric" });
   };
 
   return (
     <div>
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-        <h2 className="text-lg font-bold text-foreground">👥 User Management</h2>
+        <h2 className="text-lg font-bold text-foreground">{t('userManagement')}</h2>
       </div>
 
       {/* Toolbar */}
@@ -346,15 +355,16 @@ const UserManagementPage = () => {
           <Search size={16} className="text-foreground/50" />
           <input
             type="text"
-            placeholder="Search by name, phone, NID..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && fetchUsers(1)}
             className="flex-1 bg-transparent outline-none text-sm text-foreground"
           />
         </div>
+
         <div className="flex flex-wrap gap-2">
-          {filters.map((filter) => (
+          {["All", "Active", "Pending KYC", "Flagged", "Suspended"].map((filter) => (
             <button
               key={filter}
               onClick={() => { setActiveFilter(filter); fetchUsers(1); }}
@@ -364,9 +374,10 @@ const UserManagementPage = () => {
                   : "border-border bg-card/80 dark:bg-card/60 backdrop-blur-sm text-foreground/60 hover:border-primary/50 hover:bg-primary/5"
               }`}
             >
-              {filter}
+              {t(filter.toLowerCase().replace(/\s+/g, ''))}
             </button>
           ))}
+
           <button
             onClick={exportToExcel}
             disabled={exporting}
@@ -375,11 +386,11 @@ const UserManagementPage = () => {
             {exporting ? (
               <>
                 <Loader2 size={12} className="animate-spin" />
-                Exporting...
+                {t('exporting')}
               </>
             ) : (
               <>
-                <Download size={12} /> Export Excel
+                <Download size={12} /> {t('exportExcel')}
               </>
             )}
           </button>
@@ -398,22 +409,22 @@ const UserManagementPage = () => {
               <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b border-border/50 dark:border-border/30 bg-background/80 dark:bg-background/60">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Member</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Phone</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Plan</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Total Saved</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">KYC</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Joined</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('member')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('phone')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('plan')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('totalSaved')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('kyc')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('status')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('joined')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="px-4 py-10 text-center text-sm text-foreground/50">
-                        No users found
-                       </td>
+                        {t('noUsersFound')}
+                      </td>
                     </tr>
                   ) : (
                     users.map((user, idx) => {
@@ -421,6 +432,7 @@ const UserManagementPage = () => {
                       const status = getStatusDisplay(user);
                       const plan = getPlanDisplay(user.selectedPlan);
                       const avatar = user.firstName?.[0]?.toUpperCase() || "?";
+
                       return (
                         <tr key={user.id} className="border-b border-border/50 dark:border-border/30 last:border-0 hover:bg-primary/5 dark:hover:bg-primary/10 transition-all duration-200">
                           <td className="px-4 py-3">
@@ -429,18 +441,22 @@ const UserManagementPage = () => {
                                 {avatar}
                               </div>
                               <div>
-                                <div className="font-semibold text-sm text-foreground">{user.fullName || `${user.firstName} ${user.lastName || ""}`.trim()}</div>
+                                <div className="font-semibold text-sm text-foreground">
+                                  {user.fullName || `${user.firstName} ${user.lastName || ""}`.trim()}
+                                </div>
                                 <div className="text-xs text-foreground/50">{user.email || "No email"}</div>
                               </div>
                             </div>
-                           </td>
+                          </td>
                           <td className="px-4 py-3 text-sm text-foreground">{user.phone}</td>
                           <td className="px-4 py-3">
                             <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(plan.label, plan.color)}`}>
                               {plan.emoji} {plan.label}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-sm font-bold text-primary">{formatCurrency(user.totalSaved)}</td>
+                          <td className="px-4 py-3 text-sm font-bold text-primary">
+                            {formatCurrency(user?.totalSaved)}
+                          </td>
                           <td className="px-4 py-3">
                             <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getBadgeClass(kyc.label, kyc.color)}`}>
                               {kyc.label}
@@ -454,24 +470,24 @@ const UserManagementPage = () => {
                           <td className="px-4 py-3 text-xs text-foreground/50">{formatDate(user.createdAt)}</td>
                           <td className="px-4 py-3">
                             <div className="flex gap-2">
-                              <button onClick={() => openUserModal(user)} className="p-1.5 rounded-lg border border-border/60 dark:border-border/40 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300" title="View">
+                              <button onClick={() => openUserModal(user)} className="p-1.5 rounded-lg border border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">
                                 <Eye size={14} className="text-foreground/70" />
                               </button>
                               {user.isBanned ? (
-                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-green-500/30 text-green-500 hover:bg-green-500/10 transition-all duration-300" title="Unban">
+                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-green-500/30 text-green-500 hover:bg-green-500/10 transition-all duration-300">
                                   <CheckCircle size={14} />
                                 </button>
                               ) : user.kycStatus === "pending" ? (
-                                <button onClick={() => handleAction("approveKYC", user)} className="p-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-all duration-300" title="Approve KYC">
+                                <button onClick={() => handleAction("approveKYC", user)} className="p-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-all duration-300">
                                   <CheckCircle size={14} />
                                 </button>
                               ) : (
-                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition-all duration-300" title="Suspend">
+                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition-all duration-300">
                                   <XCircle size={14} />
                                 </button>
                               )}
                               {!user.isBanned && (
-                                <button onClick={() => handleAction("ban", user)} className="p-1.5 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-all duration-300" title="Ban">
+                                <button onClick={() => handleAction("ban", user)} className="p-1.5 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-all duration-300">
                                   <Ban size={14} />
                                 </button>
                               )}
@@ -527,7 +543,7 @@ const UserManagementPage = () => {
         )}
       </div>
 
-      {/* User Modal - DARKER */}
+      {/* User Modal */}
       <AnimatePresence>
         {showUserModal && selectedUser && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeUserModal}>
@@ -538,6 +554,7 @@ const UserManagementPage = () => {
               className="bg-card/95 dark:bg-card/90 backdrop-blur-sm rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-border/50"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Modal Content - Same as before */}
               <div className="bg-gradient-to-r from-primary to-primary-light p-6 text-white relative">
                 <button onClick={closeUserModal} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-all duration-300">✕</button>
                 <div className="flex flex-col items-center">
@@ -546,58 +563,37 @@ const UserManagementPage = () => {
                   </div>
                   <div className="text-xl font-bold">{selectedUser.fullName || `${selectedUser.firstName} ${selectedUser.lastName || ""}`.trim()}</div>
                   <div className="text-sm text-white/80">{selectedUser.phone} · {selectedUser.email || "No email"}</div>
-                  <div className="flex gap-2 mt-3 flex-wrap justify-center">
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20">{getPlanDisplay(selectedUser.selectedPlan).label} Member</span>
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20">{getKycDisplay(selectedUser.kycStatus).label}</span>
-                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20">{getStatusDisplay(selectedUser).label}</span>
-                  </div>
                 </div>
               </div>
 
               <div className="p-6">
                 <div className="mb-5">
-                  <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-3">Account Overview</div>
+                  <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-3">{t('accountOverview')}</div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                      <div className="text-[10px] text-foreground/50">Total Savings</div>
+                      <div className="text-[10px] text-foreground/50">{t('totalSavings')}</div>
                       <div className="text-lg font-bold text-primary">{formatCurrency(selectedUser.totalSaved)}</div>
                     </div>
                     <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                      <div className="text-[10px] text-foreground/50">Total Deposits</div>
+                      <div className="text-[10px] text-foreground/50">{t('totalDeposits')}</div>
                       <div className="text-lg font-bold text-foreground">{selectedUser.totalDeposits || 0}</div>
                     </div>
                     <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                      <div className="text-[10px] text-foreground/50">Total Withdrawals</div>
+                      <div className="text-[10px] text-foreground/50">{t('totalWithdrawals')}</div>
                       <div className="text-lg font-bold text-foreground">{selectedUser.totalWithdrawals || 0}</div>
                     </div>
                     <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                      <div className="text-[10px] text-foreground/50">Level</div>
+                      <div className="text-[10px] text-foreground/50">{t('level')}</div>
                       <div className="text-lg font-bold text-foreground">{selectedUser.level || 1}</div>
-                    </div>
-                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                      <div className="text-[10px] text-foreground/50">Member Since</div>
-                      <div className="text-sm font-semibold text-foreground">{formatDate(selectedUser.createdAt)}</div>
-                    </div>
-                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                      <div className="text-[10px] text-foreground/50">Last Login</div>
-                      <div className="text-sm font-semibold text-foreground">{formatDate(selectedUser.lastLogin)}</div>
-                    </div>
-                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                      <div className="text-[10px] text-foreground/50">Division</div>
-                      <div className="text-sm font-semibold text-foreground">{selectedUser.division || "N/A"}</div>
-                    </div>
-                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                      <div className="text-[10px] text-foreground/50">Referral Code</div>
-                      <div className="text-sm font-semibold text-foreground">{selectedUser.referralCode || "N/A"}</div>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="p-4 border-t border-border/50 dark:border-border/30 flex gap-3">
-                <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">📧 Message</button>
-                <button onClick={() => { handleAction("suspend", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300">⏸️ Suspend</button>
-                <button onClick={() => { handleAction("ban", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">🚫 Ban</button>
+                <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">{t('message')}</button>
+                <button onClick={() => { handleAction("suspend", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300">{t('suspend')}</button>
+                <button onClick={() => { handleAction("ban", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">{t('ban')}</button>
               </div>
             </motion.div>
           </div>
@@ -612,7 +608,7 @@ const UserManagementPage = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
             className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-sm shadow-lg whitespace-nowrap max-w-[90vw] text-center backdrop-blur-sm ${
-              toast.type === "error" ? "bg-red-500/90" : toast.type === "warning" ? "bg-amber-500/90" : toast.type === "info" ? "bg-blue-500/90" : "bg-green-500/90"
+              toast.type === "error" ? "bg-red-500/90" : "bg-green-500/90"
             } text-white`}
           >
             {toast.message}

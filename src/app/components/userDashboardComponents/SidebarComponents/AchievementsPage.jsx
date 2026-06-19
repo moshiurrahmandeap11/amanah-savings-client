@@ -6,8 +6,69 @@ import Link from "next/link";
 import { Loader2, TrendingUp, Medal, Star, Award, Trophy, Target, Zap, Crown, Sparkles, Gift, Rocket, Shield, Heart, CheckCircle, Lock, ArrowUp, Share, FileText } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    pageTitle: "Achievements & Badges",
+    pageSubtitle: "Track your progress and unlock rewards",
+    
+    // Stats Labels
+    statBadgesEarned: "Badges Earned",
+    statLockedBadges: "Locked Badges",
+    statTotalPoints: "Total Points",
+    statLevel: "Level",
+    
+    // Level Progress
+    levelCurrent: "Current Level",
+    levelNext: "Next Level",
+    levelProgress: "Progress to Level {level}",
+    levelPointsToNext: "points to next level",
+    levelNextBadges: "Next Badges to Unlock:",
+    
+    // Badges Sections
+    earnedBadgesTitle: "Badges Earned ({count})",
+    lockedBadgesTitle: "Locked Badges ({count})",
+    
+    // Empty States
+    noEarnedBadges: "No badges earned yet",
+    noEarnedBadgesDesc: "Start saving to earn your first badge!",
+    noLockedBadges: "You've unlocked all badges!",
+    noLockedBadgesDesc: "What an amazing achievement!",
+  },
+  bn: {
+    // Page Title
+    pageTitle: "অর্জন ও ব্যাজ",
+    pageSubtitle: "আপনার অগ্রগতি ট্র্যাক করুন এবং পুরস্কার আনলক করুন",
+    
+    // Stats Labels
+    statBadgesEarned: "অর্জিত ব্যাজ",
+    statLockedBadges: "লক করা ব্যাজ",
+    statTotalPoints: "মোট পয়েন্ট",
+    statLevel: "লেভেল",
+    
+    // Level Progress
+    levelCurrent: "বর্তমান লেভেল",
+    levelNext: "পরবর্তী লেভেল",
+    levelProgress: "লেভেল {level} এ অগ্রগতি",
+    levelPointsToNext: "পয়েন্ট বাকি পরবর্তী লেভেলে",
+    levelNextBadges: "আনলক করার জন্য পরবর্তী ব্যাজ:",
+    
+    // Badges Sections
+    earnedBadgesTitle: "অর্জিত ব্যাজ ({count})",
+    lockedBadgesTitle: "লক করা ব্যাজ ({count})",
+    
+    // Empty States
+    noEarnedBadges: "কোন ব্যাজ অর্জিত হয়নি",
+    noEarnedBadgesDesc: "আপনার প্রথম ব্যাজ অর্জন করতে সঞ্চয় শুরু করুন!",
+    noLockedBadges: "আপনি সব ব্যাজ আনলক করেছেন!",
+    noLockedBadgesDesc: "কি অসাধারণ অর্জন!",
+  }
+};
+
 const AchievementsPage = () => {
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState('en');
   const [stats, setStats] = useState({
     totalEarned: 0,
     totalLocked: 0,
@@ -19,6 +80,17 @@ const AchievementsPage = () => {
   const [earnedBadges, setEarnedBadges] = useState([]);
   const [lockedBadges, setLockedBadges] = useState([]);
   const [levelInfo, setLevelInfo] = useState(null);
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLanguage(savedLang);
+  }, []);
+
+  // Translation function
+  const t = (key) => {
+    return translations[language]?.[key] || translations.en[key] || key;
+  };
 
   // Fetch achievements
   const fetchAchievements = async () => {
@@ -54,13 +126,11 @@ const AchievementsPage = () => {
     fetchLevelInfo();
   }, []);
 
-
-
   const displayStats = [
-    { icon: <Award size={20} />, value: stats.totalEarned, label: "Badges Earned", color: "green", bg: "bg-primary/10", textColor: "text-primary" },
-    { icon: <Lock size={20} />, value: stats.totalLocked, label: "Locked Badges", color: "blue", bg: "bg-blue-500/10", textColor: "text-blue-500" },
-    { icon: <Star size={20} />, value: stats.totalPoints.toLocaleString(), label: "Total Points", color: "warning", bg: "bg-amber-500/10", textColor: "text-amber-500" },
-    { icon: <Crown size={20} />, value: stats.level, label: "Level", color: "info", bg: "bg-cyan-500/10", textColor: "text-cyan-500" },
+    { icon: <Award size={20} />, value: stats.totalEarned, label: t('statBadgesEarned'), color: "green", bg: "bg-primary/10", textColor: "text-primary" },
+    { icon: <Lock size={20} />, value: stats.totalLocked, label: t('statLockedBadges'), color: "blue", bg: "bg-blue-500/10", textColor: "text-blue-500" },
+    { icon: <Star size={20} />, value: stats.totalPoints.toLocaleString(), label: t('statTotalPoints'), color: "warning", bg: "bg-amber-500/10", textColor: "text-amber-500" },
+    { icon: <Crown size={20} />, value: stats.level, label: t('statLevel'), color: "info", bg: "bg-cyan-500/10", textColor: "text-cyan-500" },
   ];
 
   const getStatColorClass = (color) => {
@@ -84,29 +154,31 @@ const AchievementsPage = () => {
   return (
     <div className="max-w-full mx-auto">
       <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
-        <Trophy size={28} className="text-amber-500" /> Achievements & Badges
+        <Trophy size={28} className="text-amber-500" /> {t('pageTitle')}
       </h2>
-      <p className="text-sm text-foreground/60 mb-5">Track your progress and unlock rewards</p>
+      <p className="text-sm text-foreground/60 mb-5">{t('pageSubtitle')}</p>
 
       {/* Level Progress Card */}
       {levelInfo && (
         <div className="bg-gradient-to-r from-primary/10 to-primary-light/10 border border-primary/20 rounded-xl p-5 mb-6">
           <div className="flex items-center justify-between mb-3">
             <div>
-              <div className="text-xs text-foreground/50">Current Level</div>
+              <div className="text-xs text-foreground/50">{t('levelCurrent')}</div>
               <div className="flex items-center gap-2">
                 <Crown size={24} className="text-primary" />
                 <div className="text-3xl font-bold text-primary">Level {levelInfo.level}</div>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-xs text-foreground/50">Next Level</div>
+              <div className="text-xs text-foreground/50">{t('levelNext')}</div>
               <div className="text-2xl font-bold text-foreground">Level {levelInfo.level + 1}</div>
             </div>
           </div>
           <div className="mb-2">
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-foreground/60">Progress to Level {levelInfo.level + 1}</span>
+              <span className="text-foreground/60">
+                {t('levelProgress').replace('{level}', levelInfo.level + 1)}
+              </span>
               <span className="text-primary font-semibold">{levelInfo.progressToNextLevel?.toFixed(1)}%</span>
             </div>
             <div className="h-2 bg-border rounded-full overflow-hidden">
@@ -118,12 +190,12 @@ const AchievementsPage = () => {
           </div>
           <div className="flex justify-between text-xs">
             <span className="text-foreground/50">{levelInfo.totalPoints?.toLocaleString()} points</span>
-            <span className="text-foreground/50">{levelInfo.pointsToNextLevel} points to next level</span>
+            <span className="text-foreground/50">{levelInfo.pointsToNextLevel} {t('levelPointsToNext')}</span>
           </div>
           {levelInfo.nextBadges && levelInfo.nextBadges.length > 0 && (
             <div className="mt-4 pt-3 border-t border-primary/20">
               <div className="text-xs text-foreground/50 mb-2 flex items-center gap-1">
-                <Target size={12} /> Next Badges to Unlock:
+                <Target size={12} /> {t('levelNextBadges')}
               </div>
               <div className="flex gap-3 flex-wrap">
                 {levelInfo.nextBadges.map((badge, idx) => (
@@ -160,13 +232,14 @@ const AchievementsPage = () => {
       {/* Earned Badges */}
       <div className="bg-card border border-border rounded-xl p-5 mb-5">
         <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-          <CheckCircle size={18} className="text-green-500" /> Badges Earned ({earnedBadges.length})
+          <CheckCircle size={18} className="text-green-500" /> 
+          {t('earnedBadgesTitle').replace('{count}', earnedBadges.length)}
         </div>
         {earnedBadges.length === 0 ? (
           <div className="text-center py-8">
             <Target size={48} className="text-foreground/30 mx-auto mb-2" />
-            <p className="text-foreground/50">No badges earned yet</p>
-            <p className="text-xs text-foreground/40 mt-1">Start saving to earn your first badge!</p>
+            <p className="text-foreground/50">{t('noEarnedBadges')}</p>
+            <p className="text-xs text-foreground/40 mt-1">{t('noEarnedBadgesDesc')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -196,13 +269,14 @@ const AchievementsPage = () => {
       {/* Locked Badges */}
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-          <Lock size={18} className="text-amber-500" /> Locked Badges ({lockedBadges.length})
+          <Lock size={18} className="text-amber-500" /> 
+          {t('lockedBadgesTitle').replace('{count}', lockedBadges.length)}
         </div>
         {lockedBadges.length === 0 ? (
           <div className="text-center py-8">
             <Trophy size={48} className="text-foreground/30 mx-auto mb-2" />
-            <p className="text-foreground/50">You've unlocked all badges!</p>
-            <p className="text-xs text-foreground/40 mt-1">What an amazing achievement!</p>
+            <p className="text-foreground/50">{t('noLockedBadges')}</p>
+            <p className="text-xs text-foreground/40 mt-1">{t('noLockedBadgesDesc')}</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
@@ -241,7 +315,6 @@ const AchievementsPage = () => {
           </div>
         )}
       </div>
-
     </div>
   );
 };

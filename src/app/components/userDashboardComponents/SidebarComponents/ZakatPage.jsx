@@ -7,6 +7,190 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    zakatCalculator: "Zakat Calculator",
+    
+    // Hero
+    calculateYourZakat: "Calculate Your Zakat",
+    findZakatAmount: "Find your annual Zakat amount according to Islamic Shariah",
+    
+    // Rates
+    todaysGoldRate: "Today's Gold Rate (per gram):",
+    todaysSilverRate: "Today's Silver Rate (per gram):",
+    ratesNote: "* Rates are user-provided. Please check current market rates.",
+    
+    // Nisab
+    nisab: "Nisab (Gold 85g)",
+    
+    // Assets
+    assets: "Assets",
+    cashSavings: "Cash & Savings",
+    cash: "Cash",
+    cashSub: "In hand & bank",
+    sanchoy: "Sonchoy Bondhu",
+    sanchoySub: "Total across all goals",
+    mobile: "bKash / Nagad",
+    mobileSub: "Mobile banking balance",
+    investments: "Investments",
+    investmentsSub: "Shares, mutual funds",
+    goldSilver: "Gold & Silver",
+    goldGrams: "Gold (grams)",
+    goldSub: "Excluding jewelry in use",
+    silverGrams: "Silver (grams)",
+    silverSub: "595g = 1 Nisab",
+    businessAssets: "Business Assets",
+    businessStock: "Business Stock",
+    businessStockSub: "At market value",
+    receivables: "Receivables",
+    receivablesSub: "Money owed to you",
+    
+    // Liabilities
+    liabilities: "Liabilities",
+    debtsPayables: "Debts & Payables",
+    loans: "Loans",
+    loansSub: "Annual repayment amount",
+    outstandingBills: "Outstanding Bills",
+    billsSub: "Rent, utilities etc.",
+    otherDebts: "Other Debts",
+    otherDebtsSub: "Personal loans",
+    
+    // Results
+    yourZakatThisYear: "Your Zakat This Year",
+    zakatRateInfo: "2.5% of net wealth · May Allah accept it",
+    belowNisab: "Your wealth is below Nisab",
+    belowNisabDesc: "Your total wealth is below the Nisab of {nisab} — Zakat is not obligatory this year.",
+    
+    // Breakdown
+    breakdown: "Breakdown",
+    totalAssets: "Total Assets",
+    totalLiabilities: "Total Liabilities",
+    zakatableWealth: "Zakatable Wealth",
+    zakatDue: "Zakat Due",
+    zakatRate: "Zakat Rate",
+    
+    // Buttons
+    reset: "Reset",
+    share: "Share",
+    calculateZakat: "Calculate Zakat",
+    createGoal: "Create Goal",
+    createZakatGoal: "Create a Zakat Goal",
+    setAsideZakat: "Set aside your Zakat amount separately",
+    close: "Close",
+    goToDashboard: "Go to Dashboard",
+    
+    // Share Modal
+    copy: "Copy",
+    screenshot: "Screenshot",
+    whatsapp: "WhatsApp",
+    copied: "Copied!",
+    takeScreenshot: "Take a screenshot",
+    
+    // Toast Messages
+    resetDone: "Reset done",
+    cannotCreateGoal: "Cannot create goal when zakat amount is zero",
+    zakatGoalCreated: "Zakat Goal Created!",
+    zakatGoalDesc: "A new goal has been created to save your zakat separately.",
+    amount: "Amount",
+    failedToCalculate: "Failed to calculate zakat",
+    failedToCreateGoal: "Failed to create zakat goal",
+    success: "Success!",
+    error: "Error!",
+  },
+  bn: {
+    // Header
+    zakatCalculator: "যাকাত ক্যালকুলেটর",
+    
+    // Hero
+    calculateYourZakat: "আপনার যাকাত গণনা করুন",
+    findZakatAmount: "ইসলামি শরীয়াহ অনুযায়ী আপনার বার্ষিক যাকাতের পরিমাণ নির্ণয় করুন",
+    
+    // Rates
+    todaysGoldRate: "আজকের সোনার দাম (প্রতি গ্রাম):",
+    todaysSilverRate: "আজকের রূপার দাম (প্রতি গ্রাম):",
+    ratesNote: "* দাম ব্যবহারকারী প্রদত্ত। বর্তমান বাজার দর যাচাই করুন।",
+    
+    // Nisab
+    nisab: "নিসাব (সোনা ৮৫ গ্রাম)",
+    
+    // Assets
+    assets: "সম্পত্তি",
+    cashSavings: "নগদ ও সঞ্চয়",
+    cash: "নগদ",
+    cashSub: "হাতে ও ব্যাংকে",
+    sanchoy: "সঞ্চয় বন্ধু",
+    sanchoySub: "সব গোলের মোট সঞ্চয়",
+    mobile: "বিকাশ / নগদ",
+    mobileSub: "মোবাইল ব্যাংকিং ব্যালেন্স",
+    investments: "বিনিয়োগ",
+    investmentsSub: "শেয়ার, মিউচুয়াল ফান্ড",
+    goldSilver: "সোনা ও রূপা",
+    goldGrams: "সোনা (গ্রাম)",
+    goldSub: "ব্যবহৃত গহনা বাদে",
+    silverGrams: "রূপা (গ্রাম)",
+    silverSub: "৫৯৫ গ্রাম = ১ নিসাব",
+    businessAssets: "ব্যবসায়িক সম্পদ",
+    businessStock: "ব্যবসায়িক পণ্য",
+    businessStockSub: "বাজার মূল্যে",
+    receivables: "প্রাপ্য",
+    receivablesSub: "আপনার পাওনা টাকা",
+    
+    // Liabilities
+    liabilities: "দায়",
+    debtsPayables: "ঋণ ও প্রদেয়",
+    loans: "ঋণ",
+    loansSub: "বার্ষিক পরিশোধের পরিমাণ",
+    outstandingBills: "বকেয়া বিল",
+    billsSub: "ভাড়া, ইউটিলিটি ইত্যাদি",
+    otherDebts: "অন্যান্য ঋণ",
+    otherDebtsSub: "ব্যক্তিগত ঋণ",
+    
+    // Results
+    yourZakatThisYear: "আপনার যাকাত এই বছর",
+    zakatRateInfo: "নিট সম্পদের ২.৫% · আল্লাহ কবুল করুন",
+    belowNisab: "আপনার সম্পদ নিসাবের নিচে",
+    belowNisabDesc: "আপনার মোট সম্পদ {nisab} এর নিচে — এই বছর যাকাত দেয়া আবশ্যক নয়।",
+    
+    // Breakdown
+    breakdown: "বিবরণী",
+    totalAssets: "মোট সম্পদ",
+    totalLiabilities: "মোট দায়",
+    zakatableWealth: "যাকাতযোগ্য সম্পদ",
+    zakatDue: "যাকাত প্রদেয়",
+    zakatRate: "যাকাতের হার",
+    
+    // Buttons
+    reset: "রিসেট",
+    share: "শেয়ার",
+    calculateZakat: "যাকাত গণনা করুন",
+    createGoal: "গোল তৈরি করুন",
+    createZakatGoal: "যাকাত গোল তৈরি করুন",
+    setAsideZakat: "আপনার যাকাতের পরিমাণ আলাদা রাখুন",
+    close: "বন্ধ করুন",
+    goToDashboard: "ড্যাশবোর্ডে যান",
+    
+    // Share Modal
+    copy: "কপি",
+    screenshot: "স্ক্রিনশট",
+    whatsapp: "হোয়াটসঅ্যাপ",
+    copied: "কপি হয়েছে!",
+    takeScreenshot: "স্ক্রিনশট নিন",
+    
+    // Toast Messages
+    resetDone: "রিসেট সম্পন্ন",
+    cannotCreateGoal: "যাকাতের পরিমাণ শূন্য হলে গোল তৈরি করা যাবে না",
+    zakatGoalCreated: "যাকাত গোল তৈরি হয়েছে!",
+    zakatGoalDesc: "আপনার যাকাত আলাদাভাবে সংরক্ষণের জন্য একটি নতুন গোল তৈরি করা হয়েছে।",
+    amount: "পরিমাণ",
+    failedToCalculate: "যাকাত গণনা করতে ব্যর্থ হয়েছে",
+    failedToCreateGoal: "যাকাত গোল তৈরি করতে ব্যর্থ হয়েছে",
+    success: "সফল!",
+    error: "ত্রুটি!",
+  }
+};
+
 const ZakatPage = () => {
   const router = useRouter();
   const [isDark, setIsDark] = useState(false);
@@ -41,10 +225,22 @@ const ZakatPage = () => {
 
   const ZAKAT_RATE = 0.025;
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
+
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
     
     const savedCalculation = localStorage.getItem("zakatCalculation");
     if (savedCalculation) {
@@ -75,7 +271,7 @@ const ZakatPage = () => {
 
   const showToast = (message, type = "success") => {
     Swal.fire({
-      title: type === "success" ? "Success!" : "Error!",
+      title: type === "success" ? t('success') : t('error'),
       text: message,
       icon: type,
       timer: 2000,
@@ -122,7 +318,7 @@ const ZakatPage = () => {
       }
     } catch (error) {
       console.error("Calculate zakat error:", error);
-      showToast(error.response?.data?.message || "Failed to calculate zakat", "error");
+      showToast(error.response?.data?.message || t('failedToCalculate'), "error");
     } finally {
       setLoading(false);
     }
@@ -157,17 +353,12 @@ const ZakatPage = () => {
       zakat: 0,
       aboveNisab: false,
     });
-    showToast(lang === "bn" ? "Reset done" : "Reset done", "success");
+    showToast(t('resetDone'), "success");
   }, [lang]);
 
   const createZakatGoal = async () => {
     if (result.zakat <= 0) {
-      showToast(
-        lang === "bn" 
-          ? "Cannot create goal when zakat amount is zero" 
-          : "Cannot create goal when zakat amount is zero",
-        "error"
-      );
+      showToast(t('cannotCreateGoal'), "error");
       return;
     }
     
@@ -181,13 +372,13 @@ const ZakatPage = () => {
       
       if (response.data.success) {
         Swal.fire({
-          title: lang === "bn" ? "Zakat Goal Created!" : "Zakat Goal Created!",
+          title: t('zakatGoalCreated'),
           html: lang === "bn"
-            ? `A new goal has been created to save your zakat separately.<br/><strong>Amount: ৳${result.zakat.toLocaleString()}</strong>`
-            : `A new goal has been created to save your zakat separately.<br/><strong>Amount: ৳${result.zakat.toLocaleString()}</strong>`,
+            ? `${t('zakatGoalDesc')}<br/><strong>${t('amount')}: ৳${result.zakat.toLocaleString()}</strong>`
+            : `${t('zakatGoalDesc')}<br/><strong>${t('amount')}: ৳${result.zakat.toLocaleString()}</strong>`,
           icon: "success",
           confirmButtonColor: "#059669",
-          confirmButtonText: lang === "bn" ? "Go to Dashboard" : "Go to Dashboard",
+          confirmButtonText: t('goToDashboard'),
         }).then((result) => {
           if (result.isConfirmed) {
             router.push("/dashboard/goals");
@@ -196,7 +387,7 @@ const ZakatPage = () => {
       }
     } catch (error) {
       console.error("Create zakat goal error:", error);
-      showToast(error.response?.data?.message || "Failed to create zakat goal", "error");
+      showToast(error.response?.data?.message || t('failedToCreateGoal'), "error");
     } finally {
       setSaving(false);
     }
@@ -215,19 +406,16 @@ const ZakatPage = () => {
       const amt = Math.round(result.zakat).toLocaleString("en-IN");
       const msg =
         lang === "bn"
-          ? `My Zakat this year: ৳${amt}\n\nCalculate yours with sanchoy`
-          : `My Zakat this year: ৳${amt}\n\nCalculate yours with sanchoy`;
+          ? `আমার যাকাত এই বছর: ৳${amt}\n\nসঞ্চয় বন্ধু দিয়ে আপনার যাকাত গণনা করুন`
+          : `My Zakat this year: ৳${amt}\n\nCalculate yours with Sanchoy Bondhu`;
 
       if (type === "copy") {
         navigator.clipboard.writeText(msg);
-        showToast(lang === "bn" ? "Copied!" : "Copied!", "success");
+        showToast(t('copied'), "success");
       } else if (type === "whatsapp") {
         window.open("https://wa.me/?text=" + encodeURIComponent(msg), "_blank");
       } else {
-        showToast(
-          lang === "bn" ? "Take a screenshot" : "Take a screenshot",
-          "info"
-        );
+        showToast(t('takeScreenshot'), "info");
       }
       closeShareModal();
     },
@@ -251,7 +439,7 @@ const ZakatPage = () => {
           <ArrowLeft size={18} />
         </button>
         <h1 className="text-white text-lg font-bold flex-1 flex items-center gap-2">
-          <Calculator size={20} /> Zakat Calculator
+          <Calculator size={20} /> {t('zakatCalculator')}
         </h1>
         <button
           onClick={toggleTheme}
@@ -273,10 +461,10 @@ const ZakatPage = () => {
           <HandCoins size={32} className="text-white" />
         </div>
         <div className="text-white text-xl font-bold mb-1">
-          Calculate Your Zakat
+          {t('calculateYourZakat')}
         </div>
         <div className="text-white/80 text-sm">
-          Find your annual Zakat amount according to Islamic Shariah
+          {t('findZakatAmount')}
         </div>
       </div>
 
@@ -286,7 +474,7 @@ const ZakatPage = () => {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <div className="text-sm text-foreground font-medium flex items-center gap-1">
-                <Gem size={14} className="text-emerald-600" /> Today's Gold Rate (per gram):
+                <Gem size={14} className="text-emerald-600" /> {t('todaysGoldRate')}
               </div>
               <div className="flex items-center gap-1">
                 <input
@@ -300,7 +488,7 @@ const ZakatPage = () => {
             </div>
             <div className="flex justify-between items-center">
               <div className="text-sm text-foreground font-medium flex items-center gap-1">
-                <Coins size={14} className="text-gray-500" /> Today's Silver Rate (per gram):
+                <Coins size={14} className="text-gray-500" /> {t('todaysSilverRate')}
               </div>
               <div className="flex items-center gap-1">
                 <input
@@ -314,7 +502,7 @@ const ZakatPage = () => {
             </div>
           </div>
           <div className="text-xs text-foreground/50 mt-3 pt-2 border-t border-emerald-200 dark:border-emerald-800">
-            * Rates are user-provided. Please check current market rates.
+            {t('ratesNote')}
           </div>
         </div>
 
@@ -324,7 +512,7 @@ const ZakatPage = () => {
             <div className="flex items-center gap-2">
               <Award size={18} className="text-emerald-600" />
               <div>
-                <div className="text-xs text-foreground/60">Nisab (Gold 85g)</div>
+                <div className="text-xs text-foreground/60">{t('nisab')}</div>
                 <div className="font-bold text-emerald-600 text-lg">
                   ৳ {nisab.toLocaleString()}
                 </div>
@@ -335,18 +523,18 @@ const ZakatPage = () => {
 
         {/* Assets Section */}
         <div className="text-xs font-bold text-foreground/60 uppercase tracking-wide mb-2 flex items-center gap-2">
-          <Wallet size={14} /> Assets
+          <Wallet size={14} /> {t('assets')}
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            <Landmark size={16} /> Cash & Savings
+            <Landmark size={16} /> {t('cashSavings')}
           </div>
           {[
-            { id: "cash", label: "Cash", sub: "In hand & bank", value: assets.cash },
-            { id: "sanchoy", label: "Sonchoy Bondhu", sub: "Total across all goals", value: assets.sanchoy },
-            { id: "mobile", label: "bKash / Nagad", sub: "Mobile banking balance", value: assets.mobile },
-            { id: "invest", label: "Investments", sub: "Shares, mutual funds", value: assets.invest },
+            { id: "cash", label: t('cash'), sub: t('cashSub'), value: assets.cash },
+            { id: "sanchoy", label: t('sanchoy'), sub: t('sanchoySub'), value: assets.sanchoy },
+            { id: "mobile", label: t('mobile'), sub: t('mobileSub'), value: assets.mobile },
+            { id: "invest", label: t('investments'), sub: t('investmentsSub'), value: assets.invest },
           ].map((item) => (
             <div key={item.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
               <div>
@@ -363,12 +551,12 @@ const ZakatPage = () => {
 
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            <Gem size={16} /> Gold & Silver
+            <Gem size={16} /> {t('goldSilver')}
           </div>
           <div className="flex justify-between items-center py-2 border-b border-border">
             <div>
-              <div className="text-sm text-foreground">Gold (grams)</div>
-              <div className="text-xs text-foreground/50">Excluding jewelry in use</div>
+              <div className="text-sm text-foreground">{t('goldGrams')}</div>
+              <div className="text-xs text-foreground/50">{t('goldSub')}</div>
             </div>
             <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
               <span className="px-2 py-1 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-r border-border">g</span>
@@ -377,8 +565,8 @@ const ZakatPage = () => {
           </div>
           <div className="flex justify-between items-center py-2 border-b border-border last:border-0">
             <div>
-              <div className="text-sm text-foreground">Silver (grams)</div>
-              <div className="text-xs text-foreground/50">595g = 1 Nisab</div>
+              <div className="text-sm text-foreground">{t('silverGrams')}</div>
+              <div className="text-xs text-foreground/50">{t('silverSub')}</div>
             </div>
             <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
               <span className="px-2 py-1 text-xs font-bold text-gray-500 border-r border-border">g</span>
@@ -389,11 +577,11 @@ const ZakatPage = () => {
 
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            <TrendingUp size={16} /> Business Assets
+            <TrendingUp size={16} /> {t('businessAssets')}
           </div>
           {[
-            { id: "stock", label: "Business Stock", sub: "At market value", value: assets.stock },
-            { id: "recv", label: "Receivables", sub: "Money owed to you", value: assets.recv },
+            { id: "stock", label: t('businessStock'), sub: t('businessStockSub'), value: assets.stock },
+            { id: "recv", label: t('receivables'), sub: t('receivablesSub'), value: assets.recv },
           ].map((item) => (
             <div key={item.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
               <div>
@@ -410,17 +598,17 @@ const ZakatPage = () => {
 
         {/* Liabilities Section */}
         <div className="text-xs font-bold text-foreground/60 uppercase tracking-wide mb-2 flex items-center gap-2 mt-4">
-          <HandCoins size={14} /> Liabilities
+          <HandCoins size={14} /> {t('liabilities')}
         </div>
 
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            <HandCoins size={16} /> Debts & Payables
+            <HandCoins size={16} /> {t('debtsPayables')}
           </div>
           {[
-            { id: "loan", label: "Loans", sub: "Annual repayment amount", value: liabilities.loan },
-            { id: "bills", label: "Outstanding Bills", sub: "Rent, utilities etc.", value: liabilities.bills },
-            { id: "other", label: "Other Debts", sub: "Personal loans", value: liabilities.other },
+            { id: "loan", label: t('loans'), sub: t('loansSub'), value: liabilities.loan },
+            { id: "bills", label: t('outstandingBills'), sub: t('billsSub'), value: liabilities.bills },
+            { id: "other", label: t('otherDebts'), sub: t('otherDebtsSub'), value: liabilities.other },
           ].map((item) => (
             <div key={item.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
               <div>
@@ -443,20 +631,20 @@ const ZakatPage = () => {
         ) : result.aboveNisab ? (
           <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl p-6 text-center relative overflow-hidden mb-3">
             <div className="absolute right-0 top-0 text-8xl opacity-10 pointer-events-none">☪️</div>
-            <div className="text-white/85 text-sm mb-1">Your Zakat This Year</div>
+            <div className="text-white/85 text-sm mb-1">{t('yourZakatThisYear')}</div>
             <div className="text-4xl font-bold text-white mb-1">
               ৳ {Math.round(result.zakat).toLocaleString()}
             </div>
-            <div className="text-white/80 text-xs">2.5% of net wealth · May Allah accept it</div>
+            <div className="text-white/80 text-xs">{t('zakatRateInfo')}</div>
           </div>
         ) : (
           <div className="bg-card border-2 border-border rounded-xl p-5 text-center mb-3">
             <Award size={48} className="text-foreground/30 mx-auto mb-2" />
             <div className="text-base font-bold text-foreground mb-1">
-              Your wealth is below Nisab
+              {t('belowNisab')}
             </div>
             <div className="text-sm text-foreground/60 leading-relaxed">
-              Your total wealth is below the Nisab of {nisab.toLocaleString()} — Zakat is not obligatory this year.
+              {t('belowNisabDesc', { nisab: nisab.toLocaleString() })}
             </div>
           </div>
         )}
@@ -464,31 +652,31 @@ const ZakatPage = () => {
         {/* Breakdown Card */}
         <div className="bg-card border border-border rounded-xl p-4 mb-3">
           <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-            <Calculator size={16} /> Breakdown
+            <Calculator size={16} /> {t('breakdown')}
           </div>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Total Assets</span>
+              <span className="text-foreground/60">{t('totalAssets')}</span>
               <span className="font-semibold text-green-600">৳ {result.totalAssets.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Total Liabilities</span>
+              <span className="text-foreground/60">{t('totalLiabilities')}</span>
               <span className="font-semibold text-red-500">−৳ {result.totalLiabilities.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm pt-1 border-t border-dashed border-border">
-              <span className="text-foreground/60">Zakatable Wealth</span>
+              <span className="text-foreground/60">{t('zakatableWealth')}</span>
               <span className="font-bold text-emerald-600">৳ {result.net.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Nisab</span>
+              <span className="text-foreground/60">{t('nisab')}</span>
               <span className="text-foreground/50">৳ {nisab.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Zakat Rate</span>
+              <span className="text-foreground/60">{t('zakatRate')}</span>
               <span className="text-foreground/50">2.5%</span>
             </div>
             <div className="flex justify-between text-base pt-2 border-t-2 border-border">
-              <span className="font-bold text-foreground">Zakat Due</span>
+              <span className="font-bold text-foreground">{t('zakatDue')}</span>
               <span className="font-bold text-emerald-600 text-lg">৳ {Math.round(result.zakat).toLocaleString()}</span>
             </div>
           </div>
@@ -500,14 +688,14 @@ const ZakatPage = () => {
             onClick={resetCalculator}
             className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-bold hover:border-emerald-500 hover:text-emerald-600 transition flex items-center justify-center gap-2"
           >
-            <RefreshCw size={16} /> Reset
+            <RefreshCw size={16} /> {t('reset')}
           </button>
           {result.aboveNisab && (
             <button
               onClick={openShareModal}
               className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition"
             >
-              <Share2 size={16} /> Share
+              <Share2 size={16} /> {t('share')}
             </button>
           )}
         </div>
@@ -519,10 +707,10 @@ const ZakatPage = () => {
               <Target size={24} className="text-emerald-600" />
               <div className="flex-1">
                 <div className="font-bold text-foreground text-sm">
-                  Create a Zakat Goal
+                  {t('createZakatGoal')}
                 </div>
                 <div className="text-xs text-foreground/50">
-                  Set aside your Zakat amount separately
+                  {t('setAsideZakat')}
                 </div>
               </div>
               <button
@@ -531,7 +719,7 @@ const ZakatPage = () => {
                 className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-lg text-xs font-bold whitespace-nowrap disabled:opacity-50 hover:opacity-90 transition flex items-center gap-1"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Target size={14} />}
-                Create Goal
+                {t('createGoal')}
               </button>
             </div>
           </div>
@@ -546,7 +734,7 @@ const ZakatPage = () => {
           className="w-full max-w-4xl mx-auto block py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white rounded-xl font-bold text-base disabled:opacity-50 hover:opacity-90 transition flex items-center justify-center gap-2"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Calculator size={18} />}
-          Calculate Zakat
+          {t('calculateZakat')}
         </button>
       </div>
 
@@ -565,12 +753,12 @@ const ZakatPage = () => {
               <div className="text-4xl font-bold text-emerald-600 mb-1">
                 ৳ {Math.round(result.zakat).toLocaleString()}
               </div>
-              <div className="text-sm text-foreground/60 mb-5">Your Zakat this year</div>
+              <div className="text-sm text-foreground/60 mb-5">{t('yourZakatThisYear')}</div>
               <div className="flex justify-center gap-4 mb-5">
                 {[
-                  { icon: <Copy size={24} />, label: "Copy", action: "copy" },
-                  { icon: <Camera size={24} />, label: "Screenshot", action: "screenshot" },
-                  { icon: <MessageCircle size={24} />, label: "WhatsApp", action: "whatsapp" },
+                  { icon: <Copy size={24} />, label: t('copy'), action: "copy" },
+                  { icon: <Camera size={24} />, label: t('screenshot'), action: "screenshot" },
+                  { icon: <MessageCircle size={24} />, label: t('whatsapp'), action: "whatsapp" },
                 ].map((opt) => (
                   <button key={opt.action} onClick={() => shareAction(opt.action)} className="flex flex-col items-center gap-1">
                     <div className="w-14 h-14 rounded-xl border border-border bg-background flex items-center justify-center hover:border-emerald-500 hover:text-emerald-600 transition">{opt.icon}</div>
@@ -578,7 +766,7 @@ const ZakatPage = () => {
                   </button>
                 ))}
               </div>
-              <button onClick={closeShareModal} className="w-full py-3 rounded-xl border-2 border-border text-foreground/60 font-semibold hover:border-emerald-500 hover:text-emerald-600 transition">Close</button>
+              <button onClick={closeShareModal} className="w-full py-3 rounded-xl border-2 border-border text-foreground/60 font-semibold hover:border-emerald-500 hover:text-emerald-600 transition">{t('close')}</button>
             </motion.div>
           </div>
         )}

@@ -9,11 +9,208 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    platformOverview: "Platform Overview",
+    realtimeMetrics: "Real-time metrics as of",
+    
+    // Range Labels
+    last7Days: "Last 7 Days",
+    last30Days: "Last 30 Days",
+    last90Days: "Last 90 Days",
+    lastYear: "Last Year",
+    
+    // Stats
+    totalMembers: "Total Members",
+    netSavings: "Net Savings",
+    activeUsers: "Active Users",
+    activationRate: "Activation Rate",
+    today: "today",
+    active: "active",
+    kycPending: "KYC pending",
+    
+    // Chart
+    platformGrowth: "📈 Platform Growth",
+    members: "Members",
+    savings: "Savings",
+    revenue: "Revenue",
+    
+    // Action Queue
+    pendingWithdrawals: "🏧 Pending Withdrawals",
+    pending: "pending",
+    noPendingWithdrawals: "No pending withdrawals",
+    review: "Review",
+    kycQueue: "🪪 KYC Queue",
+    noPendingKYC: "No pending KYC",
+    submitted: "Submitted",
+    
+    // Fraud Alerts
+    fraudAlerts: "🚨 Fraud Alerts",
+    banned: "banned",
+    accountMonitoring: "Account Monitoring",
+    usersCurrentlyBanned: "users currently banned",
+    
+    // Deposits
+    todaysDeposits: "📥 Today's Deposits",
+    viewAll: "View all →",
+    totalToday: "Total Today",
+    thisMonth: "This Month",
+    noDepositsToday: "No deposits today",
+    
+    // Revenue
+    revenueStreams: "💵 Revenue Streams",
+    deposits: "Deposits",
+    withdrawals: "Withdrawals",
+    netFlow: "Net Flow",
+    
+    // Export
+    exportCSV: "Export CSV",
+    exporting: "Exporting...",
+    reportExported: "✅ Report exported successfully!",
+    exportFailed: "❌ Failed to export report",
+    reportLoaded: "📊 {label} report loaded",
+    
+    // Messages
+    failedToLoad: "Failed to load dashboard",
+    
+    // CSV Headers
+    reportHeader: "Sonchoy Bondhu - Admin Dashboard Report",
+    reportPeriod: "Report Period",
+    generatedOn: "Generated On",
+    summaryStatistics: "=== SUMMARY STATISTICS ===",
+    metric: "Metric",
+    value: "Value",
+    recentDeposits: "=== RECENT DEPOSITS ===",
+    userID: "User ID",
+    amount: "Amount",
+    method: "Method",
+    status: "Status",
+    date: "Date",
+    recentWithdrawals: "=== RECENT WITHDRAWALS ===",
+    recentUsers: "=== RECENT USERS ===",
+    name: "Name",
+    phone: "Phone",
+    plan: "Plan",
+    kycStatus: "KYC Status",
+    joinedDate: "Joined Date",
+    totalMembersLabel: "Total Members",
+    activeUsersLabel: "Active Users",
+    pendingKYCLabel: "Pending KYC",
+    pendingDepositsLabel: "Pending Deposits",
+    pendingWithdrawalsLabel: "Pending Withdrawals",
+    totalDepositsLabel: "Total Deposits",
+    totalWithdrawalsLabel: "Total Withdrawals",
+    bannedUsersLabel: "Banned Users",
+    newUsersTodayLabel: "New Users Today",
+    newUsersThisWeekLabel: "New Users This Week",
+    newUsersThisMonthLabel: "New Users This Month",
+  },
+  bn: {
+    // Header
+    platformOverview: "প্ল্যাটফর্ম ওভারভিউ",
+    realtimeMetrics: "রিয়েল-টাইম মেট্রিক্স",
+    
+    // Range Labels
+    last7Days: "গত ৭ দিন",
+    last30Days: "গত ৩০ দিন",
+    last90Days: "গত ৯০ দিন",
+    lastYear: "গত বছর",
+    
+    // Stats
+    totalMembers: "মোট সদস্য",
+    netSavings: "নিট সঞ্চয়",
+    activeUsers: "সক্রিয় ব্যবহারকারী",
+    activationRate: "সক্রিয়তার হার",
+    today: "আজ",
+    active: "সক্রিয়",
+    kycPending: "কেওয়াইসি প্রক্রিয়াধীন",
+    
+    // Chart
+    platformGrowth: "📈 প্ল্যাটফর্ম বৃদ্ধি",
+    members: "সদস্য",
+    savings: "সঞ্চয়",
+    revenue: "আয়",
+    
+    // Action Queue
+    pendingWithdrawals: "🏧 প্রক্রিয়াধীন উত্তোলন",
+    pending: "প্রক্রিয়াধীন",
+    noPendingWithdrawals: "কোন প্রক্রিয়াধীন উত্তোলন নেই",
+    review: "পর্যালোচনা",
+    kycQueue: "🪪 কেওয়াইসি কিউ",
+    noPendingKYC: "কোন প্রক্রিয়াধীন কেওয়াইসি নেই",
+    submitted: "জমা দেওয়া হয়েছে",
+    
+    // Fraud Alerts
+    fraudAlerts: "🚨 জালিয়াতি সতর্কতা",
+    banned: "নিষিদ্ধ",
+    accountMonitoring: "অ্যাকাউন্ট মনিটরিং",
+    usersCurrentlyBanned: "জন ব্যবহারকারী বর্তমানে নিষিদ্ধ",
+    
+    // Deposits
+    todaysDeposits: "📥 আজকের ডিপোজিট",
+    viewAll: "সব দেখুন →",
+    totalToday: "আজকের মোট",
+    thisMonth: "এই মাস",
+    noDepositsToday: "আজকে কোন ডিপোজিট নেই",
+    
+    // Revenue
+    revenueStreams: "💵 আয়ের উৎস",
+    deposits: "ডিপোজিট",
+    withdrawals: "উত্তোলন",
+    netFlow: "নিট প্রবাহ",
+    
+    // Export
+    exportCSV: "সিএসভি এক্সপোর্ট",
+    exporting: "এক্সপোর্ট হচ্ছে...",
+    reportExported: "✅ রিপোর্ট সফলভাবে এক্সপোর্ট করা হয়েছে!",
+    exportFailed: "❌ রিপোর্ট এক্সপোর্ট করতে ব্যর্থ হয়েছে",
+    reportLoaded: "📊 {label} রিপোর্ট লোড করা হয়েছে",
+    
+    // Messages
+    failedToLoad: "ড্যাশবোর্ড লোড করতে ব্যর্থ হয়েছে",
+    
+    // CSV Headers
+    reportHeader: "সঞ্চয় বন্ধু - অ্যাডমিন ড্যাশবোর্ড রিপোর্ট",
+    reportPeriod: "রিপোর্ট সময়কাল",
+    generatedOn: "উৎপন্ন হয়েছে",
+    summaryStatistics: "=== সারাংশ পরিসংখ্যান ===",
+    metric: "মেট্রিক",
+    value: "মান",
+    recentDeposits: "=== সাম্প্রতিক ডিপোজিট ===",
+    userID: "ব্যবহারকারী আইডি",
+    amount: "পরিমাণ",
+    method: "পদ্ধতি",
+    status: "অবস্থা",
+    date: "তারিখ",
+    recentWithdrawals: "=== সাম্প্রতিক উত্তোলন ===",
+    recentUsers: "=== সাম্প্রতিক ব্যবহারকারী ===",
+    name: "নাম",
+    phone: "ফোন",
+    plan: "প্ল্যান",
+    kycStatus: "কেওয়াইসি অবস্থা",
+    joinedDate: "যোগদানের তারিখ",
+    totalMembersLabel: "মোট সদস্য",
+    activeUsersLabel: "সক্রিয় ব্যবহারকারী",
+    pendingKYCLabel: "প্রক্রিয়াধীন কেওয়াইসি",
+    pendingDepositsLabel: "প্রক্রিয়াধীন ডিপোজিট",
+    pendingWithdrawalsLabel: "প্রক্রিয়াধীন উত্তোলন",
+    totalDepositsLabel: "মোট ডিপোজিট",
+    totalWithdrawalsLabel: "মোট উত্তোলন",
+    bannedUsersLabel: "নিষিদ্ধ ব্যবহারকারী",
+    newUsersTodayLabel: "আজকের নতুন ব্যবহারকারী",
+    newUsersThisWeekLabel: "এই সপ্তাহের নতুন ব্যবহারকারী",
+    newUsersThisMonthLabel: "এই মাসের নতুন ব্যবহারকারী",
+  }
+};
+
 const AdminDashboardPage = () => {
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
   const [selectedRange, setSelectedRange] = useState("30d");
+  const [lang, setLang] = useState("bn");
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -37,6 +234,21 @@ const AdminDashboardPage = () => {
   const growthChartRef = useRef(null);
   let growthChart = useRef(null);
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
     return token ? { Authorization: `Bearer ${token}` } : {};
@@ -53,7 +265,7 @@ const AdminDashboardPage = () => {
         setRecent(res.data.data.recent);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to load dashboard");
+      showToast(err.response?.data?.message || t('failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -61,8 +273,8 @@ const AdminDashboardPage = () => {
 
   useEffect(() => {
     const now = new Date();
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    const days = [t('sunday'), t('monday'), t('tuesday'), t('wednesday'), t('thursday'), t('friday'), t('saturday')];
+    const months = [t('january'), t('february'), t('march'), t('april'), t('may'), t('june'), t('july'), t('august'), t('september'), t('october'), t('november'), t('december')];
     setCurrentDate(`${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`);
     fetchDashboard();
   }, [fetchDashboard]);
@@ -83,7 +295,7 @@ const AdminDashboardPage = () => {
       let chartData = [];
       
       if (selectedRange === "7d") {
-        chartLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        chartLabels = [t('mon'), t('tue'), t('wed'), t('thu'), t('fri'), t('sat'), t('sun')];
         chartData = [
           stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.15) : 5,
           stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.12) : 8,
@@ -94,7 +306,7 @@ const AdminDashboardPage = () => {
           stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.05) : 6,
         ];
       } else if (selectedRange === "30d") {
-        chartLabels = ["Week 1", "Week 2", "Week 3", "Week 4"];
+        chartLabels = [t('week1'), t('week2'), t('week3'), t('week4')];
         chartData = [
           stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.2) : 10,
           stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.25) : 15,
@@ -102,14 +314,14 @@ const AdminDashboardPage = () => {
           stats.newUsersThisWeek > 0 ? Math.round(stats.newUsersThisWeek * 0.25) : 12,
         ];
       } else if (selectedRange === "90d") {
-        chartLabels = ["Month 1", "Month 2", "Month 3"];
+        chartLabels = [t('month1'), t('month2'), t('month3')];
         chartData = [
           stats.newUsersThisMonth > 0 ? Math.round(stats.newUsersThisMonth * 0.3) : 25,
           stats.newUsersThisMonth > 0 ? Math.round(stats.newUsersThisMonth * 0.35) : 30,
           stats.newUsersThisMonth > 0 ? Math.round(stats.newUsersThisMonth * 0.35) : 28,
         ];
       } else if (selectedRange === "1y") {
-        chartLabels = ["Q1", "Q2", "Q3", "Q4"];
+        chartLabels = [t('q1'), t('q2'), t('q3'), t('q4')];
         chartData = [
           stats.newUsersThisMonth > 0 ? Math.round(stats.newUsersThisMonth * 0.8) : 60,
           stats.newUsersThisMonth > 0 ? Math.round(stats.newUsersThisMonth * 1.2) : 90,
@@ -124,7 +336,7 @@ const AdminDashboardPage = () => {
           labels: chartLabels,
           datasets: [
             {
-              label: "New Members",
+              label: t('members'),
               data: chartData,
               backgroundColor: "rgba(5,150,105,0.75)",
               borderColor: "#059669",
@@ -169,7 +381,6 @@ const AdminDashboardPage = () => {
   const exportToCSV = async () => {
     setExporting(true);
     try {
-      // Fetch complete data for CSV
       const res = await axiosInstance.get(`/admin/dashboard?range=${selectedRange}&export=true`, {
         headers: getAuthHeaders(),
       });
@@ -178,16 +389,13 @@ const AdminDashboardPage = () => {
       const stats = data.stats;
       const recent = data.recent;
       
-      // Prepare CSV content
       const csvRows = [];
       
-      // Report Header
       csvRows.push(['"Sonchoy Bondhu - Admin Dashboard Report"']);
-      csvRows.push([`"Report Period: ${getRangeLabel(selectedRange)}"`]);
-      csvRows.push([`"Generated On: ${new Date().toLocaleString()}"`]);
-      csvRows.push([]); // Empty row
+      csvRows.push([`"${t('reportPeriod')}: ${getRangeLabel(selectedRange)}"`]);
+      csvRows.push([`"${t('generatedOn')}: ${new Date().toLocaleString()}"`]);
+      csvRows.push([]);
       
-      // Summary Section
       csvRows.push(['"=== SUMMARY STATISTICS ==="']);
       csvRows.push(['"Metric"','"Value"']);
       csvRows.push(['"Total Members"', stats.totalUsers]);
@@ -202,9 +410,8 @@ const AdminDashboardPage = () => {
       csvRows.push(['"New Users Today"', stats.newUsersToday]);
       csvRows.push(['"New Users This Week"', stats.newUsersThisWeek]);
       csvRows.push(['"New Users This Month"', stats.newUsersThisMonth]);
-      csvRows.push([]); // Empty row
+      csvRows.push([]);
       
-      // Deposits Section
       csvRows.push(['"=== RECENT DEPOSITS ==="']);
       csvRows.push(['"User ID"','"Amount"','"Method"','"Status"','"Date"']);
       recent.deposits.forEach(deposit => {
@@ -216,9 +423,8 @@ const AdminDashboardPage = () => {
           `"${new Date(deposit.createdAt).toLocaleString()}"`
         ]);
       });
-      csvRows.push([]); // Empty row
+      csvRows.push([]);
       
-      // Withdrawals Section
       csvRows.push(['"=== RECENT WITHDRAWALS ==="']);
       csvRows.push(['"User ID"','"Amount"','"Method"','"Status"','"Date"']);
       recent.withdrawals.forEach(withdrawal => {
@@ -230,9 +436,8 @@ const AdminDashboardPage = () => {
           `"${new Date(withdrawal.createdAt).toLocaleString()}"`
         ]);
       });
-      csvRows.push([]); // Empty row
+      csvRows.push([]);
       
-      // Users Section
       csvRows.push(['"=== RECENT USERS ==="']);
       csvRows.push(['"Name"','"Phone"','"Plan"','"KYC Status"','"Joined Date"']);
       recent.users.forEach(user => {
@@ -245,13 +450,9 @@ const AdminDashboardPage = () => {
         ]);
       });
       
-      // Create CSV string
       const csvContent = csvRows.map(row => row.join(',')).join('\n');
-      
-      // Add BOM for UTF-8 encoding (handles Bengali characters)
       const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
       
-      // Create download link
       const link = document.createElement("a");
       const url = URL.createObjectURL(blob);
       link.setAttribute("href", url);
@@ -261,10 +462,10 @@ const AdminDashboardPage = () => {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      showToast("✅ Report exported successfully!");
+      showToast(t('reportExported'));
     } catch (error) {
       console.error("Export error:", error);
-      showToast("❌ Failed to export report");
+      showToast(t('exportFailed'));
     } finally {
       setExporting(false);
     }
@@ -272,32 +473,32 @@ const AdminDashboardPage = () => {
 
   const getRangeLabel = (range) => {
     switch(range) {
-      case "7d": return "Last 7 Days";
-      case "30d": return "Last 30 Days";
-      case "90d": return "Last 90 Days";
-      case "1y": return "Last Year";
-      default: return "Last 30 Days";
+      case "7d": return t('last7Days');
+      case "30d": return t('last30Days');
+      case "90d": return t('last90Days');
+      case "1y": return t('lastYear');
+      default: return t('last30Days');
     }
   };
 
   const handleRangeChange = (range) => {
     setSelectedRange(range);
     fetchDashboard(range);
-    showToast(`📊 ${getRangeLabel(range)} report loaded`);
+    showToast(t('reportLoaded', { label: getRangeLabel(range) }));
   };
 
   const rangeOptions = [
-    { value: "7d", label: "Last 7 Days" },
-    { value: "30d", label: "Last 30 Days" },
-    { value: "90d", label: "Last 90 Days" },
-    { value: "1y", label: "Last Year" },
+    { value: "7d", label: t('last7Days') },
+    { value: "30d", label: t('last30Days') },
+    { value: "90d", label: t('last90Days') },
+    { value: "1y", label: t('lastYear') },
   ];
 
   const statCards = [
-    { icon: "👥", value: stats.totalUsers.toLocaleString("en-IN"), label: "Total Members", trend: `+${stats.newUsersToday} today`, trendUp: true, bg: "bg-primary/10", onClick: "users" },
-    { icon: "💰", value: formatCurrency(stats.totalDepositsAmount - stats.totalWithdrawalsAmount), label: "Net Savings", trend: `+${formatCurrency(stats.todayDeposits)} today`, trendUp: true, bg: "bg-blue-500/10", onClick: "savings" },
-    { icon: "⭕", value: stats.activeUsers.toLocaleString("en-IN"), label: "Active Users", trend: `${((stats.activeUsers / Math.max(stats.totalUsers, 1)) * 100).toFixed(1)}% active`, trendUp: true, bg: "bg-amber-500/10", onClick: "users" },
-    { icon: "✅", value: `${((stats.activeUsers / Math.max(stats.totalUsers, 1)) * 100).toFixed(1)}%`, label: "Activation Rate", trend: `${stats.pendingKyc} KYC pending`, trendUp: stats.pendingKyc === 0, bg: "bg-purple-500/10", onClick: "kyc" },
+    { icon: "👥", value: stats.totalUsers.toLocaleString("en-IN"), label: t('totalMembers'), trend: `+${stats.newUsersToday} ${t('today')}`, trendUp: true, bg: "bg-primary/10", onClick: "users" },
+    { icon: "💰", value: formatCurrency(stats.totalDepositsAmount - stats.totalWithdrawalsAmount), label: t('netSavings'), trend: `+${formatCurrency(stats.todayDeposits)} ${t('today')}`, trendUp: true, bg: "bg-blue-500/10", onClick: "savings" },
+    { icon: "⭕", value: stats.activeUsers.toLocaleString("en-IN"), label: t('activeUsers'), trend: `${((stats.activeUsers / Math.max(stats.totalUsers, 1)) * 100).toFixed(1)}% ${t('active')}`, trendUp: true, bg: "bg-amber-500/10", onClick: "users" },
+    { icon: "✅", value: `${((stats.activeUsers / Math.max(stats.totalUsers, 1)) * 100).toFixed(1)}%`, label: t('activationRate'), trend: `${stats.pendingKyc} ${t('kycPending')}`, trendUp: stats.pendingKyc === 0, bg: "bg-purple-500/10", onClick: "kyc" },
   ];
 
   if (loading) {
@@ -313,8 +514,8 @@ const AdminDashboardPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Platform Overview</h1>
-          <p className="text-sm text-foreground/50">Real-time metrics as of {currentDate}</p>
+          <h1 className="text-xl font-bold text-foreground">{t('platformOverview')}</h1>
+          <p className="text-sm text-foreground/50">{t('realtimeMetrics')} {currentDate}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
           {/* Date Range Dropdown */}
@@ -333,7 +534,7 @@ const AdminDashboardPage = () => {
             <Calendar size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground/50 pointer-events-none" />
           </div>
           
-          {/* Export CSV Button - GRADIENT */}
+          {/* Export CSV Button */}
           <button 
             onClick={exportToCSV} 
             disabled={exporting}
@@ -342,18 +543,18 @@ const AdminDashboardPage = () => {
             {exporting ? (
               <>
                 <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Exporting...
+                {t('exporting')}
               </>
             ) : (
               <>
-                <Download size={12} /> Export CSV
+                <Download size={12} /> {t('exportCSV')}
               </>
             )}
           </button>
         </div>
       </div>
 
-      {/* Stats Grid - DARKER BACKGROUNDS */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         {statCards.map((stat, idx) => (
           <div 
@@ -378,14 +579,14 @@ const AdminDashboardPage = () => {
       <div className="grid lg:grid-cols-3 gap-5 mb-5">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Growth Chart Card - DARKER */}
+          {/* Growth Chart Card */}
           <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-              <div className="font-bold text-foreground">📈 Platform Growth ({getRangeLabel(selectedRange)})</div>
+              <div className="font-bold text-foreground">{t('platformGrowth')} ({getRangeLabel(selectedRange)})</div>
               <div className="flex gap-2">
-                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20">Members</button>
-                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card/50 border border-border text-foreground/70 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">Savings</button>
-                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card/50 border border-border text-foreground/70 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">Revenue</button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20">{t('members')}</button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card/50 border border-border text-foreground/70 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">{t('savings')}</button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card/50 border border-border text-foreground/70 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">{t('revenue')}</button>
               </div>
             </div>
             <div className="h-64">
@@ -395,26 +596,26 @@ const AdminDashboardPage = () => {
 
           {/* Action Queue Grid */}
           <div className="grid md:grid-cols-2 gap-5">
-            {/* Pending Withdrawals - DARKER */}
+            {/* Pending Withdrawals */}
             <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
               <div className="flex justify-between items-center mb-4">
-                <div className="font-bold text-foreground">🏧 Pending Withdrawals</div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">{stats.pendingWithdrawals} pending</span>
+                <div className="font-bold text-foreground">{t('pendingWithdrawals')}</div>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">{stats.pendingWithdrawals} {t('pending')}</span>
               </div>
               <div className="space-y-3">
                 {recent.withdrawals.length === 0 ? (
-                  <div className="text-sm text-foreground/50 text-center py-4">No pending withdrawals</div>
+                  <div className="text-sm text-foreground/50 text-center py-4">{t('noPendingWithdrawals')}</div>
                 ) : (
                   recent.withdrawals.map((wd, idx) => (
                     <div key={idx} className="p-3 rounded-lg bg-background/80 dark:bg-background/60 border border-border/50 dark:border-border/30">
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="font-bold text-lg text-primary">{formatCurrency(wd.amount)}</div>
-                          <div className="text-sm text-foreground/70">User ID: {wd.userId}</div>
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">⏳ Pending</span>
+                          <div className="text-sm text-foreground/70">{t('userID')}: {wd.userId}</div>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">⏳ {t('pending')}</span>
                         </div>
                         <div className="flex flex-col gap-2">
-                          <button onClick={() => navigateTo("withdrawals")} className="px-3 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-primary to-primary-light text-white hover:shadow-lg hover:shadow-primary/25 transition-all duration-300">Review</button>
+                          <button onClick={() => navigateTo("withdrawals")} className="px-3 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-primary to-primary-light text-white hover:shadow-lg hover:shadow-primary/25 transition-all duration-300">{t('review')}</button>
                         </div>
                       </div>
                     </div>
@@ -423,15 +624,15 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
-            {/* KYC Queue - DARKER */}
+            {/* KYC Queue */}
             <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
               <div className="flex justify-between items-center mb-4">
-                <div className="font-bold text-foreground">🪪 KYC Queue</div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/20 dark:bg-blue-500/30 text-blue-500 dark:text-blue-400">{stats.pendingKyc} pending</span>
+                <div className="font-bold text-foreground">{t('kycQueue')}</div>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/20 dark:bg-blue-500/30 text-blue-500 dark:text-blue-400">{stats.pendingKyc} {t('pending')}</span>
               </div>
               <div className="space-y-3">
                 {recent.users.filter(u => u.kycStatus === "pending").length === 0 ? (
-                  <div className="text-sm text-foreground/50 text-center py-4">No pending KYC</div>
+                  <div className="text-sm text-foreground/50 text-center py-4">{t('noPendingKYC')}</div>
                 ) : (
                   recent.users.filter(u => u.kycStatus === "pending").slice(0, 5).map((kyc, idx) => (
                     <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-background/80 dark:bg-background/60 border border-border/50 dark:border-border/30">
@@ -440,7 +641,7 @@ const AdminDashboardPage = () => {
                       </div>
                       <div className="flex-1">
                         <div className="font-semibold text-sm text-foreground">{kyc.name}</div>
-                        <div className="text-xs text-foreground/50">Submitted {new Date(kyc.createdAt).toLocaleDateString()}</div>
+                        <div className="text-xs text-foreground/50">{t('submitted')} {new Date(kyc.createdAt).toLocaleDateString()}</div>
                       </div>
                       <div className="flex gap-2">
                         <button onClick={() => navigateTo("kyc")} className="w-8 h-8 rounded-lg bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-500 hover:text-white transition-all duration-300">✓</button>
@@ -456,71 +657,71 @@ const AdminDashboardPage = () => {
 
         {/* Right Column */}
         <div className="space-y-5">
-          {/* Fraud Alerts - DARKER */}
+          {/* Fraud Alerts */}
           <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">🚨 Fraud Alerts</div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/20 dark:bg-red-500/30 text-red-500 dark:text-red-400">{stats.bannedUsers} banned</span>
+              <div className="font-bold text-foreground">{t('fraudAlerts')}</div>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/20 dark:bg-red-500/30 text-red-500 dark:text-red-400">{stats.bannedUsers} {t('banned')}</span>
             </div>
             <div className="space-y-3">
               <div className="p-3 rounded-lg border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 dark:bg-amber-500/5">
                 <div className="flex items-start gap-2">
                   <span className="text-xl">🟡</span>
                   <div className="flex-1">
-                    <div className="font-semibold text-sm text-foreground">Account Monitoring</div>
-                    <div className="text-xs text-foreground/60">{stats.bannedUsers} users currently banned</div>
+                    <div className="font-semibold text-sm text-foreground">{t('accountMonitoring')}</div>
+                    <div className="text-xs text-foreground/60">{stats.bannedUsers} {t('usersCurrentlyBanned')}</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Today's Deposits - DARKER */}
+          {/* Today's Deposits */}
           <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">📥 Today&apos;s Deposits</div>
-              <button onClick={() => navigateTo("deposits")} className="text-xs text-primary font-semibold hover:text-primary-light transition">View all →</button>
+              <div className="font-bold text-foreground">{t('todaysDeposits')}</div>
+              <button onClick={() => navigateTo("deposits")} className="text-xs text-primary font-semibold hover:text-primary-light transition">{t('viewAll')}</button>
             </div>
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="text-center">
                 <div className="text-lg font-bold text-primary">{formatCurrency(stats.todayDeposits)}</div>
-                <div className="text-xs text-foreground/50">Total Today</div>
+                <div className="text-xs text-foreground/50">{t('totalToday')}</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-foreground">{stats.pendingDeposits}</div>
-                <div className="text-xs text-foreground/50">Pending</div>
+                <div className="text-xs text-foreground/50">{t('pending')}</div>
               </div>
               <div className="text-center">
                 <div className="text-lg font-bold text-amber-500 dark:text-amber-400">{stats.monthDeposits > 0 ? formatCurrency(stats.monthDeposits) : "৳0"}</div>
-                <div className="text-xs text-foreground/50">This Month</div>
+                <div className="text-xs text-foreground/50">{t('thisMonth')}</div>
               </div>
             </div>
             <div className="space-y-2">
               {recent.deposits.length === 0 ? (
-                <div className="text-sm text-foreground/50 text-center py-2">No deposits today</div>
+                <div className="text-sm text-foreground/50 text-center py-2">{t('noDepositsToday')}</div>
               ) : (
                 recent.deposits.map((deposit, idx) => (
                   <div key={idx} className="flex items-center gap-3 py-2 border-b border-border/50 dark:border-border/30 last:border-0">
                     <span>💳</span>
-                    <span className="flex-1 text-sm text-foreground/80">User {deposit.userId?.toString().slice(-4)}</span>
+                    <span className="flex-1 text-sm text-foreground/80">{t('userID')} {deposit.userId?.toString().slice(-4)}</span>
                     <span className="font-bold text-primary">{formatCurrency(deposit.amount)}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">Pending</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">{t('pending')}</span>
                   </div>
                 ))
               )}
             </div>
           </div>
 
-          {/* Revenue Streams - DARKER */}
+          {/* Revenue Streams */}
           <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">💵 Revenue Streams</div>
+              <div className="font-bold text-foreground">{t('revenueStreams')}</div>
               <span className="text-xs text-foreground/50">{getRangeLabel(selectedRange)}</span>
             </div>
             <div className="space-y-3">
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-foreground/80">Deposits</span>
+                  <span className="text-foreground/80">{t('deposits')}</span>
                   <span className="font-bold text-foreground">{formatCurrency(stats.monthDeposits)}</span>
                 </div>
                 <div className="h-1.5 bg-border/50 dark:bg-border/30 rounded-full overflow-hidden">
@@ -529,7 +730,7 @@ const AdminDashboardPage = () => {
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-foreground/80">Withdrawals</span>
+                  <span className="text-foreground/80">{t('withdrawals')}</span>
                   <span className="font-bold text-foreground">{formatCurrency(stats.monthWithdrawals)}</span>
                 </div>
                 <div className="h-1.5 bg-border/50 dark:bg-border/30 rounded-full overflow-hidden">
@@ -538,7 +739,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
             <div className="mt-4 p-3 bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/15 rounded-lg flex justify-between items-center">
-              <span className="text-sm font-semibold text-foreground/80">Net Flow</span>
+              <span className="text-sm font-semibold text-foreground/80">{t('netFlow')}</span>
               <span className="text-xl font-bold text-primary">{formatCurrency(stats.monthDeposits - stats.monthWithdrawals)}</span>
             </div>
           </div>

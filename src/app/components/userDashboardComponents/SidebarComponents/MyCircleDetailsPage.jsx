@@ -27,27 +27,206 @@ import {
 import Swal from "sweetalert2";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Navigation
+    backToCircles: "Back to Circles",
+    
+    // Status Labels
+    active: "Active",
+    paused: "Paused",
+    completed: "Completed",
+    privateCircle: "Private Circle",
+    publicCircle: "Public Circle",
+    
+    // Stats
+    totalMembers: "Total Members",
+    maxMembers: "Max {count} members",
+    totalPool: "Total Pool",
+    target: "Target:",
+    minDeposit: "Min Deposit",
+    perMonth: "Per month",
+    nextPayout: "Next Payout",
+    monthlyRotation: "Monthly rotation",
+    
+    // Progress
+    poolProgress: "Pool Progress",
+    collectedOutOf: "{collected} collected out of {target}",
+    monthlyCollection: "Monthly Collection:",
+    perMonthLabel: "/ month",
+    
+    // Quick Stats
+    quickStats: "Quick Stats",
+    created: "Created:",
+    totalPoolLabel: "Total Pool:",
+    membersLabel: "Members:",
+    monthlyPerMember: "Monthly per Member:",
+    
+    // Description
+    aboutThisCircle: "About This Circle",
+    
+    // Members
+    membersLabel: "Members",
+    membersCount: "{count} members",
+    noMembersFound: "No members found",
+    admin: "Admin",
+    
+    // Buttons
+    invite: "Invite",
+    copied: "Copied!",
+    leaveCircle: "Leave Circle",
+    joinCircle: "Join Circle",
+    makeDeposit: "Make a Deposit",
+    
+    // Modals
+    joinCircleTitle: "Join Circle?",
+    joinCircleText: "Are you sure you want to join this circle?",
+    joinConfirm: "Yes, join",
+    joinedSuccess: "Joined!",
+    joinedText: "You have successfully joined the circle",
+    
+    leaveCircleTitle: "Leave Circle?",
+    leaveCircleText: 'Are you sure you want to leave "{name}"?',
+    leaveConfirm: "Yes, leave",
+    leftSuccess: "Left!",
+    leftText: "You have left the circle",
+    
+    errorTitle: "Error",
+    notFoundTitle: "Not Found",
+    notFoundText: "Circle not found",
+    notFoundDesc: "The circle you're looking for doesn't exist or you don't have access",
+    
+    // Info Note
+    howItWorks: "How it works:",
+    howItWorksDesc: "Each month, members contribute the minimum deposit amount. One member receives the total collected amount on a rotational basis. You'll be notified when it's your turn for payout.",
+    
+    // Loading
+    loadingDetails: "Loading circle details...",
+    
+    // Invite
+    inviteLinkCopied: "Invite link copied to clipboard",
+    copyFailed: "Failed to copy link",
+  },
+  bn: {
+    // Navigation
+    backToCircles: "সার্কেলে ফিরে যান",
+    
+    // Status Labels
+    active: "সক্রিয়",
+    paused: "বিরতি",
+    completed: "সম্পন্ন",
+    privateCircle: "প্রাইভেট সার্কেল",
+    publicCircle: "পাবলিক সার্কেল",
+    
+    // Stats
+    totalMembers: "মোট সদস্য",
+    maxMembers: "সর্বোচ্চ {count} সদস্য",
+    totalPool: "মোট পুল",
+    target: "লক্ষ্য:",
+    minDeposit: "ন্যূনতম জমা",
+    perMonth: "প্রতি মাস",
+    nextPayout: "পরবর্তী পেআউট",
+    monthlyRotation: "মাসিক ঘূর্ণন",
+    
+    // Progress
+    poolProgress: "পুলের অগ্রগতি",
+    collectedOutOf: "{collected} সংগ্রহ করা হয়েছে {target} এর মধ্যে",
+    monthlyCollection: "মাসিক সংগ্রহ:",
+    perMonthLabel: "/ মাস",
+    
+    // Quick Stats
+    quickStats: "দ্রুত পরিসংখ্যান",
+    created: "তৈরি:",
+    totalPoolLabel: "মোট পুল:",
+    membersLabel: "সদস্য:",
+    monthlyPerMember: "প্রতি সদস্য মাসিক:",
+    
+    // Description
+    aboutThisCircle: "এই সার্কেল সম্পর্কে",
+    
+    // Members
+    membersLabel: "সদস্য",
+    membersCount: "{count} সদস্য",
+    noMembersFound: "কোন সদস্য পাওয়া যায়নি",
+    admin: "প্রশাসক",
+    
+    // Buttons
+    invite: "আমন্ত্রণ",
+    copied: "কপি করা হয়েছে!",
+    leaveCircle: "সার্কেল ছেড়ে দিন",
+    joinCircle: "সার্কেলে যোগ দিন",
+    makeDeposit: "জমা দিন",
+    
+    // Modals
+    joinCircleTitle: "সার্কেলে যোগ দিবেন?",
+    joinCircleText: "আপনি কি এই সার্কেলে যোগ দিতে চান?",
+    joinConfirm: "হ্যাঁ, যোগ দিন",
+    joinedSuccess: "যোগ দিয়েছেন!",
+    joinedText: "আপনি সফলভাবে সার্কেলে যোগ দিয়েছেন",
+    
+    leaveCircleTitle: "সার্কেল ছেড়ে দিবেন?",
+    leaveCircleText: 'আপনি কি "{name}" সার্কেল ছেড়ে দিতে চান?',
+    leaveConfirm: "হ্যাঁ, ছেড়ে দিন",
+    leftSuccess: "ছেড়ে দিয়েছেন!",
+    leftText: "আপনি সার্কেল ছেড়ে দিয়েছেন",
+    
+    errorTitle: "ত্রুটি",
+    notFoundTitle: "পাওয়া যায়নি",
+    notFoundText: "সার্কেল পাওয়া যায়নি",
+    notFoundDesc: "আপনি যে সার্কেল খুঁজছেন তা বিদ্যমান নেই বা আপনার প্রবেশাধিকার নেই",
+    
+    // Info Note
+    howItWorks: "কীভাবে কাজ করে:",
+    howItWorksDesc: "প্রতি মাসে, সদস্যরা ন্যূনতম জমার পরিমাণ প্রদান করে। একজন সদস্য ঘূর্ণনের ভিত্তিতে মোট সংগ্রহকৃত পরিমাণ পান। আপনার পেআউটের সময় হলে আপনাকে জানানো হবে।",
+    
+    // Loading
+    loadingDetails: "সার্কেলের বিবরণ লোড হচ্ছে...",
+    
+    // Invite
+    inviteLinkCopied: "আমন্ত্রণ লিংক ক্লিপবোর্ডে কপি করা হয়েছে",
+    copyFailed: "লিংক কপি করতে ব্যর্থ হয়েছে",
+  }
+};
+
 const MyCircleDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
   const [circle, setCircle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [lang, setLang] = useState("en");
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    // Replace placeholders
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   const fetchCircleDetails = async () => {
     setLoading(true);
     try {
       const response = await axiosInstance.get(`/circles/${id}`);
       if (response.data.success) {
-        console.log("Fetched circle:", response.data.data); // Debug log
+        console.log("Fetched circle:", response.data.data);
         setCircle(response.data.data);
       }
     } catch (error) {
       console.error("Fetch circle details error:", error);
       if (error.response?.status === 404) {
         Swal.fire({
-          title: "Not Found",
-          text: "Circle not found",
+          title: t('notFoundTitle'),
+          text: t('notFoundText'),
           icon: "error",
           confirmButtonColor: "#059669",
         }).then(() => {
@@ -57,7 +236,7 @@ const MyCircleDetailsPage = () => {
         router.push("/login");
       } else {
         Swal.fire({
-          title: "Error",
+          title: t('errorTitle'),
           text: error.response?.data?.message || "Failed to fetch circle details",
           icon: "error",
           confirmButtonColor: "#059669",
@@ -70,13 +249,13 @@ const MyCircleDetailsPage = () => {
 
   const joinCircle = async () => {
     const result = await Swal.fire({
-      title: "Join Circle?",
-      text: "Are you sure you want to join this circle?",
+      title: t('joinCircleTitle'),
+      text: t('joinCircleText'),
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#059669",
       cancelButtonColor: "#ef4444",
-      confirmButtonText: "Yes, join",
+      confirmButtonText: t('joinConfirm'),
     });
 
     if (result.isConfirmed) {
@@ -85,8 +264,8 @@ const MyCircleDetailsPage = () => {
         
         if (response.data.success) {
           Swal.fire({
-            title: "Joined!",
-            text: "You have successfully joined the circle",
+            title: t('joinedSuccess'),
+            text: t('joinedText'),
             icon: "success",
             confirmButtonColor: "#059669",
             timer: 1500,
@@ -98,7 +277,7 @@ const MyCircleDetailsPage = () => {
       } catch (error) {
         console.error("Join circle error:", error);
         Swal.fire({
-          title: "Error",
+          title: t('errorTitle'),
           text: error.response?.data?.message || "Failed to join circle",
           icon: "error",
           confirmButtonColor: "#059669",
@@ -109,13 +288,13 @@ const MyCircleDetailsPage = () => {
 
   const leaveCircle = async () => {
     const result = await Swal.fire({
-      title: "Leave Circle?",
-      text: `Are you sure you want to leave "${circle?.name}"?`,
+      title: t('leaveCircleTitle'),
+      text: t('leaveCircleText').replace('{name}', circle?.name || ""),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#059669",
-      confirmButtonText: "Yes, leave",
+      confirmButtonText: t('leaveConfirm'),
     });
 
     if (result.isConfirmed) {
@@ -124,8 +303,8 @@ const MyCircleDetailsPage = () => {
         
         if (response.data.success) {
           Swal.fire({
-            title: "Left!",
-            text: "You have left the circle",
+            title: t('leftSuccess'),
+            text: t('leftText'),
             icon: "success",
             confirmButtonColor: "#059669",
             timer: 1500,
@@ -137,7 +316,7 @@ const MyCircleDetailsPage = () => {
       } catch (error) {
         console.error("Leave circle error:", error);
         Swal.fire({
-          title: "Error",
+          title: t('errorTitle'),
           text: error.response?.data?.message || "Failed to leave circle",
           icon: "error",
           confirmButtonColor: "#059669",
@@ -153,8 +332,8 @@ const MyCircleDetailsPage = () => {
     setTimeout(() => setCopied(false), 2000);
     
     Swal.fire({
-      title: "Copied!",
-      text: "Invite link copied to clipboard",
+      title: t('copied'),
+      text: t('inviteLinkCopied'),
       icon: "success",
       confirmButtonColor: "#059669",
       timer: 1500,
@@ -175,6 +354,15 @@ const MyCircleDetailsPage = () => {
     }
   };
 
+  const getStatusText = (status) => {
+    switch (status) {
+      case "active": return t('active');
+      case "paused": return t('paused');
+      case "completed": return t('completed');
+      default: return status;
+    }
+  };
+
   useEffect(() => {
     if (id) {
       fetchCircleDetails();
@@ -186,7 +374,7 @@ const MyCircleDetailsPage = () => {
       <div className="w-full h-64 flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">Loading circle details...</p>
+          <p className="text-foreground/60">{t('loadingDetails')}</p>
         </div>
       </div>
     );
@@ -197,16 +385,16 @@ const MyCircleDetailsPage = () => {
       <div className="w-full h-64 flex items-center justify-center">
         <div className="text-center">
           <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-bold text-foreground mb-2">Circle Not Found</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">{t('notFoundTitle')}</h3>
           <p className="text-foreground/60 mb-4">
-            The circle you're looking for doesn't exist or you don't have access
+            {t('notFoundDesc')}
           </p>
           <Link
             href="/dashboard/circles"
             className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:opacity-90 transition"
           >
             <ArrowLeft size={18} />
-            Back to Circles
+            {t('backToCircles')}
           </Link>
         </div>
       </div>
@@ -274,7 +462,7 @@ const MyCircleDetailsPage = () => {
         className="flex items-center gap-2 text-foreground/60 hover:text-primary transition mb-4 group"
       >
         <ArrowLeft size={18} className="group-hover:-translate-x-1 transition" />
-        <span className="text-sm">Back to Circles</span>
+        <span className="text-sm">{t('backToCircles')}</span>
       </button>
 
       {/* Header Section */}
@@ -297,13 +485,13 @@ const MyCircleDetailsPage = () => {
                   )}`}
                 >
                   <CircleDot size={14} />
-                  {circleStatus === "active" ? "Active" : circleStatus === "paused" ? "Paused" : "Completed"}
+                  {getStatusText(circleStatus)}
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
                   {circleType === "private" ? (
-                    <><Lock size={14} /> Private Circle</>
+                    <><Lock size={14} /> {t('privateCircle')}</>
                   ) : (
-                    <><Globe size={14} /> Public Circle</>
+                    <><Globe size={14} /> {t('publicCircle')}</>
                   )}
                 </span>
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/5 text-foreground/70 capitalize">
@@ -321,13 +509,13 @@ const MyCircleDetailsPage = () => {
                   className="px-4 py-2 rounded-lg border border-border text-foreground hover:border-primary hover:text-primary transition flex items-center gap-2"
                 >
                   {copied ? <Check size={16} /> : <Copy size={16} />}
-                  {copied ? "Copied!" : "Invite"}
+                  {copied ? t('copied') : t('invite')}
                 </button>
                 <button
                   onClick={leaveCircle}
                   className="px-4 py-2 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition"
                 >
-                  Leave Circle
+                  {t('leaveCircle')}
                 </button>
               </>
             ) : (
@@ -335,7 +523,7 @@ const MyCircleDetailsPage = () => {
                 onClick={joinCircle}
                 className="px-6 py-2 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition"
               >
-                Join Circle
+                {t('joinCircle')}
               </button>
             )}
           </div>
@@ -355,11 +543,11 @@ const MyCircleDetailsPage = () => {
             </div>
             <div>
               <div className="text-2xl font-bold text-foreground">{circleMembers}</div>
-              <div className="text-xs text-foreground/50">Total Members</div>
+              <div className="text-xs text-foreground/50">{t('totalMembers')}</div>
             </div>
           </div>
           <div className="text-xs text-foreground/60">
-            Max {circleMaxMembers} members
+            {t('maxMembers', { count: circleMaxMembers })}
           </div>
         </motion.div>
 
@@ -377,11 +565,11 @@ const MyCircleDetailsPage = () => {
               <div className="text-2xl font-bold text-foreground">
                 ৳{circleTotalPoolValue.toLocaleString()}
               </div>
-              <div className="text-xs text-foreground/50">Total Pool</div>
+              <div className="text-xs text-foreground/50">{t('totalPool')}</div>
             </div>
           </div>
           <div className="text-xs text-foreground/60">
-            Target: ৳{circleTargetAmount.toLocaleString()}
+            {t('target')} ৳{circleTargetAmount.toLocaleString()}
           </div>
         </motion.div>
 
@@ -399,11 +587,11 @@ const MyCircleDetailsPage = () => {
               <div className="text-2xl font-bold text-foreground">
                 ৳{circleMinDeposit.toLocaleString()}
               </div>
-              <div className="text-xs text-foreground/50">Min Deposit</div>
+              <div className="text-xs text-foreground/50">{t('minDeposit')}</div>
             </div>
           </div>
           <div className="text-xs text-foreground/60">
-            Per month
+            {t('perMonth')}
           </div>
         </motion.div>
 
@@ -421,11 +609,11 @@ const MyCircleDetailsPage = () => {
               <div className="text-2xl font-bold text-foreground text-sm sm:text-base">
                 {circleNextPayout}
               </div>
-              <div className="text-xs text-foreground/50">Next Payout</div>
+              <div className="text-xs text-foreground/50">{t('nextPayout')}</div>
             </div>
           </div>
           <div className="text-xs text-foreground/60">
-            Monthly rotation
+            {t('monthlyRotation')}
           </div>
         </motion.div>
       </div>
@@ -435,9 +623,12 @@ const MyCircleDetailsPage = () => {
         <div className="lg:col-span-2 bg-card border border-border rounded-xl p-6">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h3 className="font-bold text-foreground mb-1">Pool Progress</h3>
+              <h3 className="font-bold text-foreground mb-1">{t('poolProgress')}</h3>
               <p className="text-sm text-foreground/60">
-                ৳{circleTotalPoolValue.toLocaleString()} collected out of ৳{circleTargetAmount.toLocaleString()}
+                {t('collectedOutOf', { 
+                  collected: `৳${circleTotalPoolValue.toLocaleString()}`, 
+                  target: `৳${circleTargetAmount.toLocaleString()}` 
+                })}
               </p>
             </div>
             <div className="text-2xl font-bold text-primary">
@@ -451,9 +642,9 @@ const MyCircleDetailsPage = () => {
             />
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-foreground/60">Monthly Collection:</span>
+            <span className="text-foreground/60">{t('monthlyCollection')}</span>
             <span className="font-semibold text-foreground">
-              ৳{(circleMinDeposit * circleMembers).toLocaleString()} / month
+              ৳{(circleMinDeposit * circleMembers).toLocaleString()} {t('perMonthLabel')}
             </span>
           </div>
         </div>
@@ -461,25 +652,25 @@ const MyCircleDetailsPage = () => {
         <div className="bg-gradient-to-r from-primary/5 to-primary-light/5 border border-primary/15 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp size={18} className="text-primary" />
-            <h3 className="font-bold text-foreground">Quick Stats</h3>
+            <h3 className="font-bold text-foreground">{t('quickStats')}</h3>
           </div>
           <div className="space-y-3">
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Created:</span>
+              <span className="text-foreground/60">{t('created')}</span>
               <span className="font-medium text-foreground">
                 {new Date(circleCreatedAt).toLocaleDateString()}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Total Pool:</span>
+              <span className="text-foreground/60">{t('totalPoolLabel')}</span>
               <span className="font-medium text-foreground">৳{circleTotalPoolValue.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Members:</span>
+              <span className="text-foreground/60">{t('membersLabel')}</span>
               <span className="font-medium text-foreground">{circleMembers} / {circleMaxMembers}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-foreground/60">Monthly per Member:</span>
+              <span className="text-foreground/60">{t('monthlyPerMember')}</span>
               <span className="font-medium text-foreground">৳{circleMinDeposit.toLocaleString()}</span>
             </div>
           </div>
@@ -493,7 +684,7 @@ const MyCircleDetailsPage = () => {
           <div className="bg-card border border-border rounded-xl p-6">
             <div className="flex items-center gap-2 mb-3">
               <Info size={18} className="text-primary" />
-              <h3 className="font-bold text-foreground">About This Circle</h3>
+              <h3 className="font-bold text-foreground">{t('aboutThisCircle')}</h3>
             </div>
             <p className="text-foreground/80 leading-relaxed">
               {circleDescription}
@@ -501,30 +692,27 @@ const MyCircleDetailsPage = () => {
           </div>
         )}
 
-        {/* Members List - COMPLETELY FIXED */}
+        {/* Members List */}
         <div className="bg-card border border-border rounded-xl p-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Users size={18} className="text-primary" />
-              <h3 className="font-bold text-foreground">Members</h3>
+              <h3 className="font-bold text-foreground">{t('membersLabel')}</h3>
             </div>
-            <span className="text-sm text-foreground/50">{circleMembers} members</span>
+            <span className="text-sm text-foreground/50">{t('membersCount', { count: circleMembers })}</span>
           </div>
           <div className="space-y-3 max-h-96 overflow-y-auto">
             {circle.membersList && circle.membersList.length > 0 ? (
               circle.membersList.map((member, idx) => {
-                // SAFELY extract member information - NO OBJECT RENDERING
                 let memberName = `Member ${idx + 1}`;
                 let memberEmail = "";
                 let memberRole = "member";
                 let memberDeposited = 0;
                 
-                // Check if member is an object and extract data safely
                 if (member && typeof member === 'object') {
                   memberRole = member.role || "member";
                   memberDeposited = member.totalDeposited || 0;
                   
-                  // Handle userId which might be an object or string
                   if (member.userId) {
                     if (typeof member.userId === 'object' && member.userId !== null) {
                       memberName = member.userId.name || member.userId.fullName || member.userId.username || `Member ${idx + 1}`;
@@ -535,7 +723,6 @@ const MyCircleDetailsPage = () => {
                   }
                 }
                 
-                // Ensure we're rendering strings and numbers only
                 return (
                   <div key={idx} className="flex items-center justify-between p-3 bg-background rounded-lg">
                     <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -558,7 +745,7 @@ const MyCircleDetailsPage = () => {
                     <div className="flex items-center gap-2 shrink-0">
                       {memberRole === "admin" && (
                         <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 whitespace-nowrap">
-                          Admin
+                          {t('admin')}
                         </span>
                       )}
                       <span className="text-xs text-foreground/50 whitespace-nowrap">
@@ -570,7 +757,7 @@ const MyCircleDetailsPage = () => {
               })
             ) : (
               <div className="text-center py-8 text-foreground/50">
-                No members found
+                {t('noMembersFound')}
               </div>
             )}
           </div>
@@ -585,7 +772,7 @@ const MyCircleDetailsPage = () => {
             className="flex-1 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
           >
             <Send size={18} />
-            Make a Deposit
+            {t('makeDeposit')}
           </button>
         </div>
       )}
@@ -595,10 +782,7 @@ const MyCircleDetailsPage = () => {
         <div className="flex gap-3">
           <AlertCircle size={16} className="text-primary shrink-0 mt-0.5" />
           <p className="text-xs text-foreground/60 leading-relaxed">
-            💡 <span className="font-semibold">How it works:</span> Each month,
-            members contribute the minimum deposit amount. One member receives
-            the total collected amount on a rotational basis. You'll be notified
-            when it's your turn for payout.
+            💡 <span className="font-semibold">{t('howItWorks')}</span> {t('howItWorksDesc')}
           </p>
         </div>
       </div>

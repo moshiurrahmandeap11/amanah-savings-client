@@ -27,11 +27,54 @@ const GOAL_COLORS = [
   "bg-cyan-500",
 ];
 
+// Translations
+const translations = {
+  en: {
+    savingsManagement: "💰 Savings Management",
+    totalSavingsPool: "Total Savings Pool",
+    activeGoals: "Active Goals",
+    activeCircles: "Active Circles",
+    retentionRate: "Retention Rate",
+    topSavingsGoals: "📋 Top Savings Goals",
+    goalType: "Goal Type",
+    members: "Members",
+    totalSaved: "Total Saved",
+    avgMonthly: "Avg Monthly",
+    share: "Share",
+    noGoalData: "No goal data found",
+    viewingDetails: "📊 Viewing",
+  },
+  bn: {
+    savingsManagement: "💰 সঞ্চয় ম্যানেজমেন্ট",
+    totalSavingsPool: "মোট সঞ্চয় পুল",
+    activeGoals: "সক্রিয় গোল",
+    activeCircles: "সক্রিয় সার্কেল",
+    retentionRate: "রিটেনশন রেট",
+    topSavingsGoals: "📋 শীর্ষ সঞ্চয় গোল",
+    goalType: "গোল টাইপ",
+    members: "মেম্বার",
+    totalSaved: "মোট সঞ্চয়",
+    avgMonthly: "গড় মাসিক",
+    share: "শেয়ার",
+    noGoalData: "কোনো গোল ডেটা পাওয়া যায়নি",
+    viewingDetails: "📊 দেখা হচ্ছে",
+  }
+};
+
 const SavingsManagement = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
   const [stats, setStats] = useState([]);
   const [topGoals, setTopGoals] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState("bn");
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
   const fetchSavings = useCallback(async () => {
     setLoading(true);
@@ -47,7 +90,7 @@ const SavingsManagement = () => {
           {
             icon: "💰",
             value: formatCurrency(s.totalSavingsPool),
-            label: "Total Savings Pool",
+            label: t('totalSavingsPool'),
             trend: "+12%",
             trendUp: true,
             bg: "bg-primary/10",
@@ -55,7 +98,7 @@ const SavingsManagement = () => {
           {
             icon: "🎯",
             value: String(s.activeGoals ?? 0),
-            label: "Active Goals",
+            label: t('activeGoals'),
             trend: "+5%",
             trendUp: true,
             bg: "bg-cyan-500/10",
@@ -63,7 +106,7 @@ const SavingsManagement = () => {
           {
             icon: "⭕",
             value: String(s.activeCircles ?? 0),
-            label: "Active Circles",
+            label: t('activeCircles'),
             trend: "+18%",
             trendUp: true,
             bg: "bg-amber-500/10",
@@ -71,15 +114,13 @@ const SavingsManagement = () => {
           {
             icon: "🔒",
             value: `${s.retentionRate ?? 0}%`,
-            label: "Retention Rate",
+            label: t('retentionRate'),
             trend: `${s.retentionRate ?? 0}%`,
             trendUp: (s.retentionRate ?? 0) >= 70,
             bg: "bg-red-500/10",
           },
         ]);
 
-        // Backend থেকে আসে: { name, count, percentage, totalTarget, totalCurrent, avgMonthly }
-        // frontend এ সেটা map করে নিচ্ছি
         const goals = (data.goalsByType || []).map((g, idx) => ({
           type: g.name || "Other",
           members: g.count ?? 0,
@@ -92,12 +133,12 @@ const SavingsManagement = () => {
       }
     } catch (err) {
       showToastMessage(
-        err.response?.data?.message || "Failed to load savings data"
+        err.response?.data?.message || t('noGoalData')
       );
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     fetchSavings();
@@ -119,7 +160,7 @@ const SavingsManagement = () => {
   return (
     <div>
       <h2 className="text-lg font-bold text-foreground mb-5">
-        💰 Savings Management
+        {t('savingsManagement')}
       </h2>
 
       {/* Stats Grid */}
@@ -131,7 +172,7 @@ const SavingsManagement = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
             className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-lg transition"
-            onClick={() => showToastMessage(`📊 Viewing ${stat.label} details`)}
+            onClick={() => showToastMessage(`${t('viewingDetails')} ${stat.label}`)}
           >
             <div className="flex justify-between items-start">
               <div
@@ -163,12 +204,12 @@ const SavingsManagement = () => {
       {/* Top Savings Goals Table */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="p-4 border-b border-border">
-          <div className="font-bold text-foreground">📋 Top Savings Goals</div>
+          <div className="font-bold text-foreground">{t('topSavingsGoals')}</div>
         </div>
 
         {topGoals.length === 0 ? (
           <div className="py-12 text-center text-foreground/40 text-sm">
-            কোনো goal data পাওয়া যায়নি
+            {t('noGoalData')}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -176,19 +217,19 @@ const SavingsManagement = () => {
               <thead>
                 <tr className="border-b border-border bg-background">
                   <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                    Goal Type
+                    {t('goalType')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                    Members
+                    {t('members')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                    Total Saved
+                    {t('totalSaved')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                    Avg Monthly
+                    {t('avgMonthly')}
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                    Share
+                    {t('share')}
                   </th>
                 </tr>
               </thead>
@@ -198,7 +239,7 @@ const SavingsManagement = () => {
                     key={idx}
                     className="border-b border-border last:border-0 hover:bg-primary/5 transition cursor-pointer"
                     onClick={() =>
-                      showToastMessage(`📊 ${goal.type} details`)
+                      showToastMessage(`${t('viewingDetails')} ${goal.type}`)
                     }
                   >
                     <td className="px-4 py-3">

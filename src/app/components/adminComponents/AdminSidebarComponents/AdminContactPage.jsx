@@ -25,6 +25,168 @@ import {
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    contactMessages: "📬 Contact Messages",
+    totalMessages: "total messages",
+    pending: "pending",
+    refresh: "Refresh",
+    
+    // Filters
+    searchPlaceholder: "Search by name, phone, email, message...",
+    allMessages: "All Messages",
+    pendingStatus: "Pending",
+    inProgress: "In Progress",
+    replied: "Replied",
+    resolved: "Resolved",
+    
+    // Table
+    user: "User",
+    contact: "Contact",
+    topic: "Topic",
+    message: "Message",
+    status: "Status",
+    date: "Date",
+    actions: "Actions",
+    noMessages: "No Messages",
+    noMessagesDesc: "No contact messages found",
+    showing: "Showing",
+    of: "of",
+    messages: "messages",
+    prev: "← Prev",
+    next: "Next →",
+    
+    // Status Badges
+    pendingBadge: "Pending",
+    inProgressBadge: "In Progress",
+    repliedBadge: "Replied",
+    resolvedBadge: "Resolved",
+    
+    // User Types
+    registered: "👤 Registered",
+    guest: "👤 Guest",
+    
+    // Modal
+    replyToMessage: "Reply to Message",
+    replyingTo: "Replying to",
+    originalMessage: "Original Message:",
+    yourReply: "Your Reply",
+    replyPlaceholder: "Type your reply here...",
+    sendReply: "Send Reply",
+    sending: "Sending...",
+    cancel: "Cancel",
+    delete: "Delete",
+    view: "View",
+    
+    // Topic Icons
+    general: "📝",
+    support: "🛠️",
+    bug: "🐛",
+    feedback: "💡",
+    feature: "✨",
+    complaint: "⚠️",
+    
+    // Toast Messages
+    success: "Success",
+    error: "Error",
+    warning: "Warning",
+    replySent: "Reply sent successfully!",
+    failedToSendReply: "Failed to send reply",
+    statusUpdated: "Status updated to {status}",
+    failedToUpdateStatus: "Failed to update status",
+    messageDeleted: "Message deleted successfully",
+    failedToDelete: "Failed to delete message",
+    failedToFetch: "Failed to fetch messages",
+    failedToLoad: "Failed to load message",
+    pleaseEnterReply: "Please enter a reply message",
+    deleteConfirm: "Delete Message?",
+    deleteConfirmDesc: "This action cannot be undone!",
+    yesDelete: "Yes, delete",
+    cancelDelete: "Cancel",
+  },
+  bn: {
+    // Header
+    contactMessages: "📬 যোগাযোগের বার্তা",
+    totalMessages: "মোট বার্তা",
+    pending: "প্রক্রিয়াধীন",
+    refresh: "রিফ্রেশ",
+    
+    // Filters
+    searchPlaceholder: "নাম, ফোন, ইমেইল বা বার্তা দিয়ে খুঁজুন...",
+    allMessages: "সব বার্তা",
+    pendingStatus: "প্রক্রিয়াধীন",
+    inProgress: "চলমান",
+    replied: "উত্তর দেওয়া হয়েছে",
+    resolved: "সমাধান করা হয়েছে",
+    
+    // Table
+    user: "ব্যবহারকারী",
+    contact: "যোগাযোগ",
+    topic: "বিষয়",
+    message: "বার্তা",
+    status: "অবস্থা",
+    date: "তারিখ",
+    actions: "কর্ম",
+    noMessages: "কোন বার্তা নেই",
+    noMessagesDesc: "কোন যোগাযোগের বার্তা পাওয়া যায়নি",
+    showing: "দেখানো হচ্ছে",
+    of: "এর",
+    messages: "বার্তা",
+    prev: "← পূর্ববর্তী",
+    next: "পরবর্তী →",
+    
+    // Status Badges
+    pendingBadge: "প্রক্রিয়াধীন",
+    inProgressBadge: "চলমান",
+    repliedBadge: "উত্তর দেওয়া হয়েছে",
+    resolvedBadge: "সমাধান করা হয়েছে",
+    
+    // User Types
+    registered: "👤 নিবন্ধিত",
+    guest: "👤 অতিথি",
+    
+    // Modal
+    replyToMessage: "বার্তার উত্তর দিন",
+    replyingTo: "উত্তর দিচ্ছেন",
+    originalMessage: "মূল বার্তা:",
+    yourReply: "আপনার উত্তর",
+    replyPlaceholder: "আপনার উত্তর লিখুন...",
+    sendReply: "উত্তর পাঠান",
+    sending: "পাঠানো হচ্ছে...",
+    cancel: "বাতিল",
+    delete: "ডিলিট",
+    view: "দেখুন",
+    
+    // Topic Icons
+    general: "📝",
+    support: "🛠️",
+    bug: "🐛",
+    feedback: "💡",
+    feature: "✨",
+    complaint: "⚠️",
+    
+    // Toast Messages
+    success: "সফল",
+    error: "ত্রুটি",
+    warning: "সতর্কতা",
+    replySent: "উত্তর সফলভাবে পাঠানো হয়েছে!",
+    failedToSendReply: "উত্তর পাঠাতে ব্যর্থ হয়েছে",
+    statusUpdated: "অবস্থা পরিবর্তন করা হয়েছে {status}",
+    failedToUpdateStatus: "অবস্থা পরিবর্তন করতে ব্যর্থ হয়েছে",
+    messageDeleted: "বার্তা সফলভাবে ডিলিট করা হয়েছে",
+    failedToDelete: "বার্তা ডিলিট করতে ব্যর্থ হয়েছে",
+    failedToFetch: "বার্তা লোড করতে ব্যর্থ হয়েছে",
+    failedToLoad: "বার্তা লোড করতে ব্যর্থ হয়েছে",
+    pleaseEnterReply: "দয়া করে একটি উত্তর বার্তা লিখুন",
+    deleteConfirm: "বার্তা ডিলিট করবেন?",
+    deleteConfirmDesc: "এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না!",
+    yesDelete: "হ্যাঁ, ডিলিট করুন",
+    cancelDelete: "বাতিল",
+  }
+};
+
 const AdminContactPage = () => {
   const [messages, setMessages] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
@@ -35,6 +197,7 @@ const AdminContactPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [lang, setLang] = useState("bn");
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -42,12 +205,27 @@ const AdminContactPage = () => {
     itemsPerPage: 20,
   });
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
   const statusOptions = [
-    { value: "all", label: "All Messages" },
-    { value: "pending", label: "Pending" },
-    { value: "in_progress", label: "In Progress" },
-    { value: "replied", label: "Replied" },
-    { value: "resolved", label: "Resolved" },
+    { value: "all", label: t('allMessages') },
+    { value: "pending", label: t('pendingStatus') },
+    { value: "in_progress", label: t('inProgress') },
+    { value: "replied", label: t('replied') },
+    { value: "resolved", label: t('resolved') },
   ];
 
   const getAuthHeaders = () => {
@@ -74,7 +252,7 @@ const AdminContactPage = () => {
         setPagination(res.data.data.pagination);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to fetch messages", "error");
+      showToast(err.response?.data?.message || t('failedToFetch'), "error");
     } finally {
       setLoading(false);
     }
@@ -94,17 +272,16 @@ const AdminContactPage = () => {
         setSelectedMessage(res.data.data);
         setShowMessageModal(true);
         document.body.style.overflow = "hidden";
-        // Refresh list to update read status
         fetchMessages(pagination.currentPage);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to load message", "error");
+      showToast(err.response?.data?.message || t('failedToLoad'), "error");
     }
   };
 
   const sendReply = async () => {
     if (!replyText.trim()) {
-      showToast("Please enter a reply message", "warning");
+      showToast(t('pleaseEnterReply'), "warning");
       return;
     }
 
@@ -117,11 +294,10 @@ const AdminContactPage = () => {
       );
 
       if (res.data.success) {
-        showToast("Reply sent successfully!", "success");
+        showToast(t('replySent'), "success");
         setReplyText("");
         setShowReplyModal(false);
         fetchMessages(pagination.currentPage);
-        // Update selected message
         if (selectedMessage) {
           setSelectedMessage({
             ...selectedMessage,
@@ -132,7 +308,7 @@ const AdminContactPage = () => {
         }
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to send reply", "error");
+      showToast(err.response?.data?.message || t('failedToSendReply'), "error");
     } finally {
       setSubmitting(false);
     }
@@ -147,27 +323,27 @@ const AdminContactPage = () => {
       );
 
       if (res.data.success) {
-        showToast(`Status updated to ${status}`, "success");
+        showToast(t('statusUpdated', { status: status }), "success");
         fetchMessages(pagination.currentPage);
         if (selectedMessage && selectedMessage._id === id) {
           setSelectedMessage({ ...selectedMessage, status });
         }
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to update status", "error");
+      showToast(err.response?.data?.message || t('failedToUpdateStatus'), "error");
     }
   };
 
   const deleteMessage = async (id) => {
     const result = await Swal.fire({
-      title: "Delete Message?",
-      text: "This action cannot be undone!",
+      title: t('deleteConfirm'),
+      text: t('deleteConfirmDesc'),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#059669",
-      confirmButtonText: "Yes, delete",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t('yesDelete'),
+      cancelButtonText: t('cancelDelete'),
     });
 
     if (result.isConfirmed) {
@@ -178,7 +354,7 @@ const AdminContactPage = () => {
         );
 
         if (res.data.success) {
-          showToast("Message deleted successfully", "success");
+          showToast(t('messageDeleted'), "success");
           fetchMessages(pagination.currentPage);
           if (selectedMessage && selectedMessage._id === id) {
             setShowMessageModal(false);
@@ -186,14 +362,14 @@ const AdminContactPage = () => {
           }
         }
       } catch (err) {
-        showToast(err.response?.data?.message || "Failed to delete message", "error");
+        showToast(err.response?.data?.message || t('failedToDelete'), "error");
       }
     }
   };
 
   const showToast = (message, type = "success") => {
     Swal.fire({
-      title: type === "success" ? "Success" : type === "error" ? "Error" : "Warning",
+      title: type === "success" ? t('success') : type === "error" ? t('error') : t('warning'),
       text: message,
       icon: type,
       confirmButtonColor: "#059669",
@@ -204,17 +380,17 @@ const AdminContactPage = () => {
 
   const getStatusBadge = (status) => {
     const statusMap = {
-      pending: { label: "Pending", color: "bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400" },
-      in_progress: { label: "In Progress", color: "bg-blue-500/20 dark:bg-blue-500/30 text-blue-500 dark:text-blue-400" },
-      replied: { label: "Replied", color: "bg-green-500/20 dark:bg-green-500/30 text-green-500 dark:text-green-400" },
-      resolved: { label: "Resolved", color: "bg-emerald-500/20 dark:bg-emerald-500/30 text-emerald-500 dark:text-emerald-400" },
+      pending: { label: t('pendingBadge'), color: "bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400" },
+      in_progress: { label: t('inProgressBadge'), color: "bg-blue-500/20 dark:bg-blue-500/30 text-blue-500 dark:text-blue-400" },
+      replied: { label: t('repliedBadge'), color: "bg-green-500/20 dark:bg-green-500/30 text-green-500 dark:text-green-400" },
+      resolved: { label: t('resolvedBadge'), color: "bg-emerald-500/20 dark:bg-emerald-500/30 text-emerald-500 dark:text-emerald-400" },
     };
     return statusMap[status] || statusMap.pending;
   };
 
   const formatDate = (date) => {
     if (!date) return "N/A";
-    return new Date(date).toLocaleString("en-US", {
+    return new Date(date).toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-US', {
       month: "short",
       day: "numeric",
       year: "numeric",
@@ -225,14 +401,14 @@ const AdminContactPage = () => {
 
   const getTopicIcon = (topic) => {
     const icons = {
-      general: "📝",
-      support: "🛠️",
-      bug: "🐛",
-      feedback: "💡",
-      feature: "✨",
-      complaint: "⚠️",
+      general: t('general'),
+      support: t('support'),
+      bug: t('bug'),
+      feedback: t('feedback'),
+      feature: t('feature'),
+      complaint: t('complaint'),
     };
-    return icons[topic] || "📝";
+    return icons[topic] || t('general');
   };
 
   if (loading) {
@@ -248,16 +424,16 @@ const AdminContactPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
-          <h2 className="text-lg font-bold text-foreground">📬 Contact Messages</h2>
+          <h2 className="text-lg font-bold text-foreground">{t('contactMessages')}</h2>
           <p className="text-xs text-foreground/50">
-            {pagination.totalItems} total messages · {messages.filter(m => m.status === "pending").length} pending
+            {pagination.totalItems} {t('totalMessages')} · {messages.filter(m => m.status === "pending").length} {t('pending')}
           </p>
         </div>
         <button
           onClick={() => fetchMessages(1)}
           className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white text-sm font-semibold flex items-center gap-2 hover:shadow-lg hover:shadow-primary/25 transition-all duration-300"
         >
-          <RefreshCw size={16} /> Refresh
+          <RefreshCw size={16} /> {t('refresh')}
         </button>
       </div>
 
@@ -267,7 +443,7 @@ const AdminContactPage = () => {
           <Search size={16} className="text-foreground/50" />
           <input
             type="text"
-            placeholder="Search by name, phone, email, message..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && fetchMessages(1)}
@@ -297,8 +473,8 @@ const AdminContactPage = () => {
         {messages.length === 0 ? (
           <div className="text-center py-16">
             <MessageSquare size={48} className="text-foreground/20 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">No Messages</h3>
-            <p className="text-sm text-foreground/50">No contact messages found</p>
+            <h3 className="text-lg font-semibold text-foreground mb-2">{t('noMessages')}</h3>
+            <p className="text-sm text-foreground/50">{t('noMessagesDesc')}</p>
           </div>
         ) : (
           <>
@@ -306,13 +482,13 @@ const AdminContactPage = () => {
               <table className="w-full min-w-[900px]">
                 <thead>
                   <tr className="border-b border-border/50 dark:border-border/30 bg-background/80 dark:bg-background/60">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">User</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Contact</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Topic</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Message</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('user')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('contact')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('topic')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('message')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('status')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('date')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -339,7 +515,7 @@ const AdminContactPage = () => {
                                 )}
                               </div>
                               <div className="text-xs text-foreground/50">
-                                {msg.user ? "👤 Registered" : "👤 Guest"}
+                                {msg.user ? t('registered') : t('guest')}
                               </div>
                             </div>
                           </div>
@@ -385,7 +561,7 @@ const AdminContactPage = () => {
                             <button
                               onClick={() => fetchMessageDetails(msg._id)}
                               className="p-1.5 rounded-lg border border-border/60 dark:border-border/40 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300"
-                              title="View"
+                              title={t('view')}
                             >
                               <Eye size={14} className="text-foreground/70" />
                             </button>
@@ -395,14 +571,14 @@ const AdminContactPage = () => {
                                 setShowReplyModal(true);
                               }}
                               className="p-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-all duration-300"
-                              title="Reply"
+                              title={t('replyToMessage')}
                             >
                               <Reply size={14} />
                             </button>
                             <button
                               onClick={() => deleteMessage(msg._id)}
                               className="p-1.5 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-all duration-300"
-                              title="Delete"
+                              title={t('delete')}
                             >
                               <Trash2 size={14} />
                             </button>
@@ -418,7 +594,7 @@ const AdminContactPage = () => {
             {/* Pagination */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-t border-border/50 dark:border-border/30 bg-background/80 dark:bg-background/60">
               <div className="text-xs text-foreground/50">
-                Showing {messages.length} of {pagination.totalItems} messages
+                {t('showing')} {messages.length} {t('of')} {pagination.totalItems} {t('messages')}
               </div>
               <div className="flex gap-2">
                 <button
@@ -426,7 +602,7 @@ const AdminContactPage = () => {
                   disabled={pagination.currentPage <= 1}
                   className="px-3 py-1 rounded-lg border border-border/60 dark:border-border/40 text-xs font-semibold hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  ← Prev
+                  {t('prev')}
                 </button>
                 {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
                   const page = i + 1;
@@ -449,7 +625,7 @@ const AdminContactPage = () => {
                   disabled={pagination.currentPage >= pagination.totalPages}
                   className="px-3 py-1 rounded-lg border border-border/60 dark:border-border/40 text-xs font-semibold hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Next →
+                  {t('next')}
                 </button>
               </div>
             </div>
@@ -503,13 +679,13 @@ const AdminContactPage = () => {
               <div className="p-6">
                 <div className="grid grid-cols-2 gap-4 mb-5">
                   <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                    <div className="text-[10px] text-foreground/50">Topic</div>
+                    <div className="text-[10px] text-foreground/50">{t('topic')}</div>
                     <div className="text-sm font-semibold text-foreground">
                       {getTopicIcon(selectedMessage.topic)} {selectedMessage.topic || "General"}
                     </div>
                   </div>
                   <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                    <div className="text-[10px] text-foreground/50">Status</div>
+                    <div className="text-[10px] text-foreground/50">{t('status')}</div>
                     <div className="text-sm font-semibold">
                       <span className={`px-2 py-0.5 rounded-full text-xs ${getStatusBadge(selectedMessage.status).color}`}>
                         {getStatusBadge(selectedMessage.status).label}
@@ -521,15 +697,15 @@ const AdminContactPage = () => {
                     <div className="text-sm font-semibold text-foreground">{formatDate(selectedMessage.createdAt)}</div>
                   </div>
                   <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
-                    <div className="text-[10px] text-foreground/50">User Type</div>
+                    <div className="text-[10px] text-foreground/50">{t('user')}</div>
                     <div className="text-sm font-semibold text-foreground">
-                      {selectedMessage.user ? "👤 Registered" : "👤 Guest"}
+                      {selectedMessage.user ? t('registered') : t('guest')}
                     </div>
                   </div>
                 </div>
 
                 <div className="mb-5">
-                  <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">Message</div>
+                  <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">{t('message')}</div>
                   <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-4 border border-border/50">
                     <p className="text-sm text-foreground whitespace-pre-wrap">
                       {selectedMessage.message}
@@ -539,7 +715,7 @@ const AdminContactPage = () => {
 
                 {selectedMessage.replyMessage && (
                   <div className="mb-5">
-                    <div className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Reply</div>
+                    <div className="text-xs font-bold text-primary uppercase tracking-wider mb-2">{t('replyToMessage')}</div>
                     <div className="bg-primary/10 dark:bg-primary/5 backdrop-blur-sm rounded-xl p-4 border border-primary/20">
                       <p className="text-sm text-foreground whitespace-pre-wrap">
                         {selectedMessage.replyMessage}
@@ -560,10 +736,10 @@ const AdminContactPage = () => {
                     }}
                     className="px-4 py-2 rounded-lg border border-border bg-background/80 text-foreground text-sm font-semibold"
                   >
-                    <option value="pending">Pending</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="replied">Replied</option>
-                    <option value="resolved">Resolved</option>
+                    <option value="pending">{t('pendingStatus')}</option>
+                    <option value="in_progress">{t('inProgress')}</option>
+                    <option value="replied">{t('replied')}</option>
+                    <option value="resolved">{t('resolved')}</option>
                   </select>
                   <button
                     onClick={() => {
@@ -571,13 +747,13 @@ const AdminContactPage = () => {
                     }}
                     className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white text-sm font-semibold flex items-center gap-2 hover:shadow-lg hover:shadow-primary/25 transition-all duration-300"
                   >
-                    <Reply size={16} /> Reply
+                    <Reply size={16} /> {t('replyToMessage')}
                   </button>
                   <button
                     onClick={() => deleteMessage(selectedMessage._id)}
                     className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-500 to-rose-500 text-white text-sm font-semibold flex items-center gap-2 hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300"
                   >
-                    <Trash2 size={16} /> Delete
+                    <Trash2 size={16} /> {t('delete')}
                   </button>
                 </div>
               </div>
@@ -616,9 +792,9 @@ const AdminContactPage = () => {
                 <div className="flex items-center gap-3">
                   <Reply size={24} />
                   <div>
-                    <div className="text-xl font-bold">Reply to Message</div>
+                    <div className="text-xl font-bold">{t('replyToMessage')}</div>
                     <div className="text-sm text-white/80">
-                      Replying to {selectedMessage.name}
+                      {t('replyingTo')} {selectedMessage.name}
                     </div>
                   </div>
                 </div>
@@ -626,7 +802,7 @@ const AdminContactPage = () => {
 
               <div className="p-6">
                 <div className="mb-4">
-                  <div className="text-xs text-foreground/50 mb-2">Original Message:</div>
+                  <div className="text-xs text-foreground/50 mb-2">{t('originalMessage')}</div>
                   <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50 text-sm text-foreground/70 max-h-24 overflow-y-auto">
                     {selectedMessage.message}
                   </div>
@@ -634,13 +810,13 @@ const AdminContactPage = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-2">
-                    Your Reply
+                    {t('yourReply')}
                   </label>
                   <textarea
                     value={replyText}
                     onChange={(e) => setReplyText(e.target.value)}
                     rows={5}
-                    placeholder="Type your reply here..."
+                    placeholder={t('replyPlaceholder')}
                     className="w-full p-3 rounded-xl border border-border bg-background/90 dark:bg-background/80 text-foreground placeholder:text-foreground/40 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition resize-none text-sm"
                   />
                 </div>
@@ -653,7 +829,7 @@ const AdminContactPage = () => {
                     }}
                     className="flex-1 py-2.5 rounded-xl border border-border text-foreground font-semibold hover:border-red-500 hover:text-red-500 transition-all duration-300"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     onClick={sendReply}
@@ -663,12 +839,12 @@ const AdminContactPage = () => {
                     {submitting ? (
                       <>
                         <Loader2 size={16} className="animate-spin" />
-                        Sending...
+                        {t('sending')}
                       </>
                     ) : (
                       <>
                         <Send size={16} />
-                        Send Reply
+                        {t('sendReply')}
                       </>
                     )}
                   </button>

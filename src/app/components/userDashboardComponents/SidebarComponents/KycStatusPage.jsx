@@ -14,309 +14,382 @@ import {
   HelpCircle,
 } from "lucide-react";
 
+// Translations
+const translations = {
+  en: {
+    // Navigation
+    backDashboard: "← Dashboard",
+    backTitle: "KYC Status",
+    
+    // Header
+    header: "🪪 KYC Verification",
+    
+    // Tabs
+    pending: "⏳ Pending",
+    reviewing: "🔍 Reviewing",
+    approved: "✅ Approved",
+    rejected: "❌ Rejected",
+    
+    // Section Titles
+    verificationProgress: "📍 Verification Progress",
+    submittedDocuments: "📄 Submitted Documents",
+    accountLimits: "📊 Account Limits",
+    
+    // Steps
+    step1Title: "Registration Complete",
+    step1Sub: "Phone number and OTP verified",
+    step1Time: "✅ Completed — May 2, 2026 10:23 AM",
+    
+    step2Title: "NID Uploaded",
+    step2Sub: "Front and back images of the national ID",
+    step2Time: "✅ Completed — May 2, 2026 10:31 AM",
+    
+    step3Title: "Selfie Verification",
+    step3Sub: "Liveness detection and face matching",
+    step3Time: "✅ Completed — May 2, 2026 10:34 AM",
+    
+    step4Title: "Manual Review",
+    step4Sub: "Our team is checking the documents",
+    step4Time: "⏱️ In progress — about 2-4 hours",
+    
+    step5Title: "Account Activation",
+    step5Sub: "Full benefits will be unlocked",
+    step5Time: "⏳ Pending",
+    
+    // Documents
+    docOk: "✓ OK",
+    docChecking: "⏱️ Checking",
+    docNidFront: "NID front side",
+    docNidBack: "NID back side",
+    docSelfie: "Selfie photo",
+    docApplication: "Application form",
+    
+    // Limits Headers
+    benefit: "Benefit",
+    currentLimit: "Current Limit",
+    afterKyc: "After KYC",
+    
+    // Limits Data
+    dailyDeposit: "Daily Deposit",
+    monthlyWithdrawal: "Monthly Withdrawal",
+    activeGoals: "Active Goals",
+    referralBonus: "Referral Bonus",
+    familyCircle: "Family Circle",
+    
+    // State: Pending
+    pendingBadge: "📋 Submitted",
+    pendingTitle: "Your documents have been submitted",
+    pendingSub: "Our team will start reviewing your KYC soon.",
+    pendingInfoTitle: "Waiting for review",
+    pendingInfoText: "Your application was submitted successfully. Review will start within 24 hours.",
+    pendingDot4Icon: "🔍",
+    pendingDot5Icon: "🔓",
+    pendingDot4Time: "⏳ Pending",
+    pendingDot5Time: "⏳ Pending",
+    
+    // State: Reviewing
+    reviewingBadge: "🔍 Under review",
+    reviewingTitle: "Your KYC is being verified",
+    reviewingSub: "Our team is reviewing your documents. This usually takes 24-48 hours.",
+    reviewingInfoTitle: "Review in progress",
+    reviewingInfoText: "Your NID and selfie are being checked by our AI system. No action is required.",
+    reviewingDot4Time: "⏱️ In progress — about 2-4 hours",
+    
+    // State: Approved
+    approvedBadge: "✅ Approved",
+    approvedTitle: "KYC verified successfully!",
+    approvedSub: "Congratulations! Your identity verification is complete. Full benefits are now available.",
+    approvedInfoTitle: "Account fully active!",
+    approvedInfoText: "Your KYC has been approved. All limits are unlocked and you can use every feature.",
+    approvedDot4Time: "✅ Approved",
+    approvedDot5Time: "✅ Account active",
+    
+    // State: Rejected
+    rejectedBadge: "❌ Rejected",
+    rejectedTitle: "Verification was not successful",
+    rejectedSub: "Sorry, your documents were not accepted. Please submit them again.",
+    rejectedInfoTitle: "Reason: image is blurry",
+    rejectedInfoText: "Your NID image is not clear. Please retake it in good light and submit again.",
+    rejectedDot4Time: "❌ Rejected",
+    
+    // Buttons
+    getHelp: "Get Help",
+    getUpdates: "Get Updates",
+    
+    // Toast
+    supportNumber: "📞 Support: 01700-000000",
+    updatesSent: "📧 Updates will be sent",
+    
+    // Status Icons
+    pendingIcon: "📋",
+    reviewingIcon: "⏳",
+    approvedIcon: "✅",
+    rejectedIcon: "❌",
+  },
+  bn: {
+    // Navigation
+    backDashboard: "← ড্যাশবোর্ড",
+    backTitle: "KYC স্ট্যাটাস",
+    
+    // Header
+    header: "🪪 KYC যাচাইকরণ",
+    
+    // Tabs
+    pending: "⏳ অপেক্ষমাণ",
+    reviewing: "🔍 পর্যালোচনা",
+    approved: "✅ অনুমোদিত",
+    rejected: "❌ প্রত্যাখ্যাত",
+    
+    // Section Titles
+    verificationProgress: "📍 যাচাইকরণ অগ্রগতি",
+    submittedDocuments: "📄 জমাকৃত কাগজপত্র",
+    accountLimits: "📊 অ্যাকাউন্ট সীমা",
+    
+    // Steps
+    step1Title: "নিবন্ধন সম্পন্ন",
+    step1Sub: "ফোন নম্বর ও OTP যাচাইকৃত",
+    step1Time: "✅ সম্পন্ন — ২ মে, ২০২৬ সকাল ১০:২৩",
+    
+    step2Title: "NID আপলোড",
+    step2Sub: "জাতীয় পরিচয়পত্রের সামনে ও পিছনের ছবি",
+    step2Time: "✅ সম্পন্ন — ২ মে, ২০২৬ সকাল ১০:৩১",
+    
+    step3Title: "সেলফি যাচাই",
+    step3Sub: "লাইভনেস ডিটেকশন ও ফেস ম্যাচিং",
+    step3Time: "✅ সম্পন্ন — ২ মে, ২০২৬ সকাল ১০:৩৪",
+    
+    step4Title: "ম্যানুয়াল পর্যালোচনা",
+    step4Sub: "আমাদের দল কাগজপত্র যাচাই করছে",
+    step4Time: "⏱️ প্রক্রিয়াধীন — আনুমানিক ২-৪ ঘণ্টা",
+    
+    step5Title: "অ্যাকাউন্ট সক্রিয়করণ",
+    step5Sub: "সম্পূর্ণ সুবিধা আনলক হবে",
+    step5Time: "⏳ অপেক্ষমাণ",
+    
+    // Documents
+    docOk: "✓ ঠিক আছে",
+    docChecking: "⏱️ যাচাই",
+    docNidFront: "NID সামনের দিক",
+    docNidBack: "NID পিছনের দিক",
+    docSelfie: "সেলফি ছবি",
+    docApplication: "আবেদনপত্র",
+    
+    // Limits Headers
+    benefit: "সুবিধা",
+    currentLimit: "বর্তমান সীমা",
+    afterKyc: "KYC পরে",
+    
+    // Limits Data
+    dailyDeposit: "দৈনিক জমা",
+    monthlyWithdrawal: "মাসিক উত্তোলন",
+    activeGoals: "সক্রিয় লক্ষ্য",
+    referralBonus: "রেফারেল বোনাস",
+    familyCircle: "পারিবারিক সার্কেল",
+    
+    // State: Pending
+    pendingBadge: "📋 জমা দেওয়া হয়েছে",
+    pendingTitle: "আপনার কাগজপত্র জমা হয়েছে",
+    pendingSub: "আমাদের দল শীঘ্রই আপনার KYC পর্যালোচনা শুরু করবে।",
+    pendingInfoTitle: "পর্যালোচনার অপেক্ষায়",
+    pendingInfoText: "আপনার আবেদন সফলভাবে জমা হয়েছে। ২৪ ঘণ্টার মধ্যে পর্যালোচনা শুরু হবে।",
+    pendingDot4Icon: "🔍",
+    pendingDot5Icon: "🔓",
+    pendingDot4Time: "⏳ অপেক্ষমাণ",
+    pendingDot5Time: "⏳ অপেক্ষমাণ",
+    
+    // State: Reviewing
+    reviewingBadge: "🔍 পর্যালোচনা চলছে",
+    reviewingTitle: "আপনার KYC যাচাই হচ্ছে",
+    reviewingSub: "আমাদের দল আপনার কাগজপত্র পর্যালোচনা করছে। সাধারণত ২৪-৪৮ ঘণ্টা সময় লাগে।",
+    reviewingInfoTitle: "পর্যালোচনা চলছে",
+    reviewingInfoText: "আপনার NID এবং সেলফি আমাদের AI সিস্টেম দ্বারা পরীক্ষা করা হচ্ছে। কোনো পদক্ষেপ নেওয়ার প্রয়োজন নেই।",
+    reviewingDot4Time: "⏱️ প্রক্রিয়াধীন — আনুমানিক ২-৪ ঘণ্টা",
+    
+    // State: Approved
+    approvedBadge: "✅ অনুমোদিত",
+    approvedTitle: "KYC সফলভাবে যাচাইকৃত!",
+    approvedSub: "অভিনন্দন! আপনার পরিচয় যাচাই সম্পন্ন হয়েছে। সম্পূর্ণ সুবিধা এখন উপলব্ধ।",
+    approvedInfoTitle: "অ্যাকাউন্ট সম্পূর্ণ সক্রিয়!",
+    approvedInfoText: "আপনার KYC অনুমোদিত হয়েছে। সকল সীমা আনলক হয়েছে এবং আপনি সম্পূর্ণ সুবিধা উপভোগ করতে পারবেন।",
+    approvedDot4Time: "✅ অনুমোদিত",
+    approvedDot5Time: "✅ অ্যাকাউন্ট সক্রিয়",
+    
+    // State: Rejected
+    rejectedBadge: "❌ প্রত্যাখ্যাত",
+    rejectedTitle: "যাচাই সফল হয়নি",
+    rejectedSub: "দুঃখিত, আপনার কাগজপত্র গ্রহণযোগ্য হয়নি। নতুনভাবে জমা দিন।",
+    rejectedInfoTitle: "কারণ: ছবি অস্পষ্ট",
+    rejectedInfoText: "আপনার NID ছবি স্পষ্ট নয়। দয়া করে ভালো আলোতে পুনরায় ছবি তুলুন এবং জমা দিন।",
+    rejectedDot4Time: "❌ প্রত্যাখ্যাত",
+    
+    // Buttons
+    getHelp: "সাহায্য নিন",
+    getUpdates: "আপডেট পান",
+    
+    // Toast
+    supportNumber: "📞 সাপোর্ট: 01700-000000",
+    updatesSent: "📧 আপডেট পাঠানো হবে",
+    
+    // Status Icons
+    pendingIcon: "📋",
+    reviewingIcon: "⏳",
+    approvedIcon: "✅",
+    rejectedIcon: "❌",
+  }
+};
+
 const KycStatusPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
   const [currentState, setCurrentState] = useState("reviewing");
   const [toast, setToast] = useState({ show: false, message: "" });
 
-  const states = ["pending", "reviewing", "approved", "rejected"];
-
-  const content = {
-    bn: {
-      back: "← ড্যাশবোর্ড",
-      backTitle: "KYC স্ট্যাটাস",
-      header: "🪪 KYC যাচাইকরণ",
-      tabs: ["⏳ অপেক্ষমাণ", "🔍 পর্যালোচনা", "✅ অনুমোদিত", "❌ প্রত্যাখ্যাত"],
-      sectionTitles: [
-        "📍 যাচাইকরণ অগ্রগতি",
-        "📄 জমাকৃত কাগজপত্র",
-        "📊 অ্যাকাউন্ট সীমা",
-      ],
-      steps: [
-        {
-          title: "নিবন্ধন সম্পন্ন",
-          sub: "ফোন নম্বর ও OTP যাচাইকৃত",
-          time: "✅ সম্পন্ন — ২ মে, ২০২৬ সকাল ১০:২৩",
-        },
-        {
-          title: "NID আপলোড",
-          sub: "জাতীয় পরিচয়পত্রের সামনে ও পিছনের ছবি",
-          time: "✅ সম্পন্ন — ২ মে, ২০২৬ সকাল ১০:৩১",
-        },
-        {
-          title: "সেলফি যাচাই",
-          sub: "লাইভনেস ডিটেকশন ও ফেস ম্যাচিং",
-          time: "✅ সম্পন্ন — ২ মে, ২০২৬ সকাল ১০:৩৪",
-        },
-        {
-          title: "ম্যানুয়াল পর্যালোচনা",
-          sub: "আমাদের দল কাগজপত্র যাচাই করছে",
-          time: "⏱️ প্রক্রিয়াধীন — আনুমানিক ২-৪ ঘণ্টা",
-        },
-        {
-          title: "অ্যাকাউন্ট সক্রিয়করণ",
-          sub: "সম্পূর্ণ সুবিধা আনলক হবে",
-          time: "⏳ অপেক্ষমাণ",
-        },
-      ],
-      docs: [
-        {
-          badge: "✓ ঠিক আছে",
-          badgeClass: "ok",
-          icon: "🪪",
-          name: "NID সামনের দিক",
-        },
-        {
-          badge: "✓ ঠিক আছে",
-          badgeClass: "ok",
-          icon: "🪪",
-          name: "NID পিছনের দিক",
-        },
-        { badge: "✓ ম্যাচ", badgeClass: "ok", icon: "🤳", name: "সেলফি ছবি" },
-        {
-          badge: "⏱️ যাচাই",
-          badgeClass: "pending",
-          icon: "📋",
-          name: "আবেদনপত্র",
-        },
-      ],
-      limitsHead: ["সুবিধা", "বর্তমান সীমা", "KYC পরে"],
-      limits: [
-        ["দৈনিক জমা", "৳৫,০০০", "৳৫০,০০০"],
-        ["মাসিক উত্তোলন", "৳২০,০০০", "৳২,০০,০০০"],
-        ["সক্রিয় লক্ষ্য", "৩টি", "অসীমিত"],
-        ["রেফারেল বোনাস", "৳২৫০", "৳৫০০"],
-        ["পারিবারিক সার্কেল", "❌", "✅"],
-      ],
-      stateData: {
-        pending: {
-          icon: "📋",
-          circleClass: "pending",
-          badgeClass: "pending",
-          badge: "📋 জমা দেওয়া হয়েছে",
-          title: "আপনার কাগজপত্র জমা হয়েছে",
-          sub: "আমাদের দল শীঘ্রই আপনার KYC পর্যালোচনা শুরু করবে।",
-          infoType: "warning",
-          infoIcon: "⏳",
-          infoTitle: "পর্যালোচনার অপেক্ষায়",
-          infoText:
-            "আপনার আবেদন সফলভাবে জমা হয়েছে। ২৪ ঘণ্টার মধ্যে পর্যালোচনা শুরু হবে।",
-          trackPct: "55%",
-          dot4Icon: "🔍",
-          dot5Icon: "🔓",
-          dot4Time: "⏳ অপেক্ষমাণ",
-          dot5Time: "⏳ অপেক্ষমাণ",
-        },
-        reviewing: {
-          icon: "⏳",
-          circleClass: "reviewing",
-          badgeClass: "reviewing",
-          badge: "🔍 পর্যালোচনা চলছে",
-          title: "আপনার KYC যাচাই হচ্ছে",
-          sub: "আমাদের দল আপনার কাগজপত্র পর্যালোচনা করছে। সাধারণত ২৪-৪৮ ঘণ্টা সময় লাগে।",
-          infoType: "info",
-          infoIcon: "🔍",
-          infoTitle: "পর্যালোচনা চলছে",
-          infoText:
-            "আপনার NID এবং সেলফি আমাদের AI সিস্টেম দ্বারা পরীক্ষা করা হচ্ছে। কোনো পদক্ষেপ নেওয়ার প্রয়োজন নেই।",
-          trackPct: "75%",
-          dot4Class: "active",
-          dot4Icon: "🔍",
-          dot4Time: "⏱️ প্রক্রিয়াধীন — আনুমানিক ২-৪ ঘণ্টা",
-          dot5Icon: "🔓",
-          dot5Time: "⏳ অপেক্ষমাণ",
-        },
-        approved: {
-          icon: "✅",
-          circleClass: "approved",
-          badgeClass: "approved",
-          badge: "✅ অনুমোদিত",
-          title: "KYC সফলভাবে যাচাইকৃত!",
-          sub: "অভিনন্দন! আপনার পরিচয় যাচাই সম্পন্ন হয়েছে। সম্পূর্ণ সুবিধা এখন উপলব্ধ।",
-          infoType: "success",
-          infoIcon: "🎉",
-          infoTitle: "অ্যাকাউন্ট সম্পূর্ণ সক্রিয়!",
-          infoText:
-            "আপনার KYC অনুমোদিত হয়েছে। সকল সীমা আনলক হয়েছে এবং আপনি সম্পূর্ণ সুবিধা উপভোগ করতে পারবেন।",
-          trackPct: "100%",
-          dot4Class: "done",
-          dot4Icon: "✓",
-          dot4Time: "✅ অনুমোদিত",
-          dot5Class: "done",
-          dot5Icon: "✓",
-          dot5Time: "✅ অ্যাকাউন্ট সক্রিয়",
-        },
-        rejected: {
-          icon: "❌",
-          circleClass: "rejected",
-          badgeClass: "rejected",
-          badge: "❌ প্রত্যাখ্যাত",
-          title: "যাচাই সফল হয়নি",
-          sub: "দুঃখিত, আপনার কাগজপত্র গ্রহণযোগ্য হয়নি। নতুনভাবে জমা দিন।",
-          infoType: "error",
-          infoIcon: "⚠️",
-          infoTitle: "কারণ: ছবি অস্পষ্ট",
-          infoText:
-            "আপনার NID ছবি স্পষ্ট নয়। দয়া করে ভালো আলোতে পুনরায় ছবি তুলুন এবং জমা দিন।",
-          trackPct: "55%",
-          dot4Class: "failed",
-          dot4Icon: "✗",
-          dot4Time: "❌ প্রত্যাখ্যাত",
-          dot5Icon: "🔓",
-          dot5Time: "⏳ অপেক্ষমাণ",
-        },
-      },
-    },
-    en: {
-      back: "← Dashboard",
-      backTitle: "KYC Status",
-      header: "🪪 KYC Verification",
-      tabs: ["⏳ Pending", "🔍 Reviewing", "✅ Approved", "❌ Rejected"],
-      sectionTitles: [
-        "📍 Verification Progress",
-        "📄 Submitted Documents",
-        "📊 Account Limits",
-      ],
-      steps: [
-        {
-          title: "Registration Complete",
-          sub: "Phone number and OTP verified",
-          time: "✅ Completed — May 2, 2026 10:23 AM",
-        },
-        {
-          title: "NID Uploaded",
-          sub: "Front and back images of the national ID",
-          time: "✅ Completed — May 2, 2026 10:31 AM",
-        },
-        {
-          title: "Selfie Verification",
-          sub: "Liveness detection and face matching",
-          time: "✅ Completed — May 2, 2026 10:34 AM",
-        },
-        {
-          title: "Manual Review",
-          sub: "Our team is checking the documents",
-          time: "⏱️ In progress — about 2-4 hours",
-        },
-        {
-          title: "Account Activation",
-          sub: "Full benefits will be unlocked",
-          time: "⏳ Pending",
-        },
-      ],
-      docs: [
-        { badge: "✓ OK", badgeClass: "ok", icon: "🪪", name: "NID front side" },
-        { badge: "✓ OK", badgeClass: "ok", icon: "🪪", name: "NID back side" },
-        {
-          badge: "✓ Match",
-          badgeClass: "ok",
-          icon: "🤳",
-          name: "Selfie photo",
-        },
-        {
-          badge: "⏱️ Checking",
-          badgeClass: "pending",
-          icon: "📋",
-          name: "Application form",
-        },
-      ],
-      limitsHead: ["Benefit", "Current Limit", "After KYC"],
-      limits: [
-        ["Daily Deposit", "৳5,000", "৳50,000"],
-        ["Monthly Withdrawal", "৳20,000", "৳200,000"],
-        ["Active Goals", "3", "Unlimited"],
-        ["Referral Bonus", "৳250", "৳500"],
-        ["Family Circle", "❌", "✅"],
-      ],
-      stateData: {
-        pending: {
-          icon: "📋",
-          circleClass: "pending",
-          badgeClass: "pending",
-          badge: "📋 Submitted",
-          title: "Your documents have been submitted",
-          sub: "Our team will start reviewing your KYC soon.",
-          infoType: "warning",
-          infoIcon: "⏳",
-          infoTitle: "Waiting for review",
-          infoText:
-            "Your application was submitted successfully. Review will start within 24 hours.",
-          trackPct: "55%",
-          dot4Icon: "🔍",
-          dot5Icon: "🔓",
-          dot4Time: "⏳ Pending",
-          dot5Time: "⏳ Pending",
-        },
-        reviewing: {
-          icon: "⏳",
-          circleClass: "reviewing",
-          badgeClass: "reviewing",
-          badge: "🔍 Under review",
-          title: "Your KYC is being verified",
-          sub: "Our team is reviewing your documents. This usually takes 24-48 hours.",
-          infoType: "info",
-          infoIcon: "🔍",
-          infoTitle: "Review in progress",
-          infoText:
-            "Your NID and selfie are being checked by our AI system. No action is required.",
-          trackPct: "75%",
-          dot4Class: "active",
-          dot4Icon: "🔍",
-          dot4Time: "⏱️ In progress — about 2-4 hours",
-          dot5Icon: "🔓",
-          dot5Time: "⏳ Pending",
-        },
-        approved: {
-          icon: "✅",
-          circleClass: "approved",
-          badgeClass: "approved",
-          badge: "✅ Approved",
-          title: "KYC verified successfully!",
-          sub: "Congratulations! Your identity verification is complete. Full benefits are now available.",
-          infoType: "success",
-          infoIcon: "🎉",
-          infoTitle: "Account fully active!",
-          infoText:
-            "Your KYC has been approved. All limits are unlocked and you can use every feature.",
-          trackPct: "100%",
-          dot4Class: "done",
-          dot4Icon: "✓",
-          dot4Time: "✅ Approved",
-          dot5Class: "done",
-          dot5Icon: "✓",
-          dot5Time: "✅ Account active",
-        },
-        rejected: {
-          icon: "❌",
-          circleClass: "rejected",
-          badgeClass: "rejected",
-          badge: "❌ Rejected",
-          title: "Verification was not successful",
-          sub: "Sorry, your documents were not accepted. Please submit them again.",
-          infoType: "error",
-          infoIcon: "⚠️",
-          infoTitle: "Reason: image is blurry",
-          infoText:
-            "Your NID image is not clear. Please retake it in good light and submit again.",
-          trackPct: "55%",
-          dot4Class: "failed",
-          dot4Icon: "✗",
-          dot4Time: "❌ Rejected",
-          dot5Icon: "🔓",
-          dot5Time: "⏳ Pending",
-        },
-      },
-    },
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
   };
 
-  const data = content[lang];
+  const states = ["pending", "reviewing", "approved", "rejected"];
+
+  // Build content dynamically using translation function
+  const getContent = () => ({
+    back: t('backDashboard'),
+    backTitle: t('backTitle'),
+    header: t('header'),
+    tabs: [t('pending'), t('reviewing'), t('approved'), t('rejected')],
+    sectionTitles: [
+      t('verificationProgress'),
+      t('submittedDocuments'),
+      t('accountLimits'),
+    ],
+    steps: [
+      {
+        title: t('step1Title'),
+        sub: t('step1Sub'),
+        time: t('step1Time'),
+      },
+      {
+        title: t('step2Title'),
+        sub: t('step2Sub'),
+        time: t('step2Time'),
+      },
+      {
+        title: t('step3Title'),
+        sub: t('step3Sub'),
+        time: t('step3Time'),
+      },
+      {
+        title: t('step4Title'),
+        sub: t('step4Sub'),
+        time: t('step4Time'),
+      },
+      {
+        title: t('step5Title'),
+        sub: t('step5Sub'),
+        time: t('step5Time'),
+      },
+    ],
+    docs: [
+      { badge: t('docOk'), badgeClass: "ok", icon: "🪪", name: t('docNidFront') },
+      { badge: t('docOk'), badgeClass: "ok", icon: "🪪", name: t('docNidBack') },
+      { badge: t('docOk'), badgeClass: "ok", icon: "🤳", name: t('docSelfie') },
+      { badge: t('docChecking'), badgeClass: "pending", icon: "📋", name: t('docApplication') },
+    ],
+    limitsHead: [t('benefit'), t('currentLimit'), t('afterKyc')],
+    limits: [
+      [t('dailyDeposit'), "৳৫,০০০", "৳৫০,০০০"],
+      [t('monthlyWithdrawal'), "৳২০,০০০", "৳২,০০,০০০"],
+      [t('activeGoals'), "৩টি", "অসীমিত"],
+      [t('referralBonus'), "৳২৫০", "৳৫০০"],
+      [t('familyCircle'), "❌", "✅"],
+    ],
+    stateData: {
+      pending: {
+        icon: t('pendingIcon'),
+        circleClass: "pending",
+        badgeClass: "pending",
+        badge: t('pendingBadge'),
+        title: t('pendingTitle'),
+        sub: t('pendingSub'),
+        infoType: "warning",
+        infoIcon: "⏳",
+        infoTitle: t('pendingInfoTitle'),
+        infoText: t('pendingInfoText'),
+        trackPct: "55%",
+        dot4Icon: t('pendingDot4Icon'),
+        dot5Icon: t('pendingDot5Icon'),
+        dot4Time: t('pendingDot4Time'),
+        dot5Time: t('pendingDot5Time'),
+      },
+      reviewing: {
+        icon: t('reviewingIcon'),
+        circleClass: "reviewing",
+        badgeClass: "reviewing",
+        badge: t('reviewingBadge'),
+        title: t('reviewingTitle'),
+        sub: t('reviewingSub'),
+        infoType: "info",
+        infoIcon: "🔍",
+        infoTitle: t('reviewingInfoTitle'),
+        infoText: t('reviewingInfoText'),
+        trackPct: "75%",
+        dot4Class: "active",
+        dot4Icon: "🔍",
+        dot4Time: t('reviewingDot4Time'),
+        dot5Icon: "🔓",
+        dot5Time: t('pendingDot5Time'),
+      },
+      approved: {
+        icon: t('approvedIcon'),
+        circleClass: "approved",
+        badgeClass: "approved",
+        badge: t('approvedBadge'),
+        title: t('approvedTitle'),
+        sub: t('approvedSub'),
+        infoType: "success",
+        infoIcon: "🎉",
+        infoTitle: t('approvedInfoTitle'),
+        infoText: t('approvedInfoText'),
+        trackPct: "100%",
+        dot4Class: "done",
+        dot4Icon: "✓",
+        dot4Time: t('approvedDot4Time'),
+        dot5Class: "done",
+        dot5Icon: "✓",
+        dot5Time: t('approvedDot5Time'),
+      },
+      rejected: {
+        icon: t('rejectedIcon'),
+        circleClass: "rejected",
+        badgeClass: "rejected",
+        badge: t('rejectedBadge'),
+        title: t('rejectedTitle'),
+        sub: t('rejectedSub'),
+        infoType: "error",
+        infoIcon: "⚠️",
+        infoTitle: t('rejectedInfoTitle'),
+        infoText: t('rejectedInfoText'),
+        trackPct: "55%",
+        dot4Class: "failed",
+        dot4Icon: "✗",
+        dot4Time: t('rejectedDot4Time'),
+        dot5Icon: "🔓",
+        dot5Time: t('pendingDot5Time'),
+      },
+    },
+  });
+
+  const data = getContent();
   const stateData = data.stateData[currentState];
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
+
+    // Get language from localStorage
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
   }, []);
 
   const toggleTheme = () => {
@@ -385,7 +458,11 @@ const KycStatusPage = () => {
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <button
-          onClick={() => setLang(lang === "bn" ? "en" : "bn")}
+          onClick={() => {
+            const newLang = lang === "bn" ? "en" : "bn";
+            setLang(newLang);
+            localStorage.setItem('appLanguage', newLang);
+          }}
           className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold"
         >
           {lang === "bn" ? "EN" : "BN"}
@@ -626,28 +703,16 @@ const KycStatusPage = () => {
         {/* Action Buttons */}
         <div className="flex gap-3">
           <button
-            onClick={() =>
-              showToast(
-                lang === "bn"
-                  ? "📞 সাপোর্ট: 01700-000000"
-                  : "📞 Support: 01700-000000",
-              )
-            }
+            onClick={() => showToast(t('supportNumber'))}
             className="flex-1 py-3 rounded-xl border-2 border-border text-foreground text-sm font-bold hover:border-primary transition"
           >
-            {lang === "bn" ? "সাহায্য নিন" : "Get Help"}
+            {t('getHelp')}
           </button>
           <button
-            onClick={() =>
-              showToast(
-                lang === "bn"
-                  ? "📧 আপডেট পাঠানো হবে"
-                  : "📧 Updates will be sent",
-              )
-            }
+            onClick={() => showToast(t('updatesSent'))}
             className="flex-1 py-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white text-sm font-bold"
           >
-            {lang === "bn" ? "আপডেট পান" : "Get Updates"}
+            {t('getUpdates')}
           </button>
         </div>
       </div>

@@ -6,6 +6,180 @@ import { AlertTriangle, Loader2, Target, Wallet, Banknote, Smartphone, Building,
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    pageTitle: "💰 Withdrawal Request",
+    pageSubtitle: "Request early withdrawal from your savings goal",
+    
+    // Warning Box
+    important: "Important:",
+    earlyWithdrawalWarning: "Savings are locked until goal maturity. Early withdrawal requires admin approval and takes 5-7 working days.",
+    
+    // Goals Section
+    yourGoals: "Your Goals",
+    saved: "Saved:",
+    target: "Target:",
+    locked: "Locked",
+    
+    // Form Labels
+    withdrawalRequest: "Emergency Withdrawal Request",
+    selectGoal: "Select Goal",
+    withdrawalAmount: "Withdrawal Amount (BDT)",
+    amountExceeds: "Amount exceeds your saved balance of",
+    availableBalance: "Available balance:",
+    reason: "Reason",
+    paymentMethod: "Payment Method",
+    phoneNumber: "Number",
+    bankName: "Bank Name",
+    accountNumber: "Account Number",
+    accountHolderName: "Account Holder Name",
+    sendRequest: "Send Withdrawal Request",
+    submitting: "Submitting...",
+    adminReview: "Admin will review within 5-7 working days",
+    
+    // Reasons
+    medicalEmergency: "Medical Emergency",
+    familyEmergency: "Family Emergency",
+    goalChange: "Goal Change",
+    other: "Other",
+    
+    // Placeholders
+    enterAmount: "Enter amount",
+    enterPhone: "1XXXXXXXXXX",
+    enterAccountNumber: "Enter account number",
+    enterHolderName: "Enter account holder name",
+    selectBank: "Select Bank",
+    
+    // Banks
+    bankDbbl: "Dutch-Bangla Bank (DBBL)",
+    bankBrac: "BRAC Bank",
+    bankIslami: "Islami Bank Bangladesh",
+    bankSonali: "Sonali Bank",
+    bankJanata: "Janata Bank",
+    bankOther: "Other",
+    
+    // Validation Messages
+    selectGoalError: "Please select a goal",
+    minAmountError: "Please withdraw at least ৳100",
+    amountExceedsError: "Amount exceeds your saved balance of ৳{amount}",
+    selectReasonError: "Please select a reason",
+    validPhoneError: "Please enter a valid {method} number",
+    selectBankError: "Please select a bank",
+    enterAccountError: "Please enter account number",
+    enterHolderError: "Please enter account holder name",
+    
+    // Success Modal
+    requestSubmitted: "Request Submitted!",
+    requestSuccess: "Your withdrawal request has been submitted. Admin will review within 5-7 working days.",
+    ok: "OK",
+    
+    // Error Modal
+    error: "Error!",
+    failedToSubmit: "Failed to submit withdrawal request",
+    
+    // Empty State
+    noActiveGoals: "No Active Goals",
+    noActiveGoalsDesc: "You don't have any active savings goals with funds to withdraw.",
+    createGoal: "Create a Goal",
+    loadingGoals: "Loading your goals...",
+    
+    // Payment Methods
+    bkash: "bKash",
+    nagad: "Nagad",
+    bank: "Bank",
+    
+    // Toast
+    phoneHint: "Enter 11-digit number (e.g., 17123456789)",
+  },
+  bn: {
+    // Page Title
+    pageTitle: "💰 উত্তোলন অনুরোধ",
+    pageSubtitle: "আপনার সঞ্চয় লক্ষ্য থেকে আগাম উত্তোলনের অনুরোধ করুন",
+    
+    // Warning Box
+    important: "গুরুত্বপূর্ণ:",
+    earlyWithdrawalWarning: "লক্ষ্য পরিপক্ক না হওয়া পর্যন্ত সঞ্চয় লক করা থাকে। আগাম উত্তোলনের জন্য প্রশাসকের অনুমোদন প্রয়োজন এবং ৫-৭ কার্যদিবস সময় লাগে।",
+    
+    // Goals Section
+    yourGoals: "আপনার লক্ষ্য",
+    saved: "সঞ্চিত:",
+    target: "লক্ষ্য:",
+    locked: "লক করা",
+    
+    // Form Labels
+    withdrawalRequest: "জরুরি উত্তোলন অনুরোধ",
+    selectGoal: "লক্ষ্য নির্বাচন করুন",
+    withdrawalAmount: "উত্তোলনের পরিমাণ (বিডিটি)",
+    amountExceeds: "পরিমাণ আপনার সঞ্চিত ব্যালেন্স ৳{amount} অতিক্রম করেছে",
+    availableBalance: "উপলব্ধ ব্যালেন্স:",
+    reason: "কারণ",
+    paymentMethod: "পেমেন্ট পদ্ধতি",
+    phoneNumber: "নম্বর",
+    bankName: "ব্যাংকের নাম",
+    accountNumber: "অ্যাকাউন্ট নম্বর",
+    accountHolderName: "অ্যাকাউন্ট ধারকের নাম",
+    sendRequest: "উত্তোলন অনুরোধ পাঠান",
+    submitting: "জমা হচ্ছে...",
+    adminReview: "প্রশাসক ৫-৭ কার্যদিবসের মধ্যে পর্যালোচনা করবেন",
+    
+    // Reasons
+    medicalEmergency: "মেডিকেল জরুরি অবস্থা",
+    familyEmergency: "পারিবারিক জরুরি অবস্থা",
+    goalChange: "লক্ষ্য পরিবর্তন",
+    other: "অন্যান্য",
+    
+    // Placeholders
+    enterAmount: "পরিমাণ লিখুন",
+    enterPhone: "১XXXXXXXXXX",
+    enterAccountNumber: "অ্যাকাউন্ট নম্বর লিখুন",
+    enterHolderName: "অ্যাকাউন্ট ধারকের নাম লিখুন",
+    selectBank: "ব্যাংক নির্বাচন করুন",
+    
+    // Banks
+    bankDbbl: "ডাচ-বাংলা ব্যাংক (ডিবিবিএল)",
+    bankBrac: "ব্র্যাক ব্যাংক",
+    bankIslami: "ইসলামী ব্যাংক বাংলাদেশ",
+    bankSonali: "সোনালী ব্যাংক",
+    bankJanata: "জনতা ব্যাংক",
+    bankOther: "অন্যান্য",
+    
+    // Validation Messages
+    selectGoalError: "অনুগ্রহ করে একটি লক্ষ্য নির্বাচন করুন",
+    minAmountError: "অনুগ্রহ করে কমপক্ষে ৳১০০ উত্তোলন করুন",
+    amountExceedsError: "পরিমাণ আপনার সঞ্চিত ব্যালেন্স ৳{amount} অতিক্রম করেছে",
+    selectReasonError: "অনুগ্রহ করে একটি কারণ নির্বাচন করুন",
+    validPhoneError: "অনুগ্রহ করে একটি বৈধ {method} নম্বর লিখুন",
+    selectBankError: "অনুগ্রহ করে একটি ব্যাংক নির্বাচন করুন",
+    enterAccountError: "অনুগ্রহ করে অ্যাকাউন্ট নম্বর লিখুন",
+    enterHolderError: "অনুগ্রহ করে অ্যাকাউন্ট ধারকের নাম লিখুন",
+    
+    // Success Modal
+    requestSubmitted: "অনুরোধ জমা দেওয়া হয়েছে!",
+    requestSuccess: "আপনার উত্তোলন অনুরোধ জমা দেওয়া হয়েছে। প্রশাসক ৫-৭ কার্যদিবসের মধ্যে পর্যালোচনা করবেন।",
+    ok: "ঠিক আছে",
+    
+    // Error Modal
+    error: "ত্রুটি!",
+    failedToSubmit: "উত্তোলন অনুরোধ জমা দিতে ব্যর্থ হয়েছে",
+    
+    // Empty State
+    noActiveGoals: "কোন সক্রিয় লক্ষ্য নেই",
+    noActiveGoalsDesc: "আপনার কাছে উত্তোলনের জন্য কোন সক্রিয় সঞ্চয় লক্ষ্য নেই।",
+    createGoal: "একটি লক্ষ্য তৈরি করুন",
+    loadingGoals: "আপনার লক্ষ্য লোড হচ্ছে...",
+    
+    // Payment Methods
+    bkash: "বিকাশ",
+    nagad: "নগদ",
+    bank: "ব্যাংক",
+    
+    // Toast
+    phoneHint: "১১-সংখ্যার নম্বর লিখুন (যেমন: ১৭১২৩৪৫৬৭৮৯)",
+  }
+};
+
 const LiftingPage = () => {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,18 +193,30 @@ const LiftingPage = () => {
   const [accountHolderName, setAccountHolderName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
+  const [lang, setLang] = useState("en");
+
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   const reasons = [
-    { value: "medical", label: "Medical Emergency" },
-    { value: "family", label: "Family Emergency" },
-    { value: "goal_change", label: "Goal Change" },
-    { value: "other", label: "Other" },
+    { value: "medical", label: t('medicalEmergency') },
+    { value: "family", label: t('familyEmergency') },
+    { value: "goal_change", label: t('goalChange') },
+    { value: "other", label: t('other') },
   ];
 
   const paymentMethods = [
-    { id: "bkash", name: "bKash", icon: <Smartphone size={20} />, color: "text-pink-600" },
-    { id: "nagad", name: "Nagad", icon: <Smartphone size={20} />, color: "text-orange-500" },
-    { id: "bank", name: "Bank", icon: <Building size={20} />, color: "text-blue-600" },
+    { id: "bkash", name: t('bkash'), icon: <Smartphone size={20} />, color: "text-pink-600" },
+    { id: "nagad", name: t('nagad'), icon: <Smartphone size={20} />, color: "text-orange-500" },
+    { id: "bank", name: t('bank'), icon: <Building size={20} />, color: "text-blue-600" },
   ];
 
   // Fetch user's goals
@@ -71,43 +257,43 @@ const LiftingPage = () => {
     const selectedGoalData = goals.find(g => g._id === selectedGoal);
 
     if (!selectedGoal) {
-      showToast("Please select a goal");
+      showToast(t('selectGoalError'));
       return;
     }
 
     if (!withdrawAmount || amount < 100) {
-      showToast("Please withdraw at least ৳100");
+      showToast(t('minAmountError'));
       return;
     }
 
     if (amount > selectedGoalData?.currentSaved) {
-      showToast(`Amount exceeds your saved balance of ৳${selectedGoalData.currentSaved.toLocaleString()}`);
+      showToast(t('amountExceedsError').replace('{amount}', selectedGoalData.currentSaved.toLocaleString()));
       return;
     }
 
     if (!reason) {
-      showToast("Please select a reason");
+      showToast(t('selectReasonError'));
       return;
     }
 
     if (paymentMethod === "bkash" || paymentMethod === "nagad") {
       if (!phoneNumber || phoneNumber.length !== 11) {
-        showToast(`Please enter a valid ${paymentMethod === "bkash" ? "bKash" : "Nagad"} number`);
+        showToast(t('validPhoneError').replace('{method}', paymentMethod === "bkash" ? t('bkash') : t('nagad')));
         return;
       }
     }
 
     if (paymentMethod === "bank") {
       if (!bankName) {
-        showToast("Please select a bank");
+        showToast(t('selectBankError'));
         return;
       }
       if (!accountNumber) {
-        showToast("Please enter account number");
+        showToast(t('enterAccountError'));
         return;
       }
       if (!accountHolderName) {
-        showToast("Please enter account holder name");
+        showToast(t('enterHolderError'));
         return;
       }
     }
@@ -136,11 +322,11 @@ const LiftingPage = () => {
 
       if (response.data.success) {
         Swal.fire({
-          title: "Request Submitted!",
-          text: "Your withdrawal request has been submitted. Admin will review within 5-7 working days.",
+          title: t('requestSubmitted'),
+          text: t('requestSuccess'),
           icon: "success",
           confirmButtonColor: "#059669",
-          confirmButtonText: "OK",
+          confirmButtonText: t('ok'),
         }).then(() => {
           setWithdrawAmount("");
           setPhoneNumber("");
@@ -153,8 +339,8 @@ const LiftingPage = () => {
     } catch (error) {
       console.error("Submit withdrawal error:", error);
       Swal.fire({
-        title: "Error!",
-        text: error.response?.data?.message || "Failed to submit withdrawal request",
+        title: t('error'),
+        text: error.response?.data?.message || t('failedToSubmit'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -170,7 +356,7 @@ const LiftingPage = () => {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">Loading your goals...</p>
+          <p className="text-foreground/60">{t('loadingGoals')}</p>
         </div>
       </div>
     );
@@ -181,15 +367,15 @@ const LiftingPage = () => {
       <div className="max-w-3xl">
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <Target size={64} className="text-foreground/30 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-foreground mb-2">No Active Goals</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">{t('noActiveGoals')}</h3>
           <p className="text-foreground/60 mb-4">
-            You don't have any active savings goals with funds to withdraw.
+            {t('noActiveGoalsDesc')}
           </p>
           <button
             onClick={() => window.location.href = "/dashboard/goals"}
             className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition"
           >
-            Create a Goal
+            {t('createGoal')}
           </button>
         </div>
       </div>
@@ -200,17 +386,16 @@ const LiftingPage = () => {
     <>
       <div className="max-w-3xl">
         <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
-          <Wallet size={28} className="text-primary" /> Withdrawal Request
+          <Wallet size={28} className="text-primary" /> {t('pageTitle')}
         </h2>
-        <p className="text-sm text-foreground/60 mb-4">Request early withdrawal from your savings goal</p>
+        <p className="text-sm text-foreground/60 mb-4">{t('pageSubtitle')}</p>
 
         {/* Warning Box */}
         <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl mb-5">
           <div className="flex gap-2">
             <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" />
             <div className="text-sm text-foreground/70 leading-relaxed">
-              <strong>Important:</strong> Savings are locked until goal maturity. 
-              Early withdrawal requires admin approval and takes 5-7 working days.
+              <strong>{t('important')}</strong> {t('earlyWithdrawalWarning')}
             </div>
           </div>
         </div>
@@ -218,7 +403,7 @@ const LiftingPage = () => {
         {/* Goals List Card */}
         <div className="bg-card border border-border rounded-xl p-5 mb-5">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <Target size={18} /> Your Goals
+            <Target size={18} /> {t('yourGoals')}
           </div>
           <div className="space-y-3">
             {goals.map((goal) => (
@@ -232,11 +417,11 @@ const LiftingPage = () => {
                 <div className="flex-1">
                   <div className="font-semibold text-sm text-foreground">{goal.goalName}</div>
                   <div className="text-xs text-foreground/50">
-                    Saved: ৳{goal.currentSaved.toLocaleString()} · Target: ৳{goal.targetAmount.toLocaleString()}
+                    {t('saved')} ৳{goal.currentSaved.toLocaleString()} · {t('target')} ৳{goal.targetAmount.toLocaleString()}
                   </div>
                 </div>
                 <span className="text-xs px-2 py-1 bg-amber-500/10 text-amber-500 rounded-md font-semibold flex items-center gap-1">
-                  <AlertTriangle size={10} /> Locked
+                  <AlertTriangle size={10} /> {t('locked')}
                 </span>
               </div>
             ))}
@@ -246,13 +431,13 @@ const LiftingPage = () => {
         {/* Withdrawal Request Form */}
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-            <AlertCircle size={18} className="text-primary" /> Emergency Withdrawal Request
+            <AlertCircle size={18} className="text-primary" /> {t('withdrawalRequest')}
           </div>
 
           {/* Select Goal */}
           <div className="mb-4">
             <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide flex items-center gap-1">
-              <Target size={12} /> Select Goal
+              <Target size={12} /> {t('selectGoal')}
             </label>
             <select
               value={selectedGoal}
@@ -261,7 +446,7 @@ const LiftingPage = () => {
             >
               {goals.map((goal) => (
                 <option key={goal._id} value={goal._id}>
-                  {goal.goalName} — ৳{goal.currentSaved.toLocaleString()} saved
+                  {goal.goalName} — ৳{goal.currentSaved.toLocaleString()} {t('saved')}
                 </option>
               ))}
             </select>
@@ -270,7 +455,7 @@ const LiftingPage = () => {
           {/* Withdrawal Amount */}
           <div className="mb-4">
             <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide flex items-center gap-1">
-              <Banknote size={12} /> Withdrawal Amount (BDT)
+              <Banknote size={12} /> {t('withdrawalAmount')}
             </label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">৳</span>
@@ -280,18 +465,18 @@ const LiftingPage = () => {
                 onChange={(e) => setWithdrawAmount(e.target.value)}
                 min="100"
                 max={selectedGoalData?.currentSaved}
-                placeholder="Enter amount"
+                placeholder={t('enterAmount')}
                 className="w-full p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
               />
             </div>
             {selectedGoalData && withdrawAmount > selectedGoalData.currentSaved && (
               <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                <AlertCircle size={12} /> Amount exceeds your saved balance of ৳{selectedGoalData.currentSaved.toLocaleString()}
+                <AlertCircle size={12} /> {t('amountExceeds').replace('{amount}', selectedGoalData.currentSaved.toLocaleString())}
               </p>
             )}
             {selectedGoalData && (
               <p className="text-xs text-foreground/50 mt-1">
-                Available balance: ৳{selectedGoalData.currentSaved.toLocaleString()}
+                {t('availableBalance')} ৳{selectedGoalData.currentSaved.toLocaleString()}
               </p>
             )}
           </div>
@@ -299,7 +484,7 @@ const LiftingPage = () => {
           {/* Reason */}
           <div className="mb-4">
             <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-              Reason
+              {t('reason')}
             </label>
             <select
               value={reason}
@@ -317,7 +502,7 @@ const LiftingPage = () => {
           {/* Payment Method */}
           <div className="mb-4">
             <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-              Payment Method
+              {t('paymentMethod')}
             </label>
             <div className="grid grid-cols-3 gap-3">
               {paymentMethods.map((method) => (
@@ -345,7 +530,7 @@ const LiftingPage = () => {
           {(paymentMethod === "bkash" || paymentMethod === "nagad") && (
             <div className="mb-5">
               <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-                {paymentMethod === "bkash" ? "bKash" : "Nagad"} Number
+                {paymentMethod === "bkash" ? t('bkash') : t('nagad')} {t('phoneNumber')}
               </label>
               <div className="flex">
                 <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-border bg-background text-foreground/60 text-sm">
@@ -355,11 +540,11 @@ const LiftingPage = () => {
                   type="tel"
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 11))}
-                  placeholder="1XXXXXXXXXX"
+                  placeholder={t('enterPhone')}
                   className="flex-1 p-3 rounded-r-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 />
               </div>
-              <p className="text-xs text-foreground/50 mt-1">Enter 11-digit number (e.g., 17123456789)</p>
+              <p className="text-xs text-foreground/50 mt-1">{t('phoneHint')}</p>
             </div>
           )}
 
@@ -368,43 +553,43 @@ const LiftingPage = () => {
             <div className="mb-5 space-y-3">
               <div>
                 <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-                  Bank Name
+                  {t('bankName')}
                 </label>
                 <select
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 >
-                  <option value="">Select Bank</option>
-                  <option value="DBBL">Dutch-Bangla Bank (DBBL)</option>
-                  <option value="BRAC">BRAC Bank</option>
-                  <option value="Islami">Islami Bank Bangladesh</option>
-                  <option value="Sonali">Sonali Bank</option>
-                  <option value="Janata">Janata Bank</option>
-                  <option value="Other">Other</option>
+                  <option value="">{t('selectBank')}</option>
+                  <option value="DBBL">{t('bankDbbl')}</option>
+                  <option value="BRAC">{t('bankBrac')}</option>
+                  <option value="Islami">{t('bankIslami')}</option>
+                  <option value="Sonali">{t('bankSonali')}</option>
+                  <option value="Janata">{t('bankJanata')}</option>
+                  <option value="Other">{t('bankOther')}</option>
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-                  Account Number
+                  {t('accountNumber')}
                 </label>
                 <input
                   type="text"
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
-                  placeholder="Enter account number"
+                  placeholder={t('enterAccountNumber')}
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-foreground/70 mb-1 uppercase tracking-wide">
-                  Account Holder Name
+                  {t('accountHolderName')}
                 </label>
                 <input
                   type="text"
                   value={accountHolderName}
                   onChange={(e) => setAccountHolderName(e.target.value)}
-                  placeholder="Enter account holder name"
+                  placeholder={t('enterHolderName')}
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 />
               </div>
@@ -420,18 +605,18 @@ const LiftingPage = () => {
             {isSubmitting ? (
               <>
                 <Loader2 size={18} className="animate-spin" />
-                Submitting...
+                {t('submitting')}
               </>
             ) : (
               <>
                 <CreditCard size={18} />
-                Send Withdrawal Request
+                {t('sendRequest')}
               </>
             )}
           </button>
 
           <p className="text-center text-xs text-foreground/50 mt-3 flex items-center justify-center gap-1">
-            <AlertCircle size={12} /> Admin will review within 5-7 working days
+            <AlertCircle size={12} /> {t('adminReview')}
           </p>
         </div>
       </div>

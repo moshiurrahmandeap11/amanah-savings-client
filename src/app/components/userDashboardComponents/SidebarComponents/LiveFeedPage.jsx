@@ -8,6 +8,120 @@ import useSocket from "../../../hooks/useSocket";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000api";
 
+// Translations
+const translations = {
+  en: {
+    // Hero
+    pageTitle: "Live Feed",
+    pageSubtitle: "Thousands of people across Bangladesh are saving together — watch live!",
+    
+    // Live Banner
+    live: "LIVE",
+    totalMembers: "Total members",
+    todayDeposits: "Today's deposits",
+    todaySaved: "Saved today",
+    todayGoals: "Goals completed today",
+    
+    // Stats
+    activeNow: "Active now",
+    lastHour: "In the last hour",
+    goalsCompleteToday: "Goals completed today",
+    newMembersToday: "New members today",
+    
+    // Feed
+    feedTitle: "Live Activity Feed",
+    loadMore: "Load more ↓",
+    noActivity: "No activity yet",
+    
+    // Filters
+    filterAll: "All",
+    filterDeposit: "💰 Deposit",
+    filterGoal: "🎯 Goal",
+    filterBadge: "🏆 Badge",
+    filterJoin: "👋 Join",
+    filterStreak: "🔥 Streak",
+    
+    // Badges
+    badgeDeposit: "💰 Deposit",
+    badgeGoalComplete: "🎯 Goal Done",
+    badgeBadge: "🏆 Badge",
+    badgeJoin: "👋 New Member",
+    badgeStreak: "🔥 Streak",
+    
+    // Event Texts
+    eventDeposit: "<strong>{name}</strong> added <span class=\"text-primary font-bold\">৳{amount}</span> to <span class=\"text-accent font-semibold\">{goal}</span>",
+    eventGoalComplete: "<strong>{name}</strong> completed <span class=\"text-accent font-semibold\">{goal}</span>! <strong class=\"text-amber-500\">Congratulations! 🎉</strong>",
+    eventBadge: "<strong>{name}</strong> earned the \"<span class=\"text-purple-600 font-bold\">{badgeName}</span>\" badge!",
+    eventJoin: "<strong>{name}</strong> joined Sanchoy Bondhu as a <strong>new member</strong>!",
+    eventStreak: "<strong>{name}</strong> is keeping a <strong class=\"text-red-500\">{days} day</strong> savings streak alive! 🔥",
+    
+    // Time Labels
+    timeNow: "Just now",
+    minutesAgo: "{n} min ago",
+    
+    // Loading
+    loading: "Loading live feed...",
+    
+    // City
+    bangladesh: "Bangladesh",
+  },
+  bn: {
+    // Hero
+    pageTitle: "লাইভ ফিড",
+    pageSubtitle: "বাংলাদেশ জুড়ে হাজারো মানুষ একসাথে সঞ্চয় করছে — লাইভ দেখুন!",
+    
+    // Live Banner
+    live: "লাইভ",
+    totalMembers: "মোট সদস্য",
+    todayDeposits: "আজকের জমা",
+    todaySaved: "আজ জমেছে",
+    todayGoals: "আজকের লক্ষ্য সম্পন্ন",
+    
+    // Stats
+    activeNow: "এখন সক্রিয়",
+    lastHour: "গত ১ ঘন্টায়",
+    goalsCompleteToday: "আজ লক্ষ্য সম্পন্ন",
+    newMembersToday: "আজ নতুন সদস্য",
+    
+    // Feed
+    feedTitle: "লাইভ কার্যক্রম",
+    loadMore: "আরও দেখুন ↓",
+    noActivity: "কোন কার্যক্রম পাওয়া যায়নি",
+    
+    // Filters
+    filterAll: "সব",
+    filterDeposit: "💰 জমা",
+    filterGoal: "🎯 লক্ষ্য",
+    filterBadge: "🏆 ব্যাজ",
+    filterJoin: "👋 যোগদান",
+    filterStreak: "🔥 স্ট্রিক",
+    
+    // Badges
+    badgeDeposit: "💰 জমা",
+    badgeGoalComplete: "🎯 লক্ষ্য সম্পন্ন",
+    badgeBadge: "🏆 ব্যাজ",
+    badgeJoin: "👋 নতুন সদস্য",
+    badgeStreak: "🔥 স্ট্রিক",
+    
+    // Event Texts
+    eventDeposit: "<strong>{name}</strong> - <span class=\"text-accent font-semibold\">{goal}</span>-এ <span class=\"text-primary font-bold\">৳{amount}</span> জমা দিয়েছেন",
+    eventGoalComplete: "<strong>{name}</strong> তার <span class=\"text-accent font-semibold\">{goal}</span> সম্পন্ন করেছেন! <strong class=\"text-amber-500\">অভিনন্দন! 🎉</strong>",
+    eventBadge: "<strong>{name}</strong> \"<span class=\"text-purple-600 font-bold\">{badgeName}</span>\" ব্যাজ অর্জন করেছেন!",
+    eventJoin: "<strong>{name}</strong> Sanchoy Bondhu-তে <strong>নতুন সদস্য</strong> হিসেবে যোগ দিয়েছেন!",
+    eventStreak: "<strong>{name}</strong> টানা <strong class=\"text-red-500\">{days} দিনের</strong> সঞ্চয় স্ট্রিক বজায় রাখছেন! 🔥",
+    
+    // Time Labels
+    timeNow: "এইমাত্র",
+    minutesAgo: "{n} মিনিট আগে",
+    
+    // Loading
+    loading: "লাইভ ফিড লোড হচ্ছে...",
+    
+    // City
+    bangladesh: "বাংলাদেশ",
+  }
+};
+
 const LiveFeedPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
@@ -28,6 +142,16 @@ const LiveFeedPage = () => {
 
   const intervalRef = useRef(null);
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    // Replace placeholders
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
   // Get user ID for socket
   const [userId, setUserId] = useState(null);
   useEffect(() => {
@@ -36,6 +160,10 @@ const LiveFeedPage = () => {
       const parsed = JSON.parse(storedUser);
       setUserId(parsed._id || parsed.id);
     }
+
+    // Get language from localStorage
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
   }, []);
 
   // Socket for real-time deposit/goal events
@@ -82,7 +210,7 @@ const LiveFeedPage = () => {
             id: `dep_${d._id || d.id || Math.random()}`,
             type: "deposit",
             name: d.userName || d.fullName || "Member",
-            city: { bn: "বাংলাদেশ", en: "Bangladesh" },
+            city: { bn: t('bangladesh'), en: "Bangladesh" },
             goal: { bn: `💰 ${d.goalName || "সঞ্চয়"}`, en: `💰 ${d.goalName || "Savings"}` },
             amount: d.amount || d.depositAmount || 1000,
             badgeName: "",
@@ -102,7 +230,7 @@ const LiveFeedPage = () => {
             id: `goal_${g._id || g.id || Math.random()}`,
             type: "goal_complete",
             name: g.userName || "Member",
-            city: { bn: "বাংলাদেশ", en: "Bangladesh" },
+            city: { bn: t('bangladesh'), en: "Bangladesh" },
             goal: { bn: `🎯 ${g.goalName || "লক্ষ্য"}`, en: `🎯 ${g.goalName || "Goal"}` },
             amount: g.targetAmount || 0,
             badgeName: "",
@@ -121,7 +249,7 @@ const LiveFeedPage = () => {
     } catch (err) {
       console.error("Live feed fetch error:", err);
     }
-  }, []);
+  }, [t]);
 
   // Add real-time socket notification as feed item
   useEffect(() => {
@@ -132,7 +260,7 @@ const LiveFeedPage = () => {
           id: `socket_${Date.now()}`,
           type: lastNotif.type === "deposit" ? "deposit" : "goal_complete",
           name: "Member",
-          city: { bn: "বাংলাদেশ", en: "Bangladesh" },
+          city: { bn: t('bangladesh'), en: "Bangladesh" },
           goal: { bn: "💰 সঞ্চয়", en: "💰 Savings" },
           amount: lastNotif.metadata?.amount || 1000,
           badgeName: "",
@@ -145,7 +273,7 @@ const LiveFeedPage = () => {
         setFeedItems((prev) => [newItem, ...prev].slice(0, 30));
       }
     }
-  }, [notifications]);
+  }, [notifications, t]);
 
   useEffect(() => {
     fetchStats();
@@ -167,108 +295,62 @@ const LiveFeedPage = () => {
 
   const getText = useCallback(
     (key, params = {}) => {
-      const texts = {
-        bn: {
-          title: "লাইভ ফিড",
-          live: "লাইভ",
-          totalMembers: "মোট সদস্য",
-          todayDeposits: "আজকের জমা",
-          todaySaved: "আজ জমেছে",
-          todayGoals: "আজকের লক্ষ্য সম্পন্ন",
-          activeNow: "এখন সক্রিয়",
-          lastHour: "গত ১ ঘন্টায়",
-          goalsCompleteToday: "আজ লক্ষ্য সম্পন্ন",
-          newMembersToday: "আজ নতুন সদস্য",
-          feedTitle: "লাইভ কার্যক্রম",
-          loadMore: "আরও দেখুন ↓",
-          filters: {
-            all: "সব",
-            deposit: "💰 জমা",
-            goal_complete: "🎯 লক্ষ্য",
-            badge: "🏆 ব্যাজ",
-            join: "👋 যোগদান",
-            streak: "🔥 স্ট্রিক",
-          },
-          badges: {
-            deposit: "💰 জমা",
-            goal_complete: "🎯 লক্ষ্য সম্পন্ন",
-            badge: "🏆 ব্যাজ",
-            join: "👋 নতুন সদস্য",
-            streak: "🔥 স্ট্রিক",
-          },
-          eventText: {
-            deposit: (item) =>
-              `<strong>${item.name}</strong> - <span class="text-accent font-semibold">${item.goal[lang]}</span>-এ <span class="text-primary font-bold">৳${item.amount.toLocaleString()}</span> জমা দিয়েছেন`,
-            goal_complete: (item) =>
-              `<strong>${item.name}</strong> তার <span class="text-accent font-semibold">${item.goal[lang]}</span> সম্পন্ন করেছেন! <strong class="text-amber-500">অভিনন্দন! 🎉</strong>`,
-            badge: (item) =>
-              `<strong>${item.name}</strong> "<span class="text-purple-600 font-bold">${item.badgeName}</span>" ব্যাজ অর্জন করেছেন!`,
-            join: (item) =>
-              `<strong>${item.name}</strong> Sanchoy Bondhu-তে <strong>নতুন সদস্য</strong> হিসেবে যোগ দিয়েছেন!`,
-            streak: (item) =>
-              `<strong>${item.name}</strong> টানা <strong class="text-red-500">${item.days} দিনের</strong> সঞ্চয় স্ট্রিক বজায় রাখছেন! 🔥`,
-          },
-          timeNow: "এইমাত্র",
-          minutesAgo: (n) => `${n} মিনিট আগে`,
-        },
-        en: {
-          title: "Live Feed",
-          live: "LIVE",
-          totalMembers: "Total members",
-          todayDeposits: "Today's deposits",
-          todaySaved: "Saved today",
-          todayGoals: "Goals completed today",
-          activeNow: "Active now",
-          lastHour: "In the last hour",
-          goalsCompleteToday: "Goals completed today",
-          newMembersToday: "New members today",
-          feedTitle: "Live Activity Feed",
-          loadMore: "Load more ↓",
-          filters: {
-            all: "All",
-            deposit: "💰 Deposit",
-            goal_complete: "🎯 Goal",
-            badge: "🏆 Badge",
-            join: "👋 Join",
-            streak: "🔥 Streak",
-          },
-          badges: {
-            deposit: "💰 Deposit",
-            goal_complete: "🎯 Goal Done",
-            badge: "🏆 Badge",
-            join: "👋 New Member",
-            streak: "🔥 Streak",
-          },
-          eventText: {
-            deposit: (item) =>
-              `<strong>${item.name}</strong> added <span class="text-primary font-bold">৳${item.amount.toLocaleString()}</span> to <span class="text-accent font-semibold">${item.goal[lang]}</span>`,
-            goal_complete: (item) =>
-              `<strong>${item.name}</strong> completed <span class="text-accent font-semibold">${item.goal[lang]}</span>! <strong class="text-amber-500">Congratulations! 🎉</strong>`,
-            badge: (item) =>
-              `<strong>${item.name}</strong> earned the "<span class="text-purple-600 font-bold">${item.badgeName}</span>" badge!`,
-            join: (item) =>
-              `<strong>${item.name}</strong> joined Sanchoy Bondhu as a <strong>new member</strong>!`,
-            streak: (item) =>
-              `<strong>${item.name}</strong> is keeping a <strong class="text-red-500">${item.days} day</strong> savings streak alive! 🔥`,
-          },
-          timeNow: "Just now",
-          minutesAgo: (n) => `${n} min ago`,
-        },
-      };
-      if (params.n) return texts[lang][key](params.n);
-      return texts[lang][key] || key;
+      return t(key, params);
     },
-    [lang],
+    [lang]
   );
 
   const timeLabel = (item) =>
     item.ageMin > 0
-      ? getText("minutesAgo", { n: item.ageMin })
-      : getText("timeNow");
+      ? t('minutesAgo', { n: item.ageMin })
+      : t('timeNow');
 
   const renderFeedItem = useCallback(
     (item) => {
-      const eventText = getText("eventText")[item.type](item);
+      let eventHtml = "";
+      switch (item.type) {
+        case "deposit":
+          eventHtml = t('eventDeposit', {
+            name: item.name,
+            amount: item.amount.toLocaleString(),
+            goal: item.goal[lang]
+          });
+          break;
+        case "goal_complete":
+          eventHtml = t('eventGoalComplete', {
+            name: item.name,
+            goal: item.goal[lang]
+          });
+          break;
+        case "badge":
+          eventHtml = t('eventBadge', {
+            name: item.name,
+            badgeName: item.badgeName
+          });
+          break;
+        case "join":
+          eventHtml = t('eventJoin', {
+            name: item.name
+          });
+          break;
+        case "streak":
+          eventHtml = t('eventStreak', {
+            name: item.name,
+            days: item.days
+          });
+          break;
+        default:
+          eventHtml = `<strong>${item.name}</strong> ${item.type}`;
+      }
+
+      const badgeLabel = {
+        deposit: t('badgeDeposit'),
+        goal_complete: t('badgeGoalComplete'),
+        badge: t('badgeBadge'),
+        join: t('badgeJoin'),
+        streak: t('badgeStreak'),
+      }[item.type] || item.type;
+
       return (
         <motion.div
           key={item.id}
@@ -286,7 +368,7 @@ const LiveFeedPage = () => {
           <div className="flex-1 min-w-0">
             <div
               className="text-sm text-foreground/80"
-              dangerouslySetInnerHTML={{ __html: eventText }}
+              dangerouslySetInnerHTML={{ __html: eventHtml }}
             />
             <div className="text-xs text-foreground/50 mt-1">
               {timeLabel(item)}
@@ -295,13 +377,22 @@ const LiveFeedPage = () => {
           <div
             className={`px-2 py-1 rounded-full text-[10px] font-semibold whitespace-nowrap ${item.badge}`}
           >
-            {getText("badges")[item.type]}
+            {badgeLabel}
           </div>
         </motion.div>
       );
     },
-    [getText, lang, timeLabel],
+    [lang, t, timeLabel]
   );
+
+  const filters = [
+    { key: "all", label: t('filterAll') },
+    { key: "deposit", label: t('filterDeposit') },
+    { key: "goal_complete", label: t('filterGoal') },
+    { key: "badge", label: t('filterBadge') },
+    { key: "join", label: t('filterJoin') },
+    { key: "streak", label: t('filterStreak') },
+  ];
 
   const filteredItems = feedItems.filter(
     (item) => currentFilter === "all" || item.type === currentFilter,
@@ -312,7 +403,7 @@ const LiveFeedPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-foreground/60">Loading live feed...</p>
+          <p className="text-foreground/60">{t('loading')}</p>
         </div>
       </div>
     );
@@ -323,10 +414,10 @@ const LiveFeedPage = () => {
       {/* Hero Section */}
       <div className="bg-linear-to-r from-primary to-primary-light py-12 text-center">
         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
-          {getText("title")}
+          {t('pageTitle')}
         </h1>
         <p className="text-white/85 text-sm">
-          বাংলাদেশ জুড়ে হাজারো মানুষ একসাথে সঞ্চয় করছে — লাইভ দেখুন!
+          {t('pageSubtitle')}
         </p>
       </div>
 
@@ -335,7 +426,7 @@ const LiveFeedPage = () => {
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/15 border border-white/30">
           <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
           <span className="text-white text-xs font-bold">
-            {getText("live")}
+            {t('live')}
           </span>
         </div>
         <div className="text-center">
@@ -343,7 +434,7 @@ const LiveFeedPage = () => {
             {stats.members.toLocaleString()}
           </div>
           <div className="text-white/75 text-[11px]">
-            {getText("totalMembers")}
+            {t('totalMembers')}
           </div>
         </div>
         <div className="text-center">
@@ -351,7 +442,7 @@ const LiveFeedPage = () => {
             {stats.todayDeposits.toLocaleString()}
           </div>
           <div className="text-white/75 text-[11px]">
-            {getText("todayDeposits")}
+            {t('todayDeposits')}
           </div>
         </div>
         <div className="text-center">
@@ -359,7 +450,7 @@ const LiveFeedPage = () => {
             ৳{stats.amountToday.toLocaleString()}
           </div>
           <div className="text-white/75 text-[11px]">
-            {getText("todaySaved")}
+            {t('todaySaved')}
           </div>
         </div>
         <div className="text-center">
@@ -367,7 +458,7 @@ const LiveFeedPage = () => {
             🎯 {stats.goalsToday}
           </div>
           <div className="text-white/75 text-[11px]">
-            {getText("todayGoals")}
+            {t('todayGoals')}
           </div>
         </div>
       </div>
@@ -381,7 +472,7 @@ const LiveFeedPage = () => {
               {stats.activeNow}
             </div>
             <div className="text-xs text-foreground/50">
-              {getText("activeNow")}
+              {t('activeNow')}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 text-center">
@@ -390,7 +481,7 @@ const LiveFeedPage = () => {
               ৳{stats.depositHour.toLocaleString()}
             </div>
             <div className="text-xs text-foreground/50">
-              {getText("lastHour")}
+              {t('lastHour')}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 text-center">
@@ -399,7 +490,7 @@ const LiveFeedPage = () => {
               {stats.goalsHour}
             </div>
             <div className="text-xs text-foreground/50">
-              {getText("goalsCompleteToday")}
+              {t('goalsCompleteToday')}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 text-center">
@@ -408,7 +499,7 @@ const LiveFeedPage = () => {
               {stats.newToday}
             </div>
             <div className="text-xs text-foreground/50">
-              {getText("newMembersToday")}
+              {t('newMembersToday')}
             </div>
           </div>
         </div>
@@ -420,17 +511,17 @@ const LiveFeedPage = () => {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-[0_0_0_3px_rgba(5,150,105,0.2)]" />
             <span className="font-bold text-foreground">
-              {getText("feedTitle")}
+              {t('feedTitle')}
             </span>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {Object.entries(getText("filters")).map(([key, label]) => (
+            {filters.map((filter) => (
               <button
-                key={key}
-                onClick={() => setCurrentFilter(key)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${currentFilter === key ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-foreground/60 hover:border-primary"}`}
+                key={filter.key}
+                onClick={() => setCurrentFilter(filter.key)}
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${currentFilter === filter.key ? "border-primary bg-primary/10 text-primary" : "border-border bg-card text-foreground/60 hover:border-primary"}`}
               >
-                {label}
+                {filter.label}
               </button>
             ))}
           </div>
@@ -442,7 +533,7 @@ const LiveFeedPage = () => {
               {filteredItems.length === 0 ? (
                 <div className="p-8 text-center text-foreground/50">
                   <div className="text-4xl mb-2">📭</div>
-                  <div>{lang === "bn" ? "কোন কার্যক্রম পাওয়া যায়নি" : "No activity yet"}</div>
+                  <div>{t('noActivity')}</div>
                 </div>
               ) : (
                 filteredItems.map((item) => renderFeedItem(item))
@@ -454,7 +545,7 @@ const LiveFeedPage = () => {
               onClick={fetchFeed}
               className="px-6 py-2 rounded-full bg-linear-to-r from-primary to-primary-light text-white text-sm font-bold hover:opacity-90 transition"
             >
-              {getText("loadMore")}
+              {t('loadMore')}
             </button>
           </div>
         </div>

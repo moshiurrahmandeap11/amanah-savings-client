@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -29,18 +29,240 @@ import {
   X,
 } from "lucide-react";
 
-const filters = [
-  { id: "all", label: "All Goals", icon: Star },
-  { id: "family", label: "Family", icon: Users },
-  { id: "islamic", label: "Islamic", icon: Moon },
-  { id: "education", label: "Education", icon: GraduationCap },
-  { id: "tech", label: "Tech & Gadget", icon: Smartphone },
-  { id: "lifestyle", label: "Lifestyle", icon: Sparkles },
-  { id: "emergency", label: "Emergency", icon: Shield },
-  { id: "business", label: "Business", icon: Briefcase },
+// Translations
+const translations = {
+  en: {
+    // Hero
+    heroBadge: "Savings Goals & Circles",
+    heroTitle: "Save Toward What",
+    heroTitleHighlight: "Truly Matters",
+    heroDesc: "Join community savings circles for specific goals. Locked savings, AI-powered insights, and 12,000+ motivated members.",
+    heroButton: "Join a Circle",
+    heroButton2: "Create Custom Goal",
+    
+    // Filters
+    filterAll: "All Goals",
+    filterFamily: "Family",
+    filterIslamic: "Islamic",
+    filterEducation: "Education",
+    filterTech: "Tech & Gadget",
+    filterLifestyle: "Lifestyle",
+    filterEmergency: "Emergency",
+    filterBusiness: "Business",
+    
+    // Search
+    searchPlaceholder: "Search goals...",
+    
+    // Sort
+    sortDefault: "Default",
+    sortProgressHigh: "Progress high to low",
+    sortProgressLow: "Progress low to high",
+    sortMembersHigh: "Members high to low",
+    sortNewest: "Newest first",
+    
+    // Bulk
+    bulkSelected: "selected",
+    bulkDeposit: "Deposit",
+    bulkPause: "Pause",
+    bulkShare: "Share",
+    bulkDelete: "Delete",
+    bulkCancel: "Cancel",
+    
+    // Featured
+    featuredBadge: "Featured Circle · Most Popular",
+    featuredTitle: "Grand Wedding Fund 2026",
+    featuredDesc: "Bangladesh's largest wedding savings circle. 850+ members saving together for the perfect wedding. Monthly deposits from ৳5,000 to ৳30,000.",
+    featuredMembers: "Members",
+    featuredTotalSaved: "Total Saved",
+    featuredDuration: "Duration",
+    featuredProgress: "Progress",
+    featuredRemaining: "remaining",
+    featuredSpotsLeft: "spots left",
+    featuredButton: "Join This Circle",
+    featuredButton2: "View Details",
+    
+    // Goals Section
+    goalsTitle: "All Savings Goals",
+    goalsShowing: "Showing {count} goals",
+    goalsSelect: "Select",
+    
+    // Goal Card
+    goalDetails: "Details",
+    goalEdit: "Edit",
+    goalShare: "Share",
+    goalJoin: "Join {name} Circle →",
+    goalMonthly: "Monthly",
+    goalDuration: "Duration",
+    goalMembers: "members",
+    goalBadgeOpen: "Open",
+    goalBadgeFilling: "Filling Fast",
+    goalBadgePopular: "Most Popular",
+    goalBadgeNew: "New",
+    goalBadgeIslamic: "Islamic",
+    
+    // Custom Goal
+    customTitle: "Don't see your goal?",
+    customDesc: "Create a completely custom savings goal with your own target amount, timeline, and circle name.",
+    customButton: "Create Custom Goal",
+    
+    // Challenges
+    challengeBadge: "Community Challenges",
+    challengeTitle: "Stay Motivated.",
+    challengeTitleHighlight: "Win Badges.",
+    challengeDesc: "Join community challenges to earn achievement badges, climb the leaderboard, and hit your goals faster.",
+    challengeParticipants: "participants",
+    challengeJoin: "Join Challenge",
+    challengeJoined: "Joined!",
+    
+    // Join Modal
+    joinTitle: "Join {name} Circle",
+    joinDesc: "You need an active account to join this circle.",
+    joinLocked: "Savings are locked until goal maturity. Early withdrawal requires admin approval. No interest, no profit guarantees.",
+    joinButton: "Create Account to Join",
+    joinButton2: "Already a member? Log In",
+    
+    // Create Modal
+    createTitle: "Create Custom Goal",
+    createDesc: "Define your own savings goal with a custom name, target, and timeline.",
+    createName: "Goal Name",
+    createNamePlaceholder: "e.g. My Dream Home",
+    createTarget: "Target (৳)",
+    createTargetPlaceholder: "e.g. 500000",
+    createMonthly: "Monthly (৳)",
+    createMonthlyPlaceholder: "e.g. 10000",
+    createButton: "Create Account to Save →",
+    
+    // Tags
+    tagActive: "Active",
+    tagAnyAmount: "Any amount",
+    tagSeasonal: "Seasonal",
+    tagIslamicMode: "Islamic Mode",
+    tagBeginnerFriendly: "Beginner Friendly",
+  },
+  bn: {
+    // Hero
+    heroBadge: "সঞ্চয় লক্ষ্য ও সার্কেল",
+    heroTitle: "যা সত্যিই গুরুত্বপূর্ণ",
+    heroTitleHighlight: "তার জন্য সঞ্চয় করুন",
+    heroDesc: "নির্দিষ্ট লক্ষ্যের জন্য কমিউনিটি সঞ্চয় সার্কেলে যোগ দিন। লক করা সঞ্চয়, এআই-চালিত অন্তর্দৃষ্টি এবং ১২,০০০+ অনুপ্রাণিত সদস্য।",
+    heroButton: "একটি সার্কেলে যোগ দিন",
+    heroButton2: "কাস্টম লক্ষ্য তৈরি করুন",
+    
+    // Filters
+    filterAll: "সব লক্ষ্য",
+    filterFamily: "পরিবার",
+    filterIslamic: "ইসলামিক",
+    filterEducation: "শিক্ষা",
+    filterTech: "টেক ও গ্যাজেট",
+    filterLifestyle: "লাইফস্টাইল",
+    filterEmergency: "জরুরি",
+    filterBusiness: "ব্যবসা",
+    
+    // Search
+    searchPlaceholder: "লক্ষ্য খুঁজুন...",
+    
+    // Sort
+    sortDefault: "ডিফল্ট",
+    sortProgressHigh: "অগ্রগতি বেশি থেকে কম",
+    sortProgressLow: "অগ্রগতি কম থেকে বেশি",
+    sortMembersHigh: "সদস্য বেশি থেকে কম",
+    sortNewest: "নতুন প্রথম",
+    
+    // Bulk
+    bulkSelected: "নির্বাচিত",
+    bulkDeposit: "জমা",
+    bulkPause: "বিরতি",
+    bulkShare: "শেয়ার",
+    bulkDelete: "মুছে ফেলুন",
+    bulkCancel: "বাতিল",
+    
+    // Featured
+    featuredBadge: "বৈশিষ্ট্যযুক্ত সার্কেল · সবচেয়ে জনপ্রিয়",
+    featuredTitle: "গ্র্যান্ড ওয়েডিং ফান্ড ২০২৬",
+    featuredDesc: "বাংলাদেশের সবচেয়ে বড় বিয়ে সঞ্চয় সার্কেল। ৮৫০+ সদস্য একসাথে নিখুঁত বিয়ের জন্য সঞ্চয় করছেন। মাসিক জমা ৳৫,০০০ থেকে ৳৩০,০০০।",
+    featuredMembers: "সদস্য",
+    featuredTotalSaved: "মোট সঞ্চয়",
+    featuredDuration: "মেয়াদ",
+    featuredProgress: "অগ্রগতি",
+    featuredRemaining: "বাকি",
+    featuredSpotsLeft: "স্পট বাকি",
+    featuredButton: "এই সার্কেলে যোগ দিন",
+    featuredButton2: "বিস্তারিত দেখুন",
+    
+    // Goals Section
+    goalsTitle: "সব সঞ্চয় লক্ষ্য",
+    goalsShowing: "{count}টি লক্ষ্য দেখানো হচ্ছে",
+    goalsSelect: "নির্বাচন",
+    
+    // Goal Card
+    goalDetails: "বিস্তারিত",
+    goalEdit: "সম্পাদনা",
+    goalShare: "শেয়ার",
+    goalJoin: "{name} সার্কেলে যোগ দিন →",
+    goalMonthly: "মাসিক",
+    goalDuration: "মেয়াদ",
+    goalMembers: "সদস্য",
+    goalBadgeOpen: "খোলা",
+    goalBadgeFilling: "দ্রুত পূর্ণ হচ্ছে",
+    goalBadgePopular: "সবচেয়ে জনপ্রিয়",
+    goalBadgeNew: "নতুন",
+    goalBadgeIslamic: "ইসলামিক",
+    
+    // Custom Goal
+    customTitle: "আপনার লক্ষ্য খুঁজে পাচ্ছেন না?",
+    customDesc: "আপনার নিজস্ব টার্গেট পরিমাণ, সময়সীমা এবং সার্কেল নাম সহ একটি সম্পূর্ণ কাস্টম সঞ্চয় লক্ষ্য তৈরি করুন।",
+    customButton: "কাস্টম লক্ষ্য তৈরি করুন",
+    
+    // Challenges
+    challengeBadge: "কমিউনিটি চ্যালেঞ্জ",
+    challengeTitle: "অনুপ্রাণিত থাকুন।",
+    challengeTitleHighlight: "ব্যাজ জিতুন।",
+    challengeDesc: "অর্জন ব্যাজ অর্জন করতে, লিডারবোর্ডে উঠতে এবং আপনার লক্ষ্য দ্রুত পূরণ করতে কমিউনিটি চ্যালেঞ্জে যোগ দিন।",
+    challengeParticipants: "অংশগ্রহণকারী",
+    challengeJoin: "চ্যালেঞ্জে যোগ দিন",
+    challengeJoined: "যোগদান করা হয়েছে!",
+    
+    // Join Modal
+    joinTitle: "{name} সার্কেলে যোগ দিন",
+    joinDesc: "এই সার্কেলে যোগ দিতে আপনার একটি সক্রিয় অ্যাকাউন্ট প্রয়োজন।",
+    joinLocked: "লক্ষ্য পরিপক্ক হওয়া পর্যন্ত সঞ্চয় লক করা থাকে। অকাল উত্তোলনের জন্য প্রশাসকের অনুমোদন প্রয়োজন। কোন সুদ, কোন মুনাফা গ্যারান্টি নেই।",
+    joinButton: "যোগদানের জন্য অ্যাকাউন্ট তৈরি করুন",
+    joinButton2: "ইতিমধ্যে সদস্য? লগইন করুন",
+    
+    // Create Modal
+    createTitle: "কাস্টম লক্ষ্য তৈরি করুন",
+    createDesc: "আপনার নিজস্ব সঞ্চয় লক্ষ্য একটি কাস্টম নাম, টার্গেট এবং সময়সীমা সহ সংজ্ঞায়িত করুন।",
+    createName: "লক্ষ্যের নাম",
+    createNamePlaceholder: "যেমন: আমার স্বপ্নের বাড়ি",
+    createTarget: "লক্ষ্য (৳)",
+    createTargetPlaceholder: "যেমন: ৫০০০০০",
+    createMonthly: "মাসিক (৳)",
+    createMonthlyPlaceholder: "যেমন: ১০০০০",
+    createButton: "সঞ্চয় করতে অ্যাকাউন্ট তৈরি করুন →",
+    
+    // Tags
+    tagActive: "সক্রিয়",
+    tagAnyAmount: "যেকোনো পরিমাণ",
+    tagSeasonal: "মৌসুমি",
+    tagIslamicMode: "ইসলামিক মোড",
+    tagBeginnerFriendly: "শিক্ষানবিস বান্ধব",
+  }
+};
+
+// Filters with translations
+const getFilters = (t) => [
+  { id: "all", label: t('filterAll'), icon: Star },
+  { id: "family", label: t('filterFamily'), icon: Users },
+  { id: "islamic", label: t('filterIslamic'), icon: Moon },
+  { id: "education", label: t('filterEducation'), icon: GraduationCap },
+  { id: "tech", label: t('filterTech'), icon: Smartphone },
+  { id: "lifestyle", label: t('filterLifestyle'), icon: Sparkles },
+  { id: "emergency", label: t('filterEmergency'), icon: Shield },
+  { id: "business", label: t('filterBusiness'), icon: Briefcase },
 ];
 
-const goals = [
+// Get goal translations
+const getGoals = (t) => [
   {
     id: "wedding",
     name: "Wedding Fund",
@@ -49,7 +271,7 @@ const goals = [
     icon: Gem,
     glow: "#f472b6",
     progressColor: "linear-gradient(90deg,#059669,#0891b2)",
-    badge: "Open",
+    badge: t('goalBadgeOpen'),
     badgeType: "open",
     members: 3240,
     memberText: "3,236 more saving",
@@ -71,7 +293,7 @@ const goals = [
     icon: Moon,
     glow: "#10b981",
     progressColor: "linear-gradient(90deg,#059669,#10b981)",
-    badge: "Open · Islamic",
+    badge: `${t('goalBadgeOpen')} · ${t('goalBadgeIslamic')}`,
     badgeType: "open",
     members: 1890,
     memberText: "1,887 saving for Hajj",
@@ -92,7 +314,7 @@ const goals = [
     icon: Shield,
     glow: "#f59e0b",
     progressColor: "linear-gradient(90deg,#f59e0b,#f97316)",
-    badge: "Most Popular",
+    badge: t('goalBadgePopular'),
     badgeType: "open",
     members: 5610,
     memberText: "5,607 building safety nets",
@@ -113,7 +335,7 @@ const goals = [
     icon: GraduationCap,
     glow: "#8b5cf6",
     progressColor: "linear-gradient(90deg,#8b5cf6,#6366f1)",
-    badge: "Open",
+    badge: t('goalBadgeOpen'),
     badgeType: "open",
     members: 2140,
     memberText: "2,138 investing in education",
@@ -133,7 +355,7 @@ const goals = [
     icon: Smartphone,
     glow: "#3b82f6",
     progressColor: "linear-gradient(90deg,#3b82f6,#06b6d4)",
-    badge: "Filling Fast",
+    badge: t('goalBadgeFilling'),
     badgeType: "filling",
     members: 4320,
     memberText: "4,318 saving for devices",
@@ -153,7 +375,7 @@ const goals = [
     icon: Briefcase,
     glow: "#06b6d4",
     progressColor: "linear-gradient(90deg,#06b6d4,#3b82f6)",
-    badge: "Open",
+    badge: t('goalBadgeOpen'),
     badgeType: "open",
     members: 980,
     memberText: "978 building businesses",
@@ -173,7 +395,7 @@ const goals = [
     icon: Bike,
     glow: "#f97316",
     progressColor: "linear-gradient(90deg,#f97316,#f59e0b)",
-    badge: "Open",
+    badge: t('goalBadgeOpen'),
     badgeType: "open",
     members: 1620,
     memberText: "1,618 saving for rides",
@@ -193,7 +415,7 @@ const goals = [
     icon: Baby,
     glow: "#a78bfa",
     progressColor: "linear-gradient(90deg,#a78bfa,#8b5cf6)",
-    badge: "New",
+    badge: t('goalBadgeNew'),
     badgeType: "open",
     members: 640,
     memberText: "639 saving for kids",
@@ -210,7 +432,7 @@ const goals = [
     icon: Star,
     glow: "#065f46",
     progressColor: "linear-gradient(90deg,#065f46,#059669)",
-    badge: "Islamic",
+    badge: t('goalBadgeIslamic'),
     badgeType: "open",
     members: 720,
     memberText: "719 saving for Umrah",
@@ -221,15 +443,16 @@ const goals = [
   },
 ];
 
-const challenges = [
+// Get challenges with translations
+const getChallenges = (t) => [
   {
     id: "30-day",
     icon: Flame,
     title: "30-Day Savings Streak",
     desc: "Make a deposit every day for 30 consecutive days and earn the Streak Warrior badge.",
     tags: [
-      ["Active", "green"],
-      ["Any amount", "blue"],
+      [t('tagActive'), "green"],
+      [t('tagAnyAmount'), "blue"],
     ],
     participants: "2,840 participants",
   },
@@ -239,8 +462,8 @@ const challenges = [
     title: "Ramadan Savings Challenge",
     desc: "Save a little every day of Ramadan. Special seasonal badge + community milestone celebration.",
     tags: [
-      ["Seasonal", "gold"],
-      ["Islamic Mode", "green"],
+      [t('tagSeasonal'), "gold"],
+      [t('tagIslamicMode'), "green"],
     ],
     participants: "1,240 participants",
   },
@@ -250,13 +473,489 @@ const challenges = [
     title: "Daily ৳100 Challenge",
     desc: "Save just ৳100 every single day. Prove that small, consistent steps build big savings.",
     tags: [
-      ["Beginner Friendly", "blue"],
-      ["Active", "green"],
+      [t('tagBeginnerFriendly'), "blue"],
+      [t('tagActive'), "green"],
     ],
     participants: "4,120 participants",
   },
 ];
 
+const GoalsPage = () => {
+  const [language, setLanguage] = useState('en');
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("default");
+  const [joinModalOpen, setJoinModalOpen] = useState(null);
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [bulkMode, setBulkMode] = useState(false);
+  const [selectedGoals, setSelectedGoals] = useState(new Set());
+  const [joinedChallenges, setJoinedChallenges] = useState(new Set());
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLanguage(savedLang);
+  }, []);
+
+  // Translation function
+  const t = (key) => {
+    return translations[language]?.[key] || translations.en[key] || key;
+  };
+
+  // Get dynamic data with translations
+  const filters = getFilters(t);
+  const goals = getGoals(t);
+  const challenges = getChallenges(t);
+
+  const filteredGoals = useMemo(() => {
+    const filtered = goals
+      .filter((goal) => activeFilter === "all" || goal.category.includes(activeFilter))
+      .filter((goal) => goal.name.toLowerCase().includes(searchQuery.toLowerCase()));
+    return sortGoals(filtered, sortBy);
+  }, [activeFilter, searchQuery, sortBy, language]);
+
+  const selectedGoal = goals.find((goal) => goal.id === joinModalOpen);
+
+  const toggleGoalSelection = (id) => {
+    setSelectedGoals((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedGoals((current) =>
+      current.size === filteredGoals.length ? new Set() : new Set(filteredGoals.map((goal) => goal.id)),
+    );
+  };
+
+  const closeBulkMode = () => {
+    setBulkMode(false);
+    setSelectedGoals(new Set());
+  };
+
+  return (
+    <div className="min-h-screen bg-white font-['Inter',sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
+      {/* Hero Section */}
+      <section className="bg-[linear-gradient(135deg,#ecfdf5,#eff6ff)] px-6 py-[72px] pb-[52px] text-center dark:bg-[linear-gradient(135deg,#022c22,#0c1a3a)]">
+        <div className="mx-auto max-w-[1160px]">
+          <div className="mb-3.5 inline-flex items-center gap-1.5 rounded-full border border-[#05966926] bg-[#05966914] px-3.5 py-1.5 text-xs font-semibold text-[#059669]">
+            <Target className="h-3.5 w-3.5" />
+            {t('heroBadge')}
+          </div>
+          <h1 className="mb-3 text-[clamp(28px,4.5vw,48px)] font-black leading-[1.15] tracking-[-.8px]">
+            {t('heroTitle')}{" "}
+            <span className="bg-[linear-gradient(135deg,#059669,#0891b2)] bg-clip-text text-transparent">
+              {t('heroTitleHighlight')}
+            </span>
+          </h1>
+          <p className="mx-auto mb-7 max-w-[560px] text-[17px] leading-[1.7] text-[#475569] dark:text-[#94a3b8]">
+            {t('heroDesc')}
+          </p>
+          <div className="flex flex-wrap justify-center gap-2.5">
+            <Link
+              href="/register"
+              className="inline-flex items-center gap-2 rounded-[9px] bg-[linear-gradient(135deg,#059669,#0891b2)] px-6 py-3 text-sm font-semibold text-white shadow-[0_3px_10px_rgba(5,150,105,.25)]"
+            >
+              {t('heroButton')} <ArrowRight className="h-4 w-4" />
+            </Link>
+            <button
+              type="button"
+              onClick={() => setCreateModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-[9px] border border-[#e2e8f0] bg-transparent px-6 py-3 text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:text-[#f1f5f9]"
+            >
+              <Sparkles className="h-4 w-4" />
+              {t('heroButton2')}
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Sticky Filter Bar */}
+      <div className="sticky top-16 z-30 border-b border-[#e2e8f0] bg-white py-4 shadow-[0_2px_8px_rgba(0,0,0,.04)] dark:border-[#1e2d3d] dark:bg-[#1a2235]">
+        <div className="mx-auto max-w-[1160px] px-6">
+          <div className="flex items-center gap-2.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
+            {filters.map((filter) => {
+              const Icon = filter.icon;
+              const active = activeFilter === filter.id;
+              return (
+                <button
+                  key={filter.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveFilter(filter.id);
+                    setSelectedGoals(new Set());
+                  }}
+                  className={`flex shrink-0 items-center gap-1.5 rounded-full border-[1.5px] px-4 py-2 text-[13px] font-semibold transition ${
+                    active
+                      ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white shadow-[0_3px_10px_rgba(5,150,105,.25)]"
+                      : "border-[#e2e8f0] bg-white text-[#475569] hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {filter.label}
+                </button>
+              );
+            })}
+            <div className="ml-auto flex shrink-0 items-center gap-2 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-2 dark:border-[#1e2d3d] dark:bg-[#0a0f1e]">
+              <Search className="h-3.5 w-3.5 text-[#94a3b8]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder={t('searchPlaceholder')}
+                className="w-32 bg-transparent text-[13px] text-[#0f172a] outline-none placeholder:text-[#94a3b8] dark:text-[#f1f5f9]"
+              />
+            </div>
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              className="shrink-0 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3 py-2 text-[13px] font-semibold text-[#0f172a] outline-none dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#f1f5f9]"
+            >
+              <option value="default">{t('sortDefault')}</option>
+              <option value="progress-desc">{t('sortProgressHigh')}</option>
+              <option value="progress-asc">{t('sortProgressLow')}</option>
+              <option value="members-desc">{t('sortMembersHigh')}</option>
+              <option value="newest">{t('sortNewest')}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Bulk Mode Bar */}
+      {bulkMode && (
+        <div className="sticky top-32 z-30 bg-[linear-gradient(135deg,#059669,#0891b2)] px-6 py-2.5">
+          <div className="mx-auto flex max-w-[1160px] flex-wrap items-center gap-3">
+            <label className="flex cursor-pointer items-center gap-2 text-[13px] font-bold text-white">
+              <input
+                type="checkbox"
+                checked={selectedGoals.size === filteredGoals.length && filteredGoals.length > 0}
+                onChange={toggleSelectAll}
+                className="h-4 w-4 accent-white"
+              />
+              {selectedGoals.size} {t('bulkSelected')}
+            </label>
+            <div className="h-5 w-px bg-white/30" />
+            {[
+              [t('bulkDeposit'), Wallet],
+              [t('bulkPause'), Lock],
+              [t('bulkShare'), Share2],
+              [t('bulkDelete'), Trash2],
+            ].map(([label, Icon]) => (
+              <button
+                key={label}
+                type="button"
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-bold text-white ${
+                  label === t('bulkDelete')
+                    ? "border-red-400/50 bg-red-500/30"
+                    : "border-white/30 bg-white/20"
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {label}
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={closeBulkMode}
+              className="ml-auto rounded-lg border border-white/20 bg-white/15 px-3.5 py-2 text-xs text-white"
+            >
+              {t('bulkCancel')}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="px-6 py-10">
+        <div className="mx-auto max-w-[1160px]">
+          {/* Featured Circle */}
+          <section className="relative mb-8 overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-7 text-white">
+            <div className="absolute right-[-80px] top-[-80px] h-[300px] w-[300px] rounded-full bg-white/[.06]" />
+            <div className="relative">
+              <div className="mb-3 inline-flex items-center gap-1.5 rounded-[14px] border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-bold backdrop-blur">
+                <Star className="h-3.5 w-3.5 fill-white" />
+                {t('featuredBadge')}
+              </div>
+              <h2 className="mb-1.5 text-[22px] font-black">{t('featuredTitle')}</h2>
+              <p className="mb-4 max-w-[500px] text-sm leading-relaxed text-white/85">
+                {t('featuredDesc')}
+              </p>
+              <div className="mb-5 flex flex-wrap gap-6">
+                {[
+                  ["857", t('featuredMembers')],
+                  ["৳4.2 Cr", t('featuredTotalSaved')],
+                  ["24 mo", t('featuredDuration')],
+                  ["68%", t('featuredProgress')],
+                ].map(([value, label]) => (
+                  <div key={label}>
+                    <div className="text-xl font-extrabold">{value}</div>
+                    <div className="mt-px text-[11px] text-white/75">{label}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mb-2 h-2 rounded bg-white/20">
+                <div className="h-full w-[68%] rounded bg-white" />
+              </div>
+              <p className="mb-4 text-xs text-white/75">
+                ৳2.8 Cr {t('featuredTotalSaved')} · ৳1.4 Cr {t('featuredRemaining')} · 143 {t('featuredSpotsLeft')}
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setJoinModalOpen("wedding")}
+                  className="inline-flex items-center gap-2 rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-bold text-[#059669] transition hover:-translate-y-px"
+                >
+                  {t('featuredButton')} <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  className="rounded-[10px] border-[1.5px] border-white/30 bg-white/15 px-5 py-2.5 text-[13px] font-bold text-white transition hover:bg-white/25"
+                >
+                  {t('featuredButton2')}
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* Goals Grid */}
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-[19px] font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">
+                {t('goalsTitle')}
+              </h2>
+              <p className="text-[13px] text-[#94a3b8]">
+                {t('goalsShowing').replace('{count}', filteredGoals.length)}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setBulkMode(true)}
+              className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#e2e8f0] bg-transparent px-3 py-1.5 text-xs font-semibold text-[#475569] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:text-[#94a3b8]"
+            >
+              <CheckSquare className="h-3.5 w-3.5" />
+              {t('goalsSelect')}
+            </button>
+          </div>
+
+          {/* Goal Cards - শুধু changes দেখাচ্ছি, GoalCard component টি আগের মতোই থাকবে */}
+          <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {filteredGoals.map((goal) => (
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                bulkMode={bulkMode}
+                selected={selectedGoals.has(goal.id)}
+                onSelect={() => toggleGoalSelection(goal.id)}
+                onJoin={setJoinModalOpen}
+                t={t}
+              />
+            ))}
+          </div>
+
+          {/* Custom Goal CTA */}
+          <section className="mt-4 rounded-[20px] border border-[#e2e8f0] bg-[#f8fafc] p-7 text-center dark:border-[#1e2d3d] dark:bg-[#111827]">
+            <h3 className="mb-2 text-xl font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">
+              {t('customTitle')}
+            </h3>
+            <p className="mb-5 text-sm text-[#475569] dark:text-[#94a3b8]">
+              {t('customDesc')}
+            </p>
+            <button
+              type="button"
+              onClick={() => setCreateModalOpen(true)}
+              className="inline-flex items-center gap-2 rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] px-7 py-3 text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
+            >
+              <Sparkles className="h-4 w-4" />
+              {t('customButton')}
+            </button>
+          </section>
+        </div>
+      </main>
+
+      {/* Challenges Section - শুধু changes দেখাচ্ছি */}
+      <section className="bg-[linear-gradient(135deg,#ecfdf5,#eff6ff)] px-6 py-14 text-center dark:bg-[linear-gradient(135deg,#022c22,#0c1a3a)]">
+        <div className="mx-auto max-w-[1160px]">
+          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#05966926] bg-[#05966914] px-3.5 py-1.5 text-xs font-semibold text-[#059669]">
+            <Flame className="h-3.5 w-3.5" />
+            {t('challengeBadge')}
+          </div>
+          <h2 className="mb-2 text-[clamp(24px,3.5vw,36px)] font-black">
+            {t('challengeTitle')} <span className="text-[#059669]">{t('challengeTitleHighlight')}</span>
+          </h2>
+          <p className="mx-auto max-w-[520px] text-[15px] text-[#475569] dark:text-[#94a3b8]">
+            {t('challengeDesc')}
+          </p>
+          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {challenges.map((challenge) => {
+              const Icon = challenge.icon;
+              const joined = joinedChallenges.has(challenge.id);
+              return (
+                <article
+                  key={challenge.id}
+                  className="rounded-2xl border border-[#e2e8f0] bg-white p-[22px] text-left transition hover:-translate-y-[3px] hover:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235]"
+                >
+                  <div className="mb-2.5 flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#05966914] text-[#059669]">
+                    <Icon className="h-7 w-7" />
+                  </div>
+                  <h3 className="mb-1.5 text-base font-bold text-[#0f172a] dark:text-[#f1f5f9]">
+                    {challenge.title}
+                  </h3>
+                  <p className="mb-3 text-[13px] leading-normal text-[#475569] dark:text-[#94a3b8]">
+                    {challenge.desc}
+                  </p>
+                  <div className="mb-3.5 flex flex-wrap gap-2.5">
+                    {challenge.tags.map(([label, type]) => (
+                      <Tag key={label} type={type}>
+                        {label}
+                      </Tag>
+                    ))}
+                  </div>
+                  <div className="mb-3 flex items-center gap-1.5 text-xs text-[#94a3b8]">
+                    <Users className="h-3.5 w-3.5" />
+                    {challenge.participants}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setJoinedChallenges((current) => new Set(current).add(challenge.id))
+                    }
+                    className={`w-full rounded-[9px] border p-2.5 text-xs font-bold transition ${
+                      joined
+                        ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white"
+                        : "border-[#05966933] bg-[#05966914] text-[#059669] hover:border-transparent hover:bg-[linear-gradient(135deg,#059669,#0891b2)] hover:text-white"
+                    }`}
+                  >
+                    {joined ? t('challengeJoined') : t('challengeJoin')}
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Join Modal - শুধু changes দেখাচ্ছি */}
+      {joinModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
+          onClick={() => setJoinModalOpen(null)}
+        >
+          <div
+            className="relative w-full max-w-[480px] rounded-[20px] bg-white p-8 shadow-[0_40px_100px_rgba(0,0,0,.2)] dark:bg-[#1a2235]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setJoinModalOpen(null)}
+              className="absolute right-4 top-4 flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-[#e2e8f0] bg-white dark:border-[#1e2d3d] dark:bg-[#0a0f1e]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#05966914] text-[#059669]">
+              {selectedGoal ? <selectedGoal.icon className="h-8 w-8" /> : <Target className="h-8 w-8" />}
+            </div>
+            <h3 className="mb-1.5 text-center text-xl font-black text-[#0f172a] dark:text-[#f1f5f9]">
+              {t('joinTitle').replace('{name}', selectedGoal?.name || 'Savings')}
+            </h3>
+            <p className="mb-5 text-center text-[13px] text-[#475569] dark:text-[#94a3b8]">
+              {t('joinDesc')}
+            </p>
+            <div className="mb-4 rounded-xl bg-[#f8fafc] p-4 text-[13px] leading-relaxed text-[#475569] dark:bg-[#111827] dark:text-[#94a3b8]">
+              <Lock className="mr-1 inline h-3.5 w-3.5" />
+              {t('joinLocked')}
+            </div>
+            <div className="flex flex-col gap-2.5">
+              <Link
+                href="/register"
+                className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
+              >
+                {t('joinButton')}
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-[11px] border-[1.5px] border-[#e2e8f0] bg-white p-3 text-center text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+              >
+                {t('joinButton2')}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Modal - শুধু changes দেখাচ্ছি */}
+      {createModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
+          onClick={() => setCreateModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-[520px] rounded-[20px] bg-white p-8 shadow-[0_40px_100px_rgba(0,0,0,.2)] dark:bg-[#1a2235]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setCreateModalOpen(false)}
+              className="absolute right-4 top-4 flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-[#e2e8f0] bg-white dark:border-[#1e2d3d] dark:bg-[#0a0f1e]"
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <h3 className="mb-1.5 text-xl font-black text-[#0f172a] dark:text-[#f1f5f9]">
+              {t('createTitle')}
+            </h3>
+            <p className="mb-5 text-[13px] text-[#475569] dark:text-[#94a3b8]">
+              {t('createDesc')}
+            </p>
+            <div className="mb-4 flex flex-col gap-3">
+              <div>
+                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
+                  {t('createName')}
+                </label>
+                <input
+                  type="text"
+                  placeholder={t('createNamePlaceholder')}
+                  className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+                />
+              </div>
+              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
+                    {t('createTarget')}
+                  </label>
+                  <input
+                    type="number"
+                    placeholder={t('createTargetPlaceholder')}
+                    className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
+                    {t('createMonthly')}
+                  </label>
+                  <input
+                    type="number"
+                    placeholder={t('createMonthlyPlaceholder')}
+                    className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+                  />
+                </div>
+              </div>
+            </div>
+            <Link
+              href="/register"
+              className="block rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white"
+            >
+              {t('createButton')}
+            </Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Helper function
 const sortGoals = (items, sortBy) => {
   const sorted = [...items];
   if (sortBy === "progress-desc") return sorted.sort((a, b) => b.progress - a.progress);
@@ -266,6 +965,7 @@ const sortGoals = (items, sortBy) => {
   return sorted;
 };
 
+// Tag Component
 function Tag({ type, children }) {
   const styles = {
     green: "bg-[#0596691a] text-[#059669]",
@@ -280,7 +980,8 @@ function Tag({ type, children }) {
   );
 }
 
-function GoalCard({ goal, bulkMode, selected, onSelect, onJoin }) {
+// GoalCard Component with translations
+function GoalCard({ goal, bulkMode, selected, onSelect, onJoin, t }) {
   const Icon = goal.icon;
 
   return (
@@ -326,7 +1027,7 @@ function GoalCard({ goal, bulkMode, selected, onSelect, onJoin }) {
       </div>
       <div className="px-5 pb-5">
         <div className="mb-1.5 flex justify-between text-xs text-[#475569] dark:text-[#94a3b8]">
-          <span>{goal.members.toLocaleString()} members</span>
+          <span>{goal.members.toLocaleString()} {t('goalMembers')}</span>
           <span className="font-bold text-[#059669]">{goal.progress}%</span>
         </div>
         <div className="mb-3 h-[7px] overflow-hidden rounded bg-[#e2e8f0] dark:bg-[#1e2d3d]">
@@ -335,13 +1036,13 @@ function GoalCard({ goal, bulkMode, selected, onSelect, onJoin }) {
         <div className="mb-4 grid grid-cols-2 gap-2">
           <div className="rounded-[9px] bg-[#f8fafc] px-2.5 py-2 dark:bg-[#111827]">
             <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-[.4px] text-[#94a3b8]">
-              Monthly
+              {t('goalMonthly')}
             </div>
             <div className="text-[13px] font-bold text-[#0f172a] dark:text-[#f1f5f9]">{goal.monthly}</div>
           </div>
           <div className="rounded-[9px] bg-[#f8fafc] px-2.5 py-2 dark:bg-[#111827]">
             <div className="mb-0.5 text-[10px] font-semibold uppercase tracking-[.4px] text-[#94a3b8]">
-              Duration
+              {t('goalDuration')}
             </div>
             <div className="text-[13px] font-bold text-[#0f172a] dark:text-[#f1f5f9]">{goal.duration}</div>
           </div>
@@ -364,9 +1065,9 @@ function GoalCard({ goal, bulkMode, selected, onSelect, onJoin }) {
         </div>
         <div className="mb-2 flex gap-1.5">
           {[
-            ["Details", Search, "/goal-detail"],
-            ["Edit", Edit3, "/goal-edit"],
-            ["Share", Share2, "/goal-share"],
+            [t('goalDetails'), Search, "/goal-detail"],
+            [t('goalEdit'), Edit3, "/goal-edit"],
+            [t('goalShare'), Share2, "/goal-share"],
           ].map(([label, ActionIcon, href]) => (
             <Link
               key={label}
@@ -387,458 +1088,11 @@ function GoalCard({ goal, bulkMode, selected, onSelect, onJoin }) {
           }}
           className="w-full rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[11px] text-[13px] font-bold text-white shadow-[0_3px_10px_rgba(5,150,105,.25)] transition hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(5,150,105,.35)]"
         >
-          Join {goal.name.split(" ")[0]} Circle →
+          {t('goalJoin').replace('{name}', goal.name.split(" ")[0])}
         </button>
       </div>
     </article>
   );
 }
-
-const GoalsPage = () => {
-  const [activeFilter, setActiveFilter] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState("default");
-  const [joinModalOpen, setJoinModalOpen] = useState(null);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [bulkMode, setBulkMode] = useState(false);
-  const [selectedGoals, setSelectedGoals] = useState(new Set());
-  const [joinedChallenges, setJoinedChallenges] = useState(new Set());
-
-  const filteredGoals = useMemo(() => {
-    const filtered = goals
-      .filter((goal) => activeFilter === "all" || goal.category.includes(activeFilter))
-      .filter((goal) => goal.name.toLowerCase().includes(searchQuery.toLowerCase()));
-    return sortGoals(filtered, sortBy);
-  }, [activeFilter, searchQuery, sortBy]);
-
-  const selectedGoal = goals.find((goal) => goal.id === joinModalOpen);
-
-  const toggleGoalSelection = (id) => {
-    setSelectedGoals((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    setSelectedGoals((current) =>
-      current.size === filteredGoals.length ? new Set() : new Set(filteredGoals.map((goal) => goal.id)),
-    );
-  };
-
-  const closeBulkMode = () => {
-    setBulkMode(false);
-    setSelectedGoals(new Set());
-  };
-
-  return (
-    <div className="min-h-screen bg-white font-['Inter',sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
-      <section className="bg-[linear-gradient(135deg,#ecfdf5,#eff6ff)] px-6 py-[72px] pb-[52px] text-center dark:bg-[linear-gradient(135deg,#022c22,#0c1a3a)]">
-        <div className="mx-auto max-w-[1160px]">
-          <div className="mb-3.5 inline-flex items-center gap-1.5 rounded-full border border-[#05966926] bg-[#05966914] px-3.5 py-1.5 text-xs font-semibold text-[#059669]">
-            <Target className="h-3.5 w-3.5" />
-            Savings Goals & Circles
-          </div>
-          <h1 className="mb-3 text-[clamp(28px,4.5vw,48px)] font-black leading-[1.15] tracking-[-.8px]">
-            Save Toward What{" "}
-            <span className="bg-[linear-gradient(135deg,#059669,#0891b2)] bg-clip-text text-transparent">
-              Truly Matters
-            </span>
-          </h1>
-          <p className="mx-auto mb-7 max-w-[560px] text-[17px] leading-[1.7] text-[#475569] dark:text-[#94a3b8]">
-            Join community savings circles for specific goals. Locked savings, AI-powered insights,
-            and 12,000+ motivated members.
-          </p>
-          <div className="flex flex-wrap justify-center gap-2.5">
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 rounded-[9px] bg-[linear-gradient(135deg,#059669,#0891b2)] px-6 py-3 text-sm font-semibold text-white shadow-[0_3px_10px_rgba(5,150,105,.25)]"
-            >
-              Join a Circle <ArrowRight className="h-4 w-4" />
-            </Link>
-            <button
-              type="button"
-              onClick={() => setCreateModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-[9px] border border-[#e2e8f0] bg-transparent px-6 py-3 text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:text-[#f1f5f9]"
-            >
-              <Sparkles className="h-4 w-4" />
-              Create Custom Goal
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <div className="sticky top-16 z-30 border-b border-[#e2e8f0] bg-white py-4 shadow-[0_2px_8px_rgba(0,0,0,.04)] dark:border-[#1e2d3d] dark:bg-[#1a2235]">
-        <div className="mx-auto max-w-[1160px] px-6">
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
-            {filters.map((filter) => {
-              const Icon = filter.icon;
-              const active = activeFilter === filter.id;
-              return (
-                <button
-                  key={filter.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveFilter(filter.id);
-                    setSelectedGoals(new Set());
-                  }}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-full border-[1.5px] px-4 py-2 text-[13px] font-semibold transition ${
-                    active
-                      ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white shadow-[0_3px_10px_rgba(5,150,105,.25)]"
-                      : "border-[#e2e8f0] bg-white text-[#475569] hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {filter.label}
-                </button>
-              );
-            })}
-            <div className="ml-auto flex shrink-0 items-center gap-2 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-2 dark:border-[#1e2d3d] dark:bg-[#0a0f1e]">
-              <Search className="h-3.5 w-3.5 text-[#94a3b8]" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search goals..."
-                className="w-32 bg-transparent text-[13px] text-[#0f172a] outline-none placeholder:text-[#94a3b8] dark:text-[#f1f5f9]"
-              />
-            </div>
-            <select
-              value={sortBy}
-              onChange={(event) => setSortBy(event.target.value)}
-              className="shrink-0 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3 py-2 text-[13px] font-semibold text-[#0f172a] outline-none dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#f1f5f9]"
-            >
-              <option value="default">Default</option>
-              <option value="progress-desc">Progress high to low</option>
-              <option value="progress-asc">Progress low to high</option>
-              <option value="members-desc">Members high to low</option>
-              <option value="newest">Newest first</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {bulkMode && (
-        <div className="sticky top-32 z-30 bg-[linear-gradient(135deg,#059669,#0891b2)] px-6 py-2.5">
-          <div className="mx-auto flex max-w-[1160px] flex-wrap items-center gap-3">
-            <label className="flex cursor-pointer items-center gap-2 text-[13px] font-bold text-white">
-              <input
-                type="checkbox"
-                checked={selectedGoals.size === filteredGoals.length && filteredGoals.length > 0}
-                onChange={toggleSelectAll}
-                className="h-4 w-4 accent-white"
-              />
-              {selectedGoals.size} selected
-            </label>
-            <div className="h-5 w-px bg-white/30" />
-            {[
-              ["Deposit", Wallet],
-              ["Pause", Lock],
-              ["Share", Share2],
-              ["Delete", Trash2],
-            ].map(([label, Icon]) => (
-              <button
-                key={label}
-                type="button"
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-bold text-white ${
-                  label === "Delete"
-                    ? "border-red-400/50 bg-red-500/30"
-                    : "border-white/30 bg-white/20"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={closeBulkMode}
-              className="ml-auto rounded-lg border border-white/20 bg-white/15 px-3.5 py-2 text-xs text-white"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-
-      <main className="px-6 py-10">
-        <div className="mx-auto max-w-[1160px]">
-          <section className="relative mb-8 overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-7 text-white">
-            <div className="absolute right-[-80px] top-[-80px] h-[300px] w-[300px] rounded-full bg-white/[.06]" />
-            <div className="relative">
-              <div className="mb-3 inline-flex items-center gap-1.5 rounded-[14px] border border-white/20 bg-white/15 px-3 py-1 text-[11px] font-bold backdrop-blur">
-                <Star className="h-3.5 w-3.5 fill-white" />
-                Featured Circle · Most Popular
-              </div>
-              <h2 className="mb-1.5 text-[22px] font-black">Grand Wedding Fund 2026</h2>
-              <p className="mb-4 max-w-[500px] text-sm leading-relaxed text-white/85">
-                Bangladesh&apos;s largest wedding savings circle. 850+ members saving together for
-                the perfect wedding. Monthly deposits from ৳5,000 to ৳30,000.
-              </p>
-              <div className="mb-5 flex flex-wrap gap-6">
-                {[
-                  ["857", "Members"],
-                  ["৳4.2 Cr", "Total Saved"],
-                  ["24 mo", "Duration"],
-                  ["68%", "Progress"],
-                ].map(([value, label]) => (
-                  <div key={label}>
-                    <div className="text-xl font-extrabold">{value}</div>
-                    <div className="mt-px text-[11px] text-white/75">{label}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="mb-2 h-2 rounded bg-white/20">
-                <div className="h-full w-[68%] rounded bg-white" />
-              </div>
-              <p className="mb-4 text-xs text-white/75">৳2.8 Cr saved · ৳1.4 Cr remaining · 143 spots left</p>
-              <div className="flex flex-wrap gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => setJoinModalOpen("wedding")}
-                  className="inline-flex items-center gap-2 rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-bold text-[#059669] transition hover:-translate-y-px"
-                >
-                  Join This Circle <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  className="rounded-[10px] border-[1.5px] border-white/30 bg-white/15 px-5 py-2.5 text-[13px] font-bold text-white transition hover:bg-white/25"
-                >
-                  View Details
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-[19px] font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">
-                All Savings Goals
-              </h2>
-              <p className="text-[13px] text-[#94a3b8]">Showing {filteredGoals.length} goals</p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setBulkMode(true)}
-              className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#e2e8f0] bg-transparent px-3 py-1.5 text-xs font-semibold text-[#475569] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:text-[#94a3b8]"
-            >
-              <CheckSquare className="h-3.5 w-3.5" />
-              Select
-            </button>
-          </div>
-
-          <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {filteredGoals.map((goal) => (
-              <GoalCard
-                key={goal.id}
-                goal={goal}
-                bulkMode={bulkMode}
-                selected={selectedGoals.has(goal.id)}
-                onSelect={() => toggleGoalSelection(goal.id)}
-                onJoin={setJoinModalOpen}
-              />
-            ))}
-          </div>
-
-          <section className="mt-4 rounded-[20px] border border-[#e2e8f0] bg-[#f8fafc] p-7 text-center dark:border-[#1e2d3d] dark:bg-[#111827]">
-            <h3 className="mb-2 text-xl font-extrabold text-[#0f172a] dark:text-[#f1f5f9]">
-              Don&apos;t see your goal?
-            </h3>
-            <p className="mb-5 text-sm text-[#475569] dark:text-[#94a3b8]">
-              Create a completely custom savings goal with your own target amount, timeline, and
-              circle name.
-            </p>
-            <button
-              type="button"
-              onClick={() => setCreateModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] px-7 py-3 text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
-            >
-              <Sparkles className="h-4 w-4" />
-              Create Custom Goal
-            </button>
-          </section>
-        </div>
-      </main>
-
-      <section className="bg-[linear-gradient(135deg,#ecfdf5,#eff6ff)] px-6 py-14 text-center dark:bg-[linear-gradient(135deg,#022c22,#0c1a3a)]">
-        <div className="mx-auto max-w-[1160px]">
-          <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#05966926] bg-[#05966914] px-3.5 py-1.5 text-xs font-semibold text-[#059669]">
-            <Flame className="h-3.5 w-3.5" />
-            Community Challenges
-          </div>
-          <h2 className="mb-2 text-[clamp(24px,3.5vw,36px)] font-black">
-            Stay Motivated. <span className="text-[#059669]">Win Badges.</span>
-          </h2>
-          <p className="mx-auto max-w-[520px] text-[15px] text-[#475569] dark:text-[#94a3b8]">
-            Join community challenges to earn achievement badges, climb the leaderboard, and hit your
-            goals faster.
-          </p>
-          <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {challenges.map((challenge) => {
-              const Icon = challenge.icon;
-              const joined = joinedChallenges.has(challenge.id);
-              return (
-                <article
-                  key={challenge.id}
-                  className="rounded-2xl border border-[#e2e8f0] bg-white p-[22px] text-left transition hover:-translate-y-[3px] hover:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235]"
-                >
-                  <div className="mb-2.5 flex h-12 w-12 items-center justify-center rounded-[14px] bg-[#05966914] text-[#059669]">
-                    <Icon className="h-7 w-7" />
-                  </div>
-                  <h3 className="mb-1.5 text-base font-bold text-[#0f172a] dark:text-[#f1f5f9]">
-                    {challenge.title}
-                  </h3>
-                  <p className="mb-3 text-[13px] leading-normal text-[#475569] dark:text-[#94a3b8]">
-                    {challenge.desc}
-                  </p>
-                  <div className="mb-3.5 flex flex-wrap gap-2.5">
-                    {challenge.tags.map(([label, type]) => (
-                      <Tag key={label} type={type}>
-                        {label}
-                      </Tag>
-                    ))}
-                  </div>
-                  <div className="mb-3 flex items-center gap-1.5 text-xs text-[#94a3b8]">
-                    <Users className="h-3.5 w-3.5" />
-                    {challenge.participants}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setJoinedChallenges((current) => new Set(current).add(challenge.id))
-                    }
-                    className={`w-full rounded-[9px] border p-2.5 text-xs font-bold transition ${
-                      joined
-                        ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white"
-                        : "border-[#05966933] bg-[#05966914] text-[#059669] hover:border-transparent hover:bg-[linear-gradient(135deg,#059669,#0891b2)] hover:text-white"
-                    }`}
-                  >
-                    {joined ? "Joined!" : "Join Challenge"}
-                  </button>
-                </article>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {joinModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
-          onClick={() => setJoinModalOpen(null)}
-        >
-          <div
-            className="relative w-full max-w-[480px] rounded-[20px] bg-white p-8 shadow-[0_40px_100px_rgba(0,0,0,.2)] dark:bg-[#1a2235]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setJoinModalOpen(null)}
-              className="absolute right-4 top-4 flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-[#e2e8f0] bg-white dark:border-[#1e2d3d] dark:bg-[#0a0f1e]"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#05966914] text-[#059669]">
-              {selectedGoal ? <selectedGoal.icon className="h-8 w-8" /> : <Target className="h-8 w-8" />}
-            </div>
-            <h3 className="mb-1.5 text-center text-xl font-black text-[#0f172a] dark:text-[#f1f5f9]">
-              Join {selectedGoal?.name || "Savings"} Circle
-            </h3>
-            <p className="mb-5 text-center text-[13px] text-[#475569] dark:text-[#94a3b8]">
-              You need an active account to join this circle.
-            </p>
-            <div className="mb-4 rounded-xl bg-[#f8fafc] p-4 text-[13px] leading-relaxed text-[#475569] dark:bg-[#111827] dark:text-[#94a3b8]">
-              <Lock className="mr-1 inline h-3.5 w-3.5" />
-              Savings are <strong className="text-[#0f172a] dark:text-[#f1f5f9]">locked until goal maturity</strong>.
-              Early withdrawal requires admin approval. No interest, no profit guarantees.
-            </div>
-            <div className="flex flex-col gap-2.5">
-              <Link
-                href="/register"
-                className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
-              >
-                Create Account to Join
-              </Link>
-              <Link
-                href="/login"
-                className="rounded-[11px] border-[1.5px] border-[#e2e8f0] bg-white p-3 text-center text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
-              >
-                Already a member? Log In
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {createModalOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-5"
-          onClick={() => setCreateModalOpen(false)}
-        >
-          <div
-            className="relative w-full max-w-[520px] rounded-[20px] bg-white p-8 shadow-[0_40px_100px_rgba(0,0,0,.2)] dark:bg-[#1a2235]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setCreateModalOpen(false)}
-              className="absolute right-4 top-4 flex h-[30px] w-[30px] items-center justify-center rounded-lg border border-[#e2e8f0] bg-white dark:border-[#1e2d3d] dark:bg-[#0a0f1e]"
-            >
-              <X className="h-4 w-4" />
-            </button>
-            <h3 className="mb-1.5 text-xl font-black text-[#0f172a] dark:text-[#f1f5f9]">
-              Create Custom Goal
-            </h3>
-            <p className="mb-5 text-[13px] text-[#475569] dark:text-[#94a3b8]">
-              Define your own savings goal with a custom name, target, and timeline.
-            </p>
-            <div className="mb-4 flex flex-col gap-3">
-              <div>
-                <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
-                  Goal Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. My Dream Home"
-                  className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
-                />
-              </div>
-              <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
-                    Target (৳)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 500000"
-                    className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-[.4px] text-[#475569] dark:text-[#94a3b8]">
-                    Monthly (৳)
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="e.g. 10000"
-                    className="w-full rounded-[10px] border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-3 text-sm text-[#0f172a] outline-none focus:border-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
-                  />
-                </div>
-              </div>
-            </div>
-            <Link
-              href="/register"
-              className="block rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white"
-            >
-              Create Account to Save →
-            </Link>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 export default GoalsPage;

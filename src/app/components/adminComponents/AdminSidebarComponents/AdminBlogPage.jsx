@@ -25,6 +25,144 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    blogManagement: "📝 Blog Management",
+    admin: "ADMIN",
+    
+    // Stats
+    published: "Published",
+    drafts: "Drafts",
+    scheduled: "Scheduled",
+    totalViews: "Total Views",
+    
+    // Toolbar
+    searchPosts: "Search posts...",
+    newPost: "New Post",
+    
+    // Filters
+    all: "All",
+    publishedFilter: "✅ Published",
+    draftsFilter: "📝 Drafts",
+    scheduledFilter: "📅 Scheduled",
+    
+    // Editor
+    banglaTitle: "Bangla title...",
+    englishTitle: "English title...",
+    banglaContent: "Write Bangla content...",
+    englishContent: "Write English content...",
+    saveDraft: "Save Draft",
+    publish: "Publish",
+    selectCategory: "Select Category",
+    
+    // Categories
+    general: "General",
+    savingsTips: "Savings Tips",
+    islamicFinance: "Islamic Finance",
+    announcement: "Announcement",
+    reports: "Reports",
+    community: "Community",
+    
+    // Post Status
+    publishedStatus: "✅ Published",
+    draftStatus: "📝 Draft",
+    scheduledStatus: "📅 Scheduled",
+    
+    // Buttons
+    edit: "✏️ Edit",
+    unpublish: "⬇️ Unpublish",
+    publishAction: "🚀 Publish",
+    preview: "👁️ Preview",
+    delete: "🗑️ Delete",
+    
+    // Messages
+    pleaseAddTitle: "⚠️ Please add a title",
+    postPublished: "🚀 Post published!",
+    draftSaved: "💾 Draft saved",
+    postUnpublished: "⬇️ Post unpublished",
+    postDeleted: "🗑️ Post deleted",
+    deleteConfirm: "Delete post?",
+    openingPreview: "👁️ Opening preview...",
+    failedToLoad: "Failed to load articles",
+    operationFailed: "Operation failed",
+    unpublishFailed: "Unpublish failed",
+    deleteFailed: "Delete failed",
+    
+    // Views
+    views: "views",
+    helpful: "helpful",
+  },
+  bn: {
+    // Header
+    blogManagement: "📝 ব্লগ ব্যবস্থাপনা",
+    admin: "অ্যাডমিন",
+    
+    // Stats
+    published: "প্রকাশিত",
+    drafts: "ড্রাফট",
+    scheduled: "নির্ধারিত",
+    totalViews: "মোট ভিউ",
+    
+    // Toolbar
+    searchPosts: "পোস্ট খুঁজুন...",
+    newPost: "নতুন পোস্ট",
+    
+    // Filters
+    all: "সব",
+    publishedFilter: "✅ প্রকাশিত",
+    draftsFilter: "📝 ড্রাফট",
+    scheduledFilter: "📅 নির্ধারিত",
+    
+    // Editor
+    banglaTitle: "বাংলা শিরোনাম...",
+    englishTitle: "ইংরেজি শিরোনাম...",
+    banglaContent: "বাংলা কন্টেন্ট লিখুন...",
+    englishContent: "ইংরেজি কন্টেন্ট লিখুন...",
+    saveDraft: "ড্রাফট সংরক্ষণ",
+    publish: "প্রকাশ করুন",
+    selectCategory: "বিভাগ নির্বাচন",
+    
+    // Categories
+    general: "সাধারণ",
+    savingsTips: "সঞ্চয় টিপস",
+    islamicFinance: "ইসলামী অর্থায়ন",
+    announcement: "ঘোষণা",
+    reports: "রিপোর্ট",
+    community: "কমিউনিটি",
+    
+    // Post Status
+    publishedStatus: "✅ প্রকাশিত",
+    draftStatus: "📝 ড্রাফট",
+    scheduledStatus: "📅 নির্ধারিত",
+    
+    // Buttons
+    edit: "✏️ সম্পাদনা",
+    unpublish: "⬇️ আনপাবলিশ",
+    publishAction: "🚀 প্রকাশ করুন",
+    preview: "👁️ প্রিভিউ",
+    delete: "🗑️ ডিলিট",
+    
+    // Messages
+    pleaseAddTitle: "⚠️ অনুগ্রহ করে শিরোনাম দিন",
+    postPublished: "🚀 পোস্ট প্রকাশিত হয়েছে!",
+    draftSaved: "💾 ড্রাফট সংরক্ষিত হয়েছে",
+    postUnpublished: "⬇️ পোস্ট আনপাবলিশ করা হয়েছে",
+    postDeleted: "🗑️ পোস্ট ডিলিট হয়েছে",
+    deleteConfirm: "পোস্ট ডিলিট করবেন?",
+    openingPreview: "👁️ প্রিভিউ খোলা হচ্ছে...",
+    failedToLoad: "আর্টিকেল লোড করতে ব্যর্থ হয়েছে",
+    operationFailed: "অপারেশন ব্যর্থ হয়েছে",
+    unpublishFailed: "আনপাবলিশ করতে ব্যর্থ হয়েছে",
+    deleteFailed: "ডিলিট করতে ব্যর্থ হয়েছে",
+    
+    // Views
+    views: "ভিউ",
+    helpful: "সহায়ক",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -41,7 +179,7 @@ const AdminBlogPage = () => {
   const [postTitleEn, setPostTitleEn] = useState("");
   const [postContentBn, setPostContentBn] = useState("");
   const [postContentEn, setPostContentEn] = useState("");
-  const [postCategory, setPostCategory] = useState("general");
+  const [postCategory, setPostCategory] = useState("General");
   const [toast, setToast] = useState({ show: false, message: "" });
   const [posts, setPosts] = useState([]);
   const [stats, setStats] = useState([
@@ -51,6 +189,32 @@ const AdminBlogPage = () => {
     { value: "0", label: "Total Views", color: "purple" },
   ]);
   const [loading, setLoading] = useState(false);
+
+  // Translation function
+  const t = useCallback((key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  }, [lang]);
+
+  const showToast = useCallback((message) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: "" }), 3000);
+  }, []);
+
+  const getCategoryDisplay = useCallback((categoryEn) => {
+    const categories = {
+      "General": "📝 " + t('general'),
+      "Savings Tips": "💰 " + t('savingsTips'),
+      "Islamic Finance": "☪️ " + t('islamicFinance'),
+      "Announcement": "📢 " + t('announcement'),
+      "Reports": "📊 " + t('reports'),
+      "Community": "🎉 " + t('community')
+    };
+    return categories[categoryEn] || "📝 " + t('general');
+  }, [t]);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -62,17 +226,16 @@ const AdminBlogPage = () => {
       
       if (articlesRes.data.success) {
         const articles = articlesRes.data.data.articles || [];
-        // Transform backend data to frontend format
         const formattedPosts = articles.map((a) => ({
           id: a.articleId,
           thumb: a.icon || "📝",
           title: a.title?.bn || a.title?.en || "Untitled",
           titleEn: a.title?.en || a.title?.bn || "Untitled",
-          author: "Admin", // You can add author field to backend
+          author: "Admin",
           date: a.createdAt ? new Date(a.createdAt).toLocaleDateString() : "Unknown",
           readTime: a.readTime?.bn || "5 min read",
           status: a.status || "published",
-          category: getCategoryName(a.category?.en),
+          category: getCategoryDisplay(a.category?.en),
           categoryEn: a.category?.en,
           categoryBn: a.category?.bn,
           excerpt: a.body?.bn?.slice(0, 120) + "..." || "No content",
@@ -82,32 +245,38 @@ const AdminBlogPage = () => {
           notHelpful: String(a.notHelpful || 0),
         }));
         setPosts(formattedPosts);
-      }
-      
-      if (statsRes.data.success) {
-        const s = statsRes.data.data;
-        const published = posts.filter(p => p.status === "published").length;
-        const drafts = posts.filter(p => p.status === "draft").length;
+        
+        // Update stats after posts are loaded
+        const published = formattedPosts.filter(p => p.status === "published").length;
+        const drafts = formattedPosts.filter(p => p.status === "draft").length;
         setStats([
-          { value: String(published), label: "Published", color: "green" },
-          { value: String(drafts), label: "Drafts", color: "yellow" },
-          { value: "0", label: "Scheduled", color: "blue" },
-          { value: String(s.totalViews || 0), label: "Total Views", color: "purple" },
+          { value: String(published), label: t('published'), color: "green" },
+          { value: String(drafts), label: t('drafts'), color: "yellow" },
+          { value: "0", label: t('scheduled'), color: "blue" },
+          { value: String(statsRes.data.data?.totalViews || 0), label: t('totalViews'), color: "purple" },
         ]);
       }
     } catch (err) {
       console.error("Fetch error:", err);
-      showToast(err.response?.data?.message || "Failed to load articles");
+      showToast(err.response?.data?.message || t('failedToLoad'));
     } finally {
       setLoading(false);
     }
-  }, [posts.length]);
+  }, [getCategoryDisplay, showToast, t]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-    fetchPosts();
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+
+    queueMicrotask(() => {
+      setIsDark(savedTheme === "dark");
+      setLang(savedLang);
+    });
+  }, []);
+
+  useEffect(() => {
+    queueMicrotask(fetchPosts);
   }, [fetchPosts]);
 
   const toggleTheme = () => {
@@ -117,33 +286,40 @@ const AdminBlogPage = () => {
     document.documentElement.classList.toggle("dark", newTheme);
   };
 
-  const showToast = (message) => {
-    setToast({ show: true, message });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
-  };
-
-  const getCategoryName = (categoryEn) => {
-    const categories = {
-      "General": "📝 General",
-      "Savings Tips": "💰 Savings Tips",
-      "Islamic Finance": "☪️ Islamic Finance",
-      "Announcement": "📢 Announcement",
-      "Reports": "📊 Reports",
-      "Community": "🎉 Community"
-    };
-    return categories[categoryEn] || "📝 General";
-  };
-
   const getCategoryValue = (categoryDisplay) => {
     const categories = {
-      "📝 General": "General",
-      "💰 Savings Tips": "Savings Tips",
-      "☪️ Islamic Finance": "Islamic Finance",
-      "📢 Announcement": "Announcement",
-      "📊 Reports": "Reports",
-      "🎉 Community": "Community"
+      ["📝 " + t('general')]: "General",
+      ["💰 " + t('savingsTips')]: "Savings Tips",
+      ["☪️ " + t('islamicFinance')]: "Islamic Finance",
+      ["📢 " + t('announcement')]: "Announcement",
+      ["📊 " + t('reports')]: "Reports",
+      ["🎉 " + t('community')]: "Community",
+      [t('general')]: "General",
+      [t('savingsTips')]: "Savings Tips",
+      [t('islamicFinance')]: "Islamic Finance",
+      [t('announcement')]: "Announcement",
+      [t('reports')]: "Reports",
+      [t('community')]: "Community",
+      "General": "General",
+      "Savings Tips": "Savings Tips",
+      "Islamic Finance": "Islamic Finance",
+      "Announcement": "Announcement",
+      "Reports": "Reports",
+      "Community": "Community"
     };
     return categories[categoryDisplay] || "General";
+  };
+
+  const getCategoryBn = (categoryEn) => {
+    const categories = {
+      "General": "সাধারণ",
+      "Savings Tips": "সঞ্চয় টিপস",
+      "Islamic Finance": "ইসলামী অর্থায়ন",
+      "Announcement": "ঘোষণা",
+      "Reports": "রিপোর্ট",
+      "Community": "কমিউনিটি"
+    };
+    return categories[categoryEn] || "সাধারণ";
   };
 
   const openEditor = (post = null) => {
@@ -174,9 +350,7 @@ const AdminBlogPage = () => {
 
   const saveOrPublishPost = async (status) => {
     if (!postTitleBn.trim() && !postTitleEn.trim()) {
-      showToast(
-        lang === "bn" ? "⚠️ অনুগ্রহ করে শিরোনাম দিন" : "⚠️ Please add a title",
-      );
+      showToast(t('pleaseAddTitle'));
       return;
     }
 
@@ -210,54 +384,36 @@ const AdminBlogPage = () => {
 
       closeEditor();
       showToast(
-        status === "published"
-          ? (lang === "bn" ? "🚀 পোস্ট প্রকাশিত হয়েছে!" : "🚀 Post published!")
-          : (lang === "bn" ? "💾 ড্রাফট সংরক্ষিত হয়েছে" : "💾 Draft saved"),
+        status === "published" ? t('postPublished') : t('draftSaved')
       );
       fetchPosts();
     } catch (err) {
       console.error("Save error:", err);
-      showToast(err.response?.data?.message || "Operation failed");
+      showToast(err.response?.data?.message || t('operationFailed'));
     }
   };
 
   const saveDraft = () => saveOrPublishPost("draft");
   const publishPost = () => saveOrPublishPost("published");
 
-  const getCategoryBn = (categoryEn) => {
-    const categories = {
-      "General": "সাধারণ",
-      "Savings Tips": "সঞ্চয় টিপস",
-      "Islamic Finance": "ইসলামী অর্থায়ন",
-      "Announcement": "ঘোষণা",
-      "Reports": "রিপোর্ট",
-      "Community": "কমিউনিটি"
-    };
-    return categories[categoryEn] || "সাধারণ";
-  };
-
   const unpublishPost = async (id) => {
     try {
       await axiosInstance.put(`/help/admin/articles/${id}`, { status: "draft" }, { headers: getAuthHeaders() });
-      showToast(
-        lang === "bn"
-          ? "⬇️ পোস্ট আনপাবলিশ করা হয়েছে"
-          : "⬇️ Post unpublished",
-      );
+      showToast(t('postUnpublished'));
       fetchPosts();
     } catch (err) {
-      showToast(err.response?.data?.message || "Unpublish failed");
+      showToast(err.response?.data?.message || t('unpublishFailed'));
     }
   };
 
   const deletePost = async (id) => {
-    if (confirm(lang === "bn" ? "পোস্ট ডিলিট করবেন?" : "Delete post?")) {
+    if (confirm(t('deleteConfirm'))) {
       try {
         await axiosInstance.delete(`/help/admin/articles/${id}`, { headers: getAuthHeaders() });
-        showToast(lang === "bn" ? "🗑️ পোস্ট ডিলিট হয়েছে" : "🗑️ Post deleted");
+        showToast(t('postDeleted'));
         fetchPosts();
       } catch (err) {
-        showToast(err.response?.data?.message || "Delete failed");
+        showToast(err.response?.data?.message || t('deleteFailed'));
       }
     }
   };
@@ -270,10 +426,10 @@ const AdminBlogPage = () => {
 
   const getStatusBadge = (status) => {
     if (status === "published")
-      return { class: "pbadge-published", text: "✅ Published", icon: "✅" };
+      return { class: "pbadge-published", text: t('publishedStatus'), icon: "✅" };
     if (status === "draft")
-      return { class: "pbadge-draft", text: "📝 Draft", icon: "📝" };
-    return { class: "pbadge-scheduled", text: "📅 Scheduled", icon: "📅" };
+      return { class: "pbadge-draft", text: t('draftStatus'), icon: "📝" };
+    return { class: "pbadge-scheduled", text: t('scheduledStatus'), icon: "📅" };
   };
 
   const filteredPosts = posts.filter((post) => {
@@ -286,9 +442,35 @@ const AdminBlogPage = () => {
     return matchesFilter && matchesSearch;
   });
 
+  // Get filter labels with translation
+  const getFilters = () => [
+    { id: "all", label: `${t('all')} (${posts.length})` },
+    { id: "published", label: t('publishedFilter') },
+    { id: "draft", label: t('draftsFilter') },
+    { id: "scheduled", label: t('scheduledFilter') },
+  ];
+
+  // Get category options with translation
+  const getCategoryOptions = () => [
+    { value: "General", label: t('general') },
+    { value: "Savings Tips", label: t('savingsTips') },
+    { value: "Islamic Finance", label: t('islamicFinance') },
+    { value: "Announcement", label: t('announcement') },
+    { value: "Reports", label: t('reports') },
+    { value: "Community", label: t('community') }
+  ];
+
+  // Get stats labels with translation
+  const getStatsLabels = () => [
+    t('published'),
+    t('drafts'),
+    t('scheduled'),
+    t('totalViews')
+  ];
+
   return (
     <div className="min-h-screen bg-background">
-      {/* Header - Same as before */}
+      {/* Header */}
       <div className="bg-card border-b border-border px-4 py-3 flex items-center gap-3 sticky top-0 z-50 flex-wrap">
         <button
           onClick={() => window.history.back()}
@@ -297,10 +479,10 @@ const AdminBlogPage = () => {
           <ArrowLeft size={16} />
         </button>
         <h1 className="text-base font-bold text-foreground flex-1">
-          📝 {lang === "bn" ? "ব্লগ ব্যবস্থাপনা" : "Blog Management"}
+          {t('blogManagement')}
         </h1>
         <span className="px-2 py-1 rounded-md bg-red-500/15 text-red-400 text-[10px] font-bold">
-          ADMIN
+          {t('admin')}
         </span>
         <button
           onClick={() => setLang(lang === "bn" ? "en" : "bn")}
@@ -316,7 +498,7 @@ const AdminBlogPage = () => {
         </button>
       </div>
 
-      {/* Stats Grid - Same */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4 max-w-6xl mx-auto">
         {stats.map((stat, idx) => (
           <div
@@ -329,13 +511,13 @@ const AdminBlogPage = () => {
               {stat.value}
             </div>
             <div className="text-[10px] text-foreground/50 mt-1">
-              {stat.label}
+              {getStatsLabels()[idx]}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Toolbar - Same */}
+      {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 px-4 pb-3 max-w-6xl mx-auto">
         <div className="relative flex-1">
           <Search
@@ -346,7 +528,7 @@ const AdminBlogPage = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={lang === "bn" ? "পোস্ট খুঁজুন..." : "Search posts..."}
+            placeholder={t('searchPosts')}
             className="w-full py-2 pl-9 pr-3 rounded-lg border border-border bg-card text-foreground text-sm outline-none focus:border-primary transition"
           />
         </div>
@@ -354,18 +536,13 @@ const AdminBlogPage = () => {
           onClick={() => openEditor()}
           className="px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-sm font-semibold flex items-center gap-2 justify-center"
         >
-          <Plus size={14} /> {lang === "bn" ? "নতুন পোস্ট" : "New Post"}
+          <Plus size={14} /> {t('newPost')}
         </button>
       </div>
 
-      {/* Filter Tabs - Same */}
+      {/* Filter Tabs */}
       <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide max-w-6xl mx-auto">
-        {[
-          { id: "all", label: `All (${posts.length})` },
-          { id: "published", label: "✅ Published" },
-          { id: "draft", label: "📝 Drafts" },
-          { id: "scheduled", label: "📅 Scheduled" },
-        ].map((filter) => (
+        {getFilters().map((filter) => (
           <button
             key={filter.id}
             onClick={() => setActiveFilter(filter.id)}
@@ -380,14 +557,14 @@ const AdminBlogPage = () => {
         ))}
       </div>
 
-      {/* Loading - Same */}
+      {/* Loading */}
       {loading && (
         <div className="flex items-center justify-center py-12 max-w-6xl mx-auto">
           <Loader2 size={32} className="animate-spin text-primary" />
         </div>
       )}
 
-      {/* Posts List - Similar but with helpful instead of likes */}
+      {/* Posts List */}
       <div className="max-w-6xl mx-auto px-4 pb-20 space-y-3">
         {filteredPosts.map((post) => {
           const statusBadge = getStatusBadge(post.status);
@@ -430,12 +607,12 @@ const AdminBlogPage = () => {
                     <div className="flex items-center gap-1 text-xs text-foreground/50">
                       <Eye size={12} />{" "}
                       <strong className="text-foreground">{post.views}</strong>{" "}
-                      views
+                      {t('views')}
                     </div>
                     <div className="flex items-center gap-1 text-xs text-foreground/50">
                       <Heart size={12} />{" "}
                       <strong className="text-foreground">{post.helpful}</strong>{" "}
-                      helpful
+                      {t('helpful')}
                     </div>
                   </div>
                 )}
@@ -444,14 +621,14 @@ const AdminBlogPage = () => {
                     onClick={() => openEditor(post)}
                     className="py-2 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
                   >
-                    ✏️ Edit
+                    {t('edit')}
                   </button>
                   {post.status === "published" ? (
                     <button
                       onClick={() => unpublishPost(post.id)}
                       className="py-2 rounded-lg border border-amber-500/30 text-amber-500 text-xs font-semibold hover:bg-amber-500/10 transition"
                     >
-                      ⬇️ Unpublish
+                      {t('unpublish')}
                     </button>
                   ) : (
                     <button
@@ -461,26 +638,20 @@ const AdminBlogPage = () => {
                       }}
                       className="py-2 rounded-lg border border-green-500/30 text-green-500 text-xs font-semibold hover:bg-green-500/10 transition"
                     >
-                      🚀 Publish
+                      {t('publishAction')}
                     </button>
                   )}
                   <button
-                    onClick={() =>
-                      showToast(
-                        lang === "bn"
-                          ? "👁️ প্রিভিউ খোলা হচ্ছে..."
-                          : "👁️ Opening preview...",
-                      )
-                    }
+                    onClick={() => showToast(t('openingPreview'))}
                     className="py-2 rounded-lg border border-border text-foreground/60 text-xs font-semibold hover:border-primary transition"
                   >
-                    👁️ Preview
+                    {t('preview')}
                   </button>
                   <button
                     onClick={() => deletePost(post.id)}
                     className="py-2 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/10 transition"
                   >
-                    🗑️ Delete
+                    {t('delete')}
                   </button>
                 </div>
               </div>
@@ -489,7 +660,7 @@ const AdminBlogPage = () => {
         })}
       </div>
 
-      {/* Editor Sheet Modal - Updated with bilingual fields */}
+      {/* Editor Sheet Modal */}
       <AnimatePresence>
         {showEditor && (
           <>
@@ -511,14 +682,14 @@ const AdminBlogPage = () => {
                     type="text"
                     value={postTitleBn}
                     onChange={(e) => setPostTitleBn(e.target.value)}
-                    placeholder={lang === "bn" ? "বাংলা শিরোনাম..." : "Bangla title..."}
+                    placeholder={t('banglaTitle')}
                     className="flex-1 p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
                   />
                   <input
                     type="text"
                     value={postTitleEn}
                     onChange={(e) => setPostTitleEn(e.target.value)}
-                    placeholder={lang === "bn" ? "ইংরেজি শিরোনাম..." : "English title..."}
+                    placeholder={t('englishTitle')}
                     className="flex-1 p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
                   />
                   <button
@@ -534,8 +705,10 @@ const AdminBlogPage = () => {
                     onChange={(e) => setPostCategory(e.target.value)}
                     className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
                   >
-                    {["General", "Savings Tips", "Islamic Finance", "Announcement", "Reports", "Community"].map((cat) => (
-                      <option key={cat}>{cat}</option>
+                    {getCategoryOptions().map((cat) => (
+                      <option key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -543,14 +716,14 @@ const AdminBlogPage = () => {
                   value={postContentBn}
                   onChange={(e) => setPostContentBn(e.target.value)}
                   rows={6}
-                  placeholder={lang === "bn" ? "বাংলা কন্টেন্ট লিখুন..." : "Write Bangla content..."}
+                  placeholder={t('banglaContent')}
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm resize-none"
                 />
                 <textarea
                   value={postContentEn}
                   onChange={(e) => setPostContentEn(e.target.value)}
                   rows={6}
-                  placeholder={lang === "bn" ? "ইংরেজি কন্টেন্ট লিখুন..." : "Write English content..."}
+                  placeholder={t('englishContent')}
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm resize-none mt-3"
                 />
                 <div className="flex gap-3 mt-4">
@@ -558,15 +731,13 @@ const AdminBlogPage = () => {
                     onClick={saveDraft}
                     className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-semibold text-sm flex items-center justify-center gap-2"
                   >
-                    <Save size={14} />{" "}
-                    {lang === "bn" ? "ড্রাফট সংরক্ষণ" : "Save Draft"}
+                    <Save size={14} /> {t('saveDraft')}
                   </button>
                   <button
                     onClick={publishPost}
                     className="flex-1 py-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold text-sm flex items-center justify-center gap-2"
                   >
-                    <Send size={14} />{" "}
-                    {lang === "bn" ? "প্রকাশ করুন" : "Publish"}
+                    <Send size={14} /> {t('publish')}
                   </button>
                 </div>
               </div>
@@ -575,7 +746,7 @@ const AdminBlogPage = () => {
         )}
       </AnimatePresence>
 
-      {/* Toast - Same */}
+      {/* Toast */}
       <AnimatePresence>
         {toast.show && (
           <motion.div

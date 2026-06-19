@@ -16,6 +16,142 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Navigation
+    backDashboard: "Dashboard",
+    savingsReport: "Savings Report",
+    
+    // Header
+    monthlySavingsReport: "📊 Monthly Savings Report",
+    
+    // Month Selector
+    monthlyStatement: "Monthly Statement",
+    
+    // Summary
+    totalDeposit: "Total Deposit",
+    totalWithdrawal: "Total Withdrawal",
+    totalTransactions: "Total Transactions",
+    maxStreak: "Max Streak",
+    noDeposits: "No deposits this month",
+    good: "↓ Good!",
+    keepSaving: "Keep saving!",
+    activeSaver: "↑ Active saver",
+    startSaving: "Start saving!",
+    keepStreakAlive: "Keep the streak alive!",
+    percentChange: "↑ {percent}% from last month",
+    
+    // Chart
+    dailySavings: "📈 Daily Savings",
+    
+    // Goals
+    depositsByGoal: "🎯 Deposits by Goal",
+    noGoals: "No goals yet",
+    
+    // Transactions
+    transactionList: "📋 Transaction List",
+    noTransactions: "No transactions this month",
+    
+    // Download
+    downloadReport: "📥 Download Report",
+    pdf: "PDF",
+    excel: "Excel",
+    share: "Share",
+    print: "Print",
+    pdfPreparing: "📄 PDF is being prepared...",
+    excelPreparing: "📊 Excel is being prepared...",
+    sharing: "📤 Sharing...",
+    printing: "🖨️ Printing...",
+    
+    // Toast
+    toastMessage: "Toast message",
+    
+    // Loading
+    loading: "Loading...",
+    
+    // Months
+    january: "January",
+    february: "February",
+    march: "March",
+    april: "April",
+    may: "May",
+    june: "June",
+    july: "July",
+    august: "August",
+    september: "September",
+    october: "October",
+    november: "November",
+    december: "December",
+  },
+  bn: {
+    // Navigation
+    backDashboard: "ড্যাশবোর্ড",
+    savingsReport: "সঞ্চয় রিপোর্ট",
+    
+    // Header
+    monthlySavingsReport: "📊 মাসিক সঞ্চয় রিপোর্ট",
+    
+    // Month Selector
+    monthlyStatement: "মাসিক বিবরণী",
+    
+    // Summary
+    totalDeposit: "মোট জমা",
+    totalWithdrawal: "মোট উত্তোলন",
+    totalTransactions: "মোট লেনদেন",
+    maxStreak: "সর্বোচ্চ স্ট্রিক",
+    noDeposits: "এই মাসে কোন জমা নেই",
+    good: "↓ ভালো!",
+    keepSaving: "সঞ্চয় চালিয়ে যান!",
+    activeSaver: "↑ সক্রিয় সঞ্চয়কারী",
+    startSaving: "সঞ্চয় শুরু করুন!",
+    keepStreakAlive: "স্ট্রিক বজায় রাখুন!",
+    percentChange: "↑ গত মাস থেকে {percent}% বেশি",
+    
+    // Chart
+    dailySavings: "📈 দৈনিক সঞ্চয়",
+    
+    // Goals
+    depositsByGoal: "🎯 লক্ষ্য অনুযায়ী জমা",
+    noGoals: "কোন লক্ষ্য নেই",
+    
+    // Transactions
+    transactionList: "📋 লেনদেনের তালিকা",
+    noTransactions: "এই মাসে কোন লেনদেন নেই",
+    
+    // Download
+    downloadReport: "📥 রিপোর্ট ডাউনলোড করুন",
+    pdf: "পিডিএফ",
+    excel: "এক্সেল",
+    share: "শেয়ার",
+    print: "প্রিন্ট",
+    pdfPreparing: "📄 পিডিএফ প্রস্তুত করা হচ্ছে...",
+    excelPreparing: "📊 এক্সেল প্রস্তুত করা হচ্ছে...",
+    sharing: "📤 শেয়ার হচ্ছে...",
+    printing: "🖨️ প্রিন্ট হচ্ছে...",
+    
+    // Toast
+    toastMessage: "টোস্ট বার্তা",
+    
+    // Loading
+    loading: "লোড হচ্ছে...",
+    
+    // Months
+    january: "জানুয়ারি",
+    february: "ফেব্রুয়ারি",
+    march: "মার্চ",
+    april: "এপ্রিল",
+    may: "মে",
+    june: "জুন",
+    july: "জুলাই",
+    august: "আগস্ট",
+    september: "সেপ্টেম্বর",
+    october: "অক্টোবর",
+    november: "নভেম্বর",
+    december: "ডিসেম্বর",
+  }
+};
+
 const SavingsReportPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [currentDate, setCurrentDate] = useState({ month: new Date().getMonth(), year: new Date().getFullYear() });
@@ -30,10 +166,27 @@ const SavingsReportPage = () => {
     maxStreak: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState("en");
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    t('january'), t('february'), t('march'), t('april'), 
+    t('may'), t('june'), t('july'), t('august'), 
+    t('september'), t('october'), t('november'), t('december')
   ];
 
   // Fetch real data
@@ -210,10 +363,10 @@ const SavingsReportPage = () => {
           href="/dashboard"
           className="flex items-center gap-1.5 text-primary text-sm font-semibold px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition"
         >
-          <ArrowLeft size={14} /> Dashboard
+          <ArrowLeft size={14} /> {t('backDashboard')}
         </Link>
         <span className="text-sm font-bold text-foreground flex-1">
-          Savings Report
+          {t('savingsReport')}
         </span>
       </div>
 
@@ -226,7 +379,7 @@ const SavingsReportPage = () => {
           <ArrowLeft size={18} />
         </button>
         <h1 className="text-white text-lg font-bold flex-1">
-          📊 Monthly Savings Report
+          {t('monthlySavingsReport')}
         </h1>
         <button
           onClick={toggleTheme}
@@ -249,7 +402,7 @@ const SavingsReportPage = () => {
             <div className="text-base font-bold text-foreground">
               {monthName} {yearDisplay}
             </div>
-            <div className="text-xs text-foreground/50">Monthly Statement</div>
+            <div className="text-xs text-foreground/50">{t('monthlyStatement')}</div>
           </div>
           <button
             onClick={() => changeMonth(1)}
@@ -264,37 +417,39 @@ const SavingsReportPage = () => {
           <div className="bg-card border border-border rounded-xl p-4 shadow">
             <div className="text-2xl mb-2">⬆️</div>
             <div className="text-2xl font-bold text-primary">৳{summary.totalDeposit.toLocaleString()}</div>
-            <div className="text-xs text-foreground/50 mt-1">Total Deposit</div>
+            <div className="text-xs text-foreground/50 mt-1">{t('totalDeposit')}</div>
             <div className="text-xs text-primary mt-1 font-semibold">
-              {summary.totalDeposit > 0 ? `↑ ${depositChange}% from last month` : "No deposits this month"}
+              {summary.totalDeposit > 0 
+                ? t('percentChange', { percent: depositChange }) 
+                : t('noDeposits')}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 shadow">
             <div className="text-2xl mb-2">⬇️</div>
             <div className="text-2xl font-bold text-cyan-500">৳{summary.totalWithdrawal.toLocaleString()}</div>
             <div className="text-xs text-foreground/50 mt-1">
-              Total Withdrawal
+              {t('totalWithdrawal')}
             </div>
             <div className="text-xs text-primary mt-1 font-semibold">
-              {summary.totalWithdrawal === 0 ? "↓ Good!" : "Keep saving!"}
+              {summary.totalWithdrawal === 0 ? t('good') : t('keepSaving')}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 shadow">
             <div className="text-2xl mb-2">🔢</div>
             <div className="text-2xl font-bold text-amber-500">{summary.totalTransactions}</div>
             <div className="text-xs text-foreground/50 mt-1">
-              Total Transactions
+              {t('totalTransactions')}
             </div>
             <div className="text-xs text-primary mt-1 font-semibold">
-              {summary.totalTransactions > 0 ? "↑ Active saver" : "Start saving!"}
+              {summary.totalTransactions > 0 ? t('activeSaver') : t('startSaving')}
             </div>
           </div>
           <div className="bg-card border border-border rounded-xl p-4 shadow">
             <div className="text-2xl mb-2">🔥</div>
             <div className="text-2xl font-bold text-purple-500">{summary.maxStreak || "—"}</div>
-            <div className="text-xs text-foreground/50 mt-1">Max Streak</div>
+            <div className="text-xs text-foreground/50 mt-1">{t('maxStreak')}</div>
             <div className="text-xs text-primary mt-1 font-semibold">
-              Keep the streak alive!
+              {t('keepStreakAlive')}
             </div>
           </div>
         </div>
@@ -302,7 +457,7 @@ const SavingsReportPage = () => {
         {/* Bar Chart */}
         <div className="bg-card border border-border rounded-xl p-5 mb-4 shadow">
           <div className="flex justify-between items-center mb-4">
-            <div className="font-bold text-foreground">📈 Daily Savings</div>
+            <div className="font-bold text-foreground">{t('dailySavings')}</div>
             <span className="text-xs text-foreground/50">{monthName} {currentDate.year}</span>
           </div>
           <div className="flex items-end gap-1 h-24">
@@ -336,12 +491,12 @@ const SavingsReportPage = () => {
         {/* Goal Breakdown */}
         <div className="bg-card border border-border rounded-xl p-5 mb-4 shadow">
           <div className="font-bold text-foreground mb-4">
-            🎯 Deposits by Goal
+            {t('depositsByGoal')}
           </div>
           {goals.length === 0 ? (
             <div className="text-center py-4 text-foreground/50">
               <div className="text-3xl mb-2">🎯</div>
-              <div>No goals yet</div>
+              <div>{t('noGoals')}</div>
             </div>
           ) : (
             goals.map((goal, idx) => (
@@ -372,12 +527,12 @@ const SavingsReportPage = () => {
         {/* Transaction List */}
         <div className="bg-card border border-border rounded-xl p-5 mb-4 shadow">
           <div className="font-bold text-foreground mb-4">
-            📋 Transaction List
+            {t('transactionList')}
           </div>
           {transactions.length === 0 ? (
             <div className="text-center py-4 text-foreground/50">
               <div className="text-3xl mb-2">📭</div>
-              <div>No transactions this month</div>
+              <div>{t('noTransactions')}</div>
             </div>
           ) : (
             transactions.map((tx, idx) => (
@@ -405,32 +560,32 @@ const SavingsReportPage = () => {
         {/* Download Buttons */}
         <div className="bg-card border border-border rounded-xl p-5 shadow">
           <div className="font-bold text-foreground mb-4">
-            📥 Download Report
+            {t('downloadReport')}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => showToast("📄 PDF is being prepared...")}
+              onClick={() => showToast(t('pdfPreparing'))}
               className="py-3 rounded-xl bg-linear-to-r from-red-600 to-red-700 text-white text-sm font-bold flex flex-col items-center gap-1"
             >
-              <FileText size={22} /> PDF
+              <FileText size={22} /> {t('pdf')}
             </button>
             <button
-              onClick={() => showToast("📊 Excel is being prepared...")}
+              onClick={() => showToast(t('excelPreparing'))}
               className="py-3 rounded-xl bg-linear-to-r from-green-600 to-green-700 text-white text-sm font-bold flex flex-col items-center gap-1"
             >
-              <FileSpreadsheet size={22} /> Excel
+              <FileSpreadsheet size={22} /> {t('excel')}
             </button>
             <button
-              onClick={() => showToast("📤 Sharing...")}
+              onClick={() => showToast(t('sharing'))}
               className="py-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white text-sm font-bold flex flex-col items-center gap-1"
             >
-              <Share2 size={22} /> Share
+              <Share2 size={22} /> {t('share')}
             </button>
             <button
-              onClick={() => showToast("🖨️ Printing...")}
+              onClick={() => showToast(t('printing'))}
               className="py-3 rounded-xl border-2 border-border bg-card text-foreground text-sm font-bold flex flex-col items-center gap-1"
             >
-              <Printer size={22} /> Print
+              <Printer size={22} /> {t('print')}
             </button>
           </div>
         </div>

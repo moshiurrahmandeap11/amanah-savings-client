@@ -8,6 +8,88 @@ import { Loader2 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    // Hero
+    pageTitle: "🏆 Seasonal Savings Challenges",
+    pageSubtitle: "Special savings challenges tied to Bangladesh's biggest seasons, festivals, and moments. Save more, earn more, celebrate together!",
+    activeChallenges: "Active Challenges",
+    participants: "participants",
+    saved: "saved",
+    
+    // Active Challenge Banner
+    liveNow: "🔴 Live Now",
+    viewChallenge: "View Challenge →",
+    
+    // Current Challenges
+    currentChallenges: "🎯 Current & Upcoming Challenges",
+    active: "🔴 ACTIVE",
+    upcoming: "📅 Upcoming",
+    completed: "✅ Completed",
+    participantsLabel: "Participants",
+    days: "Days",
+    maxReward: "Max Reward",
+    yourProgress: "Your Progress",
+    joinedComplete: "✅ Joined — {progress}% Complete",
+    comingSoon: "🔔 Coming Soon",
+    joinChallenge: "🔥 Join Challenge",
+    
+    // Completed Challenges
+    completedChallenges: "✅ Completed Challenges",
+    completedLabel: "🏆 Completed",
+    
+    // Toast/Alert
+    success: "Success!",
+    joinedChallenge: "You joined the {name} challenge!",
+    error: "Error!",
+    failedToJoin: "Failed to join challenge",
+    loading: "Loading challenges...",
+    
+    // Stats
+    totalSaved: "Total Saved",
+  },
+  bn: {
+    // Hero
+    pageTitle: "🏆 মৌসুমি সঞ্চয় চ্যালেঞ্জ",
+    pageSubtitle: "বাংলাদেশের বড় বড় ঋতু, উৎসব এবং মুহূর্তের সাথে যুক্ত বিশেষ সঞ্চয় চ্যালেঞ্জ। আরও সঞ্চয় করুন, আরও উপার্জন করুন, একসাথে উদযাপন করুন!",
+    activeChallenges: "সক্রিয় চ্যালেঞ্জ",
+    participants: "অংশগ্রহণকারী",
+    saved: "সঞ্চিত",
+    
+    // Active Challenge Banner
+    liveNow: "🔴 এখন চলছে",
+    viewChallenge: "চ্যালেঞ্জ দেখুন →",
+    
+    // Current Challenges
+    currentChallenges: "🎯 চলমান ও আসন্ন চ্যালেঞ্জ",
+    active: "🔴 সক্রিয়",
+    upcoming: "📅 আসন্ন",
+    completed: "✅ সম্পূর্ণ",
+    participantsLabel: "অংশগ্রহণকারী",
+    days: "দিন",
+    maxReward: "সর্বোচ্চ পুরস্কার",
+    yourProgress: "আপনার অগ্রগতি",
+    joinedComplete: "✅ যোগ দিয়েছেন — {progress}% সম্পূর্ণ",
+    comingSoon: "🔔 শীঘ্রই আসছে",
+    joinChallenge: "🔥 চ্যালেঞ্জে যোগ দিন",
+    
+    // Completed Challenges
+    completedChallenges: "✅ সম্পূর্ণ চ্যালেঞ্জ",
+    completedLabel: "🏆 সম্পূর্ণ",
+    
+    // Toast/Alert
+    success: "সফল!",
+    joinedChallenge: "আপনি {name} চ্যালেঞ্জে যোগ দিয়েছেন!",
+    error: "ত্রুটি!",
+    failedToJoin: "চ্যালেঞ্জে যোগ দিতে ব্যর্থ হয়েছে",
+    loading: "চ্যালেঞ্জ লোড হচ্ছে...",
+    
+    // Stats
+    totalSaved: "মোট সঞ্চয়",
+  }
+};
+
 const ChallengesPage = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -20,6 +102,18 @@ const ChallengesPage = () => {
   });
   const [userChallenges, setUserChallenges] = useState([]);
   const [joining, setJoining] = useState(false);
+  const [lang, setLang] = useState("en");
+
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   // Fetch all challenges
   const fetchChallenges = async () => {
@@ -58,8 +152,8 @@ const ChallengesPage = () => {
       const response = await axiosInstance.post(`/challenges/${challengeId}/join`);
       if (response.data.success) {
         Swal.fire({
-          title: "Success!",
-          text: `You joined the ${challengeName} challenge!`,
+          title: t('success'),
+          text: t('joinedChallenge').replace('{name}', challengeName),
           icon: "success",
           timer: 2000,
           showConfirmButton: false,
@@ -70,8 +164,8 @@ const ChallengesPage = () => {
     } catch (error) {
       console.error("Join challenge error:", error);
       Swal.fire({
-        title: "Error!",
-        text: error.response?.data?.message || "Failed to join challenge",
+        title: t('error'),
+        text: error.response?.data?.message || t('failedToJoin'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -97,14 +191,30 @@ const ChallengesPage = () => {
     {
       icon: "🌸",
       name: "Pohela Boishakh ১৪৩২",
+      nameBn: "পহেলা বৈশাখ ১৪৩২",
       year: "April 2026 · 3,241 completed",
+      yearBn: "এপ্রিল ২০২৬ · ৩,২৪১ সম্পন্ন",
     },
-    { icon: "🌙", name: "Ramadan ২০২৫", year: "March 2025 · 1,892 completed" },
-    { icon: "🎄", name: "Year-End 2025", year: "Dec 2025 · 2,104 completed" },
+    {
+      icon: "🌙",
+      name: "Ramadan ২০২৫",
+      nameBn: "রমজান ২০২৫",
+      year: "March 2025 · 1,892 completed",
+      yearBn: "মার্চ ২০২৫ · ১,৮৯২ সম্পন্ন",
+    },
+    {
+      icon: "🎄",
+      name: "Year-End 2025",
+      nameBn: "বর্ষশেষ ২০২৫",
+      year: "Dec 2025 · 2,104 completed",
+      yearBn: "ডিসেম্বর ২০২৫ · ২,১০৪ সম্পন্ন",
+    },
     {
       icon: "❄️",
       name: "Winter Savings 2025",
+      nameBn: "শীতকালীন সঞ্চয় ২০২৫",
       year: "Jan 2026 · 1,456 completed",
+      yearBn: "জানুয়ারি ২০২৬ · ১,৪৫৬ সম্পন্ন",
     },
   ];
 
@@ -125,22 +235,20 @@ const ChallengesPage = () => {
       <div className="bg-linear-to-r from-primary to-primary-light py-16 text-center relative overflow-hidden">
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
-            🏆 Seasonal Savings Challenges
+            {t('pageTitle')}
           </h1>
           <p className="text-white/90 text-base max-w-2xl mx-auto mb-8">
-            Special savings challenges tied to Bangladesh&apos;s biggest
-            seasons, festivals, and moments. Save more, earn more, celebrate
-            together!
+            {t('pageSubtitle')}
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <span className="px-4 py-2 rounded-full bg-white/20 border border-white/30 text-white text-xs font-semibold">
-              🌙 {activeChallenges.length} Active Challenges
+              🌙 {activeChallenges.length} {t('activeChallenges')}
             </span>
             <span className="px-4 py-2 rounded-full bg-white/20 border border-white/30 text-white text-xs font-semibold">
-              ⭐ {statistics.totalParticipants} participants
+              ⭐ {statistics.totalParticipants} {t('participants')}
             </span>
             <span className="px-4 py-2 rounded-full bg-white/20 border border-white/30 text-white text-xs font-semibold">
-              💰 {statistics.totalSaved} saved
+              💰 {statistics.totalSaved} {t('saved')}
             </span>
           </div>
         </div>
@@ -153,20 +261,20 @@ const ChallengesPage = () => {
             <div className="text-5xl">{activeChallenges[0]?.icon || "🌙"}</div>
             <div className="flex-1">
               <div className="text-xs font-bold text-white/70 uppercase tracking-wider">
-                🔴 Live Now
+                {t('liveNow')}
               </div>
               <div className="text-xl font-bold text-white">
                 {activeChallenges[0]?.name}
               </div>
               <div className="text-sm text-white/80">
-                {activeChallenges[0]?.participants} members saving · {activeChallenges[0]?.period}
+                {activeChallenges[0]?.participants} {t('participants')} · {activeChallenges[0]?.period}
               </div>
             </div>
             <button
               onClick={() => viewChallenge(activeChallenges[0]?._id)}
               className="px-5 py-2 bg-white text-purple-700 rounded-lg font-bold text-sm whitespace-nowrap"
             >
-              View Challenge →
+              {t('viewChallenge')}
             </button>
           </div>
         </div>
@@ -175,7 +283,7 @@ const ChallengesPage = () => {
       {/* Current Challenges */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <h2 className="text-2xl font-bold text-foreground mb-6">
-          🎯 চলমান ও আসন্ন চ্যালেঞ্জ
+          {t('currentChallenges')}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {challenges.map((challenge, idx) => {
@@ -201,9 +309,9 @@ const ChallengesPage = () => {
                   <div
                     className={`inline-flex items-center gap-1 bg-white/20 border border-white/30 rounded-full px-3 py-1 text-xs font-bold text-white mb-3`}
                   >
-                    {challenge.status === "active" && "🔴 ACTIVE"}
-                    {challenge.status === "upcoming" && "📅 Upcoming"}
-                    {challenge.status === "completed" && "✅ Completed"}
+                    {challenge.status === "active" && t('active')}
+                    {challenge.status === "upcoming" && t('upcoming')}
+                    {challenge.status === "completed" && t('completed')}
                   </div>
                   <div className="text-4xl mb-2">{challenge.icon}</div>
                   <div className="text-xl font-bold text-white mb-1">
@@ -221,7 +329,7 @@ const ChallengesPage = () => {
                         {challenge.participants?.toLocaleString() || 0}
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold">
-                        Participants
+                        {t('participantsLabel')}
                       </div>
                     </div>
                     <div className="flex-1 text-center border-l border-border">
@@ -229,7 +337,7 @@ const ChallengesPage = () => {
                         {challenge.days}
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold">
-                        Days
+                        {t('days')}
                       </div>
                     </div>
                     <div className="flex-1 text-center border-l border-border">
@@ -237,7 +345,7 @@ const ChallengesPage = () => {
                         {challenge.maxReward}
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold">
-                        Max Reward
+                        {t('maxReward')}
                       </div>
                     </div>
                   </div>
@@ -245,7 +353,7 @@ const ChallengesPage = () => {
                   {joined && progress > 0 && (
                     <div className="mb-4">
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-foreground/60">Your Progress</span>
+                        <span className="text-foreground/60">{t('yourProgress')}</span>
                         <span className="text-primary font-semibold">{progress}%</span>
                       </div>
                       <div className="h-1.5 bg-border rounded-full overflow-hidden">
@@ -283,10 +391,10 @@ const ChallengesPage = () => {
                     }`}
                   >
                     {joined 
-                      ? `✅ Joined — ${progress}% Complete` 
+                      ? t('joinedComplete').replace('{progress}', progress)
                       : challenge.status === "upcoming"
-                        ? "🔔 Coming Soon"
-                        : "🔥 Join Challenge"}
+                        ? t('comingSoon')
+                        : t('joinChallenge')}
                   </button>
                 </div>
               </motion.div>
@@ -298,7 +406,7 @@ const ChallengesPage = () => {
       {/* Completed Challenges */}
       <div className="max-w-7xl mx-auto px-4 pb-16">
         <h2 className="text-2xl font-bold text-foreground mb-6">
-          ✅ Completed Challenges
+          {t('completedChallenges')}
         </h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {completedChallenges.map((challenge, idx) => (
@@ -308,11 +416,13 @@ const ChallengesPage = () => {
             >
               <div className="text-4xl mb-2">{challenge.icon}</div>
               <div className="font-bold text-sm text-foreground mb-1">
-                {challenge.name}
+                {lang === "bn" ? challenge.nameBn : challenge.name}
               </div>
-              <div className="text-xs text-foreground/50">{challenge.year}</div>
+              <div className="text-xs text-foreground/50">
+                {lang === "bn" ? challenge.yearBn : challenge.year}
+              </div>
               <div className="inline-block mt-2 px-2 py-0.5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">
-                🏆 Completed
+                {t('completedLabel')}
               </div>
             </div>
           ))}

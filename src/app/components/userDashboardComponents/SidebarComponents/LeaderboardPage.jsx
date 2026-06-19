@@ -6,6 +6,114 @@ import Link from "next/link";
 import { Loader2, Trophy, TrendingUp, Users, Calendar, Award, Medal, Star, Flame, Crown, ChevronUp, ChevronDown } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    pageTitle: "🏆 Savings Leaderboard",
+    pageSubtitle: "Top savers this month — keep saving to climb the ranks!",
+    
+    // Statistics
+    totalSavers: "Total Savers",
+    totalSaved: "Total Saved",
+    average: "Average",
+    topSaver: "Top Saver",
+    
+    // Tabs
+    monthly: "Monthly",
+    allTime: "All Time",
+    
+    // Leaderboard Headers
+    rank: "Rank",
+    saver: "Saver",
+    streak: "Streak",
+    amountSaved: "Amount Saved",
+    days: "days",
+    tier: "Tier",
+    you: "(You)",
+    
+    // User Position
+    yourPosition: "Your Position",
+    totalSavedLabel: "Total Saved",
+    topPercent: "Top {percent}% of savers",
+    
+    // Empty State
+    noData: "No data available",
+    
+    // Info Note
+    leaderboardInfo: "🏆 Leaderboard updates daily based on approved deposits. Keep saving to climb the ranks!",
+    
+    // Loading
+    loading: "Loading leaderboard...",
+    
+    // Months
+    january: "January",
+    february: "February",
+    march: "March",
+    april: "April",
+    may: "May",
+    june: "June",
+    july: "July",
+    august: "August",
+    september: "September",
+    october: "October",
+    november: "November",
+    december: "December",
+  },
+  bn: {
+    // Page Title
+    pageTitle: "🏆 সঞ্চয় লিডারবোর্ড",
+    pageSubtitle: "এই মাসের শীর্ষ সঞ্চয়কারী — র্যাঙ্ক বাড়াতে সঞ্চয় চালিয়ে যান!",
+    
+    // Statistics
+    totalSavers: "মোট সঞ্চয়কারী",
+    totalSaved: "মোট সঞ্চয়",
+    average: "গড়",
+    topSaver: "শীর্ষ সঞ্চয়কারী",
+    
+    // Tabs
+    monthly: "মাসিক",
+    allTime: "সর্বকাল",
+    
+    // Leaderboard Headers
+    rank: "র্যাঙ্ক",
+    saver: "সঞ্চয়কারী",
+    streak: "স্ট্রিক",
+    amountSaved: "সঞ্চয়ের পরিমাণ",
+    days: "দিন",
+    tier: "টিয়ার",
+    you: "(আপনি)",
+    
+    // User Position
+    yourPosition: "আপনার অবস্থান",
+    totalSavedLabel: "মোট সঞ্চয়",
+    topPercent: "শীর্ষ {percent}% সঞ্চয়কারীদের মধ্যে",
+    
+    // Empty State
+    noData: "কোন তথ্য পাওয়া যায়নি",
+    
+    // Info Note
+    leaderboardInfo: "🏆 লিডারবোর্ড প্রতিদিন অনুমোদিত জমার ভিত্তিতে আপডেট হয়। র্যাঙ্ক বাড়াতে সঞ্চয় চালিয়ে যান!",
+    
+    // Loading
+    loading: "লিডারবোর্ড লোড হচ্ছে...",
+    
+    // Months
+    january: "জানুয়ারি",
+    february: "ফেব্রুয়ারি",
+    march: "মার্চ",
+    april: "এপ্রিল",
+    may: "মে",
+    june: "জুন",
+    july: "জুলাই",
+    august: "আগস্ট",
+    september: "সেপ্টেম্বর",
+    october: "অক্টোবর",
+    november: "নভেম্বর",
+    december: "ডিসেম্বর",
+  }
+};
+
 const LeaderboardPage = () => {
   const [activeTab, setActiveTab] = useState("monthly");
   const [loading, setLoading] = useState(true);
@@ -22,6 +130,18 @@ const LeaderboardPage = () => {
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear()
   });
+  const [lang, setLang] = useState("en");
+
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   // Fetch leaderboard data
   const fetchLeaderboard = async (type) => {
@@ -54,8 +174,11 @@ const LeaderboardPage = () => {
   }, [activeTab]);
 
   const getMonthName = (month) => {
-    const months = ["January", "February", "March", "April", "May", "June", 
-                    "July", "August", "September", "October", "November", "December"];
+    const months = [
+      t('january'), t('february'), t('march'), t('april'), 
+      t('may'), t('june'), t('july'), t('august'), 
+      t('september'), t('october'), t('november'), t('december')
+    ];
     return months[month - 1];
   };
 
@@ -78,7 +201,7 @@ const LeaderboardPage = () => {
       <div className="max-w-7xl mx-auto flex items-center justify-center h-96">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">Loading leaderboard...</p>
+          <p className="text-foreground/60">{t('loading')}</p>
         </div>
       </div>
     );
@@ -92,10 +215,10 @@ const LeaderboardPage = () => {
       {/* Page Title */}
       <div className="mb-5">
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Trophy size={28} className="text-amber-500" /> Savings Leaderboard
+          <Trophy size={28} className="text-amber-500" /> {t('pageTitle')}
         </h2>
         <p className="text-sm text-foreground/60 mt-1">
-          Top savers this month — keep saving to climb the ranks!
+          {t('pageSubtitle')}
         </p>
       </div>
 
@@ -104,26 +227,26 @@ const LeaderboardPage = () => {
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Users size={16} className="text-primary" />
-            <span className="text-xs text-foreground/50">Total Savers</span>
+            <span className="text-xs text-foreground/50">{t('totalSavers')}</span>
           </div>
           <div className="text-xl font-bold text-foreground">{statistics.totalSavers.toLocaleString()}</div>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Trophy size={16} className="text-amber-500" />
-            <span className="text-xs text-foreground/50">Total Saved</span>
+            <span className="text-xs text-foreground/50">{t('totalSaved')}</span>
           </div>
           <div className="text-xl font-bold text-primary">{statistics.totalSaved}</div>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp size={16} className="text-green-500" />
-            <span className="text-xs text-foreground/50">Average</span>
+            <span className="text-xs text-foreground/50">{t('average')}</span>
           </div>
           <div className="text-xl font-bold text-foreground">{statistics.averageSaved}</div>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
-          <div className="text-xs text-foreground/50 mb-1">Top Saver</div>
+          <div className="text-xs text-foreground/50 mb-1">{t('topSaver')}</div>
           <div className="font-semibold text-sm text-foreground truncate">{statistics.topSaver}</div>
           <div className="text-xs text-primary">{statistics.topAmount}</div>
         </div>
@@ -140,7 +263,7 @@ const LeaderboardPage = () => {
           }`}
         >
           <Calendar size={14} />
-          {activeTab === "monthly" ? `${getMonthName(period.month)} ${period.year}` : "Monthly"}
+          {activeTab === "monthly" ? `${getMonthName(period.month)} ${period.year}` : t('monthly')}
         </button>
         <button
           onClick={() => setActiveTab("allTime")}
@@ -151,7 +274,7 @@ const LeaderboardPage = () => {
           }`}
         >
           <Trophy size={14} />
-          All Time
+          {t('allTime')}
         </button>
       </div>
 
@@ -168,7 +291,7 @@ const LeaderboardPage = () => {
               <div className="font-bold text-foreground text-sm">{topThree[1]?.name}</div>
               <div className="text-xs text-primary font-semibold">{topThree[1]?.amount}</div>
               <div className="text-[10px] text-foreground/50 flex items-center justify-center gap-1 mt-1">
-                <Flame size={10} /> {topThree[1]?.streak || 0} days
+                <Flame size={10} /> {topThree[1]?.streak || 0} {t('days')}
               </div>
             </div>
           </div>
@@ -183,7 +306,7 @@ const LeaderboardPage = () => {
               <div className="font-bold text-foreground text-base">{topThree[0]?.name}</div>
               <div className="text-sm text-primary font-bold">{topThree[0]?.amount}</div>
               <div className="text-xs text-foreground/50 flex items-center justify-center gap-1 mt-1">
-                <Flame size={12} /> {topThree[0]?.streak || 0} days streak
+                <Flame size={12} /> {topThree[0]?.streak || 0} {t('days')} {t('streak').toLowerCase()}
               </div>
             </div>
           </div>
@@ -198,7 +321,7 @@ const LeaderboardPage = () => {
               <div className="font-bold text-foreground text-sm">{topThree[2]?.name}</div>
               <div className="text-xs text-primary font-semibold">{topThree[2]?.amount}</div>
               <div className="text-[10px] text-foreground/50 flex items-center justify-center gap-1 mt-1">
-                <Flame size={10} /> {topThree[2]?.streak || 0} days
+                <Flame size={10} /> {topThree[2]?.streak || 0} {t('days')}
               </div>
             </div>
           </div>
@@ -208,16 +331,16 @@ const LeaderboardPage = () => {
       {/* User Position Card */}
       {userRank && (
         <div className="p-5 bg-gradient-to-r from-primary to-primary-light rounded-xl text-white text-center mb-6">
-          <div className="text-xs opacity-85 mb-1">Your Position</div>
+          <div className="text-xs opacity-85 mb-1">{t('yourPosition')}</div>
           <div className="text-4xl font-bold flex items-center justify-center gap-2">
             {userRank.rankIcon === "🥇" ? "👑" : userRank.rankIcon} #{userRank.position}
           </div>
           <div className="text-sm opacity-90 mt-1">
-            Total Saved: {userRank.totalSaved?.toLocaleString() || 0}
-            {activeTab === "monthly" && userRank.tier && ` · Tier: ${userRank.tier}`}
+            {t('totalSavedLabel')}: {userRank.totalSaved?.toLocaleString() || 0}
+            {activeTab === "monthly" && userRank.tier && ` · ${t('tier')}: ${userRank.tier}`}
           </div>
           <div className="text-xs opacity-75 mt-2">
-            Top {userRank.percentile || ((userRank.position / statistics.totalSavers) * 100).toFixed(1)}% of savers
+            {t('topPercent').replace('{percent}', userRank.percentile || ((userRank.position / statistics.totalSavers) * 100).toFixed(1))}
           </div>
         </div>
       )}
@@ -226,10 +349,10 @@ const LeaderboardPage = () => {
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-border bg-background">
           <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-foreground/60">
-            <div className="col-span-1">Rank</div>
-            <div className="col-span-5">Saver</div>
-            <div className="col-span-3">Streak</div>
-            <div className="col-span-3 text-right">Amount Saved</div>
+            <div className="col-span-1">{t('rank')}</div>
+            <div className="col-span-5">{t('saver')}</div>
+            <div className="col-span-3">{t('streak')}</div>
+            <div className="col-span-3 text-right">{t('amountSaved')}</div>
           </div>
         </div>
 
@@ -260,7 +383,7 @@ const LeaderboardPage = () => {
                 )}
                 <div className="min-w-0">
                   <div className="font-semibold text-sm text-foreground truncate">
-                    {user.name} {user.isMe && <span className="text-primary text-xs ml-1">(You)</span>}
+                    {user.name} {user.isMe && <span className="text-primary text-xs ml-1">{t('you')}</span>}
                   </div>
                   <div className="text-[10px] text-foreground/50">{user.tier}</div>
                 </div>
@@ -268,7 +391,7 @@ const LeaderboardPage = () => {
               <div className="col-span-3 flex items-center gap-1">
                 <Flame size={12} className="text-orange-500" />
                 <span className="text-sm text-foreground">{user.streak || 0}</span>
-                <span className="text-[10px] text-foreground/50">days</span>
+                <span className="text-[10px] text-foreground/50">{t('days')}</span>
               </div>
               <div className="col-span-3 flex items-center justify-end">
                 <span className="font-bold text-sm text-primary">{user.amount}</span>
@@ -282,15 +405,14 @@ const LeaderboardPage = () => {
       {leaderboardData.length === 0 && (
         <div className="text-center py-12 bg-card rounded-xl border border-border">
           <Trophy size={48} className="text-foreground/30 mx-auto mb-3" />
-          <div className="text-foreground/50">No data available</div>
+          <div className="text-foreground/50">{t('noData')}</div>
         </div>
       )}
 
       {/* Info Note */}
       <div className="mt-6 p-4 bg-primary/5 border border-primary/15 rounded-lg text-center">
         <p className="text-xs text-foreground/60">
-          🏆 Leaderboard updates daily based on approved deposits. 
-          Keep saving to climb the ranks!
+          {t('leaderboardInfo')}
         </p>
       </div>
     </div>

@@ -18,7 +18,6 @@ const formatCurrency = (amount) => {
   return `৳${amount.toLocaleString("en-BD")}`;
 };
 
-// backend থেকে plan name অনুযায়ী color
 const PLAN_COLORS = {
   bronze: "#cd7f32",
   silver: "#94a3b8",
@@ -29,6 +28,46 @@ const PLAN_COLORS = {
 
 const getPlanColor = (planName = "") =>
   PLAN_COLORS[planName.toLowerCase()] || PLAN_COLORS.unknown;
+
+// Translations
+const translations = {
+  en: {
+    revenueReports: "💵 Revenue Reports",
+    totalRevenue: "Total Revenue (5 months)",
+    totalDeposits: "Total Deposits",
+    totalTransactions: "Total Transactions",
+    newUsers: "New Users (5 months)",
+    monthlyDepositTrend: "📈 Monthly Deposit Trend",
+    activeUsersByPlan: "💎 Active Users by Plan",
+    monthlyBreakdown: "📊 Monthly Breakdown",
+    month: "Month",
+    totalDepositsTable: "Total Deposits",
+    transactions: "Transactions",
+    newUsersTable: "New Users",
+    revenue: "Revenue (1%)",
+    momGrowth: "MoM Growth",
+    noData: "No data available",
+    users: "users",
+  },
+  bn: {
+    revenueReports: "💵 রেভিনিউ রিপোর্ট",
+    totalRevenue: "মোট রেভিনিউ (৫ মাস)",
+    totalDeposits: "মোট ডিপোজিট",
+    totalTransactions: "মোট লেনদেন",
+    newUsers: "নতুন ইউজার (৫ মাস)",
+    monthlyDepositTrend: "📈 মাসিক ডিপোজিট ট্রেন্ড",
+    activeUsersByPlan: "💎 প্ল্যান অনুযায়ী অ্যাকটিভ ইউজার",
+    monthlyBreakdown: "📊 মাসিক ব্রেকডাউন",
+    month: "মাস",
+    totalDepositsTable: "মোট ডিপোজিট",
+    transactions: "লেনদেন",
+    newUsersTable: "নতুন ইউজার",
+    revenue: "রেভিনিউ (১%)",
+    momGrowth: "মাসিক বৃদ্ধি",
+    noData: "কোনো তথ্য পাওয়া যায়নি",
+    users: "জন",
+  }
+};
 
 const RevenuePage = () => {
   const dauCanvasRef = useRef(null);
@@ -44,6 +83,15 @@ const RevenuePage = () => {
   const [planValues, setPlanValues] = useState([]);
   const [planColors, setPlanColors] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState("bn");
+
+  // Load language
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
   const destroyCharts = useCallback(() => {
     if (dauChartRef.current) { dauChartRef.current.destroy(); dauChartRef.current = null; }
@@ -56,17 +104,14 @@ const RevenuePage = () => {
       const res = await axiosInstance.get("/admin/revenue", { headers: getAuthHeaders() });
       if (res.data.success) {
         const data = res.data.data;
-
-        // backend: { monthlyBreakdown, planRevenue, totalRevenue, totalDeposits }
         const mb = data.monthlyBreakdown || [];
         const planRev = data.planRevenue || [];
 
-        // stats cards — backend এ actual revenue = deposits * 1%
         setStats([
           {
             icon: "💵",
             value: formatCurrency(data.totalRevenue || 0),
-            label: "Total Revenue (5 months)",
+            label: t('totalRevenue'),
             trend: "+12%",
             trendUp: true,
             bg: "bg-primary/10",
@@ -74,7 +119,7 @@ const RevenuePage = () => {
           {
             icon: "💰",
             value: formatCurrency(data.totalDeposits || 0),
-            label: "Total Deposits",
+            label: t('totalDeposits'),
             trend: "+18%",
             trendUp: true,
             bg: "bg-blue-500/10",
@@ -82,7 +127,7 @@ const RevenuePage = () => {
           {
             icon: "📋",
             value: mb.reduce((s, m) => s + (m.depositCount || 0), 0).toLocaleString(),
-            label: "Total Transactions",
+            label: t('totalTransactions'),
             trend: "+9%",
             trendUp: true,
             bg: "bg-amber-500/10",
@@ -90,23 +135,20 @@ const RevenuePage = () => {
           {
             icon: "🆕",
             value: mb.reduce((s, m) => s + (m.newUsers || 0), 0).toLocaleString(),
-            label: "New Users (5 months)",
+            label: t('newUsers'),
             trend: "+22%",
             trendUp: true,
             bg: "bg-cyan-500/10",
           },
         ]);
 
-        // chart data — deposits per month
         setChartLabels(mb.map((m) => m.month));
         setChartDeposits(mb.map((m) => m.deposits || 0));
 
-        // plan doughnut
         setPlanLabels(planRev.map((p) => p.plan || "Unknown"));
         setPlanValues(planRev.map((p) => p.count || 0));
         setPlanColors(planRev.map((p) => getPlanColor(p.plan)));
 
-        // table — calculate MoM growth
         const formatted = mb.map((item, idx) => {
           const prev = mb[idx - 1];
           const growth =
@@ -130,14 +172,13 @@ const RevenuePage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     fetchRevenue();
     return () => destroyCharts();
   }, [fetchRevenue, destroyCharts]);
 
-  // Charts — loading শেষ হলে init
   useEffect(() => {
     if (loading) return;
     destroyCharts();
@@ -146,7 +187,6 @@ const RevenuePage = () => {
     const textColor = isDarkMode ? "#94a3b8" : "#64748b";
     const gridColor = isDarkMode ? "#1e2d3d" : "#e2e8f0";
 
-    // Monthly Deposits Bar Chart
     if (dauCanvasRef.current && chartLabels.length > 0) {
       dauChartRef.current = new Chart(dauCanvasRef.current.getContext("2d"), {
         type: "bar",
@@ -185,7 +225,6 @@ const RevenuePage = () => {
       });
     }
 
-    // Plan Doughnut Chart
     if (planCanvasRef.current && planLabels.length > 0) {
       planChartRef.current = new Chart(planCanvasRef.current.getContext("2d"), {
         type: "doughnut",
@@ -209,14 +248,14 @@ const RevenuePage = () => {
               labels: { color: textColor, font: { size: 11 }, padding: 12 },
             },
             tooltip: {
-              callbacks: { label: (c) => `${c.label}: ${c.raw} users` },
+              callbacks: { label: (c) => `${c.label}: ${c.raw} ${t('users')}` },
             },
           },
           cutout: "60%",
         },
       });
     }
-  }, [loading, chartLabels, chartDeposits, planLabels, planValues, planColors, destroyCharts]);
+  }, [loading, chartLabels, chartDeposits, planLabels, planValues, planColors, destroyCharts, lang]);
 
   if (loading) {
     return (
@@ -228,7 +267,7 @@ const RevenuePage = () => {
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-foreground mb-5">💵 Revenue Reports</h2>
+      <h2 className="text-lg font-bold text-foreground mb-5">{t('revenueReports')}</h2>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
@@ -251,18 +290,17 @@ const RevenuePage = () => {
       {/* Charts */}
       <div className="grid lg:grid-cols-2 gap-5 mb-5">
         <div className="bg-card border border-border rounded-xl p-5">
-          <div className="font-bold text-foreground mb-4">📈 Monthly Deposit Trend</div>
+          <div className="font-bold text-foreground mb-4">{t('monthlyDepositTrend')}</div>
           <div className="h-64 relative">
             <canvas ref={dauCanvasRef} />
           </div>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-5">
-          <div className="font-bold text-foreground mb-4">💎 Active Users by Plan</div>
+          <div className="font-bold text-foreground mb-4">{t('activeUsersByPlan')}</div>
           <div className="h-64 relative">
             <canvas ref={planCanvasRef} />
           </div>
-          {/* Plan legend with percentage */}
           <div className="mt-3 space-y-1">
             {planLabels.map((label, idx) => (
               <div key={idx} className="flex items-center justify-between text-xs text-foreground/60">
@@ -270,7 +308,7 @@ const RevenuePage = () => {
                   <div className="w-2.5 h-2.5 rounded-full" style={{ background: planColors[idx] }} />
                   <span className="capitalize">{label}</span>
                 </div>
-                <span>{planValues[idx]?.toLocaleString()} users</span>
+                <span>{planValues[idx]?.toLocaleString()} {t('users')}</span>
               </div>
             ))}
           </div>
@@ -280,22 +318,22 @@ const RevenuePage = () => {
       {/* Monthly Breakdown Table */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="p-4 border-b border-border">
-          <div className="font-bold text-foreground">📊 Monthly Breakdown</div>
+          <div className="font-bold text-foreground">{t('monthlyBreakdown')}</div>
         </div>
 
         {monthlyBreakdown.length === 0 ? (
-          <div className="py-12 text-center text-foreground/40 text-sm">কোনো data পাওয়া যায়নি</div>
+          <div className="py-12 text-center text-foreground/40 text-sm">{t('noData')}</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-background">
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Month</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Total Deposits</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Transactions</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">New Users</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Revenue (1%)</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">MoM Growth</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('month')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('totalDepositsTable')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('transactions')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('newUsersTable')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('revenue')}</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('momGrowth')}</th>
                 </tr>
               </thead>
               <tbody>

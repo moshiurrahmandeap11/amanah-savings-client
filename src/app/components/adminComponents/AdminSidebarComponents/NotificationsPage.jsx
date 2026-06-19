@@ -5,6 +5,90 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Bell, Send, Calendar, Edit, Settings, Loader2 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    sendNotifications: "📢 Send Notifications",
+    composeNotification: "✍️ Compose Notification",
+    targetAudience: "Target Audience",
+    notificationType: "Notification Type",
+    title: "Title",
+    message: "Message",
+    sendVia: "Send Via",
+    allMembers: "All Members",
+    goldPlatinum: "Gold & Platinum Members",
+    pendingKyc: "Pending KYC Members",
+    overdue: "Members with Overdue Payments",
+    hajj: "Members in Hajj Circles",
+    custom: "Custom Segment...",
+    general: "📢 General Announcement",
+    reminder: "⚠️ Payment Reminder",
+    milestone: "🎉 Celebration / Milestone",
+    security: "🚨 Security Alert",
+    seasonal: "🌙 Seasonal (Ramadan, Eid)",
+    notificationTitlePlaceholder: "Notification title...",
+    messagePlaceholder: "Your notification message here...",
+    inApp: "In-App",
+    sms: "SMS",
+    email: "Email",
+    push: "Push",
+    sendNow: "Send Now",
+    schedule: "Schedule",
+    recentSends: "📊 Recent Sends",
+    noRecentNotifications: "No recent notifications",
+    cmsQuickEdit: "📝 CMS Quick Edit",
+    fullCms: "Full CMS →",
+    edit: "Edit",
+    notificationSent: "✅ Notification sent successfully!",
+    titleRequired: "⚠️ Please enter a notification title",
+    messageRequired: "⚠️ Please enter a notification message",
+    failedToLoad: "Failed to load data",
+    failedToSend: "Failed to send notification",
+    schedulingSoon: "📅 Scheduling feature coming soon",
+    openingCms: "📄 Opening full CMS...",
+  },
+  bn: {
+    sendNotifications: "📢 নোটিফিকেশন পাঠান",
+    composeNotification: "✍️ নোটিফিকেশন তৈরি করুন",
+    targetAudience: "টার্গেট অডিয়েন্স",
+    notificationType: "নোটিফিকেশন টাইপ",
+    title: "টাইটেল",
+    message: "মেসেজ",
+    sendVia: "কোথায় পাঠাবেন",
+    allMembers: "সব মেম্বার",
+    goldPlatinum: "গোল্ড ও প্ল্যাটিনাম মেম্বার",
+    pendingKyc: "পেন্ডিং কেওয়াইসি মেম্বার",
+    overdue: "বকেয়া পেমেন্টযুক্ত মেম্বার",
+    hajj: "হজ্জ সার্কেলের মেম্বার",
+    custom: "কাস্টম সেগমেন্ট...",
+    general: "📢 সাধারণ ঘোষণা",
+    reminder: "⚠️ পেমেন্ট রিমাইন্ডার",
+    milestone: "🎉 উদযাপন / মাইলস্টোন",
+    security: "🚨 সিকিউরিটি অ্যালার্ট",
+    seasonal: "🌙 সিজনাল (রমজান, ঈদ)",
+    notificationTitlePlaceholder: "নোটিফিকেশন টাইটেল...",
+    messagePlaceholder: "আপনার নোটিফিকেশন মেসেজ এখানে...",
+    inApp: "ইন-অ্যাপ",
+    sms: "এসএমএস",
+    email: "ইমেইল",
+    push: "পুশ",
+    sendNow: "এখন পাঠান",
+    schedule: "শিডিউল",
+    recentSends: "📊 সাম্প্রতিক পাঠানো",
+    noRecentNotifications: "কোনো সাম্প্রতিক নোটিফিকেশন নেই",
+    cmsQuickEdit: "📝 সিএমএস কুইক এডিট",
+    fullCms: "পুরো সিএমএস →",
+    edit: "এডিট",
+    notificationSent: "✅ নোটিফিকেশন সফলভাবে পাঠানো হয়েছে!",
+    titleRequired: "⚠️ নোটিফিকেশন টাইটেল দিন",
+    messageRequired: "⚠️ নোটিফিকেশন মেসেজ দিন",
+    failedToLoad: "ডেটা লোড করতে ব্যর্থ হয়েছে",
+    failedToSend: "নোটিফিকেশন পাঠাতে ব্যর্থ হয়েছে",
+    schedulingSoon: "📅 শিডিউলিং ফিচার শীঘ্রই আসছে",
+    openingCms: "📄 পুরো সিএমএস খুলছে...",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -14,7 +98,7 @@ const NotificationsPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState(
-    "Dear Members, your monthly savings reminder is due in 3 days. Please ensure timely deposits to maintain your savings streak! 🔥",
+    "প্রিয় সদস্যবৃন্দ, আপনার মাসিক সঞ্চয় রিমাইন্ডার ৩ দিনের মধ্যে বাকি। সময়মতো ডিপোজিট করুন যাতে আপনার সঞ্চয় স্ট্রিক বজায় থাকে! 🔥"
   );
   const [audience, setAudience] = useState("all");
   const [notificationType, setNotificationType] = useState("general");
@@ -27,6 +111,15 @@ const NotificationsPage = () => {
   const [recentSends, setRecentSends] = useState([]);
   const [cmsItems, setCmsItems] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState("bn");
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -41,18 +134,18 @@ const NotificationsPage = () => {
       if (settingsRes.data.success) {
         const s = settingsRes.data.data;
         setCmsItems([
-          { icon: "🏦", label: "Platform Name", value: s.general?.platformName || "Sonchoy Bondhu" },
-          { icon: "📞", label: "Support Phone", value: s.general?.supportPhone || "01XXX-XXXXXX" },
-          { icon: "📧", label: "Support Email", value: s.general?.supportEmail || "support@amanah.bd" },
-          { icon: "💰", label: "Min Deposit", value: s.savings?.minDeposit || "৳500" },
+          { icon: "🏦", label: t('platformName') || "Platform Name", value: s.general?.platformName || "Sonchoy Bondhu" },
+          { icon: "📞", label: t('supportPhone') || "Support Phone", value: s.general?.supportPhone || "01XXX-XXXXXX" },
+          { icon: "📧", label: t('supportEmail') || "Support Email", value: s.general?.supportEmail || "support@amanah.bd" },
+          { icon: "💰", label: t('minDeposit') || "Min Deposit", value: s.savings?.minDeposit || "৳500" },
         ]);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to load data");
+      showToast(t('failedToLoad'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   useEffect(() => {
     fetchLogs();
@@ -65,11 +158,11 @@ const NotificationsPage = () => {
 
   const sendNotification = async () => {
     if (!title) {
-      showToast("⚠️ Please enter a notification title");
+      showToast(t('titleRequired'));
       return;
     }
     if (!message) {
-      showToast("⚠️ Please enter a notification message");
+      showToast(t('messageRequired'));
       return;
     }
     try {
@@ -91,12 +184,12 @@ const NotificationsPage = () => {
         { headers: getAuthHeaders() }
       );
       if (res.data.success) {
-        showToast("✅ Notification sent successfully!");
+        showToast(t('notificationSent'));
         setTitle("");
         fetchLogs();
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to send notification");
+      showToast(err.response?.data?.message || t('failedToSend'));
     }
   };
 
@@ -105,14 +198,14 @@ const NotificationsPage = () => {
   };
 
   const handleEditCMS = (item) => {
-    showToast(`✏️ Editing ${item.label}...`);
+    showToast(`${t('edit')} ${item.label}...`);
   };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-5">
         <h2 className="text-lg font-bold text-foreground">
-          📢 Send Notifications
+          {t('sendNotifications')}
         </h2>
       </div>
 
@@ -126,57 +219,57 @@ const NotificationsPage = () => {
         {/* Left Column - Compose Notification */}
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="font-bold text-foreground mb-4">
-            ✍️ Compose Notification
+            {t('composeNotification')}
           </div>
 
           <div className="space-y-4">
             {/* Target Audience */}
             <div>
               <label className="block text-xs font-semibold text-foreground/70 mb-1">
-                Target Audience
+                {t('targetAudience')}
               </label>
               <select
                 value={audience}
                 onChange={(e) => setAudience(e.target.value)}
                 className="w-full p-2.5 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
               >
-                <option value="all">All Members</option>
-                <option value="gold_platinum">Gold & Platinum Members</option>
-                <option value="pending_kyc">Pending KYC Members</option>
-                <option value="overdue">Members with Overdue Payments</option>
-                <option value="hajj">Members in Hajj Circles</option>
-                <option value="custom">Custom Segment...</option>
+                <option value="all">{t('allMembers')}</option>
+                <option value="gold_platinum">{t('goldPlatinum')}</option>
+                <option value="pending_kyc">{t('pendingKyc')}</option>
+                <option value="overdue">{t('overdue')}</option>
+                <option value="hajj">{t('hajj')}</option>
+                <option value="custom">{t('custom')}</option>
               </select>
             </div>
 
             {/* Notification Type */}
             <div>
               <label className="block text-xs font-semibold text-foreground/70 mb-1">
-                Notification Type
+                {t('notificationType')}
               </label>
               <select
                 value={notificationType}
                 onChange={(e) => setNotificationType(e.target.value)}
                 className="w-full p-2.5 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
               >
-                <option value="general">📢 General Announcement</option>
-                <option value="reminder">⚠️ Payment Reminder</option>
-                <option value="milestone">🎉 Celebration / Milestone</option>
-                <option value="security">🚨 Security Alert</option>
-                <option value="seasonal">🌙 Seasonal (Ramadan, Eid)</option>
+                <option value="general">{t('general')}</option>
+                <option value="reminder">{t('reminder')}</option>
+                <option value="milestone">{t('milestone')}</option>
+                <option value="security">{t('security')}</option>
+                <option value="seasonal">{t('seasonal')}</option>
               </select>
             </div>
 
             {/* Title */}
             <div>
               <label className="block text-xs font-semibold text-foreground/70 mb-1">
-                Title
+                {t('title')}
               </label>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Notification title..."
+                placeholder={t('notificationTitlePlaceholder')}
                 className="w-full p-2.5 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm"
               />
             </div>
@@ -184,13 +277,13 @@ const NotificationsPage = () => {
             {/* Message */}
             <div>
               <label className="block text-xs font-semibold text-foreground/70 mb-1">
-                Message
+                {t('message')}
               </label>
               <textarea
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={4}
-                placeholder="Your notification message here..."
+                placeholder={t('messagePlaceholder')}
                 className="w-full p-2.5 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary transition text-sm resize-none"
               />
             </div>
@@ -198,7 +291,7 @@ const NotificationsPage = () => {
             {/* Send Via */}
             <div>
               <label className="block text-xs font-semibold text-foreground/70 mb-1">
-                Send Via
+                {t('sendVia')}
               </label>
               <div className="flex flex-wrap gap-4">
                 <label className="flex items-center gap-2 text-sm text-foreground/70 cursor-pointer">
@@ -208,7 +301,7 @@ const NotificationsPage = () => {
                     onChange={() => handleCheckboxChange("inApp")}
                     className="w-4 h-4 rounded border-border accent-primary"
                   />
-                  In-App
+                  {t('inApp')}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-foreground/70 cursor-pointer">
                   <input
@@ -217,7 +310,7 @@ const NotificationsPage = () => {
                     onChange={() => handleCheckboxChange("sms")}
                     className="w-4 h-4 rounded border-border accent-primary"
                   />
-                  SMS
+                  {t('sms')}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-foreground/70 cursor-pointer">
                   <input
@@ -226,7 +319,7 @@ const NotificationsPage = () => {
                     onChange={() => handleCheckboxChange("email")}
                     className="w-4 h-4 rounded border-border accent-primary"
                   />
-                  Email
+                  {t('email')}
                 </label>
                 <label className="flex items-center gap-2 text-sm text-foreground/70 cursor-pointer">
                   <input
@@ -235,7 +328,7 @@ const NotificationsPage = () => {
                     onChange={() => handleCheckboxChange("push")}
                     className="w-4 h-4 rounded border-border accent-primary"
                   />
-                  Push
+                  {t('push')}
                 </label>
               </div>
             </div>
@@ -246,13 +339,13 @@ const NotificationsPage = () => {
                 onClick={sendNotification}
                 className="flex-1 py-2.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-sm font-semibold flex items-center justify-center gap-2"
               >
-                <Send size={14} /> Send Now
+                <Send size={14} /> {t('sendNow')}
               </button>
               <button
-                onClick={() => showToast("📅 Scheduling feature coming soon")}
+                onClick={() => showToast(t('schedulingSoon'))}
                 className="px-5 py-2.5 rounded-lg border border-border text-foreground/70 text-sm font-semibold hover:border-primary transition"
               >
-                Schedule
+                {t('schedule')}
               </button>
             </div>
           </div>
@@ -263,12 +356,12 @@ const NotificationsPage = () => {
           {/* Recent Sends */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="font-bold text-foreground mb-4">
-              📊 Recent Sends
+              {t('recentSends')}
             </div>
             <div className="space-y-3">
               {recentSends.length === 0 ? (
                 <div className="text-sm text-foreground/50 text-center py-4">
-                  No recent notifications
+                  {t('noRecentNotifications')}
                 </div>
               ) : (
                 recentSends.map((send, idx) => (
@@ -294,12 +387,12 @@ const NotificationsPage = () => {
           {/* CMS Quick Edit */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
-              <div className="font-bold text-foreground">📝 CMS Quick Edit</div>
+              <div className="font-bold text-foreground">{t('cmsQuickEdit')}</div>
               <button
-                onClick={() => showToast("📄 Opening full CMS...")}
+                onClick={() => showToast(t('openingCms'))}
                 className="text-xs text-primary font-semibold hover:underline"
               >
-                Full CMS →
+                {t('fullCms')}
               </button>
             </div>
             <div className="space-y-2">
@@ -319,7 +412,7 @@ const NotificationsPage = () => {
                     onClick={() => handleEditCMS(item)}
                     className="px-2 py-1 rounded-lg text-xs font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition"
                   >
-                    Edit
+                    {t('edit')}
                   </button>
                 </div>
               ))}

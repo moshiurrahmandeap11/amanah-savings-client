@@ -31,6 +31,350 @@ import useAuth from "../../hooks/useAuth";
 import axiosInstance from "../shared/AxiosInstance/AxiosInstance";
 import Image from "next/image";
 
+// Translations
+const translations = {
+  en: {
+    // Page Header
+    loadingProfile: "Loading profile...",
+    userNotFound: "User not found",
+    loginToView: "Please login to view your profile",
+    editProfile: "Edit Profile",
+    save: "Save",
+    cancel: "Cancel",
+    member: "Member",
+    kycVerified: "KYC Verified",
+    changeProfilePicture: "Change profile picture",
+    deleteProfilePicture: "Delete profile picture",
+    
+    // Tabs
+    personalInfo: "Personal Info",
+    address: "Address",
+    nominee: "Nominee",
+    financial: "Financial",
+    kycStatus: "KYC Status",
+    security: "Security",
+    
+    // Personal Info
+    personalInformation: "Personal Information",
+    firstName: "First Name",
+    lastName: "Last Name",
+    email: "Email",
+    phone: "Phone",
+    dateOfBirth: "Date of Birth",
+    gender: "Gender",
+    selectGender: "Select",
+    male: "Male",
+    female: "Female",
+    other: "Other",
+    preferNotSay: "Prefer not to say",
+    notSpecified: "Not specified",
+    occupation: "Occupation",
+    selectOccupation: "Select Occupation",
+    student: "Student",
+    govtEmployee: "Govt. Employee",
+    privateEmployee: "Private Employee",
+    businessOwner: "Business Owner",
+    freelancer: "Freelancer",
+    homemaker: "Homemaker",
+    farmer: "Farmer",
+    engineer: "Engineer",
+    doctor: "Doctor",
+    teacher: "Teacher",
+    monthlyIncome: "Monthly Income",
+    selectIncome: "Select Income Range",
+    below10k: "Below ৳10,000",
+    range10_25k: "৳10,000 – ৳25,000",
+    range25_50k: "৳25,000 – ৳50,000",
+    range50_100k: "৳50,000 – ৳1,00,000",
+    above100k: "Above ৳1,00,000",
+    preferNotSayIncome: "Prefer not to say",
+    
+    // Address
+    addressInformation: "Address Information",
+    division: "Division",
+    district: "District",
+    upazila: "Upazila / Area",
+    village: "Village / Area / Street",
+    postOffice: "Post Office",
+    postCode: "Post Code",
+    
+    // Nominee
+    nomineeInformation: "Nominee Information",
+    nomineeFirstName: "Nominee First Name",
+    nomineeLastName: "Nominee Last Name",
+    relationship: "Relationship",
+    selectRelationship: "Select Relationship",
+    spouse: "Spouse",
+    father: "Father",
+    mother: "Mother",
+    son: "Son",
+    daughter: "Daughter",
+    brother: "Brother",
+    sister: "Sister",
+    nomineePhone: "Nominee Phone",
+    nomineeNid: "Nominee NID",
+    shareOfSavings: "Share of Savings (%)",
+    fullSavings: "100% — Full savings",
+    
+    // Financial
+    financialInformation: "Financial Information",
+    savingsPlan: "Savings Plan",
+    notSelected: "Not selected",
+    goalType: "Goal Type",
+    notSet: "Not set",
+    targetAmount: "Target Amount",
+    monthlyDeposit: "Monthly Deposit",
+    duration: "Duration",
+    months: "months",
+    currentSaved: "Current Saved",
+    progress: "Progress",
+    paymentMethod: "Payment Method",
+    method: "Method",
+    walletNumber: "Wallet Number",
+    accountName: "Account Name",
+    bankName: "Bank Name",
+    accountNumber: "Account Number",
+    
+    // KYC
+    kycInformation: "KYC Status",
+    nidNumber: "NID Number",
+    notProvided: "Not provided",
+    kycUnderReview: "⏳ Your KYC is under review. Our team will verify within 4 hours.",
+    kycVerifiedMsg: "✓ Your KYC has been verified. Your account is fully active.",
+    pending: "pending",
+    verified: "verified",
+    
+    // Security
+    securitySettings: "Security Settings",
+    changePassword: "Change Password",
+    updatePassword: "Update your account password",
+    changeTransactionPin: "Change Transaction PIN",
+    updateTransactionPin: "Update your 6-digit transaction PIN",
+    
+    // Modals
+    changePasswordTitle: "Change Password",
+    currentPassword: "Current Password",
+    newPassword: "New Password",
+    confirmNewPassword: "Confirm New Password",
+    updatePasswordBtn: "Update Password",
+    changePinTitle: "Change Transaction PIN",
+    currentPin: "Current PIN",
+    newPin: "New PIN",
+    confirmNewPin: "Confirm New PIN",
+    updatePinBtn: "Update PIN",
+    pinPlaceholder: "6-digit PIN",
+    
+    // Validation
+    firstNameRequired: "First name is required",
+    phoneRequired: "Phone number is required",
+    dobRequired: "Date of birth is required",
+    occupationRequired: "Occupation is required",
+    incomeRequired: "Income range is required",
+    nomineeFirstNameRequired: "Nominee first name is required",
+    nomineeRelationRequired: "Nominee relation is required",
+    nomineePhoneRequired: "Nominee phone is required",
+    validationError: "Validation Error",
+    fillRequiredFields: "Please fill all required fields",
+    passwordsDoNotMatch: "New passwords do not match",
+    passwordMinLength: "Password must be at least 8 characters",
+    pinsDoNotMatch: "New PINs do not match",
+    pinMustBe6Digits: "PIN must be 6 digits",
+    
+    // File Upload
+    invalidFile: "Invalid File",
+    selectValidImage: "Please select a valid image file (JPEG, PNG, WEBP)",
+    fileTooLarge: "File Too Large",
+    imageSizeLimit: "Image size should be less than 2MB",
+    profilePictureUpdated: "Profile picture updated successfully",
+    profilePictureDeleted: "Profile picture has been removed",
+    uploadFailed: "Failed to upload image",
+    deleteFailed: "Failed to delete image",
+    somethingWentWrong: "Something went wrong. Please try again.",
+    
+    // Delete Confirmation
+    deleteProfilePictureTitle: "Delete Profile Picture?",
+    deleteProfilePictureConfirm: "Are you sure you want to delete your profile picture?",
+    yesDelete: "Yes, delete it",
+    
+    // Alerts
+    success: "Success!",
+    error: "Error",
+    failed: "Failed",
+    deleted: "Deleted!",
+    ok: "OK",
+  },
+  bn: {
+    // Page Header
+    loadingProfile: "প্রোফাইল লোড হচ্ছে...",
+    userNotFound: "ব্যবহারকারী পাওয়া যায়নি",
+    loginToView: "আপনার প্রোফাইল দেখতে লগইন করুন",
+    editProfile: "প্রোফাইল সম্পাদনা",
+    save: "সংরক্ষণ",
+    cancel: "বাতিল",
+    member: "সদস্য",
+    kycVerified: "কেওয়াইসি যাচাইকৃত",
+    changeProfilePicture: "প্রোফাইল ছবি পরিবর্তন",
+    deleteProfilePicture: "প্রোফাইল ছবি মুছুন",
+    
+    // Tabs
+    personalInfo: "ব্যক্তিগত তথ্য",
+    address: "ঠিকানা",
+    nominee: "উত্তরাধিকারী",
+    financial: "আর্থিক",
+    kycStatus: "কেওয়াইসি অবস্থা",
+    security: "নিরাপত্তা",
+    
+    // Personal Info
+    personalInformation: "ব্যক্তিগত তথ্য",
+    firstName: "নামের প্রথম অংশ",
+    lastName: "নামের শেষ অংশ",
+    email: "ইমেইল",
+    phone: "ফোন",
+    dateOfBirth: "জন্ম তারিখ",
+    gender: "লিঙ্গ",
+    selectGender: "নির্বাচন করুন",
+    male: "পুরুষ",
+    female: "মহিলা",
+    other: "অন্যান্য",
+    preferNotSay: "উত্তর দিতে চাই না",
+    notSpecified: "উল্লেখ করা হয়নি",
+    occupation: "পেশা",
+    selectOccupation: "পেশা নির্বাচন",
+    student: "ছাত্র",
+    govtEmployee: "সরকারি কর্মচারী",
+    privateEmployee: "বেসরকারি কর্মচারী",
+    businessOwner: "ব্যবসায়ী",
+    freelancer: "ফ্রিল্যান্সার",
+    homemaker: "গৃহিণী",
+    farmer: "কৃষক",
+    engineer: "ইঞ্জিনিয়ার",
+    doctor: "ডাক্তার",
+    teacher: "শিক্ষক",
+    monthlyIncome: "মাসিক আয়",
+    selectIncome: "আয়ের পরিসর নির্বাচন",
+    below10k: "৳১০,০০০ এর নিচে",
+    range10_25k: "৳১০,০০০ – ৳২৫,০০০",
+    range25_50k: "৳২৫,০০০ – ৳৫০,০০০",
+    range50_100k: "৳৫০,০০০ – ৳১,০০,০০০",
+    above100k: "৳১,০০,০০০ এর উপরে",
+    preferNotSayIncome: "উত্তর দিতে চাই না",
+    
+    // Address
+    addressInformation: "ঠিকানার তথ্য",
+    division: "বিভাগ",
+    district: "জেলা",
+    upazila: "উপজেলা / এলাকা",
+    village: "গ্রাম / এলাকা / রাস্তা",
+    postOffice: "পোস্ট অফিস",
+    postCode: "পোস্ট কোড",
+    
+    // Nominee
+    nomineeInformation: "উত্তরাধিকারী তথ্য",
+    nomineeFirstName: "উত্তরাধিকারীর নামের প্রথম অংশ",
+    nomineeLastName: "উত্তরাধিকারীর নামের শেষ অংশ",
+    relationship: "সম্পর্ক",
+    selectRelationship: "সম্পর্ক নির্বাচন",
+    spouse: "স্বামী/স্ত্রী",
+    father: "পিতা",
+    mother: "মাতা",
+    son: "পুত্র",
+    daughter: "কন্যা",
+    brother: "ভাই",
+    sister: "বোন",
+    nomineePhone: "উত্তরাধিকারীর ফোন",
+    nomineeNid: "উত্তরাধিকারীর এনআইডি",
+    shareOfSavings: "সঞ্চয়ের ভাগ (%)",
+    fullSavings: "১০০% — সম্পূর্ণ সঞ্চয়",
+    
+    // Financial
+    financialInformation: "আর্থিক তথ্য",
+    savingsPlan: "সঞ্চয় পরিকল্পনা",
+    notSelected: "নির্বাচিত নয়",
+    goalType: "লক্ষ্যের ধরন",
+    notSet: "নির্ধারিত নয়",
+    targetAmount: "লক্ষ্যমাত্রা",
+    monthlyDeposit: "মাসিক জমা",
+    duration: "মেয়াদ",
+    months: "মাস",
+    currentSaved: "বর্তমান সঞ্চয়",
+    progress: "অগ্রগতি",
+    paymentMethod: "পেমেন্ট পদ্ধতি",
+    method: "পদ্ধতি",
+    walletNumber: "ওয়ালেট নম্বর",
+    accountName: "অ্যাকাউন্টের নাম",
+    bankName: "ব্যাংকের নাম",
+    accountNumber: "অ্যাকাউন্ট নম্বর",
+    
+    // KYC
+    kycInformation: "কেওয়াইসি অবস্থা",
+    nidNumber: "এনআইডি নম্বর",
+    notProvided: "প্রদান করা হয়নি",
+    kycUnderReview: "⏳ আপনার কেওয়াইসি পর্যালোচনাধীন। আমাদের টিম ৪ ঘন্টার মধ্যে যাচাই করবে।",
+    kycVerifiedMsg: "✓ আপনার কেওয়াইসি যাচাই করা হয়েছে। আপনার অ্যাকাউন্ট সম্পূর্ণ সক্রিয়।",
+    pending: "প্রক্রিয়াধীন",
+    verified: "যাচাইকৃত",
+    
+    // Security
+    securitySettings: "নিরাপত্তা সেটিংস",
+    changePassword: "পাসওয়ার্ড পরিবর্তন",
+    updatePassword: "আপনার অ্যাকাউন্টের পাসওয়ার্ড আপডেট করুন",
+    changeTransactionPin: "ট্রানজেকশন পিন পরিবর্তন",
+    updateTransactionPin: "আপনার ৬-অঙ্কের ট্রানজেকশন পিন আপডেট করুন",
+    
+    // Modals
+    changePasswordTitle: "পাসওয়ার্ড পরিবর্তন",
+    currentPassword: "বর্তমান পাসওয়ার্ড",
+    newPassword: "নতুন পাসওয়ার্ড",
+    confirmNewPassword: "নতুন পাসওয়ার্ড নিশ্চিত করুন",
+    updatePasswordBtn: "পাসওয়ার্ড আপডেট করুন",
+    changePinTitle: "ট্রানজেকশন পিন পরিবর্তন",
+    currentPin: "বর্তমান পিন",
+    newPin: "নতুন পিন",
+    confirmNewPin: "নতুন পিন নিশ্চিত করুন",
+    updatePinBtn: "পিন আপডেট করুন",
+    pinPlaceholder: "৬-অঙ্কের পিন",
+    
+    // Validation
+    firstNameRequired: "নামের প্রথম অংশ প্রয়োজন",
+    phoneRequired: "ফোন নম্বর প্রয়োজন",
+    dobRequired: "জন্ম তারিখ প্রয়োজন",
+    occupationRequired: "পেশা প্রয়োজন",
+    incomeRequired: "আয়ের পরিসর প্রয়োজন",
+    nomineeFirstNameRequired: "উত্তরাধিকারীর নামের প্রথম অংশ প্রয়োজন",
+    nomineeRelationRequired: "উত্তরাধিকারীর সম্পর্ক প্রয়োজন",
+    nomineePhoneRequired: "উত্তরাধিকারীর ফোন প্রয়োজন",
+    validationError: "যাচাই ত্রুটি",
+    fillRequiredFields: "সব প্রয়োজনীয় ঘর পূরণ করুন",
+    passwordsDoNotMatch: "নতুন পাসওয়ার্ড মিলছে না",
+    passwordMinLength: "পাসওয়ার্ড কমপক্ষে ৮ অক্ষরের হতে হবে",
+    pinsDoNotMatch: "নতুন পিন মিলছে না",
+    pinMustBe6Digits: "পিন ৬ অঙ্কের হতে হবে",
+    
+    // File Upload
+    invalidFile: "অবৈধ ফাইল",
+    selectValidImage: "দয়া করে একটি বৈধ ইমেজ ফাইল নির্বাচন করুন (JPEG, PNG, WEBP)",
+    fileTooLarge: "ফাইল খুব বড়",
+    imageSizeLimit: "ইমেজের আকার ২MB এর কম হওয়া উচিত",
+    profilePictureUpdated: "প্রোফাইল ছবি সফলভাবে আপডেট করা হয়েছে",
+    profilePictureDeleted: "প্রোফাইল ছবি সরানো হয়েছে",
+    uploadFailed: "ছবি আপলোড করতে ব্যর্থ হয়েছে",
+    deleteFailed: "ছবি মুছতে ব্যর্থ হয়েছে",
+    somethingWentWrong: "কিছু ভুল হয়েছে। আবার চেষ্টা করুন।",
+    
+    // Delete Confirmation
+    deleteProfilePictureTitle: "প্রোফাইল ছবি মুছবেন?",
+    deleteProfilePictureConfirm: "আপনি কি নিশ্চিত যে আপনার প্রোফাইল ছবি মুছতে চান?",
+    yesDelete: "হ্যাঁ, মুছুন",
+    
+    // Alerts
+    success: "সফল!",
+    error: "ত্রুটি",
+    failed: "ব্যর্থ",
+    deleted: "মুছে ফেলা হয়েছে!",
+    ok: "ঠিক আছে",
+  }
+};
+
 const UserProfilePage = () => {
   const {
     user,
@@ -48,6 +392,7 @@ const UserProfilePage = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [showPinModal, setShowPinModal] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [lang, setLang] = useState("bn");
   const fileInputRef = useRef(null);
 
   const [passwordData, setPasswordData] = useState({
@@ -86,6 +431,22 @@ const UserProfilePage = () => {
     nomineeShare: "",
   });
   const [errors, setErrors] = useState({});
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
+    // Theme handling would go here
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -132,7 +493,7 @@ const UserProfilePage = () => {
       text: message,
       icon: type,
       confirmButtonColor: "#059669",
-      confirmButtonText: "OK",
+      confirmButtonText: t('ok'),
     });
   };
 
@@ -143,24 +504,24 @@ const UserProfilePage = () => {
 
   const validateProfileForm = () => {
     const newErrors = {};
-    if (!formData.firstName) newErrors.firstName = "First name is required";
-    if (!formData.phone) newErrors.phone = "Phone number is required";
-    if (!formData.dob) newErrors.dob = "Date of birth is required";
-    if (!formData.occupation) newErrors.occupation = "Occupation is required";
-    if (!formData.income) newErrors.income = "Income range is required";
+    if (!formData.firstName) newErrors.firstName = t('firstNameRequired');
+    if (!formData.phone) newErrors.phone = t('phoneRequired');
+    if (!formData.dob) newErrors.dob = t('dobRequired');
+    if (!formData.occupation) newErrors.occupation = t('occupationRequired');
+    if (!formData.income) newErrors.income = t('incomeRequired');
     if (!formData.nomineeFirstName)
-      newErrors.nomineeFirstName = "Nominee first name is required";
+      newErrors.nomineeFirstName = t('nomineeFirstNameRequired');
     if (!formData.nomineeRelation)
-      newErrors.nomineeRelation = "Nominee relation is required";
+      newErrors.nomineeRelation = t('nomineeRelationRequired');
     if (!formData.nomineePhone)
-      newErrors.nomineePhone = "Nominee phone is required";
+      newErrors.nomineePhone = t('nomineePhoneRequired');
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSaveProfile = async () => {
     if (!validateProfileForm()) {
-      showAlert("Validation Error", "Please fill all required fields", "error");
+      showAlert(t('validationError'), t('fillRequiredFields'), "error");
       return;
     }
 
@@ -189,11 +550,11 @@ const UserProfilePage = () => {
 
   const handleChangePassword = async () => {
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      showAlert("Error", "New passwords do not match", "error");
+      showAlert(t('error'), t('passwordsDoNotMatch'), "error");
       return;
     }
     if (passwordData.newPassword.length < 8) {
-      showAlert("Error", "Password must be at least 8 characters", "error");
+      showAlert(t('error'), t('passwordMinLength'), "error");
       return;
     }
 
@@ -213,11 +574,11 @@ const UserProfilePage = () => {
 
   const handleChangePin = async () => {
     if (pinData.newPin !== pinData.confirmPin) {
-      showAlert("Error", "New PINs do not match", "error");
+      showAlert(t('error'), t('pinsDoNotMatch'), "error");
       return;
     }
     if (!/^\d{6}$/.test(pinData.newPin)) {
-      showAlert("Error", "PIN must be 6 digits", "error");
+      showAlert(t('error'), t('pinMustBe6Digits'), "error");
       return;
     }
 
@@ -245,8 +606,8 @@ const UserProfilePage = () => {
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       showAlert(
-        "Invalid File",
-        "Please select a valid image file (JPEG, PNG, WEBP)",
+        t('invalidFile'),
+        t('selectValidImage'),
         "error",
       );
       return;
@@ -255,8 +616,8 @@ const UserProfilePage = () => {
     // Validate file size (max 2MB)
     if (file.size > 2 * 1024 * 1024) {
       showAlert(
-        "File Too Large",
-        "Image size should be less than 2MB",
+        t('fileTooLarge'),
+        t('imageSizeLimit'),
         "error",
       );
       return;
@@ -268,21 +629,21 @@ const UserProfilePage = () => {
       const result = await uploadProfilePicture(file);
       if (result.success) {
         showAlert(
-          "Success!",
-          "Profile picture updated successfully",
+          t('success'),
+          t('profilePictureUpdated'),
           "success",
         );
-        await getCurrentUser(); // Refresh user data
+        await getCurrentUser();
       } else {
         showAlert(
-          "Failed",
-          result.message || "Failed to upload image",
+          t('failed'),
+          result.message || t('uploadFailed'),
           "error",
         );
       }
     } catch (error) {
       console.error("Upload error:", error);
-      showAlert("Error", "Something went wrong. Please try again.", "error");
+      showAlert(t('error'), t('somethingWentWrong'), "error");
     } finally {
       setUploadingImage(false);
       if (fileInputRef.current) {
@@ -293,14 +654,14 @@ const UserProfilePage = () => {
 
   const handleDeleteProfilePicture = async () => {
     const result = await Swal.fire({
-      title: "Delete Profile Picture?",
-      text: "Are you sure you want to delete your profile picture?",
+      title: t('deleteProfilePictureTitle'),
+      text: t('deleteProfilePictureConfirm'),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#059669",
-      confirmButtonText: "Yes, delete it",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t('yesDelete'),
+      cancelButtonText: t('cancel'),
     });
 
     if (result.isConfirmed) {
@@ -308,18 +669,18 @@ const UserProfilePage = () => {
       try {
         const deleteResult = await deleteProfilePicture();
         if (deleteResult.success) {
-          showAlert("Deleted!", "Profile picture has been removed", "success");
-          await getCurrentUser(); // Refresh user data
+          showAlert(t('deleted'), t('profilePictureDeleted'), "success");
+          await getCurrentUser();
         } else {
           showAlert(
-            "Failed",
-            deleteResult.message || "Failed to delete image",
+            t('failed'),
+            deleteResult.message || t('deleteFailed'),
             "error",
           );
         }
       } catch (error) {
         console.error("Delete error:", error);
-        showAlert("Error", "Something went wrong. Please try again.", "error");
+        showAlert(t('error'), t('somethingWentWrong'), "error");
       } finally {
         setUploadingImage(false);
       }
@@ -328,7 +689,7 @@ const UserProfilePage = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString("bn-BD");
+    return new Date(dateString).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US');
   };
 
   const formatCurrency = (amount) => {
@@ -341,7 +702,7 @@ const UserProfilePage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-foreground/60">Loading profile...</p>
+          <p className="text-foreground/60">{t('loadingProfile')}</p>
         </div>
       </div>
     );
@@ -353,10 +714,10 @@ const UserProfilePage = () => {
         <div className="text-center">
           <div className="text-6xl mb-4">😕</div>
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            User not found
+            {t('userNotFound')}
           </h2>
           <p className="text-foreground/60 mb-4">
-            Please login to view your profile
+            {t('loginToView')}
           </p>
         </div>
       </div>
@@ -365,12 +726,12 @@ const UserProfilePage = () => {
 
   // Tab configuration
   const tabs = [
-    { id: "profile", label: "Personal Info", icon: User },
-    { id: "address", label: "Address", icon: MapPin },
-    { id: "nominee", label: "Nominee", icon: Users },
-    { id: "financial", label: "Financial", icon: DollarSign },
-    { id: "kyc", label: "KYC Status", icon: Shield },
-    { id: "security", label: "Security", icon: Lock },
+    { id: "profile", label: t('personalInfo'), icon: User },
+    { id: "address", label: t('address'), icon: MapPin },
+    { id: "nominee", label: t('nominee'), icon: Users },
+    { id: "financial", label: t('financial'), icon: DollarSign },
+    { id: "kyc", label: t('kycStatus'), icon: Shield },
+    { id: "security", label: t('security'), icon: Lock },
   ];
 
   return (
@@ -406,7 +767,7 @@ const UserProfilePage = () => {
                     onClick={handleFileSelect}
                     disabled={uploadingImage}
                     className="absolute bottom-0 right-0 p-1.5 bg-primary rounded-full text-white hover:bg-primary-light transition disabled:opacity-50"
-                    aria-label="Change profile picture"
+                    aria-label={t('changeProfilePicture')}
                   >
                     {uploadingImage ? (
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -431,7 +792,7 @@ const UserProfilePage = () => {
                     onClick={handleDeleteProfilePicture}
                     disabled={uploadingImage}
                     className="absolute -top-1 -right-1 p-1 bg-red-500 rounded-full text-white hover:bg-red-600 transition disabled:opacity-50"
-                    aria-label="Delete profile picture"
+                    aria-label={t('deleteProfilePicture')}
                   >
                     <Trash2 size={12} />
                   </button>
@@ -444,10 +805,10 @@ const UserProfilePage = () => {
                 </h1>
                 <p className="text-foreground/60 flex items-center gap-2 mt-1">
                   <User size={14} />{" "}
-                  {user.role === "user" ? "Member" : user.role}
+                  {user.role === "user" ? t('member') : user.role}
                   {user.kyc?.status === "verified" && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500/10 text-green-500 rounded-full text-xs">
-                      <Shield size={10} /> KYC Verified
+                      <Shield size={10} /> {t('kycVerified')}
                     </span>
                   )}
                 </p>
@@ -459,7 +820,7 @@ const UserProfilePage = () => {
                   onClick={() => setEditMode(true)}
                   className="px-4 py-2 bg-primary text-white rounded-xl font-semibold hover:opacity-90 transition flex items-center gap-2"
                 >
-                  <Edit2 size={16} /> Edit Profile
+                  <Edit2 size={16} /> {t('editProfile')}
                 </button>
               ) : (
                 <>
@@ -467,7 +828,7 @@ const UserProfilePage = () => {
                     onClick={handleSaveProfile}
                     className="px-4 py-2 bg-green-500 text-white rounded-xl font-semibold hover:opacity-90 transition flex items-center gap-2"
                   >
-                    <Save size={16} /> Save
+                    <Save size={16} /> {t('save')}
                   </button>
                   <button
                     onClick={() => {
@@ -500,7 +861,7 @@ const UserProfilePage = () => {
                     }}
                     className="px-4 py-2 border border-border rounded-xl font-semibold text-foreground/70 hover:border-red-500 hover:text-red-500 transition flex items-center gap-2"
                   >
-                    <X size={16} /> Cancel
+                    <X size={16} /> {t('cancel')}
                   </button>
                 </>
               )}
@@ -539,52 +900,57 @@ const UserProfilePage = () => {
           {activeTab === "profile" && (
             <div>
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <User size={20} /> Personal Information
+                <User size={20} /> {t('personalInformation')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InfoField
-                  label="First Name"
+                  label={t('firstName')}
                   value={formData.firstName}
                   field="firstName"
                   editMode={editMode}
                   onChange={handleInputChange}
                   error={errors.firstName}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Last Name"
+                  label={t('lastName')}
                   value={formData.lastName}
                   field="lastName"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Email"
+                  label={t('email')}
                   value={formData.email}
                   field="email"
                   type="email"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Phone"
+                  label={t('phone')}
                   value={formData.phone}
                   field="phone"
                   editMode={editMode}
                   onChange={handleInputChange}
                   error={errors.phone}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Date of Birth"
+                  label={t('dateOfBirth')}
                   value={formData.dob}
                   field="dob"
                   type="date"
                   editMode={editMode}
                   onChange={handleInputChange}
                   error={errors.dob}
+                  lang={lang}
                 />
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Gender
+                    {t('gender')}
                   </label>
                   {editMode ? (
                     <select
@@ -594,21 +960,21 @@ const UserProfilePage = () => {
                       }
                       className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
                     >
-                      <option value="">Select</option>
-                      <option>Male</option>
-                      <option>Female</option>
-                      <option>Other</option>
-                      <option>Prefer not to say</option>
+                      <option value="">{t('selectGender')}</option>
+                      <option>{t('male')}</option>
+                      <option>{t('female')}</option>
+                      <option>{t('other')}</option>
+                      <option>{t('preferNotSay')}</option>
                     </select>
                   ) : (
                     <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
-                      {formData.gender || "Not specified"}
+                      {formData.gender || t('notSpecified')}
                     </p>
                   )}
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Occupation *
+                    {t('occupation')} *
                   </label>
                   {editMode ? (
                     <select
@@ -620,22 +986,22 @@ const UserProfilePage = () => {
                         errors.occupation ? "border-red-500" : "border-border"
                       } bg-background text-foreground outline-none focus:border-primary`}
                     >
-                      <option value="">Select Occupation</option>
-                      <option>Student</option>
-                      <option>Govt. Employee</option>
-                      <option>Private Employee</option>
-                      <option>Business Owner</option>
-                      <option>Freelancer</option>
-                      <option>Homemaker</option>
-                      <option>Farmer</option>
-                      <option>Engineer</option>
-                      <option>Doctor</option>
-                      <option>Teacher</option>
-                      <option>Other</option>
+                      <option value="">{t('selectOccupation')}</option>
+                      <option>{t('student')}</option>
+                      <option>{t('govtEmployee')}</option>
+                      <option>{t('privateEmployee')}</option>
+                      <option>{t('businessOwner')}</option>
+                      <option>{t('freelancer')}</option>
+                      <option>{t('homemaker')}</option>
+                      <option>{t('farmer')}</option>
+                      <option>{t('engineer')}</option>
+                      <option>{t('doctor')}</option>
+                      <option>{t('teacher')}</option>
+                      <option>{t('other')}</option>
                     </select>
                   ) : (
                     <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
-                      {formData.occupation || "Not specified"}
+                      {formData.occupation || t('notSpecified')}
                     </p>
                   )}
                   {errors.occupation && (
@@ -646,7 +1012,7 @@ const UserProfilePage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Monthly Income *
+                    {t('monthlyIncome')} *
                   </label>
                   {editMode ? (
                     <select
@@ -658,17 +1024,17 @@ const UserProfilePage = () => {
                         errors.income ? "border-red-500" : "border-border"
                       } bg-background text-foreground outline-none focus:border-primary`}
                     >
-                      <option value="">Select Income Range</option>
-                      <option>Below ৳10,000</option>
-                      <option>৳10,000 – ৳25,000</option>
-                      <option>৳25,000 – ৳50,000</option>
-                      <option>৳50,000 – ৳1,00,000</option>
-                      <option>Above ৳1,00,000</option>
-                      <option>Prefer not to say</option>
+                      <option value="">{t('selectIncome')}</option>
+                      <option>{t('below10k')}</option>
+                      <option>{t('range10_25k')}</option>
+                      <option>{t('range25_50k')}</option>
+                      <option>{t('range50_100k')}</option>
+                      <option>{t('above100k')}</option>
+                      <option>{t('preferNotSayIncome')}</option>
                     </select>
                   ) : (
                     <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
-                      {formData.income || "Not specified"}
+                      {formData.income || t('notSpecified')}
                     </p>
                   )}
                   {errors.income && (
@@ -683,50 +1049,56 @@ const UserProfilePage = () => {
           {activeTab === "address" && (
             <div>
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <MapPin size={20} /> Address Information
+                <MapPin size={20} /> {t('addressInformation')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InfoField
-                  label="Division"
+                  label={t('division')}
                   value={formData.division}
                   field="division"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <InfoField
-                  label="District"
+                  label={t('district')}
                   value={formData.district}
                   field="district"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Upazila / Area"
+                  label={t('upazila')}
                   value={formData.upazila}
                   field="upazila"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Village / Area / Street"
+                  label={t('village')}
                   value={formData.village}
                   field="village"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Post Office"
+                  label={t('postOffice')}
                   value={formData.postOffice}
                   field="postOffice"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Post Code"
+                  label={t('postCode')}
                   value={formData.postCode}
                   field="postCode"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
               </div>
             </div>
@@ -736,27 +1108,29 @@ const UserProfilePage = () => {
           {activeTab === "nominee" && (
             <div>
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <Users size={20} /> Nominee Information
+                <Users size={20} /> {t('nomineeInformation')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InfoField
-                  label="Nominee First Name *"
+                  label={t('nomineeFirstName')}
                   value={formData.nomineeFirstName}
                   field="nomineeFirstName"
                   editMode={editMode}
                   onChange={handleInputChange}
                   error={errors.nomineeFirstName}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Nominee Last Name"
+                  label={t('nomineeLastName')}
                   value={formData.nomineeLastName}
                   field="nomineeLastName"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Relationship *
+                    {t('relationship')} *
                   </label>
                   {editMode ? (
                     <select
@@ -770,19 +1144,19 @@ const UserProfilePage = () => {
                           : "border-border"
                       } bg-background text-foreground outline-none focus:border-primary`}
                     >
-                      <option value="">Select Relationship</option>
-                      <option>Spouse</option>
-                      <option>Father</option>
-                      <option>Mother</option>
-                      <option>Son</option>
-                      <option>Daughter</option>
-                      <option>Brother</option>
-                      <option>Sister</option>
-                      <option>Other</option>
+                      <option value="">{t('selectRelationship')}</option>
+                      <option>{t('spouse')}</option>
+                      <option>{t('father')}</option>
+                      <option>{t('mother')}</option>
+                      <option>{t('son')}</option>
+                      <option>{t('daughter')}</option>
+                      <option>{t('brother')}</option>
+                      <option>{t('sister')}</option>
+                      <option>{t('other')}</option>
                     </select>
                   ) : (
                     <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
-                      {formData.nomineeRelation || "Not specified"}
+                      {formData.nomineeRelation || t('notSpecified')}
                     </p>
                   )}
                   {errors.nomineeRelation && (
@@ -792,23 +1166,25 @@ const UserProfilePage = () => {
                   )}
                 </div>
                 <InfoField
-                  label="Nominee Phone *"
+                  label={t('nomineePhone')}
                   value={formData.nomineePhone}
                   field="nomineePhone"
                   editMode={editMode}
                   onChange={handleInputChange}
                   error={errors.nomineePhone}
+                  lang={lang}
                 />
                 <InfoField
-                  label="Nominee NID"
+                  label={t('nomineeNid')}
                   value={formData.nomineeNid}
                   field="nomineeNid"
                   editMode={editMode}
                   onChange={handleInputChange}
+                  lang={lang}
                 />
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Share of Savings (%)
+                    {t('shareOfSavings')}
                   </label>
                   {editMode ? (
                     <select
@@ -818,7 +1194,7 @@ const UserProfilePage = () => {
                       }
                       className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
                     >
-                      <option value="100">100% — Full savings</option>
+                      <option value="100">{t('fullSavings')}</option>
                       <option value="75">75%</option>
                       <option value="50">50%</option>
                       <option value="25">25%</option>
@@ -837,28 +1213,28 @@ const UserProfilePage = () => {
           {activeTab === "financial" && (
             <div>
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <DollarSign size={20} /> Financial Information
+                <DollarSign size={20} /> {t('financialInformation')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Savings Plan
+                    {t('savingsPlan')}
                   </label>
                   <p className="p-3 bg-secondary/20 rounded-xl text-foreground capitalize">
-                    {user.selectedPlan || "Not selected"}
+                    {user.selectedPlan || t('notSelected')}
                   </p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Goal Type
+                    {t('goalType')}
                   </label>
                   <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
-                    {user.goal?.type || "Not set"}
+                    {user.goal?.type || t('notSet')}
                   </p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Target Amount
+                    {t('targetAmount')}
                   </label>
                   <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
                     {formatCurrency(user.goal?.targetAmount)}
@@ -866,7 +1242,7 @@ const UserProfilePage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Monthly Deposit
+                    {t('monthlyDeposit')}
                   </label>
                   <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
                     {formatCurrency(user.goal?.monthlyDeposit)}
@@ -874,17 +1250,17 @@ const UserProfilePage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Duration
+                    {t('duration')}
                   </label>
                   <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
                     {user.goal?.duration
-                      ? `${user.goal.duration} months`
-                      : "Not set"}
+                      ? `${user.goal.duration} ${t('months')}`
+                      : t('notSet')}
                   </p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Current Saved
+                    {t('currentSaved')}
                   </label>
                   <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
                     {formatCurrency(user.goal?.currentSaved)}
@@ -892,7 +1268,7 @@ const UserProfilePage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    Progress
+                    {t('progress')}
                   </label>
                   <div className="p-3 bg-secondary/20 rounded-xl">
                     <div className="flex justify-between mb-1">
@@ -912,35 +1288,35 @@ const UserProfilePage = () => {
 
               <div className="mt-6">
                 <h3 className="text-lg font-bold text-foreground mb-3">
-                  Payment Method
+                  {t('paymentMethod')}
                 </h3>
                 <div className="p-4 bg-secondary/20 rounded-xl">
                   <p className="capitalize">
-                    <strong>Method:</strong> {user.paymentMethod || "Not set"}
+                    <strong>{t('method')}:</strong> {user.paymentMethod || t('notSet')}
                   </p>
                   {user.paymentMethod !== "bank" ? (
                     <>
                       <p>
-                        <strong>Wallet Number:</strong>{" "}
+                        <strong>{t('walletNumber')}:</strong>{" "}
                         {user.paymentDetails?.walletNumber || "N/A"}
                       </p>
                       <p>
-                        <strong>Account Name:</strong>{" "}
+                        <strong>{t('accountName')}:</strong>{" "}
                         {user.paymentDetails?.accountName || "N/A"}
                       </p>
                     </>
                   ) : (
                     <>
                       <p>
-                        <strong>Bank Name:</strong>{" "}
+                        <strong>{t('bankName')}:</strong>{" "}
                         {user.paymentDetails?.bankName || "N/A"}
                       </p>
                       <p>
-                        <strong>Account Number:</strong>{" "}
+                        <strong>{t('accountNumber')}:</strong>{" "}
                         {user.paymentDetails?.accountNumber || "N/A"}
                       </p>
                       <p>
-                        <strong>Account Name:</strong>{" "}
+                        <strong>{t('accountName')}:</strong>{" "}
                         {user.paymentDetails?.accountName || "N/A"}
                       </p>
                     </>
@@ -954,20 +1330,20 @@ const UserProfilePage = () => {
           {activeTab === "kyc" && (
             <div>
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <Shield size={20} /> KYC Status
+                <Shield size={20} /> {t('kycInformation')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    NID Number
+                    {t('nidNumber')}
                   </label>
                   <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
-                    {user.kyc?.nidNumber || "Not provided"}
+                    {user.kyc?.nidNumber || t('notProvided')}
                   </p>
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                    KYC Status
+                    {t('kycStatus')}
                   </label>
                   <div className="p-3 bg-secondary/20 rounded-xl">
                     <span
@@ -980,7 +1356,9 @@ const UserProfilePage = () => {
                       }`}
                     >
                       {user.kyc?.status === "verified" && <Check size={14} />}
-                      {user.kyc?.status || "pending"}
+                      {user.kyc?.status === "verified" ? t('verified') : 
+                       user.kyc?.status === "pending" ? t('pending') : 
+                       user.kyc?.status || t('pending')}
                     </span>
                   </div>
                 </div>
@@ -988,8 +1366,7 @@ const UserProfilePage = () => {
                   <div className="md:col-span-2">
                     <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
                       <p className="text-yellow-500 text-sm">
-                        ⏳ Your KYC is under review. Our team will verify within
-                        4 hours.
+                        {t('kycUnderReview')}
                       </p>
                     </div>
                   </div>
@@ -998,8 +1375,7 @@ const UserProfilePage = () => {
                   <div className="md:col-span-2">
                     <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
                       <p className="text-green-500 text-sm">
-                        ✓ Your KYC has been verified. Your account is fully
-                        active.
+                        {t('kycVerifiedMsg')}
                       </p>
                     </div>
                   </div>
@@ -1012,7 +1388,7 @@ const UserProfilePage = () => {
           {activeTab === "security" && (
             <div>
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
-                <Lock size={20} /> Security Settings
+                <Lock size={20} /> {t('securitySettings')}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
@@ -1020,10 +1396,10 @@ const UserProfilePage = () => {
                   className="p-4 border border-border rounded-xl text-left hover:border-primary transition"
                 >
                   <h3 className="font-semibold text-foreground mb-1">
-                    Change Password
+                    {t('changePassword')}
                   </h3>
                   <p className="text-sm text-foreground/60">
-                    Update your account password
+                    {t('updatePassword')}
                   </p>
                 </button>
                 <button
@@ -1031,10 +1407,10 @@ const UserProfilePage = () => {
                   className="p-4 border border-border rounded-xl text-left hover:border-primary transition"
                 >
                   <h3 className="font-semibold text-foreground mb-1">
-                    Change Transaction PIN
+                    {t('changeTransactionPin')}
                   </h3>
                   <p className="text-sm text-foreground/60">
-                    Update your 6-digit transaction PIN
+                    {t('updateTransactionPin')}
                   </p>
                 </button>
               </div>
@@ -1052,12 +1428,12 @@ const UserProfilePage = () => {
             className="bg-card border border-border rounded-2xl p-6 max-w-md w-full"
           >
             <h2 className="text-xl font-bold text-foreground mb-4">
-              Change Password
+              {t('changePasswordTitle')}
             </h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                  Current Password
+                  {t('currentPassword')}
                 </label>
                 <div className="relative">
                   <input
@@ -1086,7 +1462,7 @@ const UserProfilePage = () => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                  New Password
+                  {t('newPassword')}
                 </label>
                 <div className="relative">
                   <input
@@ -1111,7 +1487,7 @@ const UserProfilePage = () => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                  Confirm New Password
+                  {t('confirmNewPassword')}
                 </label>
                 <div className="relative">
                   <input
@@ -1144,13 +1520,13 @@ const UserProfilePage = () => {
                 onClick={handleChangePassword}
                 className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold"
               >
-                Update Password
+                {t('updatePasswordBtn')}
               </button>
               <button
                 onClick={() => setShowPasswordModal(false)}
                 className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground/70"
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           </motion.div>
@@ -1166,12 +1542,12 @@ const UserProfilePage = () => {
             className="bg-card border border-border rounded-2xl p-6 max-w-md w-full"
           >
             <h2 className="text-xl font-bold text-foreground mb-4">
-              Change Transaction PIN
+              {t('changePinTitle')}
             </h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                  Current PIN
+                  {t('currentPin')}
                 </label>
                 <input
                   type="password"
@@ -1184,12 +1560,12 @@ const UserProfilePage = () => {
                     })
                   }
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                  placeholder="6-digit PIN"
+                  placeholder={t('pinPlaceholder')}
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                  New PIN
+                  {t('newPin')}
                 </label>
                 <input
                   type="password"
@@ -1202,12 +1578,12 @@ const UserProfilePage = () => {
                     })
                   }
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                  placeholder="6-digit PIN"
+                  placeholder={t('pinPlaceholder')}
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-foreground/70 mb-1">
-                  Confirm New PIN
+                  {t('confirmNewPin')}
                 </label>
                 <input
                   type="password"
@@ -1220,7 +1596,7 @@ const UserProfilePage = () => {
                     })
                   }
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary"
-                  placeholder="6-digit PIN"
+                  placeholder={t('pinPlaceholder')}
                 />
               </div>
             </div>
@@ -1229,13 +1605,13 @@ const UserProfilePage = () => {
                 onClick={handleChangePin}
                 className="flex-1 py-3 bg-primary text-white rounded-xl font-semibold"
               >
-                Update PIN
+                {t('updatePinBtn')}
               </button>
               <button
                 onClick={() => setShowPinModal(false)}
                 className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground/70"
               >
-                Cancel
+                {t('cancel')}
               </button>
             </div>
           </motion.div>
@@ -1254,7 +1630,15 @@ const InfoField = ({
   editMode,
   onChange,
   error,
+  lang,
 }) => {
+  const t = (key) => {
+    const translations = {
+      notProvided: lang === 'bn' ? "প্রদান করা হয়নি" : "Not provided",
+    };
+    return translations[key] || key;
+  };
+
   return (
     <div>
       <label className="block text-sm font-semibold text-foreground/70 mb-1">
@@ -1271,7 +1655,7 @@ const InfoField = ({
         />
       ) : (
         <p className="p-3 bg-secondary/20 rounded-xl text-foreground">
-          {value || "Not provided"}
+          {value || t('notProvided')}
         </p>
       )}
       {error && <p className="text-xs text-red-500 mt-1">{error}</p>}

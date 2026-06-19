@@ -32,6 +32,188 @@ import {
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    pageTitle: "My Circles",
+    pageSubtitle: "Community savings groups — achieve goals together",
+    
+    // Buttons
+    joinCircle: "Join Circle",
+    createCircle: "Create Circle",
+    viewDetails: "View Details →",
+    cancel: "Cancel",
+    create: "Create Circle",
+    creating: "Creating...",
+    join: "Join",
+    
+    // Empty State
+    noCircles: "No Circles Yet",
+    noCirclesDesc: "Create or join a circle to start saving together",
+    
+    // Circle Stats
+    members: "Members",
+    totalPool: "Total Pool",
+    nextPayout: "Next Payout",
+    
+    // Info Card
+    whatIsCircle: "What is a Circle?",
+    whatIsCircleDesc: "A Circle is a community savings group where people with the same goals save together. Each month, one member receives a payout from the pool (rotational basis). It's the digital version of Bangladesh's traditional \"Samity\" system.",
+    
+    // Create Modal
+    createNewCircle: "Create New Circle",
+    createSubtitle: "Start a group savings circle with friends or family",
+    circleName: "Circle Name",
+    circleNamePlaceholder: "e.g., Family Savings Circle",
+    purpose: "Purpose",
+    selectPurpose: "Select purpose",
+    targetAmount: "Target Amount",
+    maxMembers: "Max Members",
+    minDeposit: "Minimum Monthly Deposit (৳)",
+    circleType: "Circle Type",
+    private: "Private",
+    public: "Public",
+    privateDesc: "Invite only - You control who joins",
+    publicDesc: "Anyone can discover and join this circle",
+    descriptionOptional: "Description (Optional)",
+    descriptionPlaceholder: "Write about your circle's purpose and rules...",
+    membersCount: "{count} members",
+    
+    // Join Modal
+    joinCircleTitle: "Join a Circle",
+    joinSubtitle: "Discover and join public circles based on your goals",
+    filterByPurpose: "Filter by Purpose",
+    all: "All",
+    noCirclesFound: "No circles found",
+    noPublicCircles: "No public circles available at the moment",
+    noPurposeCircles: "No {purpose} circles available right now",
+    pool: "Pool",
+    minDepositLabel: "Min Deposit",
+    
+    // Validation
+    error: "Error",
+    enterCircleName: "Please enter a circle name",
+    selectPurposeError: "Please select a purpose",
+    validTargetAmount: "Please enter a valid target amount",
+    validMinDeposit: "Please enter a valid minimum deposit",
+    
+    // Success
+    success: "Success!",
+    circleCreated: "Circle created successfully",
+    joined: "Joined!",
+    joinedSuccess: "You have successfully joined the circle",
+    
+    // Modals
+    joinCircleConfirm: "Join Circle?",
+    joinCircleQuestion: "Are you sure you want to join this circle?",
+    joinConfirm: "Yes, join",
+    
+    // Loading
+    loadingCircles: "Loading your circles...",
+    
+    // Purpose Names
+    wedding: "Wedding",
+    hajj: "Hajj/Umrah",
+    education: "Education",
+    home: "Home",
+    business: "Business",
+    emergency: "Emergency",
+    travel: "Travel",
+    eid: "Eid",
+    general: "General",
+  },
+  bn: {
+    // Page Title
+    pageTitle: "আমার সার্কেল",
+    pageSubtitle: "কমিউনিটি সঞ্চয় গ্রুপ — একসাথে লক্ষ্য অর্জন করুন",
+    
+    // Buttons
+    joinCircle: "সার্কেলে যোগ দিন",
+    createCircle: "সার্কেল তৈরি করুন",
+    viewDetails: "বিস্তারিত দেখুন →",
+    cancel: "বাতিল",
+    create: "সার্কেল তৈরি করুন",
+    creating: "তৈরি হচ্ছে...",
+    join: "যোগ দিন",
+    
+    // Empty State
+    noCircles: "কোন সার্কেল নেই",
+    noCirclesDesc: "একসাথে সঞ্চয় শুরু করতে একটি সার্কেল তৈরি বা যোগ দিন",
+    
+    // Circle Stats
+    members: "সদস্য",
+    totalPool: "মোট পুল",
+    nextPayout: "পরবর্তী পেআউট",
+    
+    // Info Card
+    whatIsCircle: "সার্কেল কী?",
+    whatIsCircleDesc: "সার্কেল হলো একটি কমিউনিটি সঞ্চয় গ্রুপ যেখানে একই লক্ষ্যের মানুষরা একসাথে সঞ্চয় করে। প্রতি মাসে, একজন সদস্য পুল থেকে পেআউট পান (ঘূর্ণনের ভিত্তিতে)। এটি বাংলাদেশের ঐতিহ্যবাহী \"সামিটি\" সিস্টেমের ডিজিটাল সংস্করণ।",
+    
+    // Create Modal
+    createNewCircle: "নতুন সার্কেল তৈরি করুন",
+    createSubtitle: "পরিবার বা বন্ধুদের সাথে একটি গ্রুপ সঞ্চয় সার্কেল শুরু করুন",
+    circleName: "সার্কেলের নাম",
+    circleNamePlaceholder: "যেমন: পরিবার সঞ্চয় সার্কেল",
+    purpose: "উদ্দেশ্য",
+    selectPurpose: "উদ্দেশ্য নির্বাচন করুন",
+    targetAmount: "লক্ষ্যমাত্রার পরিমাণ",
+    maxMembers: "সর্বোচ্চ সদস্য",
+    minDeposit: "ন্যূনতম মাসিক জমা (৳)",
+    circleType: "সার্কেলের ধরন",
+    private: "প্রাইভেট",
+    public: "পাবলিক",
+    privateDesc: "শুধুমাত্র আমন্ত্রণে - আপনি কে যোগ দিতে পারে তা নিয়ন্ত্রণ করেন",
+    publicDesc: "যে কেউ এই সার্কেল আবিষ্কার এবং যোগ দিতে পারে",
+    descriptionOptional: "বর্ণনা (ঐচ্ছিক)",
+    descriptionPlaceholder: "আপনার সার্কেলের উদ্দেশ্য এবং নিয়ম সম্পর্কে লিখুন...",
+    membersCount: "{count} সদস্য",
+    
+    // Join Modal
+    joinCircleTitle: "একটি সার্কেলে যোগ দিন",
+    joinSubtitle: "আপনার লক্ষ্যের ভিত্তিতে পাবলিক সার্কেল আবিষ্কার এবং যোগ দিন",
+    filterByPurpose: "উদ্দেশ্য অনুযায়ী ফিল্টার",
+    all: "সব",
+    noCirclesFound: "কোন সার্কেল পাওয়া যায়নি",
+    noPublicCircles: "এই মুহূর্তে কোন পাবলিক সার্কেল উপলব্ধ নেই",
+    noPurposeCircles: "এই মুহূর্তে {purpose} সার্কেল উপলব্ধ নেই",
+    pool: "পুল",
+    minDepositLabel: "ন্যূনতম জমা",
+    
+    // Validation
+    error: "ত্রুটি",
+    enterCircleName: "অনুগ্রহ করে একটি সার্কেলের নাম লিখুন",
+    selectPurposeError: "অনুগ্রহ করে একটি উদ্দেশ্য নির্বাচন করুন",
+    validTargetAmount: "অনুগ্রহ করে একটি বৈধ লক্ষ্যমাত্রার পরিমাণ লিখুন",
+    validMinDeposit: "অনুগ্রহ করে একটি বৈধ ন্যূনতম জমার পরিমাণ লিখুন",
+    
+    // Success
+    success: "সফল!",
+    circleCreated: "সার্কেল সফলভাবে তৈরি হয়েছে",
+    joined: "যোগ দিয়েছেন!",
+    joinedSuccess: "আপনি সফলভাবে সার্কেলে যোগ দিয়েছেন",
+    
+    // Modals
+    joinCircleConfirm: "সার্কেলে যোগ দিবেন?",
+    joinCircleQuestion: "আপনি কি এই সার্কেলে যোগ দিতে চান?",
+    joinConfirm: "হ্যাঁ, যোগ দিন",
+    
+    // Loading
+    loadingCircles: "আপনার সার্কেল লোড হচ্ছে...",
+    
+    // Purpose Names
+    wedding: "বিয়ে",
+    hajj: "হজ/ওমরাহ",
+    education: "শিক্ষা",
+    home: "ঘর",
+    business: "ব্যবসা",
+    emergency: "জরুরি",
+    travel: "ভ্রমণ",
+    eid: "ঈদ",
+    general: "সাধারণ",
+  }
+};
+
 const MyCirclesPage = () => {
   const [showCircleModal, setShowCircleModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -41,6 +223,7 @@ const MyCirclesPage = () => {
   const [circles, setCircles] = useState([]);
   const [publicCircles, setPublicCircles] = useState([]);
   const [selectedPurpose, setSelectedPurpose] = useState("all");
+  const [lang, setLang] = useState("en");
   const [formData, setFormData] = useState({
     circleName: "",
     purpose: "",
@@ -50,16 +233,31 @@ const MyCirclesPage = () => {
     description: "",
   });
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
+
   const purposes = [
-    { icon: <Heart size={18} />, name: "Wedding", value: "wedding" },
-    { icon: <Star size={18} />, name: "Hajj/Umrah", value: "hajj" },
-    { icon: <GraduationCap size={18} />, name: "Education", value: "education" },
-    { icon: <Home size={18} />, name: "Home", value: "home" },
-    { icon: <Briefcase size={18} />, name: "Business", value: "business" },
-    { icon: <Shield size={18} />, name: "Emergency", value: "emergency" },
-    { icon: <Plane size={18} />, name: "Travel", value: "travel" },
-    { icon: <Star size={18} />, name: "Eid", value: "eid" },
-    { icon: <Users size={18} />, name: "General", value: "general" },
+    { icon: <Heart size={18} />, name: t('wedding'), value: "wedding" },
+    { icon: <Star size={18} />, name: t('hajj'), value: "hajj" },
+    { icon: <GraduationCap size={18} />, name: t('education'), value: "education" },
+    { icon: <Home size={18} />, name: t('home'), value: "home" },
+    { icon: <Briefcase size={18} />, name: t('business'), value: "business" },
+    { icon: <Shield size={18} />, name: t('emergency'), value: "emergency" },
+    { icon: <Plane size={18} />, name: t('travel'), value: "travel" },
+    { icon: <Star size={18} />, name: t('eid'), value: "eid" },
+    { icon: <Users size={18} />, name: t('general'), value: "general" },
   ];
 
   // Fetch user's circles
@@ -98,8 +296,8 @@ const MyCirclesPage = () => {
   const createCircle = async () => {
     if (!formData.circleName.trim()) {
       Swal.fire({
-        title: "Error",
-        text: "Please enter a circle name",
+        title: t('error'),
+        text: t('enterCircleName'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -108,8 +306,8 @@ const MyCirclesPage = () => {
 
     if (!formData.purpose) {
       Swal.fire({
-        title: "Error",
-        text: "Please select a purpose",
+        title: t('error'),
+        text: t('selectPurposeError'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -118,8 +316,8 @@ const MyCirclesPage = () => {
 
     if (!formData.targetAmount || parseFloat(formData.targetAmount) <= 0) {
       Swal.fire({
-        title: "Error",
-        text: "Please enter a valid target amount",
+        title: t('error'),
+        text: t('validTargetAmount'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -128,8 +326,8 @@ const MyCirclesPage = () => {
 
     if (!formData.minDeposit || parseFloat(formData.minDeposit) <= 0) {
       Swal.fire({
-        title: "Error",
-        text: "Please enter a valid minimum deposit",
+        title: t('error'),
+        text: t('validMinDeposit'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -151,8 +349,8 @@ const MyCirclesPage = () => {
 
       if (response.data.success) {
         Swal.fire({
-          title: "Success!",
-          text: "Circle created successfully",
+          title: t('success'),
+          text: t('circleCreated'),
           icon: "success",
           confirmButtonColor: "#059669",
           timer: 2000,
@@ -175,7 +373,7 @@ const MyCirclesPage = () => {
     } catch (error) {
       console.error("Create circle error:", error);
       Swal.fire({
-        title: "Error",
+        title: t('error'),
         text: error.response?.data?.message || "Failed to create circle",
         icon: "error",
         confirmButtonColor: "#059669",
@@ -188,13 +386,13 @@ const MyCirclesPage = () => {
   // Join circle
   const joinCircle = async (circleId) => {
     const result = await Swal.fire({
-      title: "Join Circle?",
-      text: "Are you sure you want to join this circle?",
+      title: t('joinCircleConfirm'),
+      text: t('joinCircleQuestion'),
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#059669",
       cancelButtonColor: "#ef4444",
-      confirmButtonText: "Yes, join",
+      confirmButtonText: t('joinConfirm'),
     });
 
     if (result.isConfirmed) {
@@ -203,8 +401,8 @@ const MyCirclesPage = () => {
         
         if (response.data.success) {
           Swal.fire({
-            title: "Joined!",
-            text: "You have successfully joined the circle",
+            title: t('joined'),
+            text: t('joinedSuccess'),
             icon: "success",
             confirmButtonColor: "#059669",
             timer: 1500,
@@ -217,7 +415,7 @@ const MyCirclesPage = () => {
       } catch (error) {
         console.error("Join circle error:", error);
         Swal.fire({
-          title: "Error",
+          title: t('error'),
           text: error.response?.data?.message || "Failed to join circle",
           icon: "error",
           confirmButtonColor: "#059669",
@@ -246,7 +444,7 @@ const MyCirclesPage = () => {
       <div className="w-full h-64 flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">Loading your circles...</p>
+          <p className="text-foreground/60">{t('loadingCircles')}</p>
         </div>
       </div>
     );
@@ -258,10 +456,10 @@ const MyCirclesPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
-            <Users size={28} /> My Circles
+            <Users size={28} /> {t('pageTitle')}
           </h2>
           <p className="text-xs sm:text-sm text-foreground/60 mt-1">
-            Community savings groups — achieve goals together
+            {t('pageSubtitle')}
           </p>
         </div>
         <div className="flex gap-3">
@@ -270,14 +468,14 @@ const MyCirclesPage = () => {
             className="px-4 sm:px-5 py-2.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <Search size={18} /> 
-            <span>Join Circle</span>
+            <span>{t('joinCircle')}</span>
           </button>
           <button
             onClick={() => setShowCircleModal(true)}
             className="px-4 sm:px-5 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <Plus size={18} /> 
-            <span>Create Circle</span>
+            <span>{t('createCircle')}</span>
           </button>
         </div>
       </div>
@@ -286,22 +484,22 @@ const MyCirclesPage = () => {
       {circles.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center mb-8">
           <Users size={64} className="text-foreground/30 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-foreground mb-2">No Circles Yet</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">{t('noCircles')}</h3>
           <p className="text-foreground/60 mb-4">
-            Create or join a circle to start saving together
+            {t('noCirclesDesc')}
           </p>
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => setShowCircleModal(true)}
               className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition inline-flex items-center gap-2"
             >
-              <Plus size={18} /> Create Circle
+              <Plus size={18} /> {t('createCircle')}
             </button>
             <button
               onClick={() => setShowJoinModal(true)}
               className="px-6 py-2.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition inline-flex items-center gap-2"
             >
-              <Search size={18} /> Join Circle
+              <Search size={18} /> {t('joinCircle')}
             </button>
           </div>
         </div>
@@ -331,21 +529,21 @@ const MyCirclesPage = () => {
               <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
                 <div className="text-center p-2 bg-background rounded-lg">
                   <div className="text-lg sm:text-xl font-bold text-primary">{circle.members}</div>
-                  <div className="text-[8px] sm:text-[10px] text-foreground/50">Members</div>
+                  <div className="text-[8px] sm:text-[10px] text-foreground/50">{t('members')}</div>
                 </div>
                 <div className="text-center p-2 bg-background rounded-lg">
                   <div className="text-lg sm:text-xl font-bold text-primary">{circle.totalPool}</div>
-                  <div className="text-[8px] sm:text-[10px] text-foreground/50">Total Pool</div>
+                  <div className="text-[8px] sm:text-[10px] text-foreground/50">{t('totalPool')}</div>
                 </div>
                 <div className="text-center p-2 bg-background rounded-lg">
                   <div className="text-lg sm:text-xl font-bold text-primary">{circle.nextPayout}</div>
-                  <div className="text-[8px] sm:text-[10px] text-foreground/50">Next Payout</div>
+                  <div className="text-[8px] sm:text-[10px] text-foreground/50">{t('nextPayout')}</div>
                 </div>
               </div>
 
               <Link href={`/dashboard/circles/${circle._id}`}>
                 <button className="w-full py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs sm:text-sm font-semibold hover:opacity-90 transition">
-                  View Details →
+                  {t('viewDetails')}
                 </button>
               </Link>
             </motion.div>
@@ -360,12 +558,9 @@ const MyCirclesPage = () => {
             <CircleDot size={18} className="text-primary" />
           </div>
           <div>
-            <h3 className="font-bold text-foreground text-sm sm:text-base mb-1">What is a Circle?</h3>
+            <h3 className="font-bold text-foreground text-sm sm:text-base mb-1">{t('whatIsCircle')}</h3>
             <p className="text-xs sm:text-sm text-foreground/60 leading-relaxed">
-              A Circle is a community savings group where people with the same goals
-              save together. Each month, one member receives a payout from the pool
-              (rotational basis). It's the digital version of Bangladesh's
-              traditional "Samity" system.
+              {t('whatIsCircleDesc')}
             </p>
           </div>
         </div>
@@ -394,10 +589,10 @@ const MyCirclesPage = () => {
                       <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Users size={16} className="text-primary" />
                       </div>
-                      <h3 className="text-lg sm:text-xl font-bold text-foreground">Create New Circle</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground">{t('createNewCircle')}</h3>
                     </div>
                     <p className="text-xs sm:text-sm text-foreground/60">
-                      Start a group savings circle with friends or family
+                      {t('createSubtitle')}
                     </p>
                   </div>
                   <button
@@ -414,7 +609,7 @@ const MyCirclesPage = () => {
               <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                    Circle Name
+                    {t('circleName')}
                   </label>
                   <input
                     type="text"
@@ -422,14 +617,14 @@ const MyCirclesPage = () => {
                     value={formData.circleName}
                     onChange={handleInputChange}
                     disabled={submitting}
-                    placeholder="e.g., Family Savings Circle"
+                    placeholder={t('circleNamePlaceholder')}
                     className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/40 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                    Purpose
+                    {t('purpose')}
                   </label>
                   <select
                     name="purpose"
@@ -438,7 +633,7 @@ const MyCirclesPage = () => {
                     disabled={submitting}
                     className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
                   >
-                    <option value="">Select purpose</option>
+                    <option value="">{t('selectPurpose')}</option>
                     {purposes.map(p => (
                       <option key={p.value} value={p.value}>
                         {p.name}
@@ -450,7 +645,7 @@ const MyCirclesPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                      <Target size={14} className="inline mr-1" /> Target Amount
+                      <Target size={14} className="inline mr-1" /> {t('targetAmount')}
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">৳</span>
@@ -467,7 +662,7 @@ const MyCirclesPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                      <Users size={14} className="inline mr-1" /> Max Members
+                      <Users size={14} className="inline mr-1" /> {t('maxMembers')}
                     </label>
                     <select
                       name="maxMembers"
@@ -476,17 +671,17 @@ const MyCirclesPage = () => {
                       disabled={submitting}
                       className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
                     >
-                      <option value="5">5 members</option>
-                      <option value="10">10 members</option>
-                      <option value="20">20 members</option>
-                      <option value="50">50 members</option>
+                      <option value="5">5 {t('members')}</option>
+                      <option value="10">10 {t('members')}</option>
+                      <option value="20">20 {t('members')}</option>
+                      <option value="50">50 {t('members')}</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                    <Wallet size={14} className="inline mr-1" /> Minimum Monthly Deposit (৳)
+                    <Wallet size={14} className="inline mr-1" /> {t('minDeposit')}
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">৳</span>
@@ -504,7 +699,7 @@ const MyCirclesPage = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-2">
-                    Circle Type
+                    {t('circleType')}
                   </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -518,7 +713,7 @@ const MyCirclesPage = () => {
                       } disabled:opacity-50`}
                     >
                       <Lock size={16} className={circleType === "private" ? "text-primary" : "text-foreground/50"} />
-                      <span className="text-sm font-semibold">Private</span>
+                      <span className="text-sm font-semibold">{t('private')}</span>
                     </button>
                     <button
                       type="button"
@@ -531,17 +726,17 @@ const MyCirclesPage = () => {
                       } disabled:opacity-50`}
                     >
                       <Globe size={16} className={circleType === "public" ? "text-primary" : "text-foreground/50"} />
-                      <span className="text-sm font-semibold">Public</span>
+                      <span className="text-sm font-semibold">{t('public')}</span>
                     </button>
                   </div>
                   <p className="text-[10px] text-foreground/50 mt-2">
-                    {circleType === "private" ? "Invite only - You control who joins" : "Anyone can discover and join this circle"}
+                    {circleType === "private" ? t('privateDesc') : t('publicDesc')}
                   </p>
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                    Description (Optional)
+                    {t('descriptionOptional')}
                   </label>
                   <textarea
                     name="description"
@@ -549,7 +744,7 @@ const MyCirclesPage = () => {
                     onChange={handleInputChange}
                     disabled={submitting}
                     rows={3}
-                    placeholder="Write about your circle's purpose and rules..."
+                    placeholder={t('descriptionPlaceholder')}
                     className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/40 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition resize-none text-sm sm:text-base disabled:opacity-50"
                   />
                 </div>
@@ -563,7 +758,7 @@ const MyCirclesPage = () => {
                     disabled={submitting}
                     className="flex-1 py-2.5 sm:py-3 rounded-xl border border-border text-foreground font-semibold hover:border-red-500 hover:text-red-500 transition text-sm sm:text-base order-2 sm:order-1 disabled:opacity-50"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     onClick={createCircle}
@@ -573,12 +768,12 @@ const MyCirclesPage = () => {
                     {submitting ? (
                       <>
                         <Loader2 size={16} className="animate-spin" />
-                        Creating...
+                        {t('creating')}
                       </>
                     ) : (
                       <>
                         <UserPlus size={16} />
-                        Create Circle
+                        {t('create')}
                       </>
                     )}
                   </button>
@@ -612,10 +807,10 @@ const MyCirclesPage = () => {
                       <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
                         <Search size={16} className="text-primary" />
                       </div>
-                      <h3 className="text-lg sm:text-xl font-bold text-foreground">Join a Circle</h3>
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground">{t('joinCircleTitle')}</h3>
                     </div>
                     <p className="text-xs sm:text-sm text-foreground/60">
-                      Discover and join public circles based on your goals
+                      {t('joinSubtitle')}
                     </p>
                   </div>
                   <button
@@ -632,7 +827,7 @@ const MyCirclesPage = () => {
                 {/* Filter */}
                 <div className="mb-6">
                   <label className="block text-sm font-semibold text-foreground/70 mb-2">
-                    Filter by Purpose
+                    {t('filterByPurpose')}
                   </label>
                   <div className="flex flex-wrap gap-2">
                     <button
@@ -643,7 +838,7 @@ const MyCirclesPage = () => {
                           : "bg-border text-foreground/70 hover:bg-primary/20"
                       }`}
                     >
-                      All
+                      {t('all')}
                     </button>
                     {purposes.map(p => (
                       <button
@@ -666,11 +861,11 @@ const MyCirclesPage = () => {
                 {publicCircles.length === 0 ? (
                   <div className="text-center py-12">
                     <Search size={64} className="text-foreground/30 mx-auto mb-4" />
-                    <h3 className="text-lg font-bold text-foreground mb-2">No circles found</h3>
+                    <h3 className="text-lg font-bold text-foreground mb-2">{t('noCirclesFound')}</h3>
                     <p className="text-foreground/60">
                       {selectedPurpose === "all" 
-                        ? "No public circles available at the moment" 
-                        : `No ${selectedPurpose} circles available right now`}
+                        ? t('noPublicCircles')
+                        : t('noPurposeCircles').replace('{purpose}', selectedPurpose)}
                     </p>
                   </div>
                 ) : (
@@ -696,21 +891,21 @@ const MyCirclesPage = () => {
                             onClick={() => joinCircle(circle._id)}
                             className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:opacity-90 transition"
                           >
-                            Join
+                            {t('join')}
                           </button>
                         </div>
                         <div className="grid grid-cols-3 gap-2 text-center text-xs">
                           <div>
                             <div className="font-bold text-primary">{circle.members}/{circle.maxMembers}</div>
-                            <div className="text-foreground/50">Members</div>
+                            <div className="text-foreground/50">{t('members')}</div>
                           </div>
                           <div>
                             <div className="font-bold text-primary">{circle.totalPool}</div>
-                            <div className="text-foreground/50">Pool</div>
+                            <div className="text-foreground/50">{t('pool')}</div>
                           </div>
                           <div>
                             <div className="font-bold text-primary">৳{circle.minDeposit?.toLocaleString()}</div>
-                            <div className="text-foreground/50">Min Deposit</div>
+                            <div className="text-foreground/50">{t('minDepositLabel')}</div>
                           </div>
                         </div>
                         {circle.description && (

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter, usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuth from "../../../hooks/useAuth";
+import LanguageSwitcher from "../LanguageSwitcher";
 
 const Navbar = () => {
   const { user, isAuthenticated, logout: logoutUser, isLoading } = useAuth();
@@ -14,20 +15,68 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [language, setLanguage] = useState('en');
 
   const router = useRouter();
   const pathname = usePathname();
   const dropdownRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
-  const navItems = [
-    { id: 1, name: "How it Works", path: "/how-it-works" },
-    { id: 2, name: "Plan", path: "/plans" },
-    { id: 3, name: "Goal", path: "/goals" },
-    { id: 4, name: "About Us", path: "/about-us" },
-    { id: 5, name: "Q&A", path: "/faq" },
-    { id: 6, name: "Contact", path: "/contact" },
-  ];
+  // Translations
+  const translations = {
+    en: {
+      navItems: [
+        { id: 1, name: "How it Works", path: "/how-it-works" },
+        { id: 2, name: "Plan", path: "/plans" },
+        { id: 3, name: "Goal", path: "/goals" },
+        { id: 4, name: "About Us", path: "/about-us" },
+        { id: 5, name: "Q&A", path: "/faq" },
+        { id: 6, name: "Contact", path: "/contact" },
+      ],
+      login: "Log In",
+      startSavings: "Start Savings",
+      menu: "Menu",
+      profile: "Profile",
+      dashboard: "Dashboard",
+      settings: "Settings",
+      logout: "Logout",
+      sonchoy: "Sonchoy",
+      bondhu: "Bondhu",
+    },
+    bn: {
+      navItems: [
+        { id: 1, name: "কীভাবে কাজ করে", path: "/how-it-works" },
+        { id: 2, name: "প্ল্যান", path: "/plans" },
+        { id: 3, name: "লক্ষ্য", path: "/goals" },
+        { id: 4, name: "আমাদের সম্পর্কে", path: "/about-us" },
+        { id: 5, name: "প্রশ্নোত্তর", path: "/faq" },
+        { id: 6, name: "যোগাযোগ", path: "/contact" },
+      ],
+      login: "লগইন",
+      startSavings: "সঞ্চয় শুরু করুন",
+      menu: "মেনু",
+      profile: "প্রোফাইল",
+      dashboard: "ড্যাশবোর্ড",
+      settings: "সেটিংস",
+      logout: "লগআউট",
+      sonchoy: "সঞ্চয়",
+      bondhu: "বন্ধু",
+    }
+  };
+
+  // Get current language
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLanguage(savedLang);
+  }, []);
+
+  // Get translation
+  const t = (key) => {
+    return translations[language]?.[key] || translations.en[key] || key;
+  };
+
+  // Get nav items with translations
+  const navItems = t('navItems');
 
   useEffect(() => {
     // dark mode
@@ -152,8 +201,8 @@ const Navbar = () => {
               href="/"
               className="text-xl sm:text-2xl font-bold tracking-tight whitespace-nowrap"
             >
-              <span className="text-primary">Sonchoy</span>
-              <span className="text-secondary dark:text-white"> Bondhu</span>
+              <span className="text-primary">{t('sonchoy')}</span>
+              <span className="text-secondary dark:text-white"> {t('bondhu')}</span>
             </Link>
           </div>
 
@@ -196,6 +245,9 @@ const Navbar = () => {
 
           {/* Right Section */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
@@ -240,13 +292,13 @@ const Navbar = () => {
                   href="/login"
                   className="rounded-xl border border-border px-4 py-1.5 text-sm font-medium transition hover:bg-card shrink-0"
                 >
-                  Log In
+                  {t('login')}
                 </Link>
                 <Link
                   href="/register"
                   className="rounded-xl bg-linear-to-r from-primary to-primary-hover px-5 py-1.5 text-sm font-semibold text-white transition hover:shadow-lg hover:scale-105 shrink-0"
                 >
-                  Start Savings
+                  {t('startSavings')}
                 </Link>
               </div>
             )}
@@ -361,7 +413,7 @@ const Navbar = () => {
                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                         />
                       </svg>
-                      Profile
+                      {t('profile')}
                     </Link>
 
                     <Link
@@ -386,7 +438,7 @@ const Navbar = () => {
                           d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                         />
                       </svg>
-                      Dashboard
+                      {t('dashboard')}
                     </Link>
 
                     <Link
@@ -417,7 +469,7 @@ const Navbar = () => {
                           d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                         />
                       </svg>
-                      Settings
+                      {t('settings')}
                     </Link>
 
                     <div className="my-1 border-t border-border" />
@@ -439,7 +491,7 @@ const Navbar = () => {
                           d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                         />
                       </svg>
-                      Logout
+                      {t('logout')}
                     </button>
                   </motion.div>
                 )}
@@ -495,7 +547,7 @@ const Navbar = () => {
             >
               {/* Drawer Header */}
               <div className="flex items-center justify-between border-b border-border p-5">
-                <h2 className="text-lg font-semibold text-primary">Menu</h2>
+                <h2 className="text-lg font-semibold text-primary">{t('menu')}</h2>
                 <button
                   onClick={() => setIsOpen(false)}
                   className="flex h-8 w-8 items-center justify-center rounded-lg border border-border transition hover:bg-background"
@@ -568,14 +620,14 @@ const Navbar = () => {
                       onClick={() => setIsOpen(false)}
                       className="flex items-center justify-center rounded-xl border border-border px-4 py-3 text-base font-medium transition hover:bg-background w-full"
                     >
-                      Log In
+                      {t('login')}
                     </Link>
                     <Link
                       href="/register"
                       onClick={() => setIsOpen(false)}
                       className="flex items-center justify-center rounded-xl bg-linear-to-r from-primary to-primary-hover px-4 py-3 text-base font-semibold text-white transition hover:shadow-lg w-full"
                     >
-                      Start Savings
+                      {t('startSavings')}
                     </Link>
                   </div>
                 ) : (
@@ -599,7 +651,7 @@ const Navbar = () => {
                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                           />
                         </svg>
-                        Profile
+                        {t('profile')}
                       </Link>
                       <Link
                         href="/dashboard"
@@ -619,7 +671,7 @@ const Navbar = () => {
                             d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                           />
                         </svg>
-                        Dashboard
+                        {t('dashboard')}
                       </Link>
                       <Link
                         href="/settings"
@@ -645,7 +697,7 @@ const Navbar = () => {
                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                           />
                         </svg>
-                        Settings
+                        {t('settings')}
                       </Link>
                       <button
                         onClick={handleLogout}
@@ -664,7 +716,7 @@ const Navbar = () => {
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
                           />
                         </svg>
-                        Logout
+                        {t('logout')}
                       </button>
                     </div>
                   )

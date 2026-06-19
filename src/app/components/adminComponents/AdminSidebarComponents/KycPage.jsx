@@ -13,6 +13,90 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    kycReviewQueue: "🪪 KYC Review Queue",
+    searchMember: "Search member...",
+    all: "All",
+    pending: "Pending",
+    approved: "Approved",
+    rejected: "Rejected",
+    applicant: "Applicant",
+    nidNumber: "NID Number",
+    submitted: "Submitted",
+    kycStatus: "KYC Status",
+    account: "Account",
+    plan: "Plan",
+    actions: "Actions",
+    view: "📄 View",
+    approve: "✓ Approve",
+    reject: "✗ Reject",
+    ban: "🚫 Ban",
+    noApplications: "No KYC applications found",
+    documentViewer: "Document Viewer",
+    nidCard: "NID Card",
+    selfiePhoto: "Selfie Photo",
+    approveKyc: "✓ Approve KYC",
+    rejectKyc: "✗ Reject",
+    pendingText: "⏳ Pending",
+    approvedText: "✅ Approved",
+    rejectedText: "❌ Rejected",
+    active: "🟢 Active",
+    inactive: "⚪ Inactive",
+    showing: "Showing",
+    of: "of",
+    applications: "applications",
+    banUserConfirm: "Ban user permanently?",
+    rejectionReason: "Enter rejection reason:",
+    kycUpdateSuccess: "KYC status updated successfully",
+    banSuccess: "User banned permanently",
+    failedToFetch: "Failed to fetch KYC applications",
+    kycUpdateFailed: "KYC update failed",
+    banFailed: "Ban failed",
+  },
+  bn: {
+    kycReviewQueue: "🪪 কেওয়াইসি রিভিউ কিউ",
+    searchMember: "মেম্বার খুঁজুন...",
+    all: "সব",
+    pending: "পেন্ডিং",
+    approved: "অনুমোদিত",
+    rejected: "প্রত্যাখ্যাত",
+    applicant: "আবেদনকারী",
+    nidNumber: "এনআইডি নম্বর",
+    submitted: "জমা দেওয়া হয়েছে",
+    kycStatus: "কেওয়াইসি স্ট্যাটাস",
+    account: "অ্যাকাউন্ট",
+    plan: "প্ল্যান",
+    actions: "অ্যাকশন",
+    view: "📄 দেখুন",
+    approve: "✓ অনুমোদন",
+    reject: "✗ প্রত্যাখ্যান",
+    ban: "🚫 ব্যান",
+    noApplications: "কোনো কেওয়াইসি আবেদন পাওয়া যায়নি",
+    documentViewer: "ডকুমেন্ট ভিউয়ার",
+    nidCard: "এনআইডি কার্ড",
+    selfiePhoto: "সেলফি ছবি",
+    approveKyc: "✓ কেওয়াইসি অনুমোদন",
+    rejectKyc: "✗ প্রত্যাখ্যান",
+    pendingText: "⏳ পেন্ডিং",
+    approvedText: "✅ অনুমোদিত",
+    rejectedText: "❌ প্রত্যাখ্যাত",
+    active: "🟢 সক্রিয়",
+    inactive: "⚪ নিষ্ক্রিয়",
+    showing: "দেখানো হচ্ছে",
+    of: "এর মধ্যে",
+    applications: "টি আবেদন",
+    banUserConfirm: "ইউজারকে স্থায়ীভাবে ব্যান করবেন?",
+    rejectionReason: "প্রত্যাখ্যানের কারণ লিখুন:",
+    kycUpdateSuccess: "কেওয়াইসি স্ট্যাটাস আপডেট হয়েছে",
+    banSuccess: "ইউজার স্থায়ীভাবে ব্যান হয়েছে",
+    failedToFetch: "কেওয়াইসি আবেদন লোড করতে ব্যর্থ হয়েছে",
+    kycUpdateFailed: "কেওয়াইসি আপডেট ব্যর্থ হয়েছে",
+    banFailed: "ব্যান করতে ব্যর্থ হয়েছে",
+  }
+};
+
 const KycPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
@@ -27,8 +111,17 @@ const KycPage = () => {
     totalItems: 0,
     itemsPerPage: 20,
   });
+  const [lang, setLang] = useState("bn");
 
-  const filters = ["All", "Pending", "Approved", "Rejected"];
+  // Load language
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
+
+  const filters = [t('all'), t('pending'), t('approved'), t('rejected')];
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
@@ -42,7 +135,7 @@ const KycPage = () => {
       params.append("page", page);
       params.append("limit", pagination.itemsPerPage);
       if (searchQuery) params.append("search", searchQuery);
-      if (activeFilter !== "All") params.append("status", activeFilter.toLowerCase());
+      if (activeFilter !== t('all')) params.append("status", activeFilter.toLowerCase());
 
       const res = await axiosInstance.get(`/admin/kyc?${params.toString()}`, {
         headers: getAuthHeaders(),
@@ -53,11 +146,11 @@ const KycPage = () => {
         setPagination(res.data.data.pagination);
       }
     } catch (err) {
-      showToastMessage(err.response?.data?.message || "Failed to fetch KYC applications", "error");
+      showToastMessage(err.response?.data?.message || t('failedToFetch'), "error");
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, searchQuery, pagination.itemsPerPage]);
+  }, [activeFilter, searchQuery, pagination.itemsPerPage, lang]);
 
   useEffect(() => {
     fetchApplications(1);
@@ -73,16 +166,16 @@ const KycPage = () => {
         { headers: getAuthHeaders() }
       );
       if (res.data.success) {
-        showToastMessage(res.data.message, "success");
+        showToastMessage(t('kycUpdateSuccess'), "success");
         fetchApplications(pagination.currentPage);
       }
     } catch (err) {
-      showToastMessage(err.response?.data?.message || "KYC update failed", "error");
+      showToastMessage(err.response?.data?.message || t('kycUpdateFailed'), "error");
     }
   };
 
   const banUser = async (userId, name) => {
-    if (!confirm(`Ban user ${name} permanently?`)) return;
+    if (!confirm(t('banUserConfirm') + ` ${name}?`)) return;
     try {
       const res = await axiosInstance.patch(
         `/admin/users/${userId}/status`,
@@ -90,11 +183,11 @@ const KycPage = () => {
         { headers: getAuthHeaders() }
       );
       if (res.data.success) {
-        showToastMessage(`🚫 User banned permanently`, "error");
+        showToastMessage(t('banSuccess'), "error");
         fetchApplications(pagination.currentPage);
       }
     } catch (err) {
-      showToastMessage(err.response?.data?.message || "Ban failed", "error");
+      showToastMessage(err.response?.data?.message || t('banFailed'), "error");
     }
   };
 
@@ -122,18 +215,14 @@ const KycPage = () => {
       info: "bg-blue-500/10 text-blue-500",
       danger: "bg-red-500/10 text-red-500",
       primary: "bg-primary/10 text-primary",
-      warning: "bg-amber-500/10 text-amber-500",
-      blue: "bg-blue-500/10 text-blue-500",
-      amber: "bg-amber-500/10 text-amber-500",
-      red: "bg-red-500/10 text-red-500",
     };
     return classes[color] || classes.ok;
   };
 
   const getKycStatusDisplay = (status) => {
-    if (status === "approved") return { label: "✅ Approved", color: "ok" };
-    if (status === "rejected") return { label: "❌ Rejected", color: "danger" };
-    return { label: "⏳ Pending", color: "warn" };
+    if (status === "approved") return { label: t('approvedText'), color: "ok" };
+    if (status === "rejected") return { label: t('rejectedText'), color: "danger" };
+    return { label: t('pendingText'), color: "warn" };
   };
 
   const getAvatarBg = (index) => {
@@ -163,9 +252,9 @@ const KycPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-bold text-foreground">🪪 KYC Review Queue</h2>
+          <h2 className="text-lg font-bold text-foreground">{t('kycReviewQueue')}</h2>
           <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500">
-            {pagination.totalItems} Pending
+            {pagination.totalItems} {t('pending')}
           </span>
         </div>
       </div>
@@ -176,7 +265,7 @@ const KycPage = () => {
           <Search size={16} className="text-foreground/50" />
           <input
             type="text"
-            placeholder="Search member..."
+            placeholder={t('searchMember')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && fetchApplications(1)}
@@ -184,7 +273,7 @@ const KycPage = () => {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {filters.map((filter) => (
+          {["All", "Pending", "Approved", "Rejected"].map((filter) => (
             <button
               key={filter}
               onClick={() => { setActiveFilter(filter); fetchApplications(1); }}
@@ -194,7 +283,7 @@ const KycPage = () => {
                   : "border-border bg-card text-foreground/60 hover:border-primary"
               }`}
             >
-              {filter}
+              {t(filter.toLowerCase())}
             </button>
           ))}
         </div>
@@ -212,20 +301,20 @@ const KycPage = () => {
               <table className="w-full min-w-[800px]">
                 <thead>
                   <tr className="border-b border-border bg-background">
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Applicant</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">NID Number</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Submitted</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">KYC Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Account</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Plan</th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Actions</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('applicant')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('nidNumber')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('submitted')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('kycStatus')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('account')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('plan')}</th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">{t('actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {applications.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="px-4 py-10 text-center text-sm text-foreground/50">
-                        No KYC applications found
+                        {t('noApplications')}
                       </td>
                     </tr>
                   ) : (
@@ -254,30 +343,30 @@ const KycPage = () => {
                           </td>
                           <td className="px-4 py-3">
                             <span className={`text-xs font-semibold px-2 py-1 rounded-full ${kyc.accountActive ? getBadgeClass("Active", "ok") : getBadgeClass("Inactive", "gray")}`}>
-                              {kyc.accountActive ? "🟢 Active" : "⚪ Inactive"}
+                              {kyc.accountActive ? t('active') : t('inactive')}
                             </span>
                           </td>
                           <td className="px-4 py-3 text-xs font-semibold text-foreground/70 capitalize">{kyc.selectedPlan}</td>
                           <td className="px-4 py-3">
                             <div className="flex gap-2">
                               <button onClick={() => viewDocuments(kyc)} className="px-3 py-1.5 rounded-lg border border-border text-xs font-semibold hover:border-primary transition" title="View Documents">
-                                📄 View
+                                {t('view')}
                               </button>
                               {kyc.kycStatus !== "approved" && (
                                 <button onClick={() => updateKycStatus(kyc.id, "approved")} className="px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition">
-                                  ✓ Approve
+                                  {t('approve')}
                                 </button>
                               )}
                               {kyc.kycStatus !== "rejected" && (
                                 <button onClick={() => {
-                                  const reason = prompt("Enter rejection reason:");
+                                  const reason = prompt(t('rejectionReason'));
                                   if (reason !== null) updateKycStatus(kyc.id, "rejected", reason);
                                 }} className="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/10 transition">
-                                  ✗ Reject
+                                  {t('reject')}
                                 </button>
                               )}
                               <button onClick={() => banUser(kyc.id, kyc.fullName || kyc.firstName)} className="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/10 transition">
-                                🚫 Ban
+                                {t('ban')}
                               </button>
                             </div>
                           </td>
@@ -292,7 +381,7 @@ const KycPage = () => {
             {/* Pagination */}
             <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-t border-border">
               <div className="text-xs text-foreground/50">
-                Showing {applications.length} of {pagination.totalItems} applications
+                {t('showing')} {applications.length} {t('of')} {pagination.totalItems} {t('applications')}
               </div>
               <div className="flex gap-2">
                 <button
@@ -344,7 +433,7 @@ const KycPage = () => {
             >
               <div className="p-5 border-b border-border">
                 <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-bold text-foreground">Document Viewer</h3>
+                  <h3 className="text-lg font-bold text-foreground">{t('documentViewer')}</h3>
                   <button onClick={closeDocModal} className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition">✕</button>
                 </div>
                 <p className="text-sm text-foreground/60 mt-1">{selectedKyc.fullName || selectedKyc.firstName}</p>
@@ -353,7 +442,7 @@ const KycPage = () => {
               <div className="p-5 space-y-4">
                 <div className="bg-background rounded-xl p-4 text-center border border-border">
                   <div className="text-5xl mb-2">🪪</div>
-                  <div className="font-semibold text-foreground">NID Card</div>
+                  <div className="font-semibold text-foreground">{t('nidCard')}</div>
                   <div className="text-xs text-foreground/50 mt-1">Front & Back</div>
                   <div className="mt-3 p-3 bg-card rounded-lg border border-border">
                     {selectedKyc.nidFrontUrl ? (
@@ -367,7 +456,7 @@ const KycPage = () => {
                 </div>
                 <div className="bg-background rounded-xl p-4 text-center border border-border">
                   <div className="text-5xl mb-2">🤳</div>
-                  <div className="font-semibold text-foreground">Selfie Photo</div>
+                  <div className="font-semibold text-foreground">{t('selfiePhoto')}</div>
                   <div className="text-xs text-foreground/50 mt-1">Live capture</div>
                   <div className="mt-3 p-3 bg-card rounded-lg border border-border">
                     {selectedKyc.selfieUrl ? (
@@ -385,16 +474,16 @@ const KycPage = () => {
                   onClick={() => { updateKycStatus(selectedKyc.id, "approved"); closeDocModal(); }}
                   className="flex-1 py-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold"
                 >
-                  ✓ Approve KYC
+                  {t('approveKyc')}
                 </button>
                 <button
                   onClick={() => {
-                    const reason = prompt("Enter rejection reason:");
+                    const reason = prompt(t('rejectionReason'));
                     if (reason !== null) { updateKycStatus(selectedKyc.id, "rejected", reason); closeDocModal(); }
                   }}
                   className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/70 font-semibold hover:border-red-500 hover:text-red-500 transition"
                 >
-                  ✗ Reject
+                  {t('rejectKyc')}
                 </button>
               </div>
             </motion.div>

@@ -18,6 +18,194 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    contentManagement: "📝 Content Management System",
+    changesApplyInstantly: "Changes are applied instantly to all pages after saving",
+    
+    // Buttons
+    reset: "Reset",
+    save: "Save",
+    saving: "Saving...",
+    addFeature: "Add Feature",
+    addFAQ: "Add FAQ",
+    addLink: "Add Link",
+    
+    // Tabs
+    siteSettings: "⚙️ Site Settings",
+    homepage: "🏠 Homepage",
+    navigation: "🧭 Navigation",
+    plans: "💎 Plans",
+    faq: "❓ FAQ",
+    announcements: "📢 Announcements",
+    footer: "🔗 Footer",
+    
+    // Site Tab
+    basicInfo: "🏢 Basic Information",
+    platformName: "Platform Name",
+    tagline: "Tagline",
+    siteUrl: "Site URL",
+    supportEmail: "Support Email",
+    supportPhone: "Support Phone",
+    localization: "🌐 Localization",
+    language: "Language",
+    currency: "Currency",
+    timezone: "Timezone",
+    
+    // Homepage Tab
+    heroSection: "🦸 Hero Section",
+    heroTitle: "Hero Title",
+    heroSubtitle: "Hero Subtitle",
+    ctaButtonText: "CTA Button Text",
+    heroStatistics: "📊 Hero Statistics",
+    stat: "Stat",
+    icon: "Icon",
+    label: "Label",
+    value: "Value",
+    
+    // Navigation Tab
+    navigationMenuItems: "🧭 Navigation Menu Items",
+    menuLabel: "Menu Label",
+    
+    // Plans Tab
+    planName: "Plan Name",
+    minAmount: "Min (৳)",
+    maxAmount: "Max (৳, blank=unlimited)",
+    color: "Color",
+    features: "Features",
+    newFeature: "New feature",
+    
+    // FAQ Tab
+    faqItems: "❓ FAQ Items",
+    newFAQ: "New FAQ",
+    question: "Question",
+    answer: "Answer",
+    
+    // Announcements Tab
+    sitewideAnnouncement: "📢 Sitewide Announcement",
+    announcementActive: "Announcement Active?",
+    yesShow: "Yes — Show",
+    noHide: "No — Hide",
+    announcementContent: "Announcement Content",
+    announcementPlaceholder: "Write your announcement here...",
+    linkOptional: "Link (optional)",
+    startDate: "Start Date",
+    endDate: "End Date",
+    
+    // Footer Tab
+    footerText: "📄 Footer Text",
+    copyrightText: "Copyright Text",
+    footerLinks: "🔗 Footer Links",
+    labelPlaceholder: "Label",
+    urlPlaceholder: "/page",
+    
+    // Toast Messages
+    savedSuccessfully: "✅ Saved! Changes will apply to all pages.",
+    resetConfirm: "Reset all settings? This will remove all customizations.",
+    reloading: "🔄 Reloading...",
+    failedToLoad: "Failed to load CMS",
+    saveFailed: "Save failed",
+    dataNotLoaded: "Data not loaded. Please refresh the page.",
+    
+    // Common
+    delete: "Delete",
+  },
+  bn: {
+    // Page Title
+    contentManagement: "📝 কন্টেন্ট ম্যানেজমেন্ট সিস্টেম",
+    changesApplyInstantly: "পরিবর্তনগুলো সংরক্ষণ করলে সব পেজে তাৎক্ষণিক apply হয়",
+    
+    // Buttons
+    reset: "রিসেট",
+    save: "সংরক্ষণ",
+    saving: "সংরক্ষণ হচ্ছে...",
+    addFeature: "Feature যোগ করুন",
+    addFAQ: "নতুন FAQ",
+    addLink: "Link যোগ করুন",
+    
+    // Tabs
+    siteSettings: "⚙️ সাইট সেটিংস",
+    homepage: "🏠 হোমপেজ",
+    navigation: "🧭 নেভিগেশন",
+    plans: "💎 প্ল্যান",
+    faq: "❓ FAQ",
+    announcements: "📢 ঘোষণা",
+    footer: "🔗 Footer",
+    
+    // Site Tab
+    basicInfo: "🏢 মূল তথ্য",
+    platformName: "প্ল্যাটফর্মের নাম",
+    tagline: "ট্যাগলাইন",
+    siteUrl: "সাইট URL",
+    supportEmail: "সাপোর্ট ইমেইল",
+    supportPhone: "সাপোর্ট ফোন",
+    localization: "🌐 লোকালাইজেশন",
+    language: "ভাষা",
+    currency: "মুদ্রা",
+    timezone: "Timezone",
+    
+    // Homepage Tab
+    heroSection: "🦸 Hero Section",
+    heroTitle: "মূল শিরোনাম",
+    heroSubtitle: "উপশিরোনাম",
+    ctaButtonText: "CTA Button Text",
+    heroStatistics: "📊 Hero Statistics",
+    stat: "Stat",
+    icon: "Icon",
+    label: "Label",
+    value: "Value",
+    
+    // Navigation Tab
+    navigationMenuItems: "🧭 Navigation Menu Items",
+    menuLabel: "Menu Label",
+    
+    // Plans Tab
+    planName: "Plan নাম",
+    minAmount: "Min (৳)",
+    maxAmount: "Max (৳, blank=unlimited)",
+    color: "Color",
+    features: "Features",
+    newFeature: "New feature",
+    
+    // FAQ Tab
+    faqItems: "❓ FAQ Items",
+    newFAQ: "নতুন FAQ",
+    question: "প্রশ্ন",
+    answer: "উত্তর",
+    
+    // Announcements Tab
+    sitewideAnnouncement: "📢 সাইটওয়াইড ঘোষণা",
+    announcementActive: "ঘোষণা সক্রিয়?",
+    yesShow: "হ্যাঁ — দেখাও",
+    noHide: "না — লুকাও",
+    announcementContent: "ঘোষণার বিষয়বস্তু",
+    announcementPlaceholder: "আপনার ঘোষণা এখানে লিখুন...",
+    linkOptional: "Link (optional)",
+    startDate: "শুরুর তারিখ",
+    endDate: "শেষের তারিখ",
+    
+    // Footer Tab
+    footerText: "📄 Footer Text",
+    copyrightText: "Copyright Text",
+    footerLinks: "🔗 Footer Links",
+    labelPlaceholder: "Label",
+    urlPlaceholder: "/page",
+    
+    // Toast Messages
+    savedSuccessfully: "✅ সংরক্ষণ হয়েছে! পরিবর্তন সব পেজে apply হবে।",
+    resetConfirm: "সব সেটিংস রিসেট করতে চান? এটি পূর্বের সব কাস্টমাইজেশন মুছে দেবে।",
+    reloading: "🔄 Reloading...",
+    failedToLoad: "CMS লোড করতে ব্যর্থ হয়েছে",
+    saveFailed: "সংরক্ষণ করতে ব্যর্থ হয়েছে",
+    dataNotLoaded: "Data load হয়নি। পেজ refresh করুন।",
+    
+    // Common
+    delete: "মুছুন",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -26,10 +214,25 @@ const getAuthHeaders = () => {
 const CmsPage = () => {
   const [activeTab, setActiveTab] = useState("site");
   const [toast, setToast] = useState({ show: false, message: "" });
-  const [cmsData, setCmsData] = useState(null); // null = not loaded yet
-  console.log("cms data :", cmsData?.plans);
+  const [cmsData, setCmsData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [lang, setLang] = useState("bn");
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
 
   const fetchCms = useCallback(async () => {
     setLoading(true);
@@ -39,7 +242,7 @@ const CmsPage = () => {
         setCmsData(res.data.data);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to load CMS");
+      showToast(err.response?.data?.message || t('failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -54,7 +257,6 @@ const CmsPage = () => {
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
-  // Nested field update: updateField("site", "name", "Amanah")
   const updateField = (section, key, value) => {
     setCmsData((prev) => ({
       ...prev,
@@ -62,7 +264,6 @@ const CmsPage = () => {
     }));
   };
 
-  // Array item update: updateArrayItem("navigation", 0, "label", "Home")
   const updateArrayItem = (section, index, key, value) => {
     setCmsData((prev) => {
       const arr = [...(prev[section] || [])];
@@ -71,7 +272,6 @@ const CmsPage = () => {
     });
   };
 
-  // Array item feature update (plans[idx].features[fIdx])
   const updatePlanFeature = (planIdx, fIdx, value) => {
     setCmsData((prev) => {
       const plans = [...(prev.plans || [])];
@@ -89,46 +289,43 @@ const CmsPage = () => {
         headers: getAuthHeaders(),
       });
       if (res.data.success) {
-        showToast("✅ সংরক্ষণ হয়েছে! পরিবর্তন সব পেজে apply হবে।");
+        showToast(t('savedSuccessfully'));
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Save failed");
+      showToast(err.response?.data?.message || t('saveFailed'));
     } finally {
       setSaving(false);
     }
   };
 
   const resetAll = () => {
-    if (confirm("সব সেটিংস রিসেট করতে চান? এটি পূর্বের সব কাস্টমাইজেশন মুছে দেবে।")) {
-      showToast("🔄 Reloading...");
+    if (confirm(t('resetConfirm'))) {
+      showToast(t('reloading'));
       setTimeout(() => window.location.reload(), 1200);
     }
   };
 
   const tabs = [
-    { id: "site",          label: "⚙️ সাইট সেটিংস",  icon: <Globe size={16} /> },
-    { id: "homepage",      label: "🏠 হোমপেজ",         icon: <Home size={16} /> },
-    { id: "nav",           label: "🧭 নেভিগেশন",       icon: <Navigation size={16} /> },
-    { id: "plans",         label: "💎 প্ল্যান",         icon: <CreditCard size={16} /> },
-    { id: "faq",           label: "❓ FAQ",              icon: <HelpCircle size={16} /> },
-    { id: "announcements", label: "📢 ঘোষণা",           icon: <Megaphone size={16} /> },
-    { id: "footer",        label: "🔗 Footer",           icon: <LinkIcon size={16} /> },
+    { id: "site",          label: t('siteSettings'),  icon: <Globe size={16} /> },
+    { id: "homepage",      label: t('homepage'),         icon: <Home size={16} /> },
+    { id: "nav",           label: t('navigation'),       icon: <Navigation size={16} /> },
+    { id: "plans",         label: t('plans'),         icon: <CreditCard size={16} /> },
+    { id: "faq",           label: t('faq'),              icon: <HelpCircle size={16} /> },
+    { id: "announcements", label: t('announcements'),           icon: <Megaphone size={16} /> },
+    { id: "footer",        label: t('footer'),           icon: <LinkIcon size={16} /> },
   ];
 
-  // ─── TAB RENDERERS ────────────────────────────────────────────────────────
-
-  // Backend: site.{ name, tagline, url, supportEmail, supportPhone, language, currency, timezone }
   const renderSiteTab = () => (
     <div className="grid md:grid-cols-2 gap-5">
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="font-bold text-foreground mb-4">🏢 মূল তথ্য</h3>
+        <h3 className="font-bold text-foreground mb-4">{t('basicInfo')}</h3>
         <div className="space-y-3">
           {[
-            { key: "name",         label: "প্ল্যাটফর্মের নাম" },
-            { key: "tagline",      label: "ট্যাগলাইন" },
-            { key: "url",          label: "সাইট URL" },
-            { key: "supportEmail", label: "সাপোর্ট ইমেইল" },
-            { key: "supportPhone", label: "সাপোর্ট ফোন" },
+            { key: "name",         label: t('platformName') },
+            { key: "tagline",      label: t('tagline') },
+            { key: "url",          label: t('siteUrl') },
+            { key: "supportEmail", label: t('supportEmail') },
+            { key: "supportPhone", label: t('supportPhone') },
           ].map((f) => (
             <div key={f.key}>
               <label className="block text-xs font-semibold text-foreground/60 mb-1">{f.label}</label>
@@ -143,10 +340,10 @@ const CmsPage = () => {
       </div>
 
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="font-bold text-foreground mb-4">🌐 লোকালাইজেশন</h3>
+        <h3 className="font-bold text-foreground mb-4">{t('localization')}</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-semibold text-foreground/60 mb-1">ভাষা</label>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('language')}</label>
             <select
               className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
               value={cmsData?.site?.language || "bn"}
@@ -157,7 +354,7 @@ const CmsPage = () => {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-foreground/60 mb-1">মুদ্রা</label>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('currency')}</label>
             <input
               className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
               value={cmsData?.site?.currency || "BDT"}
@@ -165,7 +362,7 @@ const CmsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-foreground/60 mb-1">Timezone</label>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('timezone')}</label>
             <input
               className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
               value={cmsData?.site?.timezone || "Asia/Dhaka"}
@@ -177,14 +374,13 @@ const CmsPage = () => {
     </div>
   );
 
-  // Backend: homepage.{ heroTitle, heroSubtitle, ctaText, stats:[{label,value,icon}] }
   const renderHomepageTab = () => (
     <div className="grid md:grid-cols-2 gap-5">
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="font-bold text-foreground mb-4">🦸 Hero Section</h3>
+        <h3 className="font-bold text-foreground mb-4">{t('heroSection')}</h3>
         <div className="space-y-3">
           <div>
-            <label className="block text-xs font-semibold text-foreground/60 mb-1">মূল শিরোনাম</label>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('heroTitle')}</label>
             <textarea
               rows={3}
               className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
@@ -193,7 +389,7 @@ const CmsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-foreground/60 mb-1">উপশিরোনাম</label>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('heroSubtitle')}</label>
             <textarea
               rows={3}
               className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
@@ -202,7 +398,7 @@ const CmsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-foreground/60 mb-1">CTA Button Text</label>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('ctaButtonText')}</label>
             <input
               className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
               value={cmsData?.homepage?.ctaText || ""}
@@ -213,14 +409,14 @@ const CmsPage = () => {
       </div>
 
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="font-bold text-foreground mb-4">📊 Hero Statistics</h3>
+        <h3 className="font-bold text-foreground mb-4">{t('heroStatistics')}</h3>
         <div className="space-y-4">
           {(cmsData?.homepage?.stats || []).map((stat, i) => (
             <div key={i} className="border border-border rounded-lg p-3">
-              <div className="text-xs font-semibold text-foreground/50 mb-2">Stat #{i + 1}</div>
+              <div className="text-xs font-semibold text-foreground/50 mb-2">{t('stat')} #{i + 1}</div>
               <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-xs text-foreground/50 mb-1">Icon</label>
+                  <label className="block text-xs text-foreground/50 mb-1">{t('icon')}</label>
                   <input
                     className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
                     value={stat.icon || ""}
@@ -228,7 +424,7 @@ const CmsPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-foreground/50 mb-1">Label</label>
+                  <label className="block text-xs text-foreground/50 mb-1">{t('label')}</label>
                   <input
                     className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
                     value={stat.label || ""}
@@ -242,7 +438,7 @@ const CmsPage = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-foreground/50 mb-1">Value</label>
+                  <label className="block text-xs text-foreground/50 mb-1">{t('value')}</label>
                   <input
                     className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
                     value={stat.value || ""}
@@ -263,10 +459,9 @@ const CmsPage = () => {
     </div>
   );
 
-  // Backend: navigation[].{ label, url, icon }
   const renderNavTab = () => (
     <div className="bg-card border border-border rounded-xl p-5">
-      <h3 className="font-bold text-foreground mb-4">🧭 Navigation Menu Items</h3>
+      <h3 className="font-bold text-foreground mb-4">{t('navigationMenuItems')}</h3>
       <div className="space-y-3">
         {(cmsData?.navigation || []).map((item, i) => (
           <div key={i} className="flex gap-3 items-center">
@@ -281,14 +476,13 @@ const CmsPage = () => {
               className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
               value={item.label || ""}
               onChange={(e) => updateArrayItem("navigation", i, "label", e.target.value)}
-              placeholder="Menu Label"
+              placeholder={t('menuLabel')}
             />
-            {/* backend field is `url`, not `href` */}
             <input
               className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
               value={item.url || ""}
               onChange={(e) => updateArrayItem("navigation", i, "url", e.target.value)}
-              placeholder="/page"
+              placeholder={t('urlPlaceholder')}
             />
           </div>
         ))}
@@ -296,7 +490,6 @@ const CmsPage = () => {
     </div>
   );
 
-  // Backend: plans[].{ name, min, max, color, features:string[] }
   const renderPlansTab = () => (
     <div className="grid md:grid-cols-2 gap-5">
       {(cmsData?.plans || []).map((plan, idx) => (
@@ -310,7 +503,7 @@ const CmsPage = () => {
           </div>
           <div className="space-y-3">
             <div>
-              <label className="block text-xs font-semibold text-foreground/60 mb-1">Plan নাম</label>
+              <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('planName')}</label>
               <input
                 className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
                 value={plan.name || ""}
@@ -319,7 +512,7 @@ const CmsPage = () => {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-xs font-semibold text-foreground/60 mb-1">Min (৳)</label>
+                <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('minAmount')}</label>
                 <input
                   type="number"
                   className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
@@ -328,7 +521,7 @@ const CmsPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-foreground/60 mb-1">Max (৳, blank=unlimited)</label>
+                <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('maxAmount')}</label>
                 <input
                   type="number"
                   className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
@@ -340,7 +533,7 @@ const CmsPage = () => {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-foreground/60 mb-1">Color</label>
+              <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('color')}</label>
               <div className="flex gap-2 items-center">
                 <input
                   type="color"
@@ -356,7 +549,7 @@ const CmsPage = () => {
               </div>
             </div>
             <div>
-              <label className="block text-xs font-semibold text-foreground/60 mb-2">Features</label>
+              <label className="block text-xs font-semibold text-foreground/60 mb-2">{t('features')}</label>
               <div className="space-y-2">
                 {(plan.features || []).map((feat, fIdx) => (
                   <div key={fIdx} className="flex gap-2 items-center">
@@ -384,14 +577,14 @@ const CmsPage = () => {
                   onClick={() => {
                     setCmsData((prev) => {
                       const plans = [...(prev.plans || [])];
-                      const features = [...(plans[idx].features || []), "New feature"];
+                      const features = [...(plans[idx].features || []), t('newFeature')];
                       plans[idx] = { ...plans[idx], features };
                       return { ...prev, plans };
                     });
                   }}
                   className="text-xs text-primary flex items-center gap-1 mt-1 hover:underline"
                 >
-                  <Plus size={12} /> Feature যোগ করুন
+                  <Plus size={12} /> {t('addFeature')}
                 </button>
               </div>
             </div>
@@ -401,11 +594,10 @@ const CmsPage = () => {
     </div>
   );
 
-  // Backend: faq[].{ question, answer }
   const renderFaqTab = () => (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-foreground">❓ FAQ Items</h3>
+        <h3 className="font-bold text-foreground">{t('faqItems')}</h3>
         <button
           onClick={() =>
             setCmsData((prev) => ({
@@ -415,7 +607,7 @@ const CmsPage = () => {
           }
           className="text-xs text-primary flex items-center gap-1 hover:underline"
         >
-          <Plus size={12} /> নতুন FAQ
+          <Plus size={12} /> {t('addFAQ')}
         </button>
       </div>
       <div className="space-y-4">
@@ -437,7 +629,7 @@ const CmsPage = () => {
             </div>
             <div className="space-y-2">
               <div>
-                <label className="block text-xs font-semibold text-foreground/60 mb-1">প্রশ্ন</label>
+                <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('question')}</label>
                 <input
                   className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
                   value={item.question || ""}
@@ -445,7 +637,7 @@ const CmsPage = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-foreground/60 mb-1">উত্তর</label>
+                <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('answer')}</label>
                 <textarea
                   rows={3}
                   className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
@@ -460,34 +652,32 @@ const CmsPage = () => {
     </div>
   );
 
-  // Backend: announcements.{ enabled, text, link, startDate, endDate }
   const renderAnnouncementTab = () => (
     <div className="bg-card border border-border rounded-xl p-5">
-      <h3 className="font-bold text-foreground mb-4">📢 সাইটওয়াইড ঘোষণা</h3>
+      <h3 className="font-bold text-foreground mb-4">{t('sitewideAnnouncement')}</h3>
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-semibold text-foreground/60 mb-1">ঘোষণা সক্রিয়?</label>
-          {/* backend field: enabled (not active) */}
+          <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('announcementActive')}</label>
           <select
             className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
             value={cmsData?.announcements?.enabled ? "true" : "false"}
             onChange={(e) => updateField("announcements", "enabled", e.target.value === "true")}
           >
-            <option value="true">হ্যাঁ — দেখাও</option>
-            <option value="false">না — লুকাও</option>
+            <option value="true">{t('yesShow')}</option>
+            <option value="false">{t('noHide')}</option>
           </select>
         </div>
         <div>
-          <label className="block text-xs font-semibold text-foreground/60 mb-1">ঘোষণার বিষয়বস্তু</label>
+          <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('announcementContent')}</label>
           <input
             className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
             value={cmsData?.announcements?.text || ""}
             onChange={(e) => updateField("announcements", "text", e.target.value)}
-            placeholder="আপনার ঘোষণা এখানে লিখুন..."
+            placeholder={t('announcementPlaceholder')}
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-foreground/60 mb-1">Link (optional)</label>
+          <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('linkOptional')}</label>
           <input
             className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
             value={cmsData?.announcements?.link || ""}
@@ -497,7 +687,7 @@ const CmsPage = () => {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-foreground/60 mb-1">শুরুর তারিখ</label>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('startDate')}</label>
             <input
               type="date"
               className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
@@ -510,7 +700,7 @@ const CmsPage = () => {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-foreground/60 mb-1">শেষের তারিখ</label>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('endDate')}</label>
             <input
               type="date"
               className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
@@ -527,13 +717,12 @@ const CmsPage = () => {
     </div>
   );
 
-  // Backend: footer.{ copyright, links:[{label,url}] }
   const renderFooterTab = () => (
     <div className="grid md:grid-cols-2 gap-5">
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="font-bold text-foreground mb-4">📄 Footer Text</h3>
+        <h3 className="font-bold text-foreground mb-4">{t('footerText')}</h3>
         <div>
-          <label className="block text-xs font-semibold text-foreground/60 mb-1">Copyright Text</label>
+          <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('copyrightText')}</label>
           <input
             className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
             value={cmsData?.footer?.copyright || ""}
@@ -544,7 +733,7 @@ const CmsPage = () => {
 
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-foreground">🔗 Footer Links</h3>
+          <h3 className="font-bold text-foreground">{t('footerLinks')}</h3>
           <button
             onClick={() =>
               setCmsData((prev) => ({
@@ -557,7 +746,7 @@ const CmsPage = () => {
             }
             className="text-xs text-primary flex items-center gap-1 hover:underline"
           >
-            <Plus size={12} /> Link যোগ করুন
+            <Plus size={12} /> {t('addLink')}
           </button>
         </div>
         <div className="space-y-2">
@@ -566,7 +755,7 @@ const CmsPage = () => {
               <input
                 className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
                 value={link.label || ""}
-                placeholder="Label"
+                placeholder={t('labelPlaceholder')}
                 onChange={(e) => {
                   setCmsData((prev) => {
                     const links = [...(prev.footer?.links || [])];
@@ -578,7 +767,7 @@ const CmsPage = () => {
               <input
                 className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
                 value={link.url || ""}
-                placeholder="/page"
+                placeholder={t('urlPlaceholder')}
                 onChange={(e) => {
                   setCmsData((prev) => {
                     const links = [...(prev.footer?.links || [])];
@@ -621,8 +810,6 @@ const CmsPage = () => {
     }
   };
 
-  // ─── RENDER ───────────────────────────────────────────────────────────────
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -636,9 +823,9 @@ const CmsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
-          <h2 className="text-lg font-bold text-foreground">📝 Content Management System</h2>
+          <h2 className="text-lg font-bold text-foreground">{t('contentManagement')}</h2>
           <p className="text-xs text-foreground/50">
-            পরিবর্তনগুলো সংরক্ষণ করলে সব পেজে তাৎক্ষণিক apply হয়
+            {t('changesApplyInstantly')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -646,7 +833,7 @@ const CmsPage = () => {
             onClick={resetAll}
             className="px-4 py-2 rounded-lg border border-red-500/30 text-red-500 text-sm font-semibold hover:bg-red-500/10 transition flex items-center gap-2"
           >
-            <RefreshCw size={14} /> রিসেট
+            <RefreshCw size={14} /> {t('reset')}
           </button>
           <button
             onClick={saveAll}
@@ -654,7 +841,7 @@ const CmsPage = () => {
             className="px-4 py-2 rounded-lg bg-primary text-white text-sm font-semibold flex items-center gap-2 disabled:opacity-50 hover:opacity-90 transition"
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
-            সংরক্ষণ করুন
+            {saving ? t('saving') : t('save')}
           </button>
         </div>
       </div>
@@ -681,7 +868,7 @@ const CmsPage = () => {
         renderActiveTab()
       ) : (
         <div className="py-16 text-center text-foreground/40 text-sm">
-          Data load হয়নি। পেজ refresh করুন।
+          {t('dataNotLoaded')}
         </div>
       )}
 

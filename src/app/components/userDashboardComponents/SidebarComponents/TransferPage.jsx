@@ -2,10 +2,146 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Moon, Sun, Loader2, ArrowRightLeft, Target, User, Wallet, Banknote, CheckCircle, AlertCircle, Users, Send } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Loader2, ArrowRightLeft, Target, User, Wallet, Banknote, CheckCircle, AlertCircle, Users, Send, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
+
+// Translations
+const translations = {
+  en: {
+    // Header
+    transfer: "Transfer",
+    
+    // Step Labels
+    type: "Type",
+    source: "Source",
+    destination: "Destination",
+    amount: "Amount",
+    
+    // Step 1 - Transfer Type
+    whatType: "What type of transfer?",
+    goalToGoal: "Goal → Goal",
+    anotherUser: "Another User",
+    goalToGoalInfo: "Move money between your goals — completely free and instant.",
+    userToUserInfo: "Send money directly to another Sanchoy Bondhu user.",
+    
+    // Step 2 - Source
+    transferFromGoal: "Transfer from which goal?",
+    balance: "Balance",
+    current: "Current",
+    
+    // Step 3 - Destination
+    transferToGoal: "Transfer to which goal?",
+    whoSendingTo: "Who are you sending to?",
+    findUser: "Find User",
+    userFound: "User found!",
+    enterValidPhone: "Please enter a valid phone number",
+    
+    // Step 4 - Amount
+    howMuch: "How much to transfer?",
+    noteOptional: "Note (Optional)",
+    notePlaceholder: "Why are you sending? e.g., For Hajj fund",
+    characters: "characters",
+    insufficientBalance: "Insufficient balance. Available:",
+    
+    // Summary
+    transferSummary: "Transfer Summary",
+    type: "Type",
+    from: "From",
+    to: "To",
+    amount: "Amount",
+    fee: "Fee",
+    free: "Free",
+    
+    // Buttons
+    confirmTransfer: "Confirm Transfer",
+    createGoal: "Create a Goal",
+    goToDashboard: "Go to Dashboard",
+    makeAnotherTransfer: "Make Another Transfer",
+    
+    // Messages
+    noActiveGoals: "No Active Goals",
+    noGoalsDesc: "Create a goal first to make transfers",
+    cannotTransferSame: "Cannot transfer to the same goal",
+    minTransferError: "Minimum transfer amount is ৳10",
+    userNotFound: "User not found",
+    transferComplete: "Transfer Complete!",
+    transferCompleteDesc: "Your transfer has been successfully completed.",
+    amountSent: "sent to",
+    transactionId: "Transaction ID",
+    
+    // Toast
+    transferFailed: "Transfer failed",
+    searchUser: "Search user...",
+  },
+  bn: {
+    // Header
+    transfer: "ট্রান্সফার",
+    
+    // Step Labels
+    type: "ধরন",
+    source: "উৎস",
+    destination: "গন্তব্য",
+    amount: "পরিমাণ",
+    
+    // Step 1 - Transfer Type
+    whatType: "কি ধরনের ট্রান্সফার?",
+    goalToGoal: "গোল → গোল",
+    anotherUser: "অন্য ব্যবহারকারী",
+    goalToGoalInfo: "আপনার গোলগুলোর মধ্যে টাকা সরান — সম্পূর্ণ বিনামূল্যে এবং তাৎক্ষণিক।",
+    userToUserInfo: "সরাসরি অন্য সঞ্চয় বন্ধু ব্যবহারকারীকে টাকা পাঠান।",
+    
+    // Step 2 - Source
+    transferFromGoal: "কোন গোল থেকে ট্রান্সফার করবেন?",
+    balance: "ব্যালেন্স",
+    current: "বর্তমান",
+    
+    // Step 3 - Destination
+    transferToGoal: "কোন গোলে ট্রান্সফার করবেন?",
+    whoSendingTo: "আপনি কাকে পাঠাচ্ছেন?",
+    findUser: "ব্যবহারকারী খুঁজুন",
+    userFound: "ব্যবহারকারী পাওয়া গেছে!",
+    enterValidPhone: "দয়া করে একটি বৈধ ফোন নম্বর দিন",
+    
+    // Step 4 - Amount
+    howMuch: "কত টাকা ট্রান্সফার করবেন?",
+    noteOptional: "নোট (ঐচ্ছিক)",
+    notePlaceholder: "কেন পাঠাচ্ছেন? যেমন: হজ ফান্ডের জন্য",
+    characters: "অক্ষর",
+    insufficientBalance: "পর্যাপ্ত ব্যালেন্স নেই। উপলব্ধ:",
+    
+    // Summary
+    transferSummary: "ট্রান্সফার সারাংশ",
+    type: "ধরন",
+    from: "থেকে",
+    to: "প্রতি",
+    amount: "পরিমাণ",
+    fee: "চার্জ",
+    free: "বিনামূল্যে",
+    
+    // Buttons
+    confirmTransfer: "ট্রান্সফার নিশ্চিত করুন",
+    createGoal: "গোল তৈরি করুন",
+    goToDashboard: "ড্যাশবোর্ডে যান",
+    makeAnotherTransfer: "আরও ট্রান্সফার করুন",
+    
+    // Messages
+    noActiveGoals: "কোন সক্রিয় গোল নেই",
+    noGoalsDesc: "ট্রান্সফার করতে প্রথমে একটি গোল তৈরি করুন",
+    cannotTransferSame: "একই গোলে ট্রান্সফার করা যাবে না",
+    minTransferError: "সর্বনিম্ন ট্রান্সফার পরিমাণ ৳১০",
+    userNotFound: "ব্যবহারকারী পাওয়া যায়নি",
+    transferComplete: "ট্রান্সফার সম্পূর্ণ!",
+    transferCompleteDesc: "আপনার ট্রান্সফার সফলভাবে সম্পন্ন হয়েছে।",
+    amountSent: "পাঠানো হয়েছে",
+    transactionId: "লেনদেন আইডি",
+    
+    // Toast
+    transferFailed: "ট্রান্সফার ব্যর্থ হয়েছে",
+    searchUser: "ব্যবহারকারী খুঁজুন...",
+  }
+};
 
 const TransferPage = () => {
   const router = useRouter();
@@ -26,6 +162,15 @@ const TransferPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [transferResult, setTransferResult] = useState(null);
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
 
   // Fetch user's goals
   const fetchGoals = async () => {
@@ -55,6 +200,9 @@ const TransferPage = () => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
+
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
   }, []);
 
   const toggleTheme = () => {
@@ -85,7 +233,7 @@ const TransferPage = () => {
 
   const selectTo = (id) => {
     if (selFrom === id) {
-      showToast("Cannot transfer to the same goal", "error");
+      showToast(t('cannotTransferSame'), "error");
       return;
     }
     setSelTo(id);
@@ -94,7 +242,7 @@ const TransferPage = () => {
 
   const searchRecipient = async () => {
     if (recipientPhone.length < 11) {
-      showToast("Please enter a valid phone number", "error");
+      showToast(t('enterValidPhone'), "error");
       return;
     }
 
@@ -105,11 +253,11 @@ const TransferPage = () => {
         setRecipientData(response.data.data);
         setRecipientFound(true);
         setActiveStep(4);
-        showToast("User found!", "success");
+        showToast(t('userFound'), "success");
       }
     } catch (error) {
       console.error("Search user error:", error);
-      showToast(error.response?.data?.message || "User not found", "error");
+      showToast(error.response?.data?.message || t('userNotFound'), "error");
       setRecipientFound(false);
       setRecipientData(null);
     } finally {
@@ -121,23 +269,23 @@ const TransferPage = () => {
     const amt = parseFloat(amount) || 0;
     
     if (amt < 10) {
-      showToast("Minimum transfer amount is ৳10", "error");
+      showToast(t('minTransferError'), "error");
       return;
     }
 
     const selectedGoal = goals.find(g => g._id === selFrom);
     if (amt > selectedGoal?.currentSaved) {
-      showToast(`Insufficient balance. Available: ৳${selectedGoal?.currentSaved?.toLocaleString()}`, "error");
+      showToast(`${t('insufficientBalance')} ৳${selectedGoal?.currentSaved?.toLocaleString()}`, "error");
       return;
     }
 
     if (trType === "goal2goal" && !selTo) {
-      showToast("Please select destination goal", "error");
+      showToast(t('selectDestinationGoal'), "error");
       return;
     }
 
     if (trType === "user2user" && !recipientFound) {
-      showToast("Please search for a user first", "error");
+      showToast(t('searchUserFirst'), "error");
       return;
     }
 
@@ -168,7 +316,7 @@ const TransferPage = () => {
       }
     } catch (error) {
       console.error("Transfer error:", error);
-      showToast(error.response?.data?.message || "Transfer failed", "error");
+      showToast(error.response?.data?.message || t('transferFailed'), "error");
     } finally {
       setSubmitting(false);
     }
@@ -207,21 +355,20 @@ const TransferPage = () => {
   };
 
   const getTypeLabel = () => {
-    if (trType === "goal2goal")
-      return lang === "bn" ? "Goal → Goal" : "Goal → Goal";
-    return lang === "bn" ? "Another User" : "Another User";
+    if (trType === "goal2goal") return t('goalToGoal');
+    return t('anotherUser');
   };
 
   const getTypeInfo = () => {
-    if (trType === "goal2goal") {
-      return lang === "bn"
-        ? "Move money between your goals — completely free and instant."
-        : "Move money between your goals — completely free and instant.";
-    }
-    return lang === "bn"
-      ? "Send money directly to another Sanchoy Bondhu user."
-      : "Send money directly to another Sanchoy Bondhu user.";
+    if (trType === "goal2goal") return t('goalToGoalInfo');
+    return t('userToUserInfo');
   };
+
+  const getStepLabels = () => {
+    return [t('type'), t('source'), t('destination'), t('amount')];
+  };
+
+  const stepLabels = getStepLabels();
 
   if (loading) {
     return (
@@ -236,15 +383,15 @@ const TransferPage = () => {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <Target size={48} className="text-foreground/30 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-foreground mb-2">No Active Goals</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">{t('noActiveGoals')}</h3>
           <p className="text-foreground/60 mb-4">
-            Create a goal first to make transfers
+            {t('noGoalsDesc')}
           </p>
           <button
             onClick={() => router.push("/dashboard/goals")}
             className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold"
           >
-            Create a Goal
+            {t('createGoal')}
           </button>
         </div>
       </div>
@@ -264,7 +411,7 @@ const TransferPage = () => {
           <ArrowLeft size={18} />
         </button>
         <h1 className="text-white text-lg font-bold flex-1 flex items-center gap-2">
-          <ArrowRightLeft size={20} /> Transfer
+          <ArrowRightLeft size={20} /> {t('transfer')}
         </h1>
         <button
           onClick={toggleTheme}
@@ -283,7 +430,7 @@ const TransferPage = () => {
       {/* Step Progress */}
       <div className="bg-gradient-to-br from-primary to-primary-dark px-5 pb-6">
         <div className="flex gap-2">
-          {["Type", "Source", "Destination", "Amount"].map((label, idx) => (
+          {stepLabels.map((label, idx) => (
             <div
               key={idx}
               className={`flex-1 py-2 rounded-full flex flex-col items-center gap-1 transition ${
@@ -318,7 +465,7 @@ const TransferPage = () => {
         {activeStep === 1 && (
           <div className="bg-card border border-border rounded-xl p-5 mb-4">
             <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-              <ArrowRightLeft size={18} /> What type of transfer?
+              <ArrowRightLeft size={18} /> {t('whatType')}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -330,7 +477,7 @@ const TransferPage = () => {
                 }`}
               >
                 <Target size={24} className={`mx-auto mb-2 ${trType === "goal2goal" ? "text-primary" : "text-foreground/50"}`} />
-                <span className="text-sm font-semibold">Goal → Goal</span>
+                <span className="text-sm font-semibold">{t('goalToGoal')}</span>
               </button>
               <button
                 onClick={() => selectType("user2user")}
@@ -341,7 +488,7 @@ const TransferPage = () => {
                 }`}
               >
                 <Users size={24} className={`mx-auto mb-2 ${trType === "user2user" ? "text-primary" : "text-foreground/50"}`} />
-                <span className="text-sm font-semibold">Another User</span>
+                <span className="text-sm font-semibold">{t('anotherUser')}</span>
               </button>
             </div>
             <div className="mt-4 p-3 bg-primary/5 border border-primary/15 rounded-lg flex gap-2 text-xs text-foreground/60">
@@ -355,7 +502,7 @@ const TransferPage = () => {
         {activeStep === 2 && (
           <div className="bg-card border border-border rounded-xl p-5 mb-4">
             <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-              <Send size={18} className="text-primary" /> Transfer from which goal?
+              <Send size={18} className="text-primary" /> {t('transferFromGoal')}
             </div>
             <div className="space-y-3">
               {goals.map((goal) => (
@@ -376,7 +523,7 @@ const TransferPage = () => {
                       {goal.goalName}
                     </div>
                     <div className="text-xs text-foreground/50">
-                      Balance: ৳{goal.currentSaved.toLocaleString()} / ৳{goal.targetAmount.toLocaleString()}
+                      {t('balance')}: ৳{goal.currentSaved.toLocaleString()} / ৳{goal.targetAmount.toLocaleString()}
                     </div>
                     <div className="h-1.5 bg-border rounded-full mt-2 overflow-hidden">
                       <div 
@@ -399,7 +546,7 @@ const TransferPage = () => {
           <div className="bg-card border border-border rounded-xl p-5 mb-4">
             <div className="font-bold text-foreground mb-4 flex items-center gap-2">
               {trType === "goal2goal" ? <Target size={18} /> : <User size={18} />}
-              {trType === "goal2goal" ? "Transfer to which goal?" : "Who are you sending to?"}
+              {trType === "goal2goal" ? t('transferToGoal') : t('whoSendingTo')}
             </div>
             
             {trType === "goal2goal" && (
@@ -424,7 +571,7 @@ const TransferPage = () => {
                           {goal.goalName}
                         </div>
                         <div className="text-xs text-foreground/50">
-                          Current: ৳{goal.currentSaved.toLocaleString()}
+                          {t('current')}: ৳{goal.currentSaved.toLocaleString()}
                         </div>
                       </div>
                       {selTo === goal._id && (
@@ -476,7 +623,7 @@ const TransferPage = () => {
                   className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-light text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search size={16} />}
-                  Find User
+                  {t('findUser')}
                 </button>
               </div>
             )}
@@ -487,7 +634,7 @@ const TransferPage = () => {
         {activeStep === 4 && (
           <div className="bg-card border border-border rounded-xl p-5 mb-4">
             <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-              <Wallet size={18} className="text-primary" /> How much to transfer?
+              <Wallet size={18} className="text-primary" /> {t('howMuch')}
             </div>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary text-2xl font-bold">
@@ -520,23 +667,23 @@ const TransferPage = () => {
 
             {selectedFromGoal && amount && parseFloat(amount) > selectedFromGoal.currentSaved && (
               <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
-                <AlertCircle size={12} /> Insufficient balance. Available: ৳{selectedFromGoal.currentSaved.toLocaleString()}
+                <AlertCircle size={12} /> {t('insufficientBalance')} ৳{selectedFromGoal.currentSaved.toLocaleString()}
               </p>
             )}
 
             <div className="mt-4">
               <label className="block text-sm font-semibold text-foreground mb-2">
-                Note (Optional)
+                {t('noteOptional')}
               </label>
               <textarea
                 value={note}
                 onChange={(e) => setNote(e.target.value.slice(0, 100))}
                 rows={2}
-                placeholder="Why are you sending? e.g., For Hajj fund"
+                placeholder={t('notePlaceholder')}
                 className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary resize-none"
               />
               <div className="text-xs text-foreground/50 mt-1">
-                {note.length}/100 characters
+                {note.length}/100 {t('characters')}
               </div>
             </div>
           </div>
@@ -546,33 +693,33 @@ const TransferPage = () => {
         {activeStep === 4 && (
           <div className="bg-gradient-to-r from-primary/5 to-primary-light/5 border border-primary/20 rounded-xl p-4 mb-4">
             <div className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
-              <Wallet size={14} /> Transfer Summary
+              <Wallet size={14} /> {t('transferSummary')}
             </div>
             <div className="flex justify-between text-sm py-2 border-b border-dashed border-border">
-              <span className="text-foreground/60">Type</span>
+              <span className="text-foreground/60">{t('type')}</span>
               <span className="font-semibold text-foreground">
                 {getTypeLabel()}
               </span>
             </div>
             <div className="flex justify-between text-sm py-2 border-b border-dashed border-border">
-              <span className="text-foreground/60">From</span>
+              <span className="text-foreground/60">{t('from')}</span>
               <span className="font-semibold text-foreground">
                 {getSummaryFrom()}
               </span>
             </div>
             <div className="flex justify-between text-sm py-2 border-b border-dashed border-border">
-              <span className="text-foreground/60">To</span>
+              <span className="text-foreground/60">{t('to')}</span>
               <span className="font-semibold text-foreground">
                 {getSummaryTo()}
               </span>
             </div>
             <div className="flex justify-between text-lg py-3">
-              <span className="text-foreground/60">Amount</span>
+              <span className="text-foreground/60">{t('amount')}</span>
               <span className="font-bold text-primary">{getAmountDisplay()}</span>
             </div>
             <div className="flex justify-between text-sm py-2">
-              <span className="text-foreground/60">Fee</span>
-              <span className="font-semibold text-green-500 flex items-center gap-1">Free <CheckCircle size={12} /></span>
+              <span className="text-foreground/60">{t('fee')}</span>
+              <span className="font-semibold text-green-500 flex items-center gap-1">{t('free')} <CheckCircle size={12} /></span>
             </div>
           </div>
         )}
@@ -587,7 +734,7 @@ const TransferPage = () => {
             className="w-full py-4 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-bold text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send size={18} />}
-            Confirm Transfer
+            {t('confirmTransfer')}
           </button>
         </div>
       )}
@@ -610,28 +757,28 @@ const TransferPage = () => {
                 <CheckCircle size={32} className="text-green-500" />
               </div>
               <div className="text-2xl font-bold text-foreground mb-2">
-                Transfer Complete!
+                {t('transferComplete')}
               </div>
               <div className="text-sm text-foreground/60 mb-4">
                 {trType === "goal2goal" 
-                  ? "Your transfer has been successfully completed."
-                  : `${getAmountDisplay()} sent to ${transferResult.toUser}`}
+                  ? t('transferCompleteDesc')
+                  : `${getAmountDisplay()} ${t('amountSent')} ${transferResult.toUser}`}
               </div>
               <div className="bg-background border border-border rounded-xl p-3 space-y-2 text-sm mb-5">
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">Amount</span>
+                  <span className="text-foreground/60">{t('amount')}</span>
                   <span className="font-bold text-primary">{getAmountDisplay()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">From</span>
+                  <span className="text-foreground/60">{t('from')}</span>
                   <span className="font-semibold">{getSummaryFrom()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">To</span>
+                  <span className="text-foreground/60">{t('to')}</span>
                   <span className="font-semibold">{getSummaryTo()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-foreground/60">Transaction ID</span>
+                  <span className="text-foreground/60">{t('transactionId')}</span>
                   <span className="font-mono text-xs">{transferResult.transactionId?.slice(-8)}</span>
                 </div>
               </div>
@@ -639,13 +786,13 @@ const TransferPage = () => {
                 onClick={() => router.push("/dashboard")}
                 className="w-full py-3 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-semibold mb-3"
               >
-                Go to Dashboard
+                {t('goToDashboard')}
               </button>
               <button
                 onClick={resetTransfer}
                 className="w-full py-3 border-2 border-border text-foreground rounded-xl font-semibold hover:border-primary/50 transition"
               >
-                Make Another Transfer
+                {t('makeAnotherTransfer')}
               </button>
             </motion.div>
           </div>

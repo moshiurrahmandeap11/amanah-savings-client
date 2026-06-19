@@ -7,6 +7,124 @@ import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 import { FaFacebook } from "react-icons/fa";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    pageTitle: "Referral Program",
+    pageSubtitle: "Invite friends and earn rewards together",
+    
+    // Referral Card
+    inviteFriends: "Invite Friends, Get ৳500!",
+    inviteDesc: "Both you and your friend get ৳500 bonus when they join and make their first deposit of at least ৳500.",
+    copy: "Copy",
+    copied: "Copied!",
+    whatsapp: "WhatsApp",
+    facebook: "Facebook",
+    sms: "SMS",
+    
+    // Stats
+    friendsReferred: "Friends Referred",
+    totalBonusEarned: "Total Bonus Earned",
+    activeReferrals: "Active Referrals",
+    thisMonth: "This Month",
+    
+    // History
+    referralHistory: "Referral History",
+    noReferrals: "No referrals yet",
+    noReferralsDesc: "Share your referral link to start earning bonuses!",
+    
+    // Pagination
+    previous: "Previous",
+    next: "Next",
+    pageOf: "Page {current} of {total}",
+    
+    // Info Note
+    howItWorks: "How it works:",
+    howItWorksDesc: "Share your unique referral link with friends. When they sign up and make their first deposit of at least ৳500, both of you get ৳500 bonus credited to your savings account. No limit on referrals!",
+    
+    // Leaderboard
+    topReferrers: "Top Referrers",
+    seeLeaderboard: "See who's leading the referral leaderboard",
+    viewLeaderboard: "View Leaderboard",
+    topReferrersTitle: "Top Referrers Leaderboard",
+    topReferrersDesc: "Top {count} referrers based on total referrals",
+    noReferrers: "No referrers found yet",
+    beFirstReferrer: "Be the first to refer friends!",
+    
+    // Leaderboard Headers
+    rank: "Rank",
+    referrer: "Referrer",
+    referrals: "Referrals",
+    bonusEarned: "Bonus Earned",
+    ref: "ref",
+    refs: "refs",
+    leaderboardUpdate: "Leaderboard updates daily based on total referrals",
+    
+    // Toast Messages
+    copiedLink: "Referral link copied to clipboard",
+    leaderboardError: "Failed to load leaderboard",
+    error: "Error!",
+  },
+  bn: {
+    // Page Title
+    pageTitle: "রেফারেল প্রোগ্রাম",
+    pageSubtitle: "বন্ধুদের আমন্ত্রণ জানান এবং একসাথে পুরস্কার অর্জন করুন",
+    
+    // Referral Card
+    inviteFriends: "বন্ধুদের আমন্ত্রণ জানান, পান ৳৫০০!",
+    inviteDesc: "যখন আপনার বন্ধু যোগ দেয় এবং কমপক্ষে ৳৫০০ এর প্রথম জমা করে, তখন আপনি এবং আপনার বন্ধু উভয়েই ৳৫০০ বোনাস পান।",
+    copy: "কপি",
+    copied: "কপি করা হয়েছে!",
+    whatsapp: "হোয়াটসঅ্যাপ",
+    facebook: "ফেসবুক",
+    sms: "এসএমএস",
+    
+    // Stats
+    friendsReferred: "রেফার করা বন্ধু",
+    totalBonusEarned: "মোট অর্জিত বোনাস",
+    activeReferrals: "সক্রিয় রেফারেল",
+    thisMonth: "এই মাস",
+    
+    // History
+    referralHistory: "রেফারেল ইতিহাস",
+    noReferrals: "কোন রেফারেল নেই",
+    noReferralsDesc: "বোনাস অর্জন শুরু করতে আপনার রেফারেল লিংক শেয়ার করুন!",
+    
+    // Pagination
+    previous: "পূর্ববর্তী",
+    next: "পরবর্তী",
+    pageOf: "পৃষ্ঠা {current} / {total}",
+    
+    // Info Note
+    howItWorks: "কীভাবে কাজ করে:",
+    howItWorksDesc: "আপনার অনন্য রেফারেল লিংক বন্ধুদের সাথে শেয়ার করুন। যখন তারা সাইন আপ করে এবং কমপক্ষে ৳৫০০ এর প্রথম জমা করে, তখন আপনারা উভয়েই ৳৫০০ বোনাস পান। রেফারেলের কোনো সীমা নেই!",
+    
+    // Leaderboard
+    topReferrers: "শীর্ষ রেফারার",
+    seeLeaderboard: "দেখুন কে রেফারেল লিডারবোর্ডে এগিয়ে আছে",
+    viewLeaderboard: "লিডারবোর্ড দেখুন",
+    topReferrersTitle: "শীর্ষ রেফারার লিডারবোর্ড",
+    topReferrersDesc: "মোট রেফারেলের ভিত্তিতে শীর্ষ {count} রেফারার",
+    noReferrers: "কোন রেফারার পাওয়া যায়নি",
+    beFirstReferrer: "প্রথম বন্ধু রেফার করুন!",
+    
+    // Leaderboard Headers
+    rank: "র্যাঙ্ক",
+    referrer: "রেফারার",
+    referrals: "রেফারেল",
+    bonusEarned: "অর্জিত বোনাস",
+    ref: "টি",
+    refs: "টি",
+    leaderboardUpdate: "লিডারবোর্ড প্রতিদিন মোট রেফারেলের ভিত্তিতে আপডেট হয়",
+    
+    // Toast Messages
+    copiedLink: "রেফারেল লিংক ক্লিপবোর্ডে কপি করা হয়েছে",
+    leaderboardError: "লিডারবোর্ড লোড করতে ব্যর্থ হয়েছে",
+    error: "ত্রুটি!",
+  }
+};
+
 const ReferralPage = () => {
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -14,6 +132,7 @@ const ReferralPage = () => {
   const [showLeaderboardModal, setShowLeaderboardModal] = useState(false);
   const [leaderboard, setLeaderboard] = useState([]);
   const [leaderboardStats, setLeaderboardStats] = useState({ total: 0 });
+  const [lang, setLang] = useState("en");
   const [referralData, setReferralData] = useState({
     referralCode: "",
     referralLink: "",
@@ -31,6 +150,21 @@ const ReferralPage = () => {
     totalPages: 1,
     totalItems: 0,
   });
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   // Fetch referral stats
   const fetchReferralStats = async () => {
@@ -71,8 +205,8 @@ const ReferralPage = () => {
     } catch (error) {
       console.error("Fetch leaderboard error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "Failed to load leaderboard",
+        title: t('error'),
+        text: t('leaderboardError'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -101,8 +235,8 @@ const ReferralPage = () => {
     navigator.clipboard.writeText(referralData.referralLink);
     setCopied(true);
     Swal.fire({
-      title: "Copied!",
-      text: "Referral link copied to clipboard",
+      title: t('copied'),
+      text: t('copiedLink'),
       icon: "success",
       timer: 1500,
       showConfirmButton: false,
@@ -145,28 +279,28 @@ const ReferralPage = () => {
     { 
       icon: <UserPlus size={18} />, 
       value: referralData.stats.totalReferrals, 
-      label: "Friends Referred",
+      label: t('friendsReferred'),
       color: "primary",
       bg: "bg-primary/10"
     },
     { 
       icon: <Wallet size={18} />, 
       value: `৳${referralData.stats.totalBonusEarned.toLocaleString()}`, 
-      label: "Total Bonus Earned",
+      label: t('totalBonusEarned'),
       color: "green",
       bg: "bg-green-500/10"
     },
     { 
       icon: <Users size={18} />, 
       value: referralData.stats.activeReferrals, 
-      label: "Active Referrals",
+      label: t('activeReferrals'),
       color: "blue",
       bg: "bg-blue-500/10"
     },
     { 
       icon: <Calendar size={18} />, 
       value: `৳${referralData.stats.thisMonthBonus.toLocaleString()}`, 
-      label: "This Month",
+      label: t('thisMonth'),
       color: "amber",
       bg: "bg-amber-500/10"
     },
@@ -183,18 +317,17 @@ const ReferralPage = () => {
   return (
     <div className="max-w-full mx-auto">
       <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
-        <Gift size={28} className="text-primary" /> Referral Program
+        <Gift size={28} className="text-primary" /> {t('pageTitle')}
       </h2>
-      <p className="text-sm text-foreground/60 mb-5">Invite friends and earn rewards together</p>
+      <p className="text-sm text-foreground/60 mb-5">{t('pageSubtitle')}</p>
 
       {/* Referral Card */}
       <div className="bg-gradient-to-r from-emerald-700 to-emerald-800 rounded-xl p-6 mb-6 text-white">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <div className="text-xl font-bold mb-1">Invite Friends, Get ৳500!</div>
+            <div className="text-xl font-bold mb-1">{t('inviteFriends')}</div>
             <div className="text-sm text-white/80">
-              Both you and your friend get ৳500 bonus when they join and make their
-              first deposit of at least ৳500.
+              {t('inviteDesc')}
             </div>
           </div>
           <Trophy size={40} className="text-white/20" />
@@ -209,7 +342,7 @@ const ReferralPage = () => {
             className="flex items-center gap-1 px-3 py-1.5 bg-white/20 rounded-lg text-sm font-semibold hover:bg-white/30 transition"
           >
             {copied ? <Check size={14} /> : <Copy size={14} />}
-            {copied ? "Copied!" : "Copy"}
+            {copied ? t('copied') : t('copy')}
           </button>
         </div>
 
@@ -218,19 +351,19 @@ const ReferralPage = () => {
             onClick={shareOnWhatsApp}
             className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition flex items-center justify-center gap-2"
           >
-            <MessageCircle size={16} /> WhatsApp
+            <MessageCircle size={16} /> {t('whatsapp')}
           </button>
           <button
             onClick={shareOnFacebook}
             className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition flex items-center justify-center gap-2"
           >
-            <FaFacebook size={16} /> Facebook
+            <FaFacebook size={16} /> {t('facebook')}
           </button>
           <button
             onClick={shareOnSMS}
             className="flex-1 py-2.5 rounded-lg bg-white/15 text-white text-sm font-semibold hover:bg-white/25 transition flex items-center justify-center gap-2"
           >
-            <Phone size={16} /> SMS
+            <Phone size={16} /> {t('sms')}
           </button>
         </div>
 
@@ -250,14 +383,14 @@ const ReferralPage = () => {
       {/* Referral History Card */}
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="font-bold text-foreground mb-4 flex items-center gap-2">
-          <Users size={18} className="text-primary" /> Referral History
+          <Users size={18} className="text-primary" /> {t('referralHistory')}
         </div>
         {history.length === 0 ? (
           <div className="text-center py-8">
             <Gift size={48} className="text-foreground/30 mx-auto mb-2" />
-            <p className="text-foreground/50">No referrals yet</p>
+            <p className="text-foreground/50">{t('noReferrals')}</p>
             <p className="text-xs text-foreground/40 mt-1">
-              Share your referral link to start earning bonuses!
+              {t('noReferralsDesc')}
             </p>
           </div>
         ) : (
@@ -271,7 +404,7 @@ const ReferralPage = () => {
                 className="flex items-center gap-3 pb-3 border-b border-border last:border-0"
               >
                 <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${item.status === "bonus" ? "bg-primary/10" : "bg-amber-500/10"}`}>
-                  {item.status === "bonus" ? <CheckCircle size={16} className="text-primary" /> : <Clock size={16} className="text-amber-500" />}
+                  {item.status === "bonus" ? <Check size={16} className="text-primary" /> : <Clock size={16} className="text-amber-500" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-sm text-foreground">{item.name}</div>
@@ -299,17 +432,17 @@ const ReferralPage = () => {
               disabled={pagination.currentPage === 1}
               className="px-3 py-1 rounded-lg border border-border text-foreground/70 text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
             >
-              Previous
+              {t('previous')}
             </button>
             <span className="px-3 py-1 text-xs text-foreground">
-              Page {pagination.currentPage} of {pagination.totalPages}
+              {t('pageOf', { current: pagination.currentPage, total: pagination.totalPages })}
             </span>
             <button
               onClick={() => fetchReferralHistory(pagination.currentPage + 1)}
               disabled={pagination.currentPage === pagination.totalPages}
               className="px-3 py-1 rounded-lg border border-border text-foreground/70 text-xs disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
             >
-              Next
+              {t('next')}
             </button>
           </div>
         )}
@@ -320,10 +453,7 @@ const ReferralPage = () => {
         <div className="flex gap-2">
           <Gift size={18} className="text-primary shrink-0 mt-0.5" />
           <div className="text-sm text-foreground/60">
-            <strong className="text-foreground">How it works:</strong> Share
-            your unique referral link with friends. When they sign up and make
-            their first deposit of at least ৳500, both of you get ৳500 bonus
-            credited to your savings account. No limit on referrals!
+            <strong className="text-foreground">{t('howItWorks')}</strong> {t('howItWorksDesc')}
           </div>
         </div>
       </div>
@@ -334,15 +464,15 @@ const ReferralPage = () => {
           <div className="flex items-center gap-3">
             <TrendingUp size={20} className="text-primary" />
             <div>
-              <div className="font-semibold text-foreground text-sm">Top Referrers</div>
-              <div className="text-xs text-foreground/50">See who's leading the referral leaderboard</div>
+              <div className="font-semibold text-foreground text-sm">{t('topReferrers')}</div>
+              <div className="text-xs text-foreground/50">{t('seeLeaderboard')}</div>
             </div>
           </div>
           <button
             onClick={openLeaderboardModal}
             className="px-4 py-2 rounded-lg bg-primary/10 text-primary text-sm font-semibold hover:bg-primary/20 transition flex items-center gap-1"
           >
-            <Trophy size={14} /> View Leaderboard
+            <Trophy size={14} /> {t('viewLeaderboard')}
           </button>
         </div>
       </div>
@@ -364,10 +494,10 @@ const ReferralPage = () => {
               <div className="sticky top-0 bg-card border-b border-border p-5 flex justify-between items-center">
                 <div>
                   <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
-                    <Trophy size={22} className="text-amber-500" /> Top Referrers Leaderboard
+                    <Trophy size={22} className="text-amber-500" /> {t('topReferrersTitle')}
                   </h3>
                   <p className="text-sm text-foreground/50">
-                    Top {leaderboardStats.total} referrers based on total referrals
+                    {t('topReferrersDesc', { count: leaderboardStats.total })}
                   </p>
                 </div>
                 <button
@@ -386,17 +516,17 @@ const ReferralPage = () => {
                 ) : leaderboard.length === 0 ? (
                   <div className="text-center py-12">
                     <Trophy size={48} className="text-foreground/30 mx-auto mb-3" />
-                    <p className="text-foreground/50">No referrers found yet</p>
-                    <p className="text-xs text-foreground/40 mt-1">Be the first to refer friends!</p>
+                    <p className="text-foreground/50">{t('noReferrers')}</p>
+                    <p className="text-xs text-foreground/40 mt-1">{t('beFirstReferrer')}</p>
                   </div>
                 ) : (
                   <div className="divide-y divide-border">
                     {/* Header Row */}
                     <div className="grid grid-cols-12 gap-2 px-5 py-3 bg-background sticky top-0 font-semibold text-xs text-foreground/60">
-                      <div className="col-span-2">Rank</div>
-                      <div className="col-span-5">Referrer</div>
-                      <div className="col-span-2 text-center">Referrals</div>
-                      <div className="col-span-3 text-right">Bonus Earned</div>
+                      <div className="col-span-2">{t('rank')}</div>
+                      <div className="col-span-5">{t('referrer')}</div>
+                      <div className="col-span-2 text-center">{t('referrals')}</div>
+                      <div className="col-span-3 text-right">{t('bonusEarned')}</div>
                     </div>
 
                     {/* Leaderboard Rows */}
@@ -431,7 +561,7 @@ const ReferralPage = () => {
                             {user.referrals}
                           </span>
                           <span className="text-xs text-foreground/50 ml-1">
-                            {user.referrals === 1 ? "ref" : "refs"}
+                            {user.referrals === 1 ? t('ref') : t('refs')}
                           </span>
                         </div>
                         <div className="col-span-3 text-right">
@@ -447,7 +577,7 @@ const ReferralPage = () => {
 
               <div className="sticky bottom-0 bg-card border-t border-border p-4 text-center">
                 <p className="text-xs text-foreground/40 flex items-center justify-center gap-1">
-                  <TrendingUp size={10} /> Leaderboard updates daily based on total referrals
+                  <TrendingUp size={10} /> {t('leaderboardUpdate')}
                 </p>
               </div>
             </motion.div>

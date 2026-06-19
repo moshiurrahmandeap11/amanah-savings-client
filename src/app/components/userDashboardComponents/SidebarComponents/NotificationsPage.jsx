@@ -13,17 +13,133 @@ import {
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    pageTitle: "Notifications",
+    new: "new",
+    
+    // Buttons
+    markAllAsRead: "Mark all as read",
+    depositNow: "Deposit Now",
+    viewDetails: "View Details",
+    previous: "Previous",
+    next: "Next",
+    
+    // Tabs
+    all: "All",
+    deposit: "Deposit",
+    streak: "Streak",
+    reminder: "Reminder",
+    bonus: "Bonus",
+    achievement: "Achievement",
+    
+    // Empty State
+    noNotifications: "No notifications",
+    allCaughtUp: "You're all caught up!",
+    
+    // Modals
+    markAllReadTitle: "Mark all as read?",
+    markAllReadText: "This will mark all your notifications as read.",
+    confirmMarkAll: "Yes, mark all",
+    markAllSuccess: "All notifications marked as read",
+    markAllError: "Failed to mark notifications as read",
+    
+    deleteTitle: "Delete notification?",
+    deleteText: "This action cannot be undone.",
+    confirmDelete: "Yes, delete",
+    deleteSuccess: "Notification deleted",
+    deleteError: "Failed to delete notification",
+    
+    // Loading
+    loading: "Loading...",
+    
+    // Pagination
+    pageOf: "Page {current} of {total}",
+    
+    // Toast
+    success: "Success!",
+    error: "Error!",
+    markedAsRead: "Marked as read",
+  },
+  bn: {
+    // Page Title
+    pageTitle: "বিজ্ঞপ্তি",
+    new: "নতুন",
+    
+    // Buttons
+    markAllAsRead: "সব পঠিত হিসেবে চিহ্নিত করুন",
+    depositNow: "এখনই জমা দিন",
+    viewDetails: "বিস্তারিত দেখুন",
+    previous: "পূর্ববর্তী",
+    next: "পরবর্তী",
+    
+    // Tabs
+    all: "সব",
+    deposit: "জমা",
+    streak: "স্ট্রিক",
+    reminder: "স্মারক",
+    bonus: "বোনাস",
+    achievement: "অর্জন",
+    
+    // Empty State
+    noNotifications: "কোন বিজ্ঞপ্তি নেই",
+    allCaughtUp: "আপনি সব আপডেট পড়েছেন!",
+    
+    // Modals
+    markAllReadTitle: "সব পঠিত হিসেবে চিহ্নিত করবেন?",
+    markAllReadText: "এটি আপনার সব বিজ্ঞপ্তি পঠিত হিসেবে চিহ্নিত করবে।",
+    confirmMarkAll: "হ্যাঁ, সব চিহ্নিত করুন",
+    markAllSuccess: "সব বিজ্ঞপ্তি পঠিত হিসেবে চিহ্নিত করা হয়েছে",
+    markAllError: "বিজ্ঞপ্তি পঠিত হিসেবে চিহ্নিত করতে ব্যর্থ হয়েছে",
+    
+    deleteTitle: "বিজ্ঞপ্তি মুছে ফেলবেন?",
+    deleteText: "এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।",
+    confirmDelete: "হ্যাঁ, মুছে ফেলুন",
+    deleteSuccess: "বিজ্ঞপ্তি মুছে ফেলা হয়েছে",
+    deleteError: "বিজ্ঞপ্তি মুছে ফেলতে ব্যর্থ হয়েছে",
+    
+    // Loading
+    loading: "লোড হচ্ছে...",
+    
+    // Pagination
+    pageOf: "পৃষ্ঠা {current} / {total}",
+    
+    // Toast
+    success: "সফল!",
+    error: "ত্রুটি!",
+    markedAsRead: "পঠিত হিসেবে চিহ্নিত করা হয়েছে",
+  }
+};
+
 const NotificationsPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState("en");
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
     totalItems: 0,
   });
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   // Fetch notifications
   const fetchNotifications = async (page = 1) => {
@@ -60,20 +176,20 @@ const NotificationsPage = () => {
   const markAllAsRead = async () => {
     try {
       const result = await Swal.fire({
-        title: "Mark all as read?",
-        text: "This will mark all your notifications as read.",
+        title: t('markAllReadTitle'),
+        text: t('markAllReadText'),
         icon: "question",
         showCancelButton: true,
         confirmButtonColor: "#059669",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, mark all",
+        confirmButtonText: t('confirmMarkAll'),
       });
 
       if (result.isConfirmed) {
         await axiosInstance.put("/notifications/read-all");
         Swal.fire({
-          title: "Success!",
-          text: "All notifications marked as read",
+          title: t('success'),
+          text: t('markAllSuccess'),
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
@@ -83,8 +199,8 @@ const NotificationsPage = () => {
     } catch (error) {
       console.error("Mark all as read error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "Failed to mark notifications as read",
+        title: t('error'),
+        text: t('markAllError'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -95,20 +211,20 @@ const NotificationsPage = () => {
     e.stopPropagation();
     try {
       const result = await Swal.fire({
-        title: "Delete notification?",
-        text: "This action cannot be undone.",
+        title: t('deleteTitle'),
+        text: t('deleteText'),
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#d33",
         cancelButtonColor: "#6c757d",
-        confirmButtonText: "Yes, delete",
+        confirmButtonText: t('confirmDelete'),
       });
 
       if (result.isConfirmed) {
         await axiosInstance.delete(`/notifications/${id}`);
         Swal.fire({
-          title: "Deleted!",
-          text: "Notification deleted",
+          title: t('success'),
+          text: t('deleteSuccess'),
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
@@ -118,8 +234,8 @@ const NotificationsPage = () => {
     } catch (error) {
       console.error("Delete notification error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "Failed to delete notification",
+        title: t('error'),
+        text: t('deleteError'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -127,12 +243,12 @@ const NotificationsPage = () => {
   };
 
   const tabs = [
-    { id: "all", label: "All", count: counts.all || 0 },
-    { id: "deposit", label: "Deposit", count: counts.deposit || 0 },
-    { id: "streak", label: "Streak", count: counts.streak || 0 },
-    { id: "reminder", label: "Reminder", count: counts.reminder || 0 },
-    { id: "bonus", label: "Bonus", count: counts.bonus || 0 },
-    { id: "achievement", label: "Achievement", count: counts.achievement || 0 },
+    { id: "all", label: t('all'), count: counts.all || 0 },
+    { id: "deposit", label: t('deposit'), count: counts.deposit || 0 },
+    { id: "streak", label: t('streak'), count: counts.streak || 0 },
+    { id: "reminder", label: t('reminder'), count: counts.reminder || 0 },
+    { id: "bonus", label: t('bonus'), count: counts.bonus || 0 },
+    { id: "achievement", label: t('achievement'), count: counts.achievement || 0 },
   ];
 
   if (loading) {
@@ -148,10 +264,10 @@ const NotificationsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-          <Bell size={24} /> Notifications
+          <Bell size={24} /> {t('pageTitle')}
           {unreadCount > 0 && (
             <span className="px-2 py-0.5 rounded-full bg-primary text-white text-xs">
-              {unreadCount} new
+              {unreadCount} {t('new')}
             </span>
           )}
         </h2>
@@ -161,7 +277,7 @@ const NotificationsPage = () => {
               onClick={markAllAsRead}
               className="px-4 py-2 rounded-lg bg-primary/15 text-primary border border-primary/30 text-sm font-semibold hover:bg-primary/25 transition flex items-center gap-2"
             >
-              <CheckCircle size={14} /> Mark all as read
+              <CheckCircle size={14} /> {t('markAllAsRead')}
             </button>
           )}
         </div>
@@ -197,9 +313,9 @@ const NotificationsPage = () => {
           {notifications.length === 0 ? (
             <div className="text-center py-12 bg-card rounded-xl border border-border">
               <div className="text-6xl mb-3">🔔</div>
-              <div className="font-bold text-foreground mb-1">No notifications</div>
+              <div className="font-bold text-foreground mb-1">{t('noNotifications')}</div>
               <div className="text-sm text-foreground/50">
-                You're all caught up!
+                {t('allCaughtUp')}
               </div>
             </div>
           ) : (
@@ -234,7 +350,7 @@ const NotificationsPage = () => {
                     {notif.actionType && (
                       <div className="mt-2">
                         <button className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white text-xs font-semibold">
-                          {notif.actionType === "deposit" ? "Deposit Now" : "View Details"}
+                          {notif.actionType === "deposit" ? t('depositNow') : t('viewDetails')}
                         </button>
                       </div>
                     )}
@@ -268,17 +384,17 @@ const NotificationsPage = () => {
             disabled={pagination.currentPage === 1}
             className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
           >
-            Previous
+            {t('previous')}
           </button>
           <span className="px-4 py-2 text-foreground">
-            Page {pagination.currentPage} of {pagination.totalPages}
+            {t('pageOf', { current: pagination.currentPage, total: pagination.totalPages })}
           </span>
           <button
             onClick={() => fetchNotifications(pagination.currentPage + 1)}
             disabled={pagination.currentPage === pagination.totalPages}
             className="px-4 py-2 rounded-lg border border-border text-foreground/70 disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition"
           >
-            Next
+            {t('next')}
           </button>
         </div>
       )}

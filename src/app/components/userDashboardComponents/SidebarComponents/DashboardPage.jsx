@@ -30,7 +30,224 @@ import {
   Copy,
   Award,
   XCircle,
+  Heart,
+  Star,
+  GraduationCap,
+  Smartphone,
+  Car,
+  Briefcase,
+  Plane,
 } from "lucide-react";
+
+// Translations
+const translations = {
+  en: {
+    // Dashboard
+    dashboard: "Dashboard",
+    loadingDashboard: "Loading dashboard...",
+    
+    // Header
+    goodMorning: "Good Morning",
+    goodAfternoon: "Good Afternoon", 
+    goodEvening: "Good Evening",
+    nextDepositDue: "Your next deposit is due in",
+    days: "days",
+    keepStreakAlive: "Keep your streak alive!",
+    
+    // Quick Actions
+    deposit: "Deposit",
+    withdraw: "Withdraw",
+    transfer: "Transfer",
+    autoSave: "Auto-Save",
+    
+    // Stats
+    totalSavings: "Total Savings",
+    activeCircles: "Active Circles",
+    dayStreak: "Day Streak",
+    saverLevel: "Saver Level",
+    startSavingToday: "Start saving today!",
+    joinCircle: "Join a circle!",
+    topSaver: "Top saver!",
+    keepGoing: "Keep going!",
+    startYourStreak: "Start your streak!",
+    member: "Member",
+    thisMonth: "This Month",
+    
+    // Savings Hero
+    totalSavingsBalance: "Total Savings Balance",
+    goal: "Goal",
+    complete: "Complete",
+    saved: "Saved",
+    remaining: "Remaining",
+    thisMonthLabel: "This Month",
+    totalSavedLabel: "Total Saved",
+    dayStreakLabel: "Day Streak",
+    
+    // Chart
+    savingsHistory: "Savings History",
+    
+    // Goals
+    mySavingsGoals: "My Savings Goals",
+    viewAll: "View all",
+    loadingGoals: "Loading goals...",
+    noGoalsYet: "No goals yet",
+    createFirstGoal: "Create your first savings goal to get started",
+    createGoal: "Create Goal",
+    active: "Active",
+    paused: "Paused",
+    inProgress: "In progress",
+    
+    // Transactions
+    recentTransactions: "Recent Transactions",
+    viewAllTransactions: "View all",
+    noTransactions: "No transactions yet",
+    pending: "Pending",
+    
+    // AI Assistant
+    aiAssistant: "Sanchoy Bondhu AI Assistant",
+    askAboutSavings: "Ask about savings...",
+    send: "Send",
+    
+    // Goal Progress
+    goalProgress: "Goal Progress",
+    details: "Details",
+    noGoalsForProgress: "No goals yet. Create one to see progress!",
+    
+    // KYC Status
+    verificationStatus: "Verification Status",
+    emailVerified: "Email Verified",
+    phoneVerified: "Phone Verified",
+    kycVerified: "KYC Verified",
+    profilePicture: "Profile Picture",
+    verificationSteps: "verification steps completed",
+    completeVerification: "Complete Verification →",
+    
+    // Referral
+    referAndEarn: "Refer & Earn",
+    referBonus: "Get ৳500 bonus for each friend who joins and makes their first deposit.",
+    copy: "Copy",
+    friendsReferred: "Friends Referred",
+    bonusEarned: "Bonus Earned",
+    referralLinkCopied: "Referral link copied!",
+    
+    // Savings Plan
+    yourSavingsPlan: "Your Savings Plan",
+    currentPlan: "Current Plan",
+    memberSince: "Member Since",
+    totalSavedPlan: "Total Saved",
+    currentLevel: "Current Level",
+    
+    // Greeting Fallback
+    user: "User",
+    
+    // Alerts
+    error: "Error",
+    failedToFetch: "Failed to fetch data",
+  },
+  bn: {
+    // Dashboard
+    dashboard: "ড্যাশবোর্ড",
+    loadingDashboard: "ড্যাশবোর্ড লোড হচ্ছে...",
+    
+    // Header
+    goodMorning: "সুপ্রভাত",
+    goodAfternoon: "শুভ অপরাহ্ন",
+    goodEvening: "শুভ সন্ধ্যা",
+    nextDepositDue: "আপনার পরবর্তী জমা বাকি আছে",
+    days: "দিন",
+    keepStreakAlive: "আপনার স্ট্রিক বজায় রাখুন!",
+    
+    // Quick Actions
+    deposit: "জমা করুন",
+    withdraw: "তোলার অনুরোধ",
+    transfer: "ট্রান্সফার",
+    autoSave: "অটো-সেভ",
+    
+    // Stats
+    totalSavings: "মোট সঞ্চয়",
+    activeCircles: "সক্রিয় সার্কেল",
+    dayStreak: "দিনের স্ট্রিক",
+    saverLevel: "সেভার লেভেল",
+    startSavingToday: "আজই সঞ্চয় শুরু করুন!",
+    joinCircle: "একটি সার্কেলে যোগ দিন!",
+    topSaver: "শীর্ষ সেভার!",
+    keepGoing: "চালিয়ে যান!",
+    startYourStreak: "আপনার স্ট্রিক শুরু করুন!",
+    member: "সদস্য",
+    thisMonth: "এই মাস",
+    
+    // Savings Hero
+    totalSavingsBalance: "মোট সঞ্চয় ব্যালেন্স",
+    goal: "লক্ষ্য",
+    complete: "সম্পূর্ণ",
+    saved: "সঞ্চিত",
+    remaining: "বাকি",
+    thisMonthLabel: "এই মাস",
+    totalSavedLabel: "মোট সঞ্চয়",
+    dayStreakLabel: "দিনের স্ট্রিক",
+    
+    // Chart
+    savingsHistory: "সঞ্চয়ের ইতিহাস",
+    
+    // Goals
+    mySavingsGoals: "আমার সঞ্চয় লক্ষ্য",
+    viewAll: "সব দেখুন",
+    loadingGoals: "লক্ষ্য লোড হচ্ছে...",
+    noGoalsYet: "কোন লক্ষ্য নেই",
+    createFirstGoal: "শুরু করতে আপনার প্রথম সঞ্চয় লক্ষ্য তৈরি করুন",
+    createGoal: "লক্ষ্য তৈরি করুন",
+    active: "সক্রিয়",
+    paused: "বিরতি",
+    inProgress: "চলমান",
+    
+    // Transactions
+    recentTransactions: "সাম্প্রতিক লেনদেন",
+    viewAllTransactions: "সব দেখুন",
+    noTransactions: "কোন লেনদেন নেই",
+    pending: "বিচারাধীন",
+    
+    // AI Assistant
+    aiAssistant: "সঞ্চয় বন্ধু এআই সহায়ক",
+    askAboutSavings: "সঞ্চয় সম্পর্কে জিজ্ঞাসা করুন...",
+    send: "পাঠান",
+    
+    // Goal Progress
+    goalProgress: "লক্ষ্যের অগ্রগতি",
+    details: "বিস্তারিত",
+    noGoalsForProgress: "কোন লক্ষ্য নেই। অগ্রগতি দেখতে একটি তৈরি করুন!",
+    
+    // KYC Status
+    verificationStatus: "যাচাইকরণ অবস্থা",
+    emailVerified: "ইমেইল যাচাইকৃত",
+    phoneVerified: "ফোন যাচাইকৃত",
+    kycVerified: "কেওয়াইসি যাচাইকৃত",
+    profilePicture: "প্রোফাইল ছবি",
+    verificationSteps: "যাচাইকরণ ধাপ সম্পন্ন",
+    completeVerification: "যাচাইকরণ সম্পন্ন করুন →",
+    
+    // Referral
+    referAndEarn: "রেফার করুন ও উপার্জন করুন",
+    referBonus: "প্রতিটি বন্ধু যারা যোগ দেয় এবং প্রথম জমা করে তাদের জন্য ৳৫০০ বোনাস পান।",
+    copy: "কপি",
+    friendsReferred: "রেফার করা বন্ধু",
+    bonusEarned: "অর্জিত বোনাস",
+    referralLinkCopied: "রেফারেল লিংক কপি করা হয়েছে!",
+    
+    // Savings Plan
+    yourSavingsPlan: "আপনার সঞ্চয় পরিকল্পনা",
+    currentPlan: "বর্তমান পরিকল্পনা",
+    memberSince: "সদস্য থেকে",
+    totalSavedPlan: "মোট সঞ্চয়",
+    currentLevel: "বর্তমান লেভেল",
+    
+    // Greeting Fallback
+    user: "ব্যবহারকারী",
+    
+    // Alerts
+    error: "ত্রুটি",
+    failedToFetch: "ডেটা আনতে ব্যর্থ হয়েছে",
+  }
+};
 
 const dashboardColorScope =
   "min-h-screen bg-background text-foreground [--background:#f1f5f9] [--foreground:#0f172a] [--card:#ffffff] [--card-hover:#f1f5f9] [--border:#e2e8f0] [--primary:#059669] [--primary-hover:#047857] [--primary-light:#10b981] dark:[--background:#0a0f1e] dark:[--foreground:#f1f5f9] dark:[--card:#131e2e] dark:[--card-hover:#1e2d3d] dark:[--border:#1e2d3d] dark:[--primary:#059669] dark:[--primary-hover:#047857] dark:[--primary-light:#10b981]";
@@ -50,9 +267,21 @@ const DashboardPage = () => {
   const [savingsHistory, setSavingsHistory] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
+  const [lang, setLang] = useState("en");
   
   const chartRef = useRef(null);
   let savingsChart = useRef(null);
+
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   const userId = authUser?.id || authUser?._id;
   
@@ -270,10 +499,10 @@ const DashboardPage = () => {
   // Set greeting
   useEffect(() => {
     const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good Morning");
-    else if (hour < 17) setGreeting("Good Afternoon");
-    else setGreeting("Good Evening");
-  }, []);
+    if (hour < 12) setGreeting(t('goodMorning'));
+    else if (hour < 17) setGreeting(t('goodAfternoon'));
+    else setGreeting(t('goodEvening'));
+  }, [lang]);
 
   // Initialize chart
   useEffect(() => {
@@ -309,7 +538,7 @@ const DashboardPage = () => {
       const monthsLeft = Math.max(0, Math.ceil((new Date(goal.targetDate) - new Date()) / (1000 * 60 * 60 * 24 * 30)));
       return `${monthsLeft} months left`;
     }
-    return "In progress";
+    return t('inProgress');
   };
 
   const calculateProgress = (goal) => {
@@ -453,10 +682,10 @@ const DashboardPage = () => {
     const activeCircles = userData?.activeCircles || userData?.circles?.length || 0;
 
     return [
-      { icon: <Wallet size={24} />, value: formatCurrency(totalSaved), label: "Total Savings", change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} this month` : "Start saving today!", color: "green" },
-      { icon: <Users size={24} />, value: activeCircles.toString(), label: "Active Circles", change: activeCircles > 0 ? "↑ Goals on track" : "Join a circle!", color: "blue" },
-      { icon: <Flame size={24} />, value: streak.toString(), label: "Day Streak", change: streak >= 30 ? "Top saver!" : streak > 0 ? "Keep going!" : "Start your streak!", color: "warning" },
-      { icon: <Trophy size={24} />, value: level.toString(), label: "Saver Level", change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : "Member", color: "info" },
+      { icon: <Wallet size={24} />, value: formatCurrency(totalSaved), label: t('totalSavings'), change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} ${t('thisMonth')}` : t('startSavingToday'), color: "green" },
+      { icon: <Users size={24} />, value: activeCircles.toString(), label: t('activeCircles'), change: activeCircles > 0 ? "↑ Goals on track" : t('joinCircle'), color: "blue" },
+      { icon: <Flame size={24} />, value: streak.toString(), label: t('dayStreak'), change: streak >= 30 ? t('topSaver') : streak > 0 ? t('keepGoing') : t('startYourStreak'), color: "warning" },
+      { icon: <Trophy size={24} />, value: level.toString(), label: t('saverLevel'), change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : t('member'), color: "info" },
     ];
   };
 
@@ -464,7 +693,7 @@ const DashboardPage = () => {
     if (userData?.firstName) return userData.firstName;
     if (authUser?.firstName) return authUser.firstName;
     if (userData?.fullName) return userData.fullName.split(" ")[0];
-    return "User";
+    return t('user');
   };
 
   const getKycProgress = () => {
@@ -489,7 +718,7 @@ const DashboardPage = () => {
       <div className={`${dashboardColorScope} flex items-center justify-center`}>
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-foreground/60">Loading dashboard...</p>
+          <p className="text-foreground/60">{t('loadingDashboard')}</p>
         </div>
       </div>
     );
@@ -502,21 +731,21 @@ const DashboardPage = () => {
         <div>
           <h1 className="text-2xl font-bold text-foreground">{greeting}, {userName}!</h1>
           <p className="text-sm text-foreground/60 mt-1">
-            Your next deposit is due in <strong className="text-amber-500">{nextDueDays} days</strong>. Keep your streak alive!
+            {t('nextDepositDue')} <strong className="text-amber-500">{nextDueDays} {t('days')}</strong>. {t('keepStreakAlive')}
           </p>
         </div>
         <Link href="/dashboard/submit" className="px-5 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition w-full sm:w-auto text-center inline-flex items-center justify-center gap-2">
-          <DollarSign size={16} /> Make Deposit
+          <DollarSign size={16} /> {t('deposit')}
         </Link>
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { icon: <CreditCard size={20} />, label: "Deposit", href: "/dashboard/submit", primary: true },
-          { icon: <Send size={20} />, label: "Withdraw", href: "/dashboard/lifting", primary: false },
-          { icon: <RefreshCw size={20} />, label: "Transfer", href: "/dashboard/transfer", primary: false },
-          { icon: <Sparkles size={20} />, label: "Auto-Save", href: "/dashboard/auto-save", primary: false },
+          { icon: <CreditCard size={20} />, label: t('deposit'), href: "/dashboard/submit", primary: true },
+          { icon: <Send size={20} />, label: t('withdraw'), href: "/dashboard/lifting", primary: false },
+          { icon: <RefreshCw size={20} />, label: t('transfer'), href: "/dashboard/transfer", primary: false },
+          { icon: <Sparkles size={20} />, label: t('autoSave'), href: "/dashboard/auto-save", primary: false },
         ].map((action) => (
           <Link key={action.label} href={action.href} className={`rounded-xl p-4 text-center transition-all ${action.primary ? "bg-linear-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20" : "bg-card border border-border text-foreground hover:border-primary"}`}>
             <div className="flex justify-center mb-1">{action.icon}</div>
@@ -547,31 +776,31 @@ const DashboardPage = () => {
           <div className="bg-linear-to-r from-primary to-primary-light rounded-xl p-5 text-white">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <div className="text-xs opacity-75">Total Savings Balance</div>
+                <div className="text-xs opacity-75">{t('totalSavingsBalance')}</div>
                 <div className="text-3xl font-bold">{formatCurrency(totalSaved)}</div>
-                <div className="text-xs opacity-75 mt-1">Goal: {formatCurrency(targetAmount)} across all goals</div>
+                <div className="text-xs opacity-75 mt-1">{t('goal')}: {formatCurrency(targetAmount)} {t('saved')}</div>
               </div>
-              <div className="bg-white/20 rounded-lg px-3 py-1 text-sm font-semibold">{progressPercent}% Complete</div>
+              <div className="bg-white/20 rounded-lg px-3 py-1 text-sm font-semibold">{progressPercent}% {t('complete')}</div>
             </div>
             <div className="h-2 bg-white/20 rounded-full mb-2">
               <div className="h-full bg-white rounded-full" style={{ width: `${progressPercent}%` }} />
             </div>
             <div className="flex justify-between text-xs opacity-75 mb-4">
-              <span>{formatCurrency(totalSaved)} Saved</span>
-              <span>{formatCurrency(Math.max(0, targetAmount - totalSaved))} Remaining</span>
+              <span>{formatCurrency(totalSaved)} {t('saved')}</span>
+              <span>{formatCurrency(Math.max(0, targetAmount - totalSaved))} {t('remaining')}</span>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white/15 rounded-lg p-2 text-center">
                 <div className="text-lg font-bold">{formatCurrency(userData?.goal?.monthlyDeposit || 0)}</div>
-                <div className="text-xs opacity-75">This Month</div>
+                <div className="text-xs opacity-75">{t('thisMonthLabel')}</div>
               </div>
               <div className="bg-white/15 rounded-lg p-2 text-center">
                 <div className="text-lg font-bold">{formatCurrency(totalSaved)}</div>
-                <div className="text-xs opacity-75">Total Saved</div>
+                <div className="text-xs opacity-75">{t('totalSavedLabel')}</div>
               </div>
               <div className="bg-white/15 rounded-lg p-2 text-center">
                 <div className="text-lg font-bold">{userData?.streak || 0}</div>
-                <div className="text-xs opacity-75">Day Streak</div>
+                <div className="text-xs opacity-75">{t('dayStreakLabel')}</div>
               </div>
             </div>
           </div>
@@ -580,7 +809,7 @@ const DashboardPage = () => {
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold text-foreground flex items-center gap-2">
-                <TrendingUp size={18} /> Savings History
+                <TrendingUp size={18} /> {t('savingsHistory')}
               </div>
               <div className="flex gap-2">
                 {["6m", "1y", "all"].map((period) => (
@@ -599,22 +828,22 @@ const DashboardPage = () => {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h2 className="font-bold text-foreground flex items-center gap-2">
-                <Target size={18} /> My Savings Goals
+                <Target size={18} /> {t('mySavingsGoals')}
               </h2>
-              <Link href="/dashboard/goals" className="text-sm text-primary font-semibold flex items-center gap-1">View all <ArrowRight size={14} /></Link>
+              <Link href="/dashboard/goals" className="text-sm text-primary font-semibold flex items-center gap-1">{t('viewAll')} <ArrowRight size={14} /></Link>
             </div>
             {loadingGoals ? (
               <div className="text-center py-8">
                 <div className="w-8 h-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-2"></div>
-                <p className="text-foreground/50 text-sm">Loading goals...</p>
+                <p className="text-foreground/50 text-sm">{t('loadingGoals')}</p>
               </div>
             ) : userGoals.length === 0 ? (
               <div className="bg-card border border-border rounded-xl p-8 text-center">
                 <Target size={48} className="text-foreground/30 mx-auto mb-2" />
-                <div className="text-foreground font-semibold mb-1">No goals yet</div>
-                <div className="text-foreground/50 text-sm mb-4">Create your first savings goal to get started</div>
+                <div className="text-foreground font-semibold mb-1">{t('noGoalsYet')}</div>
+                <div className="text-foreground/50 text-sm mb-4">{t('createFirstGoal')}</div>
                 <Link href="/dashboard/goals" className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition inline-flex items-center gap-2">
-                  <Target size={14} /> Create Goal
+                  <Target size={14} /> {t('createGoal')}
                 </Link>
               </div>
             ) : (
@@ -626,7 +855,7 @@ const DashboardPage = () => {
                         {goal.icon}
                       </div>
                       <span className={`text-xs font-semibold px-2 py-1 rounded-full ${goal.status === "active" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-500"}`}>
-                        {goal.status === "active" ? "Active" : "Paused"}
+                        {goal.status === "active" ? t('active') : t('paused')}
                       </span>
                     </div>
                     <div className="font-bold text-foreground">{goal.name}</div>
@@ -651,16 +880,16 @@ const DashboardPage = () => {
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold text-foreground flex items-center gap-2">
-                <Clock size={18} /> Recent Transactions
+                <Clock size={18} /> {t('recentTransactions')}
               </div>
-              <Link href="/dashboard/transactions" className="text-xs text-primary">View all</Link>
+              <Link href="/dashboard/transactions" className="text-xs text-primary">{t('viewAllTransactions')}</Link>
             </div>
             {loadingTransactions ? (
               <div className="text-center py-4">
                 <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto"></div>
               </div>
             ) : recentTransactions.length === 0 ? (
-              <div className="text-center py-6 text-foreground/50 text-sm">No transactions yet</div>
+              <div className="text-center py-6 text-foreground/50 text-sm">{t('noTransactions')}</div>
             ) : (
               <div className="space-y-3">
                 {recentTransactions.map((tx, idx) => (
@@ -676,7 +905,7 @@ const DashboardPage = () => {
                     </div>
                     <div className="text-right">
                       <div className={`text-sm font-bold ${tx.type === "deposit" ? "text-green-500" : "text-red-500"}`}>{tx.type === "deposit" ? "+" : "-"}{formatCurrency(tx.amount)}</div>
-                      <div className={`text-xs ${tx.status === "pending" ? "text-amber-500" : "text-green-500"}`}>{tx.status}</div>
+                      <div className={`text-xs ${tx.status === "pending" ? "text-amber-500" : "text-green-500"}`}>{tx.status === "pending" ? t('pending') : tx.status}</div>
                     </div>
                   </div>
                 ))}
@@ -687,7 +916,7 @@ const DashboardPage = () => {
           {/* AI Assistant */}
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-              <Sparkles size={18} className="text-primary" /> Sanchoy Bondhu AI Assistant
+              <Sparkles size={18} className="text-primary" /> {t('aiAssistant')}
             </div>
             <div className="h-32 overflow-y-auto mb-3 space-y-2 text-sm">
               {insights.slice(0, 3).map((insight, idx) => (
@@ -702,8 +931,8 @@ const DashboardPage = () => {
               ))}
             </div>
             <div className="flex gap-2">
-              <input type="text" value={aiMessage} onChange={(e) => setAiMessage(e.target.value)} onKeyPress={(e) => e.key === "Enter" && sendAiMessage()} placeholder="Ask about savings..." className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary" />
-              <button onClick={sendAiMessage} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90">Send</button>
+              <input type="text" value={aiMessage} onChange={(e) => setAiMessage(e.target.value)} onKeyPress={(e) => e.key === "Enter" && sendAiMessage()} placeholder={t('askAboutSavings')} className="flex-1 px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary" />
+              <button onClick={sendAiMessage} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90">{t('send')}</button>
             </div>
           </div>
 
@@ -711,12 +940,12 @@ const DashboardPage = () => {
           <div className="bg-card border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold text-foreground flex items-center gap-2">
-                <Target size={18} /> Goal Progress
+                <Target size={18} /> {t('goalProgress')}
               </div>
-              <Link href="/dashboard/goals" className="text-xs text-primary">Details</Link>
+              <Link href="/dashboard/goals" className="text-xs text-primary">{t('details')}</Link>
             </div>
             {userGoals.length === 0 ? (
-              <div className="text-center py-4 text-foreground/50 text-sm">No goals yet. Create one to see progress!</div>
+              <div className="text-center py-4 text-foreground/50 text-sm">{t('noGoalsForProgress')}</div>
             ) : (
               <div className="space-y-4">
                 {userGoals.slice(0, 3).map((goal, idx) => (
@@ -741,23 +970,23 @@ const DashboardPage = () => {
           {/* KYC Status */}
           <div className="bg-primary/5 border border-primary/15 rounded-xl p-5">
             <div className="font-bold text-foreground mb-3 flex items-center gap-2">
-              <Shield size={18} /> Verification Status
+              <Shield size={18} /> {t('verificationStatus')}
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-sm flex items-center gap-2"><Mail size={12} /> Email Verified</span>
+                <span className="text-sm flex items-center gap-2"><Mail size={12} /> {t('emailVerified')}</span>
                 <span className="text-primary">{authUser?.email ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm flex items-center gap-2"><Phone size={12} /> Phone Verified</span>
+                <span className="text-sm flex items-center gap-2"><Phone size={12} /> {t('phoneVerified')}</span>
                 <span className="text-primary">{authUser?.phone ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm flex items-center gap-2"><Shield size={12} /> KYC Verified</span>
+                <span className="text-sm flex items-center gap-2"><Shield size={12} /> {t('kycVerified')}</span>
                 <span className="text-primary">{userData?.kyc?.status === "approved" || userData?.kycCompleted ? <CheckCircle size={16} /> : <Clock size={16} />}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm flex items-center gap-2"><User size={12} /> Profile Picture</span>
+                <span className="text-sm flex items-center gap-2"><User size={12} /> {t('profilePicture')}</span>
                 <span className="text-primary">{userData?.profilePicture ? <CheckCircle size={16} /> : <XCircle size={16} />}</span>
               </div>
             </div>
@@ -766,9 +995,9 @@ const DashboardPage = () => {
                 <div key={i} className={`flex-1 h-1 rounded-full ${i < kycProgress.completed ? "bg-primary" : "bg-amber-500"}`} />
               ))}
             </div>
-            <div className="text-xs text-foreground/50 mt-2">{kycProgress.completed}/{kycProgress.total} verification steps completed</div>
+            <div className="text-xs text-foreground/50 mt-2">{kycProgress.completed}/{kycProgress.total} {t('verificationSteps')}</div>
             {kycProgress.completed < kycProgress.total && (
-              <Link href="/profile/kyc" className="block mt-3 text-center text-xs text-primary font-semibold hover:underline">Complete Verification →</Link>
+              <Link href="/profile/kyc" className="block mt-3 text-center text-xs text-primary font-semibold hover:underline">{t('completeVerification')}</Link>
             )}
           </div>
         </div>
@@ -777,46 +1006,46 @@ const DashboardPage = () => {
       {/* Referral Section */}
       <div className="grid lg:grid-cols-2 gap-6 mt-6">
         <div className="bg-linear-to-r from-emerald-900 to-cyan-900 rounded-xl p-5 text-white">
-          <div className="font-bold text-lg mb-1 flex items-center gap-2"><Gift size={18} /> Refer & Earn</div>
-          <div className="text-sm opacity-80 mb-4">Get ৳500 bonus for each friend who joins and makes their first deposit.</div>
+          <div className="font-bold text-lg mb-1 flex items-center gap-2"><Gift size={18} /> {t('referAndEarn')}</div>
+          <div className="text-sm opacity-80 mb-4">{t('referBonus')}</div>
           <div className="flex items-center gap-2 bg-white/15 rounded-lg p-3 mb-4">
             <span className="flex-1 font-mono text-sm">sanchoybondhu.com/ref/{authUser?.referralCode || "USER"}</span>
-            <button onClick={() => { navigator.clipboard.writeText(`sanchoybondhu.com/ref/${authUser?.referralCode || "USER"}`); alert("Referral link copied!"); }} className="px-3 py-1 bg-white/20 rounded-lg text-sm font-semibold hover:bg-white/30 transition inline-flex items-center gap-1"><Copy size={12} /> Copy</button>
+            <button onClick={() => { navigator.clipboard.writeText(`sanchoybondhu.com/ref/${authUser?.referralCode || "USER"}`); alert(t('referralLinkCopied')); }} className="px-3 py-1 bg-white/20 rounded-lg text-sm font-semibold hover:bg-white/30 transition inline-flex items-center gap-1"><Copy size={12} /> {t('copy')}</button>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white/10 rounded-lg p-2 text-center">
               <div className="text-xl font-bold">{userData?.referrals?.count || 0}</div>
-              <div className="text-xs opacity-75">Friends Referred</div>
+              <div className="text-xs opacity-75">{t('friendsReferred')}</div>
             </div>
             <div className="bg-white/10 rounded-lg p-2 text-center">
               <div className="text-xl font-bold">{formatCurrency((userData?.referrals?.count || 0) * 500)}</div>
-              <div className="text-xs opacity-75">Bonus Earned</div>
+              <div className="text-xs opacity-75">{t('bonusEarned')}</div>
             </div>
           </div>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex justify-between items-center mb-4">
-            <div className="font-bold text-foreground flex items-center gap-2"><Award size={18} /> Your Savings Plan</div>
+            <div className="font-bold text-foreground flex items-center gap-2"><Award size={18} /> {t('yourSavingsPlan')}</div>
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-background rounded-lg">
-              <span className="text-foreground">Current Plan</span>
+              <span className="text-foreground">{t('currentPlan')}</span>
               <span className="font-bold text-primary capitalize">{userData?.selectedPlan || authUser?.selectedPlan || "Silver"}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-background rounded-lg">
-              <span className="text-foreground">Member Since</span>
+              <span className="text-foreground">{t('memberSince')}</span>
               <span className="font-bold text-primary">
                 {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "2024"}
               </span>
             </div>
             <div className="flex justify-between items-center p-3 bg-background rounded-lg">
-              <span className="text-foreground">Total Saved</span>
+              <span className="text-foreground">{t('totalSavedPlan')}</span>
               <span className="font-bold text-primary">{formatCurrency(totalSaved)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-background rounded-lg">
-              <span className="text-foreground">Current Level</span>
-              <span className="font-bold text-primary">Level {userData?.level || 1}</span>
+              <span className="text-foreground">{t('currentLevel')}</span>
+              <span className="font-bold text-primary">{t('saverLevel')} {userData?.level || 1}</span>
             </div>
           </div>
         </div>

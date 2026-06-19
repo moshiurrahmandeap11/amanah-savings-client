@@ -6,6 +6,98 @@ import { Eye, Loader2, X, AlertCircle, CheckCircle, XCircle, Clock } from "lucid
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    depositApprovals: "💳 Deposit Approvals",
+    reviewAndApprove: "Review and approve member deposit screenshots",
+    all: "All",
+    pending: "Pending",
+    approved: "Approved",
+    rejected: "Rejected",
+    pendingReview: "Pending Review",
+    approvedTotal: "Approved Total",
+    rejectedTotal: "Rejected Total",
+    successRate: "Success Rate",
+    total: "Total",
+    noDeposits: "No deposits found",
+    loadingDeposits: "Loading deposits...",
+    txId: "TxID",
+    paymentMethod: "Payment Method",
+    goalType: "Goal Type",
+    submitted: "Submitted",
+    remarks: "Remarks",
+    clickToView: "📸 Click to view full screenshot",
+    depositScreenshot: "Deposit Screenshot",
+    amount: "Amount",
+    transactionId: "Transaction ID",
+    goal: "Goal",
+    userDetails: "User Details",
+    name: "Name",
+    email: "Email",
+    phone: "Phone",
+    memberSince: "Member Since",
+    approve: "Approve",
+    reject: "Reject",
+    viewUser: "👤 User",
+    viewUserDetails: "👤 View User Details",
+    approveDeposit: "Approve Deposit?",
+    rejectDeposit: "Reject Deposit",
+    reasonForRejection: "Reason for rejection",
+    provideReason: "Please provide a reason for rejection",
+    approvedSuccess: "Approved!",
+    depositApproved: "Deposit has been approved successfully",
+    rejectedSuccess: "Rejected!",
+    depositRejected: "Deposit has been rejected",
+    error: "Error!",
+    failedToLoad: "Failed to load deposits",
+  },
+  bn: {
+    depositApprovals: "💳 ডিপোজিট অনুমোদন",
+    reviewAndApprove: "সদস্যদের ডিপোজিট স্ক্রিনশট রিভিউ ও অনুমোদন করুন",
+    all: "সব",
+    pending: "পেন্ডিং",
+    approved: "অনুমোদিত",
+    rejected: "প্রত্যাখ্যাত",
+    pendingReview: "পেন্ডিং রিভিউ",
+    approvedTotal: "অনুমোদিত মোট",
+    rejectedTotal: "প্রত্যাখ্যাত মোট",
+    successRate: "সফলতার হার",
+    total: "মোট",
+    noDeposits: "কোনো ডিপোজিট পাওয়া যায়নি",
+    loadingDeposits: "ডিপোজিট লোড হচ্ছে...",
+    txId: "TxID",
+    paymentMethod: "পেমেন্ট মেথড",
+    goalType: "গোল টাইপ",
+    submitted: "জমা দেওয়া হয়েছে",
+    remarks: "রিমার্কস",
+    clickToView: "📸 পুরো স্ক্রিনশট দেখতে ক্লিক করুন",
+    depositScreenshot: "ডিপোজিট স্ক্রিনশট",
+    amount: "অ্যামাউন্ট",
+    transactionId: "ট্রানজেকশন আইডি",
+    goal: "গোল",
+    userDetails: "ইউজারের বিস্তারিত",
+    name: "নাম",
+    email: "ইমেইল",
+    phone: "ফোন",
+    memberSince: "মেম্বার সাইন আপ",
+    approve: "অনুমোদন",
+    reject: "প্রত্যাখ্যান",
+    viewUser: "👤 ইউজার",
+    viewUserDetails: "👤 ইউজারের বিস্তারিত দেখুন",
+    approveDeposit: "ডিপোজিট অনুমোদন করবেন?",
+    rejectDeposit: "ডিপোজিট প্রত্যাখ্যান",
+    reasonForRejection: "প্রত্যাখ্যানের কারণ",
+    provideReason: "প্রত্যাখ্যানের কারণ দিন",
+    approvedSuccess: "অনুমোদিত হয়েছে!",
+    depositApproved: "ডিপোজিট সফলভাবে অনুমোদিত হয়েছে",
+    rejectedSuccess: "প্রত্যাখ্যাত হয়েছে!",
+    depositRejected: "ডিপোজিট প্রত্যাখ্যাত হয়েছে",
+    error: "ত্রুটি!",
+    failedToLoad: "ডিপোজিট লোড করতে ব্যর্থ হয়েছে",
+  }
+};
+
 const DepositsApprovals = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
@@ -14,7 +106,6 @@ const DepositsApprovals = () => {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [deposits, setDeposits] = useState([]);
-  console.log("deposits :", deposits);
   const [statistics, setStatistics] = useState({
     pending: { count: 0, totalAmount: 0 },
     approved: { count: 0, totalAmount: 0 },
@@ -26,12 +117,21 @@ const DepositsApprovals = () => {
     totalItems: 0,
     itemsPerPage: 20,
   });
+  const [lang, setLang] = useState("bn");
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
   const filters = [
-    { id: "all", label: "All" },
-    { id: "pending", label: "Pending" },
-    { id: "approved", label: "Approved" },
-    { id: "rejected", label: "Rejected" },
+    { id: "all", label: t('all') },
+    { id: "pending", label: t('pending') },
+    { id: "approved", label: t('approved') },
+    { id: "rejected", label: t('rejected') },
   ];
 
   const paymentMethodIcons = {
@@ -52,7 +152,6 @@ const DepositsApprovals = () => {
     other: "🎯",
   };
 
-  // Fetch deposits from API
   const fetchDeposits = async (status = "all", page = 1) => {
     try {
       setLoading(true);
@@ -73,7 +172,7 @@ const DepositsApprovals = () => {
       if (error.response?.status === 401) {
         window.location.href = "/login";
       }
-      showToastMessage("Failed to load deposits", "error");
+      showToastMessage(t('failedToLoad'), "error");
     } finally {
       setLoading(false);
     }
@@ -92,20 +191,20 @@ const DepositsApprovals = () => {
     if (processing) return;
     
     const result = await Swal.fire({
-      title: "Approve Deposit?",
+      title: t('approveDeposit'),
       html: `
         <div class="text-left">
-          <p><strong>User:</strong> ${deposit.user?.fullName || "Unknown"}</p>
-          <p><strong>Amount:</strong> ৳${deposit.depositAmount.toLocaleString()}</p>
-          <p><strong>Goal:</strong> ${deposit.goalName}</p>
-          <p><strong>Method:</strong> ${deposit.paymentMethod}</p>
+          <p><strong>${t('name')}:</strong> ${deposit.user?.fullName || "Unknown"}</p>
+          <p><strong>${t('amount')}:</strong> ৳${deposit.depositAmount.toLocaleString()}</p>
+          <p><strong>${t('goal')}:</strong> ${deposit.goalName}</p>
+          <p><strong>${t('paymentMethod')}:</strong> ${deposit.paymentMethod}</p>
         </div>
       `,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#059669",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, approve it!",
+      confirmButtonText: t('approve'),
       cancelButtonText: "Cancel",
     });
     
@@ -119,11 +218,11 @@ const DepositsApprovals = () => {
       });
       
       if (response.data.success) {
-        showToastMessage(`✅ Deposit of ৳${deposit.depositAmount.toLocaleString()} approved for ${deposit.user?.name || 'User'}`, "success");
+        showToastMessage(`✅ ${t('depositApproved')}`, "success");
         
         Swal.fire({
-          title: "Approved!",
-          text: "Deposit has been approved successfully",
+          title: t('approvedSuccess'),
+          text: t('depositApproved'),
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
@@ -134,7 +233,7 @@ const DepositsApprovals = () => {
     } catch (error) {
       console.error("Error approving deposit:", error);
       Swal.fire({
-        title: "Error!",
+        title: t('error'),
         text: error.response?.data?.message || "Failed to approve deposit",
         icon: "error",
         confirmButtonColor: "#059669",
@@ -148,28 +247,28 @@ const DepositsApprovals = () => {
     if (processing) return;
     
     const { value: remarks } = await Swal.fire({
-      title: "Reject Deposit",
+      title: t('rejectDeposit'),
       html: `
         <div class="text-left">
-          <p><strong>User:</strong> ${deposit.user?.name || "Unknown"}</p>
-          <p><strong>Amount:</strong> ৳${deposit.depositAmount.toLocaleString()}</p>
-          <p><strong>Goal:</strong> ${deposit.goalName}</p>
+          <p><strong>${t('name')}:</strong> ${deposit.user?.name || "Unknown"}</p>
+          <p><strong>${t('amount')}:</strong> ৳${deposit.depositAmount.toLocaleString()}</p>
+          <p><strong>${t('goal')}:</strong> ${deposit.goalName}</p>
         </div>
         <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Reason for rejection:</label>
-          <textarea id="remarks" class="swal2-textarea" placeholder="Please provide a reason..."></textarea>
+          <label class="block text-sm font-medium text-gray-700 mb-2">${t('reasonForRejection')}:</label>
+          <textarea id="remarks" class="swal2-textarea" placeholder="${t('provideReason')}"></textarea>
         </div>
       `,
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: "Yes, reject it!",
+      confirmButtonText: t('reject'),
       cancelButtonText: "Cancel",
       preConfirm: () => {
         const remarks = document.getElementById("remarks").value;
         if (!remarks) {
-          Swal.showValidationMessage("Please provide a reason for rejection");
+          Swal.showValidationMessage(t('provideReason'));
         }
         return remarks;
       }
@@ -185,11 +284,11 @@ const DepositsApprovals = () => {
       });
       
       if (response.data.success) {
-        showToastMessage(`❌ Deposit of ৳${deposit.depositAmount.toLocaleString()} rejected for ${deposit.user?.name || 'User'}`, "error");
+        showToastMessage(`❌ ${t('depositRejected')}`, "error");
         
         Swal.fire({
-          title: "Rejected!",
-          text: "Deposit has been rejected",
+          title: t('rejectedSuccess'),
+          text: t('depositRejected'),
           icon: "error",
           timer: 1500,
           showConfirmButton: false,
@@ -200,7 +299,7 @@ const DepositsApprovals = () => {
     } catch (error) {
       console.error("Error rejecting deposit:", error);
       Swal.fire({
-        title: "Error!",
+        title: t('error'),
         text: error.response?.data?.message || "Failed to reject deposit",
         icon: "error",
         confirmButtonColor: "#059669",
@@ -224,13 +323,13 @@ const DepositsApprovals = () => {
 
   const viewUser = (deposit) => {
     Swal.fire({
-      title: "User Details",
+      title: t('userDetails'),
       html: `
         <div class="text-left">
-          <p><strong>Name:</strong> ${deposit.user?.fullName || "N/A"}</p>
-          <p><strong>Email:</strong> ${deposit.user?.email || "N/A"}</p>
-          <p><strong>Phone:</strong> ${deposit.user?.phone || "N/A"}</p>
-          <p><strong>Member Since:</strong> ${deposit.user?.createdAt ? new Date(deposit.user.createdAt).toLocaleDateString() : "N/A"}</p>
+          <p><strong>${t('name')}:</strong> ${deposit.user?.fullName || "N/A"}</p>
+          <p><strong>${t('email')}:</strong> ${deposit.user?.email || "N/A"}</p>
+          <p><strong>${t('phone')}:</strong> ${deposit.user?.phone || "N/A"}</p>
+          <p><strong>${t('memberSince')}:</strong> ${deposit.user?.createdAt ? new Date(deposit.user.createdAt).toLocaleDateString() : "N/A"}</p>
         </div>
       `,
       icon: "info",
@@ -247,11 +346,11 @@ const DepositsApprovals = () => {
   const getStatusBadge = (status) => {
     switch(status) {
       case "pending":
-        return { icon: Clock, text: "Pending", color: "text-amber-500 bg-amber-500/10", border: "border-amber-500/20" };
+        return { icon: Clock, text: t('pending'), color: "text-amber-500 bg-amber-500/10", border: "border-amber-500/20" };
       case "approved":
-        return { icon: CheckCircle, text: "Approved", color: "text-green-500 bg-green-500/10", border: "border-green-500/20" };
+        return { icon: CheckCircle, text: t('approved'), color: "text-green-500 bg-green-500/10", border: "border-green-500/20" };
       case "rejected":
-        return { icon: XCircle, text: "Rejected", color: "text-red-500 bg-red-500/10", border: "border-red-500/20" };
+        return { icon: XCircle, text: t('rejected'), color: "text-red-500 bg-red-500/10", border: "border-red-500/20" };
       default:
         return { icon: AlertCircle, text: "Unknown", color: "text-gray-500 bg-gray-500/10", border: "border-gray-500/20" };
     }
@@ -277,7 +376,7 @@ const DepositsApprovals = () => {
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">Loading deposits...</p>
+          <p className="text-foreground/60">{t('loadingDeposits')}</p>
         </div>
       </div>
     );
@@ -289,10 +388,10 @@ const DepositsApprovals = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <div>
           <h2 className="text-lg font-bold text-foreground">
-            💳 Deposit Approvals
+            {t('depositApprovals')}
           </h2>
           <p className="text-sm text-foreground/50 mt-1">
-            Review and approve member deposit screenshots
+            {t('reviewAndApprove')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -329,7 +428,7 @@ const DepositsApprovals = () => {
           <div className="text-2xl font-bold text-foreground mt-3">
             {statistics.pending.count}
           </div>
-          <div className="text-xs text-foreground/50 mt-1">Pending Review</div>
+          <div className="text-xs text-foreground/50 mt-1">{t('pendingReview')}</div>
           <div className="text-xs text-amber-500 mt-1">
             ৳{statistics.pending.totalAmount.toLocaleString()}
           </div>
@@ -344,7 +443,7 @@ const DepositsApprovals = () => {
           <div className="text-2xl font-bold text-foreground mt-3">
             {statistics.approved.count}
           </div>
-          <div className="text-xs text-foreground/50 mt-1">Approved Total</div>
+          <div className="text-xs text-foreground/50 mt-1">{t('approvedTotal')}</div>
           <div className="text-xs text-green-500 mt-1">
             ৳{statistics.approved.totalAmount.toLocaleString()}
           </div>
@@ -359,7 +458,7 @@ const DepositsApprovals = () => {
           <div className="text-2xl font-bold text-foreground mt-3">
             {statistics.rejected.count}
           </div>
-          <div className="text-xs text-foreground/50 mt-1">Rejected Total</div>
+          <div className="text-xs text-foreground/50 mt-1">{t('rejectedTotal')}</div>
           <div className="text-xs text-red-500 mt-1">
             ৳{statistics.rejected.totalAmount.toLocaleString()}
           </div>
@@ -375,9 +474,9 @@ const DepositsApprovals = () => {
             {((statistics.approved.totalAmount / 
               (statistics.approved.totalAmount + statistics.pending.totalAmount + statistics.rejected.totalAmount)) * 100 || 0).toFixed(0)}%
           </div>
-          <div className="text-xs text-foreground/50 mt-1">Success Rate</div>
+          <div className="text-xs text-foreground/50 mt-1">{t('successRate')}</div>
           <div className="text-xs text-primary mt-1">
-            Total: ৳{(statistics.approved.totalAmount + statistics.pending.totalAmount + statistics.rejected.totalAmount).toLocaleString()}
+            {t('total')}: ৳{(statistics.approved.totalAmount + statistics.pending.totalAmount + statistics.rejected.totalAmount).toLocaleString()}
           </div>
         </div>
       </div>
@@ -387,7 +486,7 @@ const DepositsApprovals = () => {
         {deposits.length === 0 ? (
           <div className="text-center py-12 bg-card rounded-xl border border-border">
             <div className="text-4xl mb-3">📭</div>
-            <div className="text-foreground/50">No deposits found</div>
+            <div className="text-foreground/50">{t('noDeposits')}</div>
           </div>
         ) : (
           deposits.map((deposit) => {
@@ -436,31 +535,31 @@ const DepositsApprovals = () => {
 
                 {/* TxID */}
                 <div className="text-xs font-mono mb-3 p-2 rounded-lg bg-background text-foreground/50">
-                  TxID: {deposit.transactionReference || "N/A"}
+                  {t('txId')}: {deposit.transactionReference || "N/A"}
                 </div>
 
                 {/* Details Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
                   <div className="bg-background rounded-lg p-2">
-                    <div className="text-[10px] text-foreground/50">Payment Method</div>
+                    <div className="text-[10px] text-foreground/50">{t('paymentMethod')}</div>
                     <div className="text-sm font-semibold">
                       {paymentMethodIcons[deposit.paymentMethod]} {deposit.paymentMethod?.toUpperCase()}
                     </div>
                   </div>
                   <div className="bg-background rounded-lg p-2">
-                    <div className="text-[10px] text-foreground/50">Goal Type</div>
+                    <div className="text-[10px] text-foreground/50">{t('goalType')}</div>
                     <div className="text-sm font-semibold">
                       {goalTypeIcons[deposit.goalType]} {deposit.goalType?.toUpperCase()}
                     </div>
                   </div>
                   <div className="bg-background rounded-lg p-2">
-                    <div className="text-[10px] text-foreground/50">Submitted</div>
+                    <div className="text-[10px] text-foreground/50">{t('submitted')}</div>
                     <div className="text-sm font-semibold">
                       {new Date(deposit.createdAt).toLocaleDateString()}
                     </div>
                   </div>
                   <div className="bg-background rounded-lg p-2">
-                    <div className="text-[10px] text-foreground/50">Remarks</div>
+                    <div className="text-[10px] text-foreground/50">{t('remarks')}</div>
                     <div className="text-sm font-semibold truncate">
                       {deposit.remarks || "—"}
                     </div>
@@ -479,7 +578,7 @@ const DepositsApprovals = () => {
                   <div className="text-center">
                     <Eye size={20} className="mx-auto mb-1 text-foreground/50" />
                     <span className="text-xs text-foreground/50">
-                      📸 Click to view full screenshot
+                      {t('clickToView')}
                     </span>
                   </div>
                 </div>
@@ -493,7 +592,7 @@ const DepositsApprovals = () => {
                       className="flex-1 py-2 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
                     >
                       <CheckCircle size={14} className="inline mr-1" />
-                      Approve
+                      {t('approve')}
                     </button>
                     <button
                       onClick={() => rejectDeposit(deposit)}
@@ -501,13 +600,13 @@ const DepositsApprovals = () => {
                       className="flex-1 py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold hover:opacity-90 transition disabled:opacity-50"
                     >
                       <XCircle size={14} className="inline mr-1" />
-                      Reject
+                      {t('reject')}
                     </button>
                     <button
                       onClick={() => viewUser(deposit)}
                       className="px-4 py-2 rounded-lg border border-border text-foreground/70 text-sm font-semibold hover:border-primary transition"
                     >
-                      👤 User
+                      {t('viewUser')}
                     </button>
                   </div>
                 )}
@@ -517,7 +616,7 @@ const DepositsApprovals = () => {
                     onClick={() => viewUser(deposit)}
                     className="w-full py-2 rounded-lg border border-border text-foreground/70 text-sm font-semibold hover:border-primary transition"
                   >
-                    👤 View User Details
+                    {t('viewUserDetails')}
                   </button>
                 )}
               </motion.div>
@@ -566,7 +665,7 @@ const DepositsApprovals = () => {
               <div className="p-5 border-b border-border flex justify-between items-center sticky top-0 bg-card">
                 <div>
                   <h3 className="text-lg font-bold text-foreground">
-                    Deposit Screenshot
+                    {t('depositScreenshot')}
                   </h3>
                   <p className="text-sm text-foreground/50">
                     {selectedDeposit.user?.name} · ৳{selectedDeposit.depositAmount.toLocaleString()}
@@ -595,27 +694,27 @@ const DepositsApprovals = () => {
                 <div className="mt-4 p-4 bg-background rounded-lg border border-border">
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-foreground/50">Amount:</span>
+                      <span className="text-foreground/50">{t('amount')}:</span>
                       <span className="font-bold text-primary">
                         ৳{selectedDeposit.depositAmount.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-foreground/50">Transaction ID:</span>
+                      <span className="text-foreground/50">{t('transactionId')}:</span>
                       <span className="font-mono text-sm">
                         {selectedDeposit.transactionReference || "N/A"}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-foreground/50">Payment Method:</span>
+                      <span className="text-foreground/50">{t('paymentMethod')}:</span>
                       <span>{selectedDeposit.paymentMethod?.toUpperCase()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-foreground/50">Goal:</span>
+                      <span className="text-foreground/50">{t('goal')}:</span>
                       <span>{selectedDeposit.goalName}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-foreground/50">Submitted:</span>
+                      <span className="text-foreground/50">{t('submitted')}:</span>
                       <span>{new Date(selectedDeposit.createdAt).toLocaleString()}</span>
                     </div>
                   </div>
@@ -632,7 +731,7 @@ const DepositsApprovals = () => {
                     className="flex-1 py-3 rounded-xl bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
                   >
                     <CheckCircle size={16} className="inline mr-1" />
-                    Approve
+                    {t('approve')}
                   </button>
                   <button
                     onClick={() => {
@@ -643,7 +742,7 @@ const DepositsApprovals = () => {
                     className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:opacity-90 transition disabled:opacity-50"
                   >
                     <XCircle size={16} className="inline mr-1" />
-                    Reject
+                    {t('reject')}
                   </button>
                 </div>
               )}

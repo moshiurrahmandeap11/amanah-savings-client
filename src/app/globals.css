@@ -42,14 +42,16 @@
   --color-primary-hover: var(--primary-hover);
   --color-primary-light: var(--primary-light);
   --color-primary-dark: var(--primary-dark);
-  
+
   --color-secondary: var(--secondary);
 
   --color-border: var(--border);
   --color-card: var(--card);
   --color-card-hover: var(--card-hover);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-inter);
+  --font-bengali: var(--font-noto-bengali);
+  --font-geist: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -57,10 +59,20 @@
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
+html,
+body {
+  min-height: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), sans-serif;
+}
+
+/* বাংলা ফন্ট */
+.bn-font {
+  font-family: var(--font-noto-bengali), sans-serif;
 }
 
 /* গ্রিনিশ স্ক্রলবার */

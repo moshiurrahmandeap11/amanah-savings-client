@@ -17,6 +17,68 @@ import {
 import Link from "next/link";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    transactions: "💳 Transactions",
+    transactionManagement: "Transaction Management",
+    all: "All",
+    pending: "Pending",
+    approved: "Approved",
+    rejected: "Rejected",
+    withdrawals: "Withdrawals",
+    deposits: "Deposits",
+    searchPlaceholder: "Search by name or TxID...",
+    noTransactions: "No transactions found",
+    approve: "Approve",
+    reject: "Reject",
+    sendNote: "Send Note",
+    notePlaceholder: "Tell the member the reason...",
+    send: "Send",
+    cancel: "Cancel",
+    transactionApproved: "✅ Transaction approved!",
+    transactionRejected: "❌ Transaction rejected",
+    noteSent: "📤 Note sent",
+    failedToLoad: "Failed to load transactions",
+    admin: "ADMIN",
+    view: "View",
+    pendingText: "⏳ Pending",
+    approvedText: "✅ Approved",
+    rejectedText: "❌ Rejected",
+    deposit: "Deposit",
+    withdrawal: "Withdrawal",
+  },
+  bn: {
+    transactions: "💳 লেনদেন",
+    transactionManagement: "লেনদেন ব্যবস্থাপনা",
+    all: "সব",
+    pending: "পেন্ডিং",
+    approved: "অনুমোদিত",
+    rejected: "প্রত্যাখ্যাত",
+    withdrawals: "উত্তোলন",
+    deposits: "ডিপোজিট",
+    searchPlaceholder: "নাম বা TxID দিয়ে খুঁজুন...",
+    noTransactions: "কোনো লেনদেন পাওয়া যায়নি",
+    approve: "অনুমোদন",
+    reject: "বাতিল",
+    sendNote: "নোট পাঠান",
+    notePlaceholder: "সদস্যকে কারণ জানান...",
+    send: "পাঠান",
+    cancel: "বাতিল",
+    transactionApproved: "✅ লেনদেন অনুমোদিত হয়েছে!",
+    transactionRejected: "❌ লেনদেন বাতিল করা হয়েছে",
+    noteSent: "📤 নোট পাঠানো হয়েছে",
+    failedToLoad: "লেনদেন লোড করতে ব্যর্থ হয়েছে",
+    admin: "অ্যাডমিন",
+    view: "দেখুন",
+    pendingText: "⏳ পেন্ডিং",
+    approvedText: "✅ অনুমোদিত",
+    rejectedText: "❌ প্রত্যাখ্যাত",
+    deposit: "ডিপোজিট",
+    withdrawal: "উত্তোলন",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -32,16 +94,25 @@ const WithDrawalsPage = () => {
   const [noteText, setNoteText] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
   const [transactions, setTransactions] = useState([]);
-  console.log("transactions :", transactions);
   const [stats, setStats] = useState({
     pending: 0,
     approved: 0,
     totalDeposits: 0,
     totalWithdrawals: 0,
   });
-
-  console.log("stats : ", stats);
   const [loading, setLoading] = useState(false);
+
+  // Load theme and language
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    setIsDark(savedTheme === "dark");
+    if (savedTheme === "dark") document.documentElement.classList.add("dark");
+
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
@@ -66,16 +137,13 @@ const WithDrawalsPage = () => {
         setStats(res.data.data.stats || stats);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to load transactions");
+      showToast(err.response?.data?.message || t('failedToLoad'));
     } finally {
       setLoading(false);
     }
-  }, [activeTab, searchQuery]);
+  }, [activeTab, searchQuery, lang]);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
-    if (savedTheme === "dark") document.documentElement.classList.add("dark");
     fetchTransactions();
   }, [fetchTransactions]);
 
@@ -99,11 +167,11 @@ const WithDrawalsPage = () => {
         { headers: getAuthHeaders() }
       );
       if (res.data.success) {
-        showToast(lang === "bn" ? "✅ লেনদেন অনুমোদিত!" : "✅ Transaction approved!");
+        showToast(t('transactionApproved'));
         fetchTransactions();
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Approval failed");
+      showToast(err.response?.data?.message || t('failedToLoad'));
     }
   };
 
@@ -115,11 +183,11 @@ const WithDrawalsPage = () => {
         { headers: getAuthHeaders() }
       );
       if (res.data.success) {
-        showToast(lang === "bn" ? "❌ লেনদেন বাতিল করা হয়েছে" : "❌ Transaction rejected");
+        showToast(t('transactionRejected'));
         fetchTransactions();
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Rejection failed");
+      showToast(err.response?.data?.message || t('failedToLoad'));
     }
   };
 
@@ -138,14 +206,12 @@ const WithDrawalsPage = () => {
 
   const sendNote = () => {
     closeNoteSheet();
-    showToast(lang === "bn" ? "📤 নোট পাঠানো হয়েছে" : "📤 Note sent");
+    showToast(t('noteSent'));
   };
 
   const formatAmount = (amount) => {
     const formatted = Number(amount || 0).toLocaleString();
-    return lang === "bn"
-      ? `৳${formatted.replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d])}`
-      : `৳${formatted}`;
+    return `৳${formatted}`;
   };
 
   const getStatusBadge = (status) => {
@@ -167,8 +233,7 @@ const WithDrawalsPage = () => {
     if (activeTab === "withdraw" && t.type !== "withdrawal") return false;
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      const searchText =
-        `${t.name || ""} ${t.txid || ""} ${t.phone || ""} ${t.goal || ""}`.toLowerCase();
+      const searchText = `${t.userName || ""} ${t.txid || ""} ${t.phone || ""} ${t.goal || ""}`.toLowerCase();
       if (!searchText.includes(query)) return false;
     }
     return true;
@@ -177,10 +242,10 @@ const WithDrawalsPage = () => {
   const pendingCount = transactions.filter((t) => t.status === "pending").length;
 
   const statCards = [
-    { icon: "⏳", value: String(stats.pendingDeposits || pendingCount), label: "Pending", color: "yellow" },
-    { icon: "✅", value: String(stats.approvedDeposits || 0), label: "Approved", color: "green" },
-    { icon: "💰", value: `৳${stats.totalDepositAmount || 0}`, label: "Total Deposits", color: "blue" },
-    { icon: "⬇️", value: `৳${stats.totalWithdrawalAmount || 0}`, label: "Total Withdrawals", color: "red" },
+    { icon: "⏳", value: String(stats.pending || pendingCount), label: t('pending'), color: "yellow" },
+    { icon: "✅", value: String(stats.approved || 0), label: t('approved'), color: "green" },
+    { icon: "💰", value: `৳${stats.totalDeposits || 0}`, label: "Total Deposits", color: "blue" },
+    { icon: "⬇️", value: `৳${stats.totalWithdrawals || 0}`, label: "Total Withdrawals", color: "red" },
   ];
 
   return (
@@ -194,7 +259,7 @@ const WithDrawalsPage = () => {
           <ArrowLeft size={14} /> Admin
         </Link>
         <span className="text-sm font-bold text-foreground flex-1">
-          {lang === "bn" ? "লেনদেন" : "Transactions"}
+          {t('transactions')}
         </span>
       </div>
 
@@ -207,7 +272,7 @@ const WithDrawalsPage = () => {
           <ArrowLeft size={16} />
         </button>
         <h1 className="text-base font-bold text-foreground flex-1">
-          💳 {lang === "bn" ? "লেনদেন ব্যবস্থাপনা" : "Transaction Management"}
+          💳 {t('transactionManagement')}
         </h1>
         <span className="px-2 py-1 rounded-md bg-red-500/15 text-red-400 text-[10px] font-bold">
           ADMIN
@@ -229,27 +294,12 @@ const WithDrawalsPage = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-4">
         {statCards.map((stat, idx) => (
-          <div
-            key={idx}
-            className="bg-card border border-border rounded-xl p-3 flex items-center gap-2"
-          >
-            <div
-              className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 ${
-                stat.color === "yellow"
-                  ? "bg-amber-500/15"
-                  : stat.color === "green"
-                    ? "bg-green-500/15"
-                    : stat.color === "blue"
-                      ? "bg-blue-500/15"
-                      : "bg-red-500/15"
-              }`}
-            >
+          <div key={idx} className="bg-card border border-border rounded-xl p-3 flex items-center gap-2">
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-lg shrink-0 ${stat.color === "yellow" ? "bg-amber-500/15" : stat.color === "green" ? "bg-green-500/15" : stat.color === "blue" ? "bg-blue-500/15" : "bg-red-500/15"}`}>
               {stat.icon}
             </div>
             <div>
-              <div className="text-base font-bold text-foreground">
-                {stat.value}
-              </div>
+              <div className="text-base font-bold text-foreground">{stat.value}</div>
               <div className="text-[10px] text-foreground/50">{stat.label}</div>
             </div>
           </div>
@@ -259,11 +309,11 @@ const WithDrawalsPage = () => {
       {/* Filter Bar */}
       <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
         {[
-          { id: "pending", label: "⏳ Pending", count: pendingCount },
-          { id: "approved", label: "✅ Approved", count: null },
-          { id: "rejected", label: "❌ Rejected", count: null },
-          { id: "withdraw", label: "⬇️ Withdrawals", count: null },
-          { id: "all", label: "All", count: null },
+          { id: "pending", label: `⏳ ${t('pending')}` },
+          { id: "approved", label: `✅ ${t('approved')}` },
+          { id: "rejected", label: `❌ ${t('rejected')}` },
+          { id: "withdraw", label: `⬇️ ${t('withdrawals')}` },
+          { id: "all", label: t('all') },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -274,7 +324,7 @@ const WithDrawalsPage = () => {
                 : "border-border bg-card text-foreground/60 hover:border-primary"
             }`}
           >
-            {tab.label} {tab.count ? `(${tab.count})` : ""}
+            {tab.label}
           </button>
         ))}
       </div>
@@ -288,11 +338,7 @@ const WithDrawalsPage = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && fetchTransactions()}
-            placeholder={
-              lang === "bn"
-                ? "নাম বা TxID দিয়ে খুঁজুন..."
-                : "Search by name or TxID..."
-            }
+            placeholder={t('searchPlaceholder')}
             className="flex-1 bg-transparent outline-none text-sm text-foreground"
           />
         </div>
@@ -309,10 +355,7 @@ const WithDrawalsPage = () => {
       <div className="px-4 pb-20 space-y-3">
         {!loading && filteredTransactions.length === 0 ? (
           <div className="text-center py-12 text-foreground/50">
-            📭{" "}
-            {lang === "bn"
-              ? "কোনো লেনদেন পাওয়া যায়নি"
-              : "No transactions found"}
+            📭 {t('noTransactions')}
           </div>
         ) : (
           filteredTransactions.map((tx) => (
@@ -322,19 +365,16 @@ const WithDrawalsPage = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-card border border-border rounded-xl overflow-hidden"
             >
-              {/* Transaction Header */}
               <div className="p-3 flex items-start gap-2">
                 <div className="w-10 h-10 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  {tx.avatar || (tx.name ? tx.name[0] : "?")}
+                  {tx.name ? tx.name[0] : "?"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1 flex-wrap">
                     <span className="font-semibold text-sm text-foreground">
                       {tx.userName || "Unknown"}
                     </span>
-                    <span
-                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${getStatusBadge(tx.status)}`}
-                    >
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${getStatusBadge(tx.status)}`}>
                       {getStatusIcon(tx.status)} {tx.status}
                     </span>
                   </div>
@@ -342,28 +382,21 @@ const WithDrawalsPage = () => {
                     {tx.phone || ""} · {tx.date || new Date(tx.createdAt).toLocaleString()}
                   </div>
                 </div>
-                <div
-                  className={`text-base font-bold ${tx.type === "deposit" ? "text-green-500" : "text-red-500"}`}
-                >
+                <div className={`text-base font-bold ${tx.type === "deposit" ? "text-green-500" : "text-red-500"}`}>
                   {tx.type === "deposit" ? "+" : "-"}
                   {formatAmount(tx.amount)}
                 </div>
               </div>
 
-              {/* Details */}
               <div className="grid grid-cols-2 gap-1.5 px-3 pb-2">
                 <div className="bg-background rounded-lg p-2">
-                  <div className="text-[9px] text-foreground/50">
-                    {lang === "bn" ? "লক্ষ্য" : "Goal"}
-                  </div>
+                  <div className="text-[9px] text-foreground/50">Goal</div>
                   <div className="text-xs font-semibold text-foreground">
                     {tx.goalName || "N/A"}
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">
-                  <div className="text-[9px] text-foreground/50">
-                    {lang === "bn" ? "মাধ্যম" : "Method"}
-                  </div>
+                  <div className="text-[9px] text-foreground/50">Method</div>
                   <div className="text-xs font-semibold text-foreground">
                     {tx.method || "N/A"}
                   </div>
@@ -375,62 +408,39 @@ const WithDrawalsPage = () => {
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">
-                  <div className="text-[9px] text-foreground/50">
-                    {lang === "bn" ? "ধরন" : "Type"}
-                  </div>
+                  <div className="text-[9px] text-foreground/50">Type</div>
                   <div className="text-xs font-semibold text-foreground">
                     {tx.type === "deposit" ? "⬆️ Deposit" : "⬇️ Withdrawal"}
                   </div>
                 </div>
               </div>
 
-              {/* Screenshot */}
               {tx.hasScreenshot && (
                 <div className="px-3 pb-2">
-                  <div
-                    onClick={() =>
-                      showToast(
-                        lang === "bn"
-                          ? "🖼️ স্ক্রিনশট দেখছেন..."
-                          : "🖼️ Viewing screenshot...",
-                      )
-                    }
-                    className="bg-background border border-border rounded-lg p-2 flex items-center gap-2 cursor-pointer"
-                  >
+                  <div className="bg-background border border-border rounded-lg p-2 flex items-center gap-2 cursor-pointer" onClick={() => showToast("🖼️ Viewing screenshot...")}>
                     <span className="text-xl">🖼️</span>
                     <div className="flex-1">
-                      <div className="text-xs font-semibold text-foreground">
-                        {lang === "bn"
-                          ? "পেমেন্ট স্ক্রিনশট"
-                          : "Payment Screenshot"}
-                      </div>
-                      <div className="text-[9px] text-foreground/50">
-                        {lang === "bn"
-                          ? "ট্যাপ করে যাচাই করুন"
-                          : "Tap to verify"}
-                      </div>
+                      <div className="text-xs font-semibold text-foreground">Payment Screenshot</div>
+                      <div className="text-[9px] text-foreground/50">Tap to verify</div>
                     </div>
-                    <span className="text-xs text-primary font-semibold">
-                      {lang === "bn" ? "দেখুন →" : "View →"}
-                    </span>
+                    <span className="text-xs text-primary font-semibold">View →</span>
                   </div>
                 </div>
               )}
 
-              {/* Actions */}
               {tx.status === "pending" && (
                 <div className="flex gap-2 p-3 pt-0">
                   <button
                     onClick={() => approveTransaction(tx.id)}
                     className="flex-1 py-2 rounded-lg border border-green-500/30 bg-green-500/10 text-green-500 text-xs font-bold hover:bg-green-500/20 transition"
                   >
-                    ✅ {lang === "bn" ? "অনুমোদন" : "Approve"}
+                    ✅ {t('approve')}
                   </button>
                   <button
                     onClick={() => rejectTransaction(tx.id)}
                     className="flex-1 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition"
                   >
-                    ❌ {lang === "bn" ? "বাতিল" : "Reject"}
+                    ❌ {t('reject')}
                   </button>
                   <button
                     onClick={() => openNoteSheet(tx)}
@@ -449,10 +459,7 @@ const WithDrawalsPage = () => {
       <AnimatePresence>
         {showNoteSheet && (
           <>
-            <div
-              className="fixed inset-0 bg-black/60 z-50"
-              onClick={closeNoteSheet}
-            />
+            <div className="fixed inset-0 bg-black/60 z-50" onClick={closeNoteSheet} />
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
@@ -461,31 +468,25 @@ const WithDrawalsPage = () => {
               className="fixed bottom-0 left-0 right-0 bg-card rounded-t-2xl z-50 p-5"
             >
               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
-              <div className="font-bold text-foreground mb-3">
-                📝 {lang === "bn" ? "নোট পাঠান" : "Send Note"}
-              </div>
+              <div className="font-bold text-foreground mb-3">📝 {t('sendNote')}</div>
               <textarea
                 value={noteText}
                 onChange={(e) => setNoteText(e.target.value)}
                 rows={4}
-                placeholder={
-                  lang === "bn"
-                    ? "সদস্যকে কারণ জানান..."
-                    : "Tell the member the reason..."
-                }
+                placeholder={t('notePlaceholder')}
                 className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition resize-none"
               />
               <button
                 onClick={sendNote}
                 className="w-full py-3 mt-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-bold text-sm"
               >
-                📤 {lang === "bn" ? "পাঠান" : "Send"}
+                📤 {t('send')}
               </button>
               <button
                 onClick={closeNoteSheet}
                 className="w-full py-2 mt-2 rounded-xl border-2 border-border text-foreground/60 text-sm font-semibold"
               >
-                {lang === "bn" ? "বাতিল" : "Cancel"}
+                {t('cancel')}
               </button>
             </motion.div>
           </>

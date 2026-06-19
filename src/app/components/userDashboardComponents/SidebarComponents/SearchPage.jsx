@@ -6,6 +6,192 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { ArrowLeft, Moon, Sun, Search, X } from "lucide-react";
 
+// Translations
+const translations = {
+  en: {
+    // Navigation
+    backHome: "Home",
+    search: "Search",
+    
+    // Search Header
+    searchPlaceholder: "Search pages, goals, blog...",
+    
+    // Trending
+    popularSearches: "🔥 Popular Searches",
+    
+    // Results
+    foundResults: "Found {count} results for \"{query}\"",
+    
+    // Empty State
+    nothingFound: "Nothing found",
+    trySearching: "Try searching for something else",
+    
+    // Page Types
+    page: "Page",
+    academy: "Academy",
+    blog: "Blog",
+    
+    // Page Titles (English)
+    dashboard: "Dashboard",
+    savingsGoals: "Savings Goals",
+    makeDeposit: "Make Deposit",
+    withdrawal: "Withdrawal",
+    savingsCalculator: "Savings Calculator",
+    islamicSavings: "Islamic Savings",
+    referralProgram: "Referral Program",
+    kycVerification: "KYC Verification",
+    aiAdvisor: "AI Advisor",
+    leaderboard: "Leaderboard",
+    ramadanSavings: "Ramadan Savings",
+    savingsInsights: "Savings Insights",
+    financialLiteracy: "Financial Literacy",
+    savingsTipsBlog: "Savings Tips Blog",
+    challenges: "Challenges",
+    milestone: "Milestone",
+    savingsWall: "Savings Wall",
+    liveFeed: "Live Feed",
+    familyGoals: "Family Goals",
+    successStories: "Success Stories",
+    transparencyReport: "Transparency Report",
+    shareBadge: "Share Badge",
+    community: "Community",
+    corporateSavings: "Corporate Savings",
+    affiliateProgram: "Affiliate Program",
+    developerApi: "Developer API",
+    levelUpGuide: "Level Up Guide",
+    subscriptionPlans: "Subscription Plans",
+    transactionHistory: "Transaction History",
+    createGoal: "Create Goal",
+    securitySettings: "Security Settings",
+    savingsReport: "Savings Report",
+    
+    // Page Subtitles (English)
+    dashboardSub: "Your savings summary",
+    savingsGoalsSub: "View all your savings goals",
+    makeDepositSub: "Save via bKash/Nagad",
+    withdrawalSub: "Withdraw your savings",
+    savingsCalculatorSub: "Calculate goal timeline",
+    islamicSavingsSub: "Interest-free savings",
+    referralProgramSub: "Invite friends, get ৳500",
+    kycVerificationSub: "Verify your identity",
+    aiAdvisorSub: "AI-powered savings planning",
+    leaderboardSub: "Top savers ranking",
+    ramadanSavingsSub: "Special Ramadan challenge",
+    savingsInsightsSub: "View your savings trends",
+    financialLiteracySub: "Free financial education",
+    savingsTipsBlogSub: "Weekly financial advice",
+    challengesSub: "Join savings challenges",
+    milestoneSub: "Your savings milestones",
+    savingsWallSub: "Community savings showcase",
+    liveFeedSub: "Real-time community activity",
+    familyGoalsSub: "Save together with family",
+    successStoriesSub: "Inspiring member stories",
+    transparencyReportSub: "Sanchoy Bondhu financial transparency",
+    shareBadgeSub: "Share your achievements",
+    communitySub: "Join Sanchoy Bondhu community",
+    corporateSavingsSub: "Savings solutions for businesses",
+    affiliateProgramSub: "Earn through affiliate",
+    developerApiSub: "Sanchoy Bondhu API documentation",
+    levelUpGuideSub: "How to increase level",
+    subscriptionPlansSub: "View premium plans",
+    transactionHistorySub: "All transaction details",
+    createGoalSub: "Create new savings goal",
+    securitySettingsSub: "2FA & security settings",
+    savingsReportSub: "Detailed savings analysis",
+  },
+  bn: {
+    // Navigation
+    backHome: "হোম",
+    search: "অনুসন্ধান",
+    
+    // Search Header
+    searchPlaceholder: "পেজ, লক্ষ্য, ব্লগ অনুসন্ধান করুন...",
+    
+    // Trending
+    popularSearches: "🔥 জনপ্রিয় অনুসন্ধান",
+    
+    // Results
+    foundResults: "\"{query}\" এর জন্য {count} টি ফলাফল পাওয়া গেছে",
+    
+    // Empty State
+    nothingFound: "কিছু পাওয়া যায়নি",
+    trySearching: "অনুগ্রহ করে অন্য কিছু অনুসন্ধান করুন",
+    
+    // Page Types
+    page: "পেজ",
+    academy: "একাডেমি",
+    blog: "ব্লগ",
+    
+    // Page Titles (Bengali)
+    dashboard: "ড্যাশবোর্ড",
+    savingsGoals: "সঞ্চয় লক্ষ্য",
+    makeDeposit: "জমা দিন",
+    withdrawal: "উত্তোলন",
+    savingsCalculator: "সঞ্চয় ক্যালকুলেটর",
+    islamicSavings: "ইসলামী সঞ্চয়",
+    referralProgram: "রেফারেল প্রোগ্রাম",
+    kycVerification: "কেওয়াইসি যাচাই",
+    aiAdvisor: "এআই উপদেষ্টা",
+    leaderboard: "লিডারবোর্ড",
+    ramadanSavings: "রমজান সঞ্চয়",
+    savingsInsights: "সঞ্চয় অন্তর্দৃষ্টি",
+    financialLiteracy: "আর্থিক সাক্ষরতা",
+    savingsTipsBlog: "সঞ্চয় টিপস ব্লগ",
+    challenges: "চ্যালেঞ্জ",
+    milestone: "মাইলফলক",
+    savingsWall: "সঞ্চয় ওয়াল",
+    liveFeed: "লাইভ ফিড",
+    familyGoals: "পারিবারিক লক্ষ্য",
+    successStories: "সাফল্যের গল্প",
+    transparencyReport: "স্বচ্ছতা রিপোর্ট",
+    shareBadge: "ব্যাজ শেয়ার",
+    community: "কমিউনিটি",
+    corporateSavings: "কর্পোরেট সঞ্চয়",
+    affiliateProgram: "অ্যাফিলিয়েট প্রোগ্রাম",
+    developerApi: "ডেভেলপার এপিআই",
+    levelUpGuide: "লেভেল আপ গাইড",
+    subscriptionPlans: "সাবস্ক্রিপশন প্ল্যান",
+    transactionHistory: "লেনদেনের ইতিহাস",
+    createGoal: "লক্ষ্য তৈরি করুন",
+    securitySettings: "নিরাপত্তা সেটিংস",
+    savingsReport: "সঞ্চয় রিপোর্ট",
+    
+    // Page Subtitles (Bengali)
+    dashboardSub: "আপনার সঞ্চয় সারাংশ",
+    savingsGoalsSub: "আপনার সব সঞ্চয় লক্ষ্য দেখুন",
+    makeDepositSub: "বিকাশ/নগদ এর মাধ্যমে সঞ্চয় করুন",
+    withdrawalSub: "আপনার সঞ্চয় উত্তোলন করুন",
+    savingsCalculatorSub: "লক্ষ্যের সময়সীমা গণনা করুন",
+    islamicSavingsSub: "সুদ-মুক্ত সঞ্চয়",
+    referralProgramSub: "বন্ধুদের আমন্ত্রণ জানান, পান ৳৫০০",
+    kycVerificationSub: "আপনার পরিচয় যাচাই করুন",
+    aiAdvisorSub: "এআই-চালিত সঞ্চয় পরিকল্পনা",
+    leaderboardSub: "শীর্ষ সঞ্চয়কারী র্যাঙ্কিং",
+    ramadanSavingsSub: "বিশেষ রমজান চ্যালেঞ্জ",
+    savingsInsightsSub: "আপনার সঞ্চয়ের প্রবণতা দেখুন",
+    financialLiteracySub: "বিনামূল্যে আর্থিক শিক্ষা",
+    savingsTipsBlogSub: "সাপ্তাহিক আর্থিক পরামর্শ",
+    challengesSub: "সঞ্চয় চ্যালেঞ্জে যোগ দিন",
+    milestoneSub: "আপনার সঞ্চয় মাইলফলক",
+    savingsWallSub: "কমিউনিটি সঞ্চয় শোকেস",
+    liveFeedSub: "রিয়েল-টাইম কমিউনিটি কার্যক্রম",
+    familyGoalsSub: "পরিবারের সাথে একসাথে সঞ্চয় করুন",
+    successStoriesSub: "অনুপ্রেরণাদায়ক সদস্য গল্প",
+    transparencyReportSub: "সঞ্চয় বন্ধু আর্থিক স্বচ্ছতা",
+    shareBadgeSub: "আপনার অর্জন শেয়ার করুন",
+    communitySub: "সঞ্চয় বন্ধু কমিউনিটিতে যোগ দিন",
+    corporateSavingsSub: "ব্যবসার জন্য সঞ্চয় সমাধান",
+    affiliateProgramSub: "অ্যাফিলিয়েটের মাধ্যমে উপার্জন করুন",
+    developerApiSub: "সঞ্চয় বন্ধু এপিআই ডকুমেন্টেশন",
+    levelUpGuideSub: "লেভেল কীভাবে বাড়াবেন",
+    subscriptionPlansSub: "প্রিমিয়াম প্ল্যান দেখুন",
+    transactionHistorySub: "সব লেনদেনের বিবরণ",
+    createGoalSub: "নতুন সঞ্চয় লক্ষ্য তৈরি করুন",
+    securitySettingsSub: "২এফএ ও নিরাপত্তা সেটিংস",
+    savingsReportSub: "বিস্তারিত সঞ্চয় বিশ্লেষণ",
+  }
+};
+
 const SearchPage = () => {
   const searchParams = useSearchParams();
   const [isDark, setIsDark] = useState(false);
@@ -13,275 +199,291 @@ const SearchPage = () => {
   const [results, setResults] = useState([]);
   const [showResults, setShowResults] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "" });
+  const [lang, setLang] = useState("en");
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
 
   const pages = [
     {
       icon: "🏠",
-      type: "Page",
-      title: "Dashboard",
-      sub: "Your savings summary",
+      type: t('page'),
+      title: t('dashboard'),
+      sub: t('dashboardSub'),
       url: "/dashboard",
       tags: ["dashboard", "home", "summary"],
     },
     {
       icon: "🎯",
-      type: "Page",
-      title: "Savings Goals",
-      sub: "View all your savings goals",
+      type: t('page'),
+      title: t('savingsGoals'),
+      sub: t('savingsGoalsSub'),
       url: "/dashboard/goals",
       tags: ["goal", "goals", "savings"],
     },
     {
       icon: "💵",
-      type: "Page",
-      title: "Make Deposit",
-      sub: "Save via bKash/Nagad",
+      type: t('page'),
+      title: t('makeDeposit'),
+      sub: t('makeDepositSub'),
       url: "/dashboard/deposit",
       tags: ["deposit", "bkash", "nagad", "money"],
     },
     {
       icon: "💸",
-      type: "Page",
-      title: "Withdrawal",
-      sub: "Withdraw your savings",
+      type: t('page'),
+      title: t('withdrawal'),
+      sub: t('withdrawalSub'),
       url: "/dashboard/withdraw",
       tags: ["withdraw", "withdrawal"],
     },
     {
       icon: "🧮",
-      type: "Page",
-      title: "Savings Calculator",
-      sub: "Calculate goal timeline",
+      type: t('page'),
+      title: t('savingsCalculator'),
+      sub: t('savingsCalculatorSub'),
       url: "/dashboard/calculator",
       tags: ["calculator", "calculate"],
     },
     {
       icon: "☪️",
-      type: "Page",
-      title: "Islamic Savings",
-      sub: "Interest-free savings",
+      type: t('page'),
+      title: t('islamicSavings'),
+      sub: t('islamicSavingsSub'),
       url: "/dashboard/plans",
       tags: ["islamic", "halal", "interest-free"],
     },
     {
       icon: "👥",
-      type: "Page",
-      title: "Referral Program",
-      sub: "Invite friends, get ৳500",
+      type: t('page'),
+      title: t('referralProgram'),
+      sub: t('referralProgramSub'),
       url: "/dashboard/referral",
       tags: ["referral", "bonus", "invite"],
     },
     {
       icon: "🪪",
-      type: "Page",
-      title: "KYC Verification",
-      sub: "Verify your identity",
+      type: t('page'),
+      title: t('kycVerification'),
+      sub: t('kycVerificationSub'),
       url: "/dashboard/kyc-status",
       tags: ["kyc", "verify", "nid"],
     },
     {
       icon: "🤖",
-      type: "Page",
-      title: "AI Advisor",
-      sub: "AI-powered savings planning",
+      type: t('page'),
+      title: t('aiAdvisor'),
+      sub: t('aiAdvisorSub'),
       url: "/dashboard/ai-advisor",
       tags: ["ai", "advisor", "assistant"],
     },
     {
       icon: "🏆",
-      type: "Page",
-      title: "Leaderboard",
-      sub: "Top savers ranking",
+      type: t('page'),
+      title: t('leaderboard'),
+      sub: t('leaderboardSub'),
       url: "/dashboard/leaderboard",
       tags: ["leaderboard", "ranking", "level"],
     },
     {
       icon: "🌙",
-      type: "Page",
-      title: "Ramadan Savings",
-      sub: "Special Ramadan challenge",
+      type: t('page'),
+      title: t('ramadanSavings'),
+      sub: t('ramadanSavingsSub'),
       url: "/dashboard/ramadan",
       tags: ["ramadan", "challenge"],
     },
     {
       icon: "📊",
-      type: "Page",
-      title: "Savings Insights",
-      sub: "View your savings trends",
+      type: t('page'),
+      title: t('savingsInsights'),
+      sub: t('savingsInsightsSub'),
       url: "/dashboard/insights",
       tags: ["insights", "analytics", "trends"],
     },
     {
       icon: "🎓",
-      type: "Academy",
-      title: "Financial Literacy",
-      sub: "Free financial education",
+      type: t('academy'),
+      title: t('financialLiteracy'),
+      sub: t('financialLiteracySub'),
       url: "/dashboard/academy",
       tags: ["academy", "education", "learning"],
     },
     {
       icon: "✍️",
-      type: "Blog",
-      title: "Savings Tips Blog",
-      sub: "Weekly financial advice",
+      type: t('blog'),
+      title: t('savingsTipsBlog'),
+      sub: t('savingsTipsBlogSub'),
       url: "/dashboard/blog",
       tags: ["blog", "tips", "advice"],
     },
     {
       icon: "🏆",
-      type: "Page",
-      title: "Challenges",
-      sub: "Join savings challenges",
+      type: t('page'),
+      title: t('challenges'),
+      sub: t('challengesSub'),
       url: "/dashboard/challenges",
       tags: ["challenge", "competition"],
     },
     {
       icon: "🎊",
-      type: "Page",
-      title: "Milestone",
-      sub: "Your savings milestones",
+      type: t('page'),
+      title: t('milestone'),
+      sub: t('milestoneSub'),
       url: "/dashboard/milestone",
       tags: ["milestone", "achievement"],
     },
     {
       icon: "🧱",
-      type: "Page",
-      title: "Savings Wall",
-      sub: "Community savings showcase",
+      type: t('page'),
+      title: t('savingsWall'),
+      sub: t('savingsWallSub'),
       url: "/dashboard/savings-wall",
       tags: ["wall", "showcase"],
     },
     {
       icon: "📡",
-      type: "Page",
-      title: "Live Feed",
-      sub: "Real-time community activity",
+      type: t('page'),
+      title: t('liveFeed'),
+      sub: t('liveFeedSub'),
       url: "/dashboard/live-feed",
       tags: ["live", "feed", "activity"],
     },
     {
       icon: "👨‍👩‍👧",
-      type: "Page",
-      title: "Family Goals",
-      sub: "Save together with family",
+      type: t('page'),
+      title: t('familyGoals'),
+      sub: t('familyGoalsSub'),
       url: "/dashboard/family-goals",
       tags: ["family", "together"],
     },
     {
       icon: "⭐",
-      type: "Page",
-      title: "Success Stories",
-      sub: "Inspiring member stories",
+      type: t('page'),
+      title: t('successStories'),
+      sub: t('successStoriesSub'),
       url: "/dashboard/success-stories",
       tags: ["success", "story", "inspiring"],
     },
     {
       icon: "📋",
-      type: "Page",
-      title: "Transparency Report",
-      sub: "Sanchoy Bondhu financial transparency",
+      type: t('page'),
+      title: t('transparencyReport'),
+      sub: t('transparencyReportSub'),
       url: "/dashboard/transparency",
       tags: ["transparency", "report"],
     },
     {
       icon: "🏅",
-      type: "Page",
-      title: "Share Badge",
-      sub: "Share your achievements",
+      type: t('page'),
+      title: t('shareBadge'),
+      sub: t('shareBadgeSub'),
       url: "/dashboard/badge-share",
       tags: ["badge", "share", "achievement"],
     },
     {
       icon: "👥",
-      type: "Page",
-      title: "Community",
-      sub: "Join Sanchoy Bondhu community",
+      type: t('page'),
+      title: t('community'),
+      sub: t('communitySub'),
       url: "/dashboard/community",
       tags: ["community", "members"],
     },
     {
       icon: "💼",
-      type: "Page",
-      title: "Corporate Savings",
-      sub: "Savings solutions for businesses",
+      type: t('page'),
+      title: t('corporateSavings'),
+      sub: t('corporateSavingsSub'),
       url: "/dashboard/corporate",
       tags: ["corporate", "business"],
     },
     {
       icon: "🤝",
-      type: "Page",
-      title: "Affiliate Program",
-      sub: "Earn through affiliate",
+      type: t('page'),
+      title: t('affiliateProgram'),
+      sub: t('affiliateProgramSub'),
       url: "/dashboard/affiliate",
       tags: ["affiliate", "earn"],
     },
     {
       icon: "🔌",
-      type: "Page",
-      title: "Developer API",
-      sub: "Sanchoy Bondhu API documentation",
+      type: t('page'),
+      title: t('developerApi'),
+      sub: t('developerApiSub'),
       url: "/dashboard/api-docs",
       tags: ["api", "developer"],
     },
     {
       icon: "🆙",
-      type: "Page",
-      title: "Level Up Guide",
-      sub: "How to increase level",
+      type: t('page'),
+      title: t('levelUpGuide'),
+      sub: t('levelUpGuideSub'),
       url: "/dashboard/levelup",
       tags: ["level", "upgrade"],
     },
     {
       icon: "💎",
-      type: "Page",
-      title: "Subscription Plans",
-      sub: "View premium plans",
+      type: t('page'),
+      title: t('subscriptionPlans'),
+      sub: t('subscriptionPlansSub'),
       url: "/dashboard/subscription",
       tags: ["subscription", "premium"],
     },
     {
       icon: "📄",
-      type: "Page",
-      title: "Transaction History",
-      sub: "All transaction details",
+      type: t('page'),
+      title: t('transactionHistory'),
+      sub: t('transactionHistorySub'),
       url: "/dashboard/transactions",
       tags: ["transaction", "history"],
     },
     {
       icon: "🎯",
-      type: "Page",
-      title: "Create Goal",
-      sub: "Create new savings goal",
+      type: t('page'),
+      title: t('createGoal'),
+      sub: t('createGoalSub'),
       url: "/dashboard/goal-create",
       tags: ["goal", "create", "new"],
     },
     {
       icon: "🔐",
-      type: "Page",
-      title: "Security Settings",
-      sub: "2FA & security settings",
+      type: t('page'),
+      title: t('securitySettings'),
+      sub: t('securitySettingsSub'),
       url: "/dashboard/security",
       tags: ["security", "2fa"],
     },
     {
       icon: "📊",
-      type: "Page",
-      title: "Savings Report",
-      sub: "Detailed savings analysis",
+      type: t('page'),
+      title: t('savingsReport'),
+      sub: t('savingsReportSub'),
       url: "/dashboard/savings-report",
       tags: ["report", "analysis"],
     },
   ];
 
   const trendingSearches = [
-    { icon: "🏠", label: "Home Savings", query: "home savings" },
-    { icon: "☪️", label: "Islamic Mode", query: "islamic mode" },
-    { icon: "👥", label: "Referral", query: "referral" },
-    { icon: "🧮", label: "Calculator", query: "calculator" },
-    { icon: "🪪", label: "KYC", query: "kyc" },
+    { icon: "🏠", label: t('dashboard'), query: "dashboard" },
+    { icon: "☪️", label: t('islamicSavings'), query: "islamic" },
+    { icon: "👥", label: t('referralProgram'), query: "referral" },
+    { icon: "🧮", label: t('savingsCalculator'), query: "calculator" },
+    { icon: "🪪", label: t('kycVerification'), query: "kyc" },
     { icon: "💜", label: "bKash", query: "bkash" },
-    { icon: "🏆", label: "Level", query: "level" },
-    { icon: "🌙", label: "Ramadan", query: "ramadan" },
+    { icon: "🏆", label: t('leaderboard'), query: "leaderboard" },
+    { icon: "🌙", label: t('ramadanSavings'), query: "ramadan" },
   ];
 
   useEffect(() => {
@@ -352,9 +554,9 @@ const SearchPage = () => {
           href="/"
           className="flex items-center gap-1.5 text-primary text-sm font-semibold px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition"
         >
-          <ArrowLeft size={14} /> Home
+          <ArrowLeft size={14} /> {t('backHome')}
         </Link>
-        <span className="text-sm font-bold text-foreground flex-1">Search</span>
+        <span className="text-sm font-bold text-foreground flex-1">{t('search')}</span>
       </div>
 
       {/* Search Header */}
@@ -370,7 +572,7 @@ const SearchPage = () => {
             type="text"
             value={searchQuery}
             onChange={handleSearch}
-            placeholder="Search pages, goals, blog..."
+            placeholder={t('searchPlaceholder')}
             className="w-full py-2.5 px-4 pr-10 rounded-full bg-white/95 text-black outline-none text-sm"
             autoFocus
           />
@@ -396,7 +598,7 @@ const SearchPage = () => {
         {!showResults && (
           <div>
             <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-2">
-              🔥 Popular Searches
+              {t('popularSearches')}
             </div>
             <div className="flex flex-wrap gap-2">
               {trendingSearches.map((item, idx) => (
@@ -416,7 +618,7 @@ const SearchPage = () => {
         {showResults && (
           <div>
             <div className="text-sm text-foreground/50 mb-3">
-              Found {results.length} results for "{searchQuery}"
+              {t('foundResults', { count: results.length, query: searchQuery })}
             </div>
             <div className="space-y-2">
               {results.map((result, idx) => (
@@ -454,10 +656,10 @@ const SearchPage = () => {
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🔍</div>
             <div className="text-lg font-bold text-foreground mb-1">
-              Nothing found
+              {t('nothingFound')}
             </div>
             <div className="text-sm text-foreground/50">
-              Try searching for something else
+              {t('trySearching')}
             </div>
           </div>
         )}

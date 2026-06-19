@@ -13,6 +13,62 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    securityLogs: "🔐 Security Logs",
+    
+    // Stats
+    uptime: "Uptime (30d)",
+    failedLoginsToday: "Failed Logins (today)",
+    suspiciousIPs: "Suspicious IPs",
+    
+    // Table
+    recentSecurityEvents: "📋 Recent Security Events",
+    time: "Time",
+    event: "Event",
+    ip: "IP",
+    status: "Status",
+    
+    // Status
+    danger: "Danger",
+    success: "Success",
+    warning: "Warning",
+    info: "Info",
+    
+    // Messages
+    failedToLoad: "Failed to load security events",
+    noEvents: "No security events found",
+  },
+  bn: {
+    // Page Title
+    securityLogs: "🔐 নিরাপত্তা লগ",
+    
+    // Stats
+    uptime: "আপটাইম (৩০ দিন)",
+    failedLoginsToday: "ব্যর্থ লগইন (আজ)",
+    suspiciousIPs: "সন্দেহজনক আইপি",
+    
+    // Table
+    recentSecurityEvents: "📋 সাম্প্রতিক নিরাপত্তা ইভেন্ট",
+    time: "সময়",
+    event: "ইভেন্ট",
+    ip: "আইপি",
+    status: "অবস্থা",
+    
+    // Status
+    danger: "বিপজ্জনক",
+    success: "সফল",
+    warning: "সতর্কতা",
+    info: "তথ্য",
+    
+    // Messages
+    failedToLoad: "নিরাপত্তা ইভেন্ট লোড করতে ব্যর্থ হয়েছে",
+    noEvents: "কোন নিরাপত্তা ইভেন্ট পাওয়া যায়নি",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -23,6 +79,22 @@ const AdminSecurityPage = () => {
   const [stats, setStats] = useState([]);
   const [securityEvents, setSecurityEvents] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState("bn");
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -37,7 +109,7 @@ const AdminSecurityPage = () => {
           {
             icon: "✅",
             value: s.uptime || "99.9%",
-            label: "Uptime (30d)",
+            label: t('uptime'),
             trend: s.uptimeTrend || "+99.9%",
             trendUp: true,
             bg: "bg-primary/10",
@@ -46,7 +118,7 @@ const AdminSecurityPage = () => {
           {
             icon: "🚫",
             value: String(s.failedLogins24h || 0),
-            label: "Failed Logins (today)",
+            label: t('failedLoginsToday'),
             trend: s.failedLoginsTrend || "-12%",
             trendUp: false,
             bg: "bg-red-500/10",
@@ -55,7 +127,7 @@ const AdminSecurityPage = () => {
           {
             icon: "⚠️",
             value: String(s.suspiciousIPs || 0),
-            label: "Suspicious IPs",
+            label: t('suspiciousIPs'),
             trend: null,
             bg: "bg-amber-500/10",
             iconBg: "bg-amber-500/10",
@@ -63,7 +135,7 @@ const AdminSecurityPage = () => {
         ]);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || "Failed to load security events");
+      showToast(err.response?.data?.message || t('failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -91,10 +163,20 @@ const AdminSecurityPage = () => {
     }
   };
 
+  const getStatusTranslation = (status) => {
+    const statusMap = {
+      "danger": t('danger'),
+      "success": t('success'),
+      "warning": t('warning'),
+      "info": t('info'),
+    };
+    return statusMap[status] || status;
+  };
+
   return (
     <div>
       <h2 className="text-lg font-bold text-foreground mb-5">
-        🔐 Security Logs
+        {t('securityLogs')}
       </h2>
 
       {loading && (
@@ -136,7 +218,7 @@ const AdminSecurityPage = () => {
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="p-4 border-b border-border">
           <div className="font-bold text-foreground">
-            📋 Recent Security Events
+            {t('recentSecurityEvents')}
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -144,43 +226,53 @@ const AdminSecurityPage = () => {
             <thead>
               <tr className="border-b border-border bg-background">
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Time
+                  {t('time')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Event
+                  {t('event')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  IP
+                  {t('ip')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Status
+                  {t('status')}
                 </th>
               </tr>
             </thead>
             <tbody>
-              {securityEvents.map((event, idx) => (
-                <tr
-                  key={idx}
-                  className="border-b border-border last:border-0 hover:bg-primary/5 transition"
-                >
-                  <td className="px-4 py-3 text-sm text-foreground">
-                    {event.time || new Date(event.createdAt).toLocaleTimeString()}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-foreground">
-                    {event.event}
-                  </td>
-                  <td className="px-4 py-3 text-sm font-mono text-foreground/70">
-                    {event.ip}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`text-sm font-bold ${getStatusColor(event.statusColor)}`}
-                    >
-                      {event.status}
-                    </span>
+              {securityEvents.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-foreground/50">
+                    {t('noEvents')}
                   </td>
                 </tr>
-              ))}
+              ) : (
+                securityEvents.map((event, idx) => (
+                  <tr
+                    key={idx}
+                    className="border-b border-border last:border-0 hover:bg-primary/5 transition"
+                  >
+                    <td className="px-4 py-3 text-sm text-foreground">
+                      {event.time || new Date(event.createdAt).toLocaleTimeString(
+                        lang === 'bn' ? 'bn-BD' : 'en-US'
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-foreground">
+                      {event.event}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-mono text-foreground/70">
+                      {event.ip}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`text-sm font-bold ${getStatusColor(event.statusColor)}`}
+                      >
+                        {getStatusTranslation(event.status)}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

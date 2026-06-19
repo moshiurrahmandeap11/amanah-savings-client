@@ -5,6 +5,100 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Share2, ThumbsUp, Award, Target, Flame } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Hero Section
+    heroTitle: "💚 Success Stories",
+    heroSubtitle: "Real members. Real goals. Real results. Read how thousands of Bangladeshis are changing their lives through consistent savings.",
+    
+    // Featured Story
+    featuredStory: "⭐ Featured Story of the Month",
+    totalSaved: "Total Saved",
+    dayStreak: "Day Streak",
+    goalsDone: "Goals Done",
+    championSaver: "🏆 Champion Saver",
+    likes: "Likes",
+    share: "📤 Share",
+    shareWhatsApp: "📤 Shared to WhatsApp!",
+    
+    // Filters
+    allStories: "All Stories",
+    education: "🎓 Education",
+    healthcare: "🏥 Healthcare",
+    travel: "✈️ Travel",
+    hajjUmrah: "🕌 Hajj/Umrah",
+    home: "🏡 Home",
+    business: "💼 Business",
+    
+    // Stories Grid
+    loadingStories: "Loading stories...",
+    noStories: "No Stories Yet",
+    noStoriesDesc: "Success stories will appear here once members share their achievements.",
+    shareMyStory: "Share My Story →",
+    
+    // Card Labels
+    saved: "Saved",
+    streak: "Streak",
+    status: "Status",
+    active: "Active",
+    
+    // CTA Section
+    ctaTitle: "Have a Success Story to Share?",
+    ctaDesc: "Your journey could inspire thousands of others!",
+    ctaButton: "Share My Story →",
+    
+    // Toast Messages
+    liked: "❤️ Thanks for appreciating this story!",
+    unliked: "❤️ You unliked this story",
+  },
+  bn: {
+    // Hero Section
+    heroTitle: "💚 সফল সদস্যদের গল্প",
+    heroSubtitle: "বাস্তব সদস্য। বাস্তব লক্ষ্য। বাস্তব ফলাফল। পড়ুন কীভাবে হাজার হাজার বাংলাদেশী নিয়মিত সঞ্চয়ের মাধ্যমে তাদের জীবন বদলে দিচ্ছেন।",
+    
+    // Featured Story
+    featuredStory: "⭐ মাসের সেরা গল্প",
+    totalSaved: "মোট সঞ্চয়",
+    dayStreak: "দিনের ধারা",
+    goalsDone: "লক্ষ্য পূরণ",
+    championSaver: "🏆 চ্যাম্পিয়ন সেভার",
+    likes: "লাইক",
+    share: "📤 শেয়ার",
+    shareWhatsApp: "📤 হোয়াটসঅ্যাপে শেয়ার করা হয়েছে!",
+    
+    // Filters
+    allStories: "সব গল্প",
+    education: "🎓 শিক্ষা",
+    healthcare: "🏥 স্বাস্থ্যসেবা",
+    travel: "✈️ ভ্রমণ",
+    hajjUmrah: "🕌 হজ/উমরা",
+    home: "🏡 ঘর",
+    business: "💼 ব্যবসা",
+    
+    // Stories Grid
+    loadingStories: "গল্প লোড হচ্ছে...",
+    noStories: "কোন গল্প নেই",
+    noStoriesDesc: "সদস্যরা তাদের অর্জন শেয়ার করলে সফলতার গল্প এখানে দেখা যাবে।",
+    shareMyStory: "আমার গল্প শেয়ার করুন →",
+    
+    // Card Labels
+    saved: "সঞ্চয়",
+    streak: "ধারা",
+    status: "অবস্থা",
+    active: "সক্রিয়",
+    
+    // CTA Section
+    ctaTitle: "শেয়ার করার মতো সফলতার গল্প আছে?",
+    ctaDesc: "আপনার যাত্রা হাজারো অন্যকে অনুপ্রাণিত করতে পারে!",
+    ctaButton: "আমার গল্প শেয়ার করুন →",
+    
+    // Toast Messages
+    liked: "❤️ এই গল্পটি পছন্দ করার জন্য ধন্যবাদ!",
+    unliked: "❤️ আপনি এই গল্পটি আনলাইক করেছেন",
+  }
+};
+
 const SuccessStoriesPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [activeFilter, setActiveFilter] = useState("All Stories");
@@ -14,21 +108,35 @@ const SuccessStoriesPage = () => {
   const [stories, setStories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [lang, setLang] = useState("bn");
 
-  const filters = [
-    "All Stories",
-    "🎓 Education",
-    "🏥 Healthcare",
-    "✈️ Travel",
-    "🕌 Hajj/Umrah",
-    "🏡 Home",
-    "💼 Business",
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get filter labels with translations
+  const getFilters = () => [
+    t('allStories'),
+    t('education'),
+    t('healthcare'),
+    t('travel'),
+    t('hajjUmrah'),
+    t('home'),
+    t('business'),
   ];
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
+
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
   }, []);
 
   useEffect(() => {
@@ -71,9 +179,9 @@ const SuccessStoriesPage = () => {
 
   const handleLike = (storyId, currentLikes) => {
     if (likedStories[storyId]) {
-      showToast("❤️ You unliked this story");
+      showToast(t('unliked'));
     } else {
-      showToast("❤️ Thanks for appreciating this story!");
+      showToast(t('liked'));
     }
     setLikedStories((prev) => ({ ...prev, [storyId]: !prev[storyId] }));
   };
@@ -85,24 +193,26 @@ const SuccessStoriesPage = () => {
     story.bg || "from-primary to-primary-light";
   const getStoryColor = (story) => story.color || "text-primary";
   const getStoryLikes = (story) => story.likes || 0;
-  const getStoryStatus = (story) => story.status || "Active";
+  const getStoryStatus = (story) => story.status || t('active');
   const getStorySaved = (story) => story.saved || story.totalSaved || "৳0";
   const getStoryStreak = (story) => story.streak || 0;
   const getStoryGoalsList = (story) =>
     Array.isArray(story.goals) ? story.goals : story.goal ? [story.goal] : [];
 
+  const filters = getFilters();
+
   const filteredStories =
-    activeFilter === "All Stories"
+    activeFilter === t('allStories')
       ? stories
       : stories.filter((s) => {
           const goal = getStoryGoal(s);
           return (
             goal.includes(activeFilter.split(" ")[1]) ||
-            (activeFilter === "🏥 Healthcare" && goal.includes("Medical")) ||
-            (activeFilter === "✈️ Travel" && goal.includes("Dubai")) ||
-            (activeFilter === "🕌 Hajj/Umrah" && goal.includes("Umrah")) ||
-            (activeFilter === "🏡 Home" && goal.includes("Home")) ||
-            (activeFilter === "💼 Business" && goal.includes("Business"))
+            (activeFilter === t('healthcare') && goal.includes("Medical")) ||
+            (activeFilter === t('travel') && goal.includes("Dubai")) ||
+            (activeFilter === t('hajjUmrah') && goal.includes("Umrah")) ||
+            (activeFilter === t('home') && goal.includes("Home")) ||
+            (activeFilter === t('business') && goal.includes("Business"))
           );
         });
 
@@ -119,11 +229,10 @@ const SuccessStoriesPage = () => {
         </div>
         <div className="relative z-10 max-w-4xl mx-auto px-4">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
-            💚 সফল সদস্যদের গল্প
+            {t('heroTitle')}
           </h1>
           <p className="text-white/90 text-sm sm:text-base max-w-2xl mx-auto">
-            Real members. Real goals. Real results. Read how thousands of
-            Bangladeshis are changing their lives through consistent savings.
+            {t('heroSubtitle')}
           </p>
         </div>
       </div>
@@ -134,7 +243,7 @@ const SuccessStoriesPage = () => {
           <div className="flex items-center gap-2 mb-6">
             <span className="text-xl">⭐</span>
             <h2 className="text-xl font-bold text-foreground">
-              Featured Story of the Month
+              {t('featuredStory')}
             </h2>
           </div>
 
@@ -159,7 +268,7 @@ const SuccessStoriesPage = () => {
                         {getStorySaved(featuredStory)}
                       </div>
                       <div className="text-white/70 text-[10px] font-semibold">
-                        Total Saved
+                        {t('totalSaved')}
                       </div>
                     </div>
                     <div className="bg-white/20 rounded-lg px-4 py-2 text-center">
@@ -167,7 +276,7 @@ const SuccessStoriesPage = () => {
                         🔥 {getStoryStreak(featuredStory)}
                       </div>
                       <div className="text-white/70 text-[10px] font-semibold">
-                        Day Streak
+                        {t('dayStreak')}
                       </div>
                     </div>
                     <div className="bg-white/20 rounded-lg px-4 py-2 text-center">
@@ -178,7 +287,7 @@ const SuccessStoriesPage = () => {
                             : 0)}
                       </div>
                       <div className="text-white/70 text-[10px] font-semibold">
-                        Goals Done
+                        {t('goalsDone')}
                       </div>
                     </div>
                   </div>
@@ -187,7 +296,7 @@ const SuccessStoriesPage = () => {
               {/* Right Side - Content */}
               <div className="p-6">
                 <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-                  🏆 Champion Saver · {featuredStory.memberType || "Member"}
+                  {t('championSaver')} · {featuredStory.memberType || "Member"}
                 </div>
                 <div className="text-foreground/80 italic text-base leading-relaxed mb-4">
                   "{featuredStory.quote}"
@@ -209,13 +318,13 @@ const SuccessStoriesPage = () => {
                     }
                     className="flex-1 px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white font-semibold text-sm hover:opacity-90 transition"
                   >
-                    ❤️ {getStoryLikes(featuredStory)} Likes
+                    ❤️ {getStoryLikes(featuredStory)} {t('likes')}
                   </button>
                   <button
-                    onClick={() => showToast("📤 Shared to WhatsApp!")}
+                    onClick={() => showToast(t('shareWhatsApp'))}
                     className="flex-1 px-4 py-2 rounded-lg border border-border text-foreground/70 font-semibold text-sm hover:border-primary transition"
                   >
-                    📤 Share
+                    {t('share')}
                   </button>
                 </div>
               </div>
@@ -248,20 +357,19 @@ const SuccessStoriesPage = () => {
         {loading ? (
           <div className="text-center py-20">
             <div className="animate-spin w-10 h-10 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-            <p className="text-foreground/60 text-sm">Loading stories...</p>
+            <p className="text-foreground/60 text-sm">{t('loadingStories')}</p>
           </div>
         ) : stories.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-6xl mb-4">📖</div>
             <h3 className="text-xl font-bold text-foreground mb-2">
-              No Stories Yet
+              {t('noStories')}
             </h3>
             <p className="text-foreground/60 text-sm max-w-md mx-auto mb-6">
-              Success stories will appear here once members share their
-              achievements.
+              {t('noStoriesDesc')}
             </p>
             <button className="px-6 py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-bold hover:opacity-90 transition">
-              Share My Story →
+              {t('shareMyStory')}
             </button>
           </div>
         ) : (
@@ -308,7 +416,7 @@ const SuccessStoriesPage = () => {
                         {getStorySaved(story)}
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold">
-                        Saved
+                        {t('saved')}
                       </div>
                     </div>
                     <div className="flex-1 text-center border-l border-border">
@@ -316,7 +424,7 @@ const SuccessStoriesPage = () => {
                         🔥 {getStoryStreak(story)}
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold">
-                        Streak
+                        {t('streak')}
                       </div>
                     </div>
                     <div className="flex-1 text-center border-l border-border">
@@ -324,7 +432,7 @@ const SuccessStoriesPage = () => {
                         {getStoryStatus(story)}
                       </div>
                       <div className="text-[10px] text-foreground/50 font-semibold">
-                        Status
+                        {t('status')}
                       </div>
                     </div>
                   </div>
@@ -343,10 +451,10 @@ const SuccessStoriesPage = () => {
                         : getStoryLikes(story)}
                     </button>
                     <button
-                      onClick={() => showToast("📤 Shared to WhatsApp!")}
+                      onClick={() => showToast(t('shareWhatsApp'))}
                       className="flex-1 py-2 rounded-lg text-xs font-semibold bg-linear-to-r from-primary to-primary-light text-white flex items-center justify-center gap-1"
                     >
-                      📤 Share
+                      {t('share')}
                     </button>
                   </div>
                 </motion.div>
@@ -360,13 +468,13 @@ const SuccessStoriesPage = () => {
       <div className="max-w-5xl mx-auto px-4 mb-12">
         <div className="bg-linear-to-r from-primary to-primary-light rounded-xl p-8 text-center">
           <h2 className="text-2xl font-bold text-white mb-2">
-            Have a Success Story to Share?
+            {t('ctaTitle')}
           </h2>
           <p className="text-white/85 text-sm mb-6">
-            Your journey could inspire thousands of others!
+            {t('ctaDesc')}
           </p>
           <button className="px-6 py-3 bg-white text-primary rounded-xl font-bold hover:bg-gray-100 transition">
-            Share My Story →
+            {t('ctaButton')}
           </button>
         </div>
       </div>

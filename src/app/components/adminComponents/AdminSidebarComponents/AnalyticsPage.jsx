@@ -5,6 +5,86 @@ import Chart from "chart.js/auto";
 import { Loader2 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    analytics: "📈 Analytics",
+    
+    // Stats
+    totalUsers: "Total Users",
+    activeToday: "Active Today",
+    todaysDeposit: "Today's Deposit",
+    newUsers: "New Users",
+    
+    // Additional Stats
+    avgSessionsPerUser: "Avg Sessions per User (14d)",
+    activeUsersLast7Days: "Active Users (Last 7 days)",
+    retentionRate: "Retention Rate",
+    
+    // Charts
+    dailyActiveUsers: "📊 Daily Active Users (Last 14 days)",
+    deviceBreakdown: "🔵 Device Breakdown",
+    
+    // Device Names
+    android: "Android",
+    ios: "iOS",
+    desktop: "Desktop",
+    
+    // Divisions
+    dhaka: "Dhaka",
+    chittagong: "Chittagong",
+    rajshahi: "Rajshahi",
+    khulna: "Khulna",
+    sylhet: "Sylhet",
+    others: "Others",
+    
+    // Tooltips
+    users: "users",
+    
+    // Loading
+    loading: "Loading analytics...",
+  },
+  bn: {
+    // Page Title
+    analytics: "📈 অ্যানালিটিক্স",
+    
+    // Stats
+    totalUsers: "মোট ব্যবহারকারী",
+    activeToday: "আজ সক্রিয়",
+    todaysDeposit: "আজকের ডিপোজিট",
+    newUsers: "নতুন ব্যবহারকারী",
+    
+    // Additional Stats
+    avgSessionsPerUser: "প্রতি ব্যবহারকারীর গড় সেশন (১৪ দিন)",
+    activeUsersLast7Days: "সক্রিয় ব্যবহারকারী (গত ৭ দিন)",
+    retentionRate: "ধারণ হার",
+    
+    // Charts
+    dailyActiveUsers: "📊 দৈনিক সক্রিয় ব্যবহারকারী (গত ১৪ দিন)",
+    deviceBreakdown: "🔵 ডিভাইস বিভাজন",
+    
+    // Device Names
+    android: "অ্যান্ড্রয়েড",
+    ios: "আইওএস",
+    desktop: "ডেস্কটপ",
+    
+    // Divisions
+    dhaka: "ঢাকা",
+    chittagong: "চট্টগ্রাম",
+    rajshahi: "রাজশাহী",
+    khulna: "খুলনা",
+    sylhet: "সিলেট",
+    others: "অন্যান্য",
+    
+    // Tooltips
+    users: "ব্যবহারকারী",
+    
+    // Loading
+    loading: "অ্যানালিটিক্স লোড হচ্ছে...",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -18,12 +98,28 @@ const AnalyticsPage = () => {
   const [dauData, setDauData] = useState({ labels: [], values: [] });
   const [additionalStats, setAdditionalStats] = useState({});
   const [loading, setLoading] = useState(true);
+  const [lang, setLang] = useState("bn");
 
-  // canvas ref দিয়ে directly control করব, string id দিয়ে না
+  // canvas ref
   const dauCanvasRef = useRef(null);
   const trafficCanvasRef = useRef(null);
   const dauChartRef = useRef(null);
   const trafficChartRef = useRef(null);
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
 
   const destroyCharts = useCallback(() => {
     if (dauChartRef.current) {
@@ -76,7 +172,7 @@ const AnalyticsPage = () => {
     {
       icon: "👥",
       value: "0",
-      label: "Total Users",
+      label: t('totalUsers'),
       trend: "0%",
       trendUp: true,
       bg: "bg-primary/10",
@@ -84,7 +180,7 @@ const AnalyticsPage = () => {
     {
       icon: "📱",
       value: "0",
-      label: "Active Today",
+      label: t('activeToday'),
       trend: "0%",
       trendUp: true,
       bg: "bg-blue-500/10",
@@ -92,7 +188,7 @@ const AnalyticsPage = () => {
     {
       icon: "💰",
       value: "৳0",
-      label: "Today's Deposit",
+      label: t('todaysDeposit'),
       trend: "0%",
       trendUp: true,
       bg: "bg-green-500/10",
@@ -100,7 +196,7 @@ const AnalyticsPage = () => {
     {
       icon: "🆕",
       value: "0",
-      label: "New Users",
+      label: t('newUsers'),
       trend: "0%",
       trendUp: true,
       bg: "bg-amber-500/10",
@@ -108,18 +204,18 @@ const AnalyticsPage = () => {
   ];
 
   const getFallbackDeviceData = () => [
-    { name: "Android", percentage: 58, color: "#10b981" },
-    { name: "iOS", percentage: 26, color: "#3b82f6" },
-    { name: "Desktop", percentage: 16, color: "#8b5cf6" },
+    { name: t('android'), percentage: 58, color: "#10b981" },
+    { name: t('ios'), percentage: 26, color: "#3b82f6" },
+    { name: t('desktop'), percentage: 16, color: "#8b5cf6" },
   ];
 
   const getFallbackDivisionData = () => [
-    { name: "Dhaka", percentage: 42, color: "#059669" },
-    { name: "Chittagong", percentage: 18, color: "#3b82f6" },
-    { name: "Rajshahi", percentage: 12, color: "#f59e0b" },
-    { name: "Khulna", percentage: 10, color: "#ef4444" },
-    { name: "Sylhet", percentage: 8, color: "#8b5cf6" },
-    { name: "Others", percentage: 10, color: "#6b7280" },
+    { name: t('dhaka'), percentage: 42, color: "#059669" },
+    { name: t('chittagong'), percentage: 18, color: "#3b82f6" },
+    { name: t('rajshahi'), percentage: 12, color: "#f59e0b" },
+    { name: t('khulna'), percentage: 10, color: "#ef4444" },
+    { name: t('sylhet'), percentage: 8, color: "#8b5cf6" },
+    { name: t('others'), percentage: 10, color: "#6b7280" },
   ];
 
   const getFallbackDauData = () => ({
@@ -136,22 +232,20 @@ const AnalyticsPage = () => {
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
     fetchAnalytics();
 
-    // cleanup on unmount
     return () => destroyCharts();
   }, [fetchAnalytics, destroyCharts]);
 
-  // Chart init — loading শেষ হলে এবং data থাকলে
+  // Chart init
   useEffect(() => {
     if (loading) return;
 
-    // আগের charts destroy করো
     destroyCharts();
 
     const isDarkMode = document.documentElement.classList.contains("dark");
     const textColor = isDarkMode ? "#94a3b8" : "#64748b";
     const gridColor = isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
 
-    // DAU Chart — canvas ref দিয়ে
+    // DAU Chart
     if (dauCanvasRef.current && dauData.labels?.length > 0) {
       const ctx = dauCanvasRef.current.getContext("2d");
       dauChartRef.current = new Chart(ctx, {
@@ -160,7 +254,7 @@ const AnalyticsPage = () => {
           labels: dauData.labels,
           datasets: [
             {
-              label: "Daily Active Users",
+              label: t('dailyActiveUsers').replace("📊 ", ""),
               data: dauData.values,
               borderColor: "#059669",
               backgroundColor: "rgba(5,150,105,0.1)",
@@ -180,7 +274,7 @@ const AnalyticsPage = () => {
           plugins: {
             legend: { display: false },
             tooltip: {
-              callbacks: { label: (c) => `${c.raw} users` },
+              callbacks: { label: (c) => `${c.raw} ${t('users')}` },
             },
           },
           scales: {
@@ -198,7 +292,7 @@ const AnalyticsPage = () => {
       });
     }
 
-    // Device Doughnut Chart — canvas ref দিয়ে
+    // Device Doughnut Chart
     const deviceData =
       deviceBreakdown.length > 0
         ? deviceBreakdown
@@ -252,9 +346,9 @@ const AnalyticsPage = () => {
 
   return (
     <div>
-      <h2 className="text-lg font-bold text-foreground mb-5">📈 Analytics</h2>
+      <h2 className="text-lg font-bold text-foreground mb-5">{t('analytics')}</h2>
 
-      {/* Stats Grid - DARKER BACKGROUNDS */}
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         {displayStats.map((stat, idx) => (
           <div 
@@ -292,12 +386,12 @@ const AnalyticsPage = () => {
         ))}
       </div>
 
-      {/* Additional Stats Row - DARKER BACKGROUNDS */}
+      {/* Additional Stats Row */}
       {additionalStats.avgSessionsPerUser > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
           <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
             <div className="text-xs text-foreground/50">
-              Avg Sessions per User (14d)
+              {t('avgSessionsPerUser')}
             </div>
             <div className="text-2xl font-bold text-foreground mt-1">
               {additionalStats.avgSessionsPerUser}
@@ -308,7 +402,7 @@ const AnalyticsPage = () => {
           </div>
           <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
             <div className="text-xs text-foreground/50">
-              Active Users (Last 7 days)
+              {t('activeUsersLast7Days')}
             </div>
             <div className="text-2xl font-bold text-foreground mt-1">
               {additionalStats.activeUsersLast7Days?.toLocaleString() || 0}
@@ -318,7 +412,7 @@ const AnalyticsPage = () => {
             </div>
           </div>
           <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
-            <div className="text-xs text-foreground/50">Retention Rate</div>
+            <div className="text-xs text-foreground/50">{t('retentionRate')}</div>
             <div className="text-2xl font-bold text-foreground mt-1">
               {additionalStats.retentionRate || 0}%
             </div>
@@ -329,12 +423,12 @@ const AnalyticsPage = () => {
         </div>
       )}
 
-      {/* Charts Grid - DARKER BACKGROUNDS */}
+      {/* Charts Grid */}
       <div className="grid lg:grid-cols-2 gap-5 mb-5">
         {/* DAU Chart */}
         <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
           <div className="font-bold text-foreground mb-4">
-            📊 Daily Active Users (Last 14 days)
+            {t('dailyActiveUsers')}
           </div>
           <div className="h-64 relative">
             <canvas ref={dauCanvasRef} />
@@ -344,7 +438,7 @@ const AnalyticsPage = () => {
         {/* Device Doughnut Chart */}
         <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
           <div className="font-bold text-foreground mb-4">
-            🔵 Device Breakdown
+            {t('deviceBreakdown')}
           </div>
           <div className="h-64 relative">
             <canvas ref={trafficCanvasRef} />
@@ -352,12 +446,12 @@ const AnalyticsPage = () => {
         </div>
       </div>
 
-      {/* Device & Divisions Progress Bars - DARKER BACKGROUNDS */}
+      {/* Device & Divisions Progress Bars */}
       <div className="grid md:grid-cols-2 gap-5">
         {/* Device Breakdown */}
         <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
           <div className="font-bold text-foreground mb-4">
-            📱 Device Breakdown
+            📱 {t('deviceBreakdown')}
           </div>
           <div className="space-y-4">
             {(deviceBreakdown.length > 0
@@ -388,7 +482,7 @@ const AnalyticsPage = () => {
         {/* Top Divisions */}
         <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
           <div className="font-bold text-foreground mb-4">
-            🌍 Top Divisions
+            🌍 {t('topDivisions') || "Top Divisions"}
           </div>
           <div className="space-y-4">
             {(divisionBreakdown.length > 0

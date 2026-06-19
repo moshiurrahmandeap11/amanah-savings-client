@@ -7,6 +7,86 @@ import * as XLSX from "xlsx";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    fraudAlerts: "🚨 Fraud Alerts & Security",
+    highRisk: "High Risk",
+    mediumRisk: "Medium Risk",
+    exportExcel: "Export Excel",
+    exportJSON: "Export JSON",
+    exporting: "Exporting...",
+    allFraudAlerts: "All Fraud Alerts",
+    totalAlerts: "Total",
+    noAlerts: "No fraud alerts found",
+    alertType: "Alert Type",
+    user: "User",
+    details: "Details",
+    riskScore: "Risk Score",
+    time: "Time",
+    status: "Status",
+    actions: "Actions",
+    detailsBtn: "Details",
+    ban: "🚫 Ban",
+    lockAccount: "Lock Account",
+    unlock: "Unlock",
+    banUser: "Ban User?",
+    suspendAccount: "Suspend Account?",
+    unlockAccount: "Unlock Account?",
+    reasonForBan: "Reason for ban",
+    reasonForSuspension: "Reason for suspension",
+    provideReason: "Please provide a reason",
+    yesBan: "Yes, Ban User",
+    yesSuspend: "Yes, Suspend",
+    yesUnlock: "Yes, Unlock",
+    banSuccess: "User banned permanently",
+    suspendSuccess: "Account suspended — user notified",
+    unlockSuccess: "Account unlocked — user can now login",
+    failedToLoad: "Failed to load fraud alerts",
+    exportSuccess: "Exported alerts successfully!",
+    jsonExportSuccess: "JSON report downloaded successfully!",
+    exportFailed: "Failed to export report",
+  },
+  bn: {
+    fraudAlerts: "🚨 ফ্রড অ্যালার্ট ও সিকিউরিটি",
+    highRisk: "হাই রিস্ক",
+    mediumRisk: "মিডিয়াম রিস্ক",
+    exportExcel: "এক্সেল এক্সপোর্ট",
+    exportJSON: "JSON এক্সপোর্ট",
+    exporting: "এক্সপোর্ট হচ্ছে...",
+    allFraudAlerts: "সব ফ্রড অ্যালার্ট",
+    totalAlerts: "মোট",
+    noAlerts: "কোনো ফ্রড অ্যালার্ট পাওয়া যায়নি",
+    alertType: "অ্যালার্ট টাইপ",
+    user: "ইউজার",
+    details: "বিস্তারিত",
+    riskScore: "রিস্ক স্কোর",
+    time: "সময়",
+    status: "স্ট্যাটাস",
+    actions: "অ্যাকশন",
+    detailsBtn: "বিস্তারিত",
+    ban: "🚫 ব্যান",
+    lockAccount: "অ্যাকাউন্ট লক",
+    unlock: "আনলক",
+    banUser: "ইউজার ব্যান করবেন?",
+    suspendAccount: "অ্যাকাউন্ট সাসপেন্ড করবেন?",
+    unlockAccount: "অ্যাকাউন্ট আনলক করবেন?",
+    reasonForBan: "ব্যানের কারণ",
+    reasonForSuspension: "সাসপেন্ডের কারণ",
+    provideReason: "কারণ দিন",
+    yesBan: "হ্যাঁ, ব্যান করুন",
+    yesSuspend: "হ্যাঁ, সাসপেন্ড করুন",
+    yesUnlock: "হ্যাঁ, আনলক করুন",
+    banSuccess: "ইউজার স্থায়ীভাবে ব্যান হয়েছে",
+    suspendSuccess: "অ্যাকাউন্ট সাসপেন্ড হয়েছে — ইউজারকে জানানো হয়েছে",
+    unlockSuccess: "অ্যাকাউন্ট আনলক হয়েছে — এখন লগইন করতে পারবেন",
+    failedToLoad: "ফ্রড অ্যালার্ট লোড করতে ব্যর্থ হয়েছে",
+    exportSuccess: "অ্যালার্ট সফলভাবে এক্সপোর্ট হয়েছে!",
+    jsonExportSuccess: "JSON রিপোর্ট ডাউনলোড হয়েছে!",
+    exportFailed: "রিপোর্ট এক্সপোর্ট করতে ব্যর্থ হয়েছে",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -18,6 +98,15 @@ const FraudPage = () => {
   const [fraudAlerts, setFraudAlerts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [lang, setLang] = useState("bn");
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
   const fetchAlerts = useCallback(async () => {
     setLoading(true);
@@ -31,8 +120,8 @@ const FraudPage = () => {
             statsArray = data.stats;
           } else {
             statsArray = [
-              { icon: "🚨", value: data.stats.highRisk || 0, label: "High Risk Alerts", trend: "Critical", trendUp: false, iconBg: "bg-red-500/10" },
-              { icon: "⚠️", value: data.stats.mediumRisk || 0, label: "Medium Risk Alerts", trend: "Warning", trendUp: false, iconBg: "bg-amber-500/10" },
+              { icon: "🚨", value: data.stats.highRisk || 0, label: t('highRisk') + " Alerts", trend: "Critical", trendUp: false, iconBg: "bg-red-500/10" },
+              { icon: "⚠️", value: data.stats.mediumRisk || 0, label: t('mediumRisk') + " Alerts", trend: "Warning", trendUp: false, iconBg: "bg-amber-500/10" },
               { icon: "🔒", value: data.stats.suspended || 0, label: "Suspended Accounts", trend: "Action Needed", trendUp: false, iconBg: "bg-yellow-500/10" },
               { icon: "🚫", value: data.stats.banned || 0, label: "Banned Accounts", trend: "Permanent", trendUp: false, iconBg: "bg-red-500/10" },
             ];
@@ -43,16 +132,16 @@ const FraudPage = () => {
       }
     } catch (err) {
       console.error("Fetch alerts error:", err);
-      showToast(err.response?.data?.message || "Failed to load fraud alerts");
+      showToast(t('failedToLoad'));
       setStats(getFallbackStats());
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang]);
 
   const getFallbackStats = () => [
-    { icon: "🚨", value: "0", label: "High Risk Alerts", trend: "Critical", trendUp: false, iconBg: "bg-red-500/10" },
-    { icon: "⚠️", value: "0", label: "Medium Risk Alerts", trend: "Warning", trendUp: false, iconBg: "bg-amber-500/10" },
+    { icon: "🚨", value: "0", label: t('highRisk') + " Alerts", trend: "Critical", trendUp: false, iconBg: "bg-red-500/10" },
+    { icon: "⚠️", value: "0", label: t('mediumRisk') + " Alerts", trend: "Warning", trendUp: false, iconBg: "bg-amber-500/10" },
     { icon: "🔒", value: "0", label: "Suspended Accounts", trend: "Action Needed", trendUp: false, iconBg: "bg-yellow-500/10" },
     { icon: "🚫", value: "0", label: "Banned Accounts", trend: "Permanent", trendUp: false, iconBg: "bg-red-500/10" },
   ];
@@ -66,11 +155,9 @@ const FraudPage = () => {
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
-  // Excel Export Function
   const exportToExcel = async () => {
     setExporting(true);
     try {
-      // Fetch fresh data for export
       const res = await axiosInstance.get("/admin/fraud/alerts", { headers: getAuthHeaders() });
       
       if (res.data.success) {
@@ -78,7 +165,6 @@ const FraudPage = () => {
         const alerts = Array.isArray(data.alerts) ? data.alerts : [];
         const statsData = data.stats || {};
         
-        // Prepare summary data
         const summaryData = [
           { "Report Type": "Fraud & Security Report", "Value": "Sonchoy Bondhu" },
           { "Report Generated": new Date().toLocaleString(), "Value": "" },
@@ -92,7 +178,6 @@ const FraudPage = () => {
           { "Banned Accounts": statsData.banned || 0, "Value": "" },
         ];
         
-        // Prepare alerts data for Excel
         const alertsData = alerts.map((alert, index) => ({
           "SL No": index + 1,
           "Alert Type": alert.type || "Unknown",
@@ -107,11 +192,9 @@ const FraudPage = () => {
           "Time": alert.time || (alert.createdAt ? new Date(alert.createdAt).toLocaleString() : "N/A"),
         }));
         
-        // Create Summary Sheet
         const summarySheet = XLSX.utils.json_to_sheet(summaryData);
         summarySheet["!cols"] = [{ wch: 25 }, { wch: 30 }];
         
-        // Style summary header
         const range = XLSX.utils.decode_range(summarySheet["!ref"]);
         for (let C = range.s.c; C <= range.e.c; ++C) {
           const address = XLSX.utils.encode_col(C) + "1";
@@ -123,24 +206,13 @@ const FraudPage = () => {
           }
         }
         
-        // Create Alerts Sheet
         const alertsSheet = XLSX.utils.json_to_sheet(alertsData);
-        
-        // Set column widths for alerts sheet
         alertsSheet["!cols"] = [
-          { wch: 8 },   // SL No
-          { wch: 20 },  // Alert Type
-          { wch: 10 },  // Severity
-          { wch: 25 },  // User Name
-          { wch: 15 },  // User ID
-          { wch: 45 },  // Description
-          { wch: 12 },  // Risk Score
-          { wch: 12 },  // Status
-          { wch: 20 },  // IP Address
-          { wch: 20 },  // Time
+          { wch: 8 }, { wch: 20 }, { wch: 10 }, { wch: 25 },
+          { wch: 15 }, { wch: 45 }, { wch: 12 }, { wch: 12 },
+          { wch: 20 }, { wch: 20 }
         ];
         
-        // Style alerts header
         const alertsRange = XLSX.utils.decode_range(alertsSheet["!ref"]);
         for (let C = alertsRange.s.c; C <= alertsRange.e.c; ++C) {
           const address = XLSX.utils.encode_col(C) + "1";
@@ -152,63 +224,43 @@ const FraudPage = () => {
           }
         }
         
-        // Color code severity rows
         alertsData.forEach((_, rowIndex) => {
-          const rowNum = rowIndex + 2; // +2 because header is row 1
-          const severityCell = XLSX.utils.encode_cell({ c: 2, r: rowNum - 1 }); // Severity column (index 2)
-          
+          const rowNum = rowIndex + 2;
+          const severityCell = XLSX.utils.encode_cell({ c: 2, r: rowNum - 1 });
           if (alertsSheet[severityCell]) {
             const severity = alertsData[rowIndex]["Severity"];
             if (severity === "High") {
-              alertsSheet[severityCell].s = {
-                fill: { fgColor: { rgb: "FEE2E2" }, patternType: "solid" },
-                font: { color: { rgb: "DC2626" }, bold: true }
-              };
+              alertsSheet[severityCell].s = { fill: { fgColor: { rgb: "FEE2E2" } }, font: { color: { rgb: "DC2626" }, bold: true } };
             } else if (severity === "Medium") {
-              alertsSheet[severityCell].s = {
-                fill: { fgColor: { rgb: "FEF3C7" }, patternType: "solid" },
-                font: { color: { rgb: "D97706" }, bold: true }
-              };
+              alertsSheet[severityCell].s = { fill: { fgColor: { rgb: "FEF3C7" } }, font: { color: { rgb: "D97706" }, bold: true } };
             } else {
-              alertsSheet[severityCell].s = {
-                fill: { fgColor: { rgb: "DBEAFE" }, patternType: "solid" },
-                font: { color: { rgb: "2563EB" }, bold: true }
-              };
+              alertsSheet[severityCell].s = { fill: { fgColor: { rgb: "DBEAFE" } }, font: { color: { rgb: "2563EB" }, bold: true } };
             }
           }
         });
         
-        // Create workbook
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, summarySheet, "Summary");
         XLSX.utils.book_append_sheet(workbook, alertsSheet, "Fraud Alerts");
         
-        // Add Statistics Sheet
         const statsDataForSheet = [
           ["Risk Level", "Count", "Percentage"],
-          ["High Risk", statsData.highRisk || 0, 
-            `${((statsData.highRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
-          ["Medium Risk", statsData.mediumRisk || 0,
-            `${((statsData.mediumRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
-          ["Low Risk", statsData.lowRisk || 0,
-            `${((statsData.lowRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["High Risk", statsData.highRisk || 0, `${((statsData.highRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["Medium Risk", statsData.mediumRisk || 0, `${((statsData.mediumRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["Low Risk", statsData.lowRisk || 0, `${((statsData.lowRisk || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
           ["", "", ""],
           ["Status", "Count", "Percentage"],
-          ["Active", statsData.active || 0,
-            `${((statsData.active || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
-          ["Resolved", statsData.resolved || 0,
-            `${((statsData.resolved || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["Active", statsData.active || 0, `${((statsData.active || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
+          ["Resolved", statsData.resolved || 0, `${((statsData.resolved || 0) / Math.max(alerts.length, 1) * 100).toFixed(1)}%`],
         ];
         
         const statsSheet = XLSX.utils.aoa_to_sheet(statsDataForSheet);
         statsSheet["!cols"] = [{ wch: 15 }, { wch: 12 }, { wch: 12 }];
         XLSX.utils.book_append_sheet(workbook, statsSheet, "Statistics");
         
-        // Generate Excel file
         const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
         const blob = new Blob([excelBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         
-        // Download file
         const link = document.createElement("a");
         const url = URL.createObjectURL(blob);
         link.href = url;
@@ -218,17 +270,16 @@ const FraudPage = () => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         
-        showToast(`✅ Exported ${alerts.length} alerts successfully!`);
+        showToast(t('exportSuccess'));
       }
     } catch (error) {
       console.error("Export error:", error);
-      showToast("❌ Failed to export report");
+      showToast(t('exportFailed'));
     } finally {
       setExporting(false);
     }
   };
 
-  // JSON Export Alternative
   const exportToJSON = async () => {
     setExporting(true);
     try {
@@ -253,11 +304,11 @@ const FraudPage = () => {
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         
-        showToast("✅ JSON report downloaded successfully!");
+        showToast(t('jsonExportSuccess'));
       }
     } catch (error) {
       console.error("JSON Export error:", error);
-      showToast("❌ Failed to export JSON report");
+      showToast(t('exportFailed'));
     } finally {
       setExporting(false);
     }
@@ -265,13 +316,13 @@ const FraudPage = () => {
 
   const handleBan = async (userId, userName) => {
     const result = await Swal.fire({
-      title: "Ban User?",
+      title: t('banUser'),
       html: `
         <div class="text-left">
-          <p>Are you sure you want to permanently ban <strong>${userName || "this user"}</strong>?</p>
+          <p>আপনি কি নিশ্চিত <strong>${userName || "এই ইউজারকে"}</strong> স্থায়ীভাবে ব্যান করতে চান?</p>
           <div class="mt-3">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Reason for ban:</label>
-            <input type="text" id="banReason" class="swal2-input w-full" placeholder="Enter reason...">
+            <label class="block text-sm font-medium text-gray-700 mb-1">${t('reasonForBan')}:</label>
+            <input type="text" id="banReason" class="swal2-input w-full" placeholder="${t('provideReason')}...">
           </div>
         </div>
       `,
@@ -279,12 +330,12 @@ const FraudPage = () => {
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: "Yes, Ban User",
+      confirmButtonText: t('yesBan'),
       cancelButtonText: "Cancel",
       preConfirm: () => {
         const reason = document.getElementById("banReason").value;
         if (!reason) {
-          Swal.showValidationMessage("Please provide a reason for the ban");
+          Swal.showValidationMessage(t('provideReason'));
         }
         return { reason };
       }
@@ -298,7 +349,7 @@ const FraudPage = () => {
           { headers: getAuthHeaders() }
         );
         if (res.data.success) {
-          showToast(`🚫 User ${userName} banned permanently`);
+          showToast(`${t('banSuccess')} — ${userName}`);
           fetchAlerts();
         }
       } catch (err) {
@@ -309,13 +360,13 @@ const FraudPage = () => {
 
   const handleSuspend = async (userId, userName) => {
     const result = await Swal.fire({
-      title: "Suspend Account?",
+      title: t('suspendAccount'),
       html: `
         <div class="text-left">
-          <p>Are you sure you want to suspend <strong>${userName || "this user"}</strong>'s account?</p>
+          <p>আপনি কি <strong>${userName || "এই ইউজারের"}</strong> অ্যাকাউন্ট সাসপেন্ড করতে চান?</p>
           <div class="mt-3">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Reason for suspension:</label>
-            <input type="text" id="suspendReason" class="swal2-input w-full" placeholder="Enter reason...">
+            <label class="block text-sm font-medium text-gray-700 mb-1">${t('reasonForSuspension')}:</label>
+            <input type="text" id="suspendReason" class="swal2-input w-full" placeholder="${t('provideReason')}...">
           </div>
         </div>
       `,
@@ -323,12 +374,12 @@ const FraudPage = () => {
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: "Yes, Suspend",
+      confirmButtonText: t('yesSuspend'),
       cancelButtonText: "Cancel",
       preConfirm: () => {
         const reason = document.getElementById("suspendReason").value;
         if (!reason) {
-          Swal.showValidationMessage("Please provide a reason for suspension");
+          Swal.showValidationMessage(t('provideReason'));
         }
         return { reason };
       }
@@ -342,7 +393,7 @@ const FraudPage = () => {
           { headers: getAuthHeaders() }
         );
         if (res.data.success) {
-          showToast(`🔒 Account suspended — user notified`);
+          showToast(t('suspendSuccess'));
           fetchAlerts();
         }
       } catch (err) {
@@ -353,13 +404,13 @@ const FraudPage = () => {
 
   const handleUnlock = async (userId, userName) => {
     const result = await Swal.fire({
-      title: "Unlock Account?",
-      text: `Are you sure you want to unlock ${userName || "this user"}'s account?`,
+      title: t('unlockAccount'),
+      text: `আপনি কি ${userName || "এই ইউজারের"} অ্যাকাউন্ট আনলক করতে চান?`,
       icon: "question",
       showCancelButton: true,
       confirmButtonColor: "#059669",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: "Yes, Unlock",
+      confirmButtonText: t('yesUnlock'),
       cancelButtonText: "Cancel",
     });
 
@@ -371,7 +422,7 @@ const FraudPage = () => {
           { headers: getAuthHeaders() }
         );
         if (res.data.success) {
-          showToast(`🔓 Account unlocked — user can now login`);
+          showToast(t('unlockSuccess'));
           fetchAlerts();
         }
       } catch (err) {
@@ -382,18 +433,16 @@ const FraudPage = () => {
 
   const handleDetails = (alert) => {
     Swal.fire({
-      title: "Alert Details",
+      title: t('details'),
       html: `
         <div class="text-left">
-          <p><strong>Type:</strong> ${alert.type || "N/A"}</p>
+          <p><strong>${t('alertType')}:</strong> ${alert.type || "N/A"}</p>
           <p><strong>Severity:</strong> ${alert.severity || "N/A"}</p>
-          <p><strong>User:</strong> ${alert.user || alert.userName || "Unknown"}</p>
+          <p><strong>${t('user')}:</strong> ${alert.user || alert.userName || "Unknown"}</p>
           <p><strong>User ID:</strong> ${alert.userId || "N/A"}</p>
-          <p><strong>Details:</strong> ${alert.details || alert.description || "No details"}</p>
-          <p><strong>Risk Score:</strong> ${alert.riskScore || "N/A"}/100</p>
-          <p><strong>Time:</strong> ${alert.time || new Date(alert.createdAt).toLocaleString()}</p>
-          <p><strong>Status:</strong> ${alert.status || "Active"}</p>
-          ${alert.ip ? `<p><strong>IP Address:</strong> ${alert.ip}</p>` : ""}
+          <p><strong>${t('details')}:</strong> ${alert.details || alert.description || "No details"}</p>
+          <p><strong>${t('riskScore')}:</strong> ${alert.riskScore || "N/A"}/100</p>
+          <p><strong>${t('time')}:</strong> ${alert.time || new Date(alert.createdAt).toLocaleString()}</p>
         </div>
       `,
       icon: "info",
@@ -448,10 +497,10 @@ const FraudPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-bold text-foreground">
-            🚨 Fraud Alerts & Security
+            {t('fraudAlerts')}
           </h2>
           <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400">
-            {highRisk} High Risk · {mediumRisk} Medium Risk
+            {highRisk} {t('highRisk')} · {mediumRisk} {t('mediumRisk')}
           </span>
         </div>
         <div className="flex gap-2">
@@ -463,12 +512,12 @@ const FraudPage = () => {
             {exporting ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Exporting...
+                {t('exporting')}
               </>
             ) : (
               <>
                 <Download size={16} />
-                Export Excel
+                {t('exportExcel')}
               </>
             )}
           </button>
@@ -477,7 +526,7 @@ const FraudPage = () => {
             disabled={exporting}
             className="px-4 py-2 rounded-lg border border-border bg-card text-foreground/70 text-sm font-semibold hover:border-primary transition disabled:opacity-50"
           >
-            Export JSON
+            {t('exportJSON')}
           </button>
         </div>
       </div>
@@ -526,35 +575,35 @@ const FraudPage = () => {
       {/* Fraud Alerts Table */}
       <div className="bg-card border border-border rounded-xl overflow-hidden">
         <div className="flex justify-between items-center p-4 border-b border-border">
-          <div className="font-bold text-foreground">All Fraud Alerts</div>
+          <div className="font-bold text-foreground">{t('allFraudAlerts')}</div>
           <div className="text-xs text-foreground/50">
-            Total: {fraudAlerts.length} alerts
+            {t('totalAlerts')}: {fraudAlerts.length} alerts
           </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-200">
+          <table className="w-full min-w-[900px]">
             <thead>
               <tr className="border-b border-border bg-background">
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Alert Type
+                  {t('alertType')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  User
+                  {t('user')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Details
+                  {t('details')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Risk Score
+                  {t('riskScore')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Time
+                  {t('time')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Status
+                  {t('status')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  Actions
+                  {t('actions')}
                 </th>
               </tr>
             </thead>
@@ -562,7 +611,7 @@ const FraudPage = () => {
               {fraudAlerts.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="px-4 py-8 text-center text-foreground/50">
-                    No fraud alerts found
+                    {t('noAlerts')}
                   </td>
                 </tr>
               ) : (
@@ -612,14 +661,14 @@ const FraudPage = () => {
                           onClick={() => handleDetails(alert)}
                           className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition"
                         >
-                          Details
+                          {t('detailsBtn')}
                         </button>
                         {(alert.severity === "danger" || alert.severity === "high") && alert.userId && (
                           <button
                             onClick={() => handleBan(alert.userId, alert.userName || alert.user)}
                             className="px-3 py-1 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500/10 transition"
                           >
-                            🚫 Ban
+                            {t('ban')}
                           </button>
                         )}
                         {(alert.severity === "warn" || alert.severity === "medium") && alert.type?.toLowerCase().includes("login") && (
@@ -627,7 +676,7 @@ const FraudPage = () => {
                             onClick={() => handleSuspend(alert.userId, alert.userName || alert.user)}
                             className="px-3 py-1 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
                           >
-                            Lock Account
+                            {t('lockAccount')}
                           </button>
                         )}
                         {(alert.severity === "info" || alert.severity === "low") && (
@@ -635,7 +684,7 @@ const FraudPage = () => {
                             onClick={() => handleUnlock(alert.userId, alert.userName || alert.user)}
                             className="px-3 py-1 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
                           >
-                            Unlock
+                            {t('unlock')}
                           </button>
                         )}
                       </div>

@@ -21,11 +21,190 @@ import {
 import Swal from "sweetalert2";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    manageChallenges: "🏆 Manage Challenges",
+    manageChallengesDesc: "Create and manage seasonal savings challenges",
+    createChallenge: "Create Challenge",
+    
+    // Statistics
+    totalChallenges: "Total Challenges",
+    totalParticipants: "Total Participants",
+    completed: "Completed",
+    mostPopular: "Most Popular",
+    active: "Active",
+    challengers: "Challengers",
+    
+    // Filters
+    searchChallenges: "Search challenges...",
+    all: "All",
+    allStatus: "All",
+    upcoming: "Upcoming",
+    cancelled: "Cancelled",
+    
+    // Messages
+    noChallengesFound: "No challenges found",
+    createFirstChallenge: "Create your first challenge",
+    error: "Error!",
+    success: "Success!",
+    failedToLoad: "Failed to load challenges",
+    challengeUpdated: "Challenge updated successfully",
+    challengeCreated: "Challenge created successfully",
+    failedToSave: "Failed to save challenge",
+    deleteChallenge: "Delete Challenge?",
+    deleteConfirm: "Are you sure you want to delete <strong>{name}</strong>?<br/>This will also remove all participant data.",
+    yesDelete: "Yes, delete it!",
+    deleted: "Deleted!",
+    challengeDeleted: "Challenge has been deleted.",
+    failedToDelete: "Failed to delete challenge",
+    updated: "Updated!",
+    statusChanged: "Challenge status changed to {status}",
+    failedToUpdate: "Failed to update status",
+    
+    // Modal
+    editChallenge: "Edit Challenge",
+    createNewChallenge: "Create New Challenge",
+    updateChallengeDetails: "Update challenge details",
+    addNewChallenge: "Add a new savings challenge",
+    challengeName: "Challenge Name *",
+    challengeNamePlaceholder: "e.g., Ramadan Challenge",
+    description: "Description *",
+    descriptionPlaceholder: "Describe the challenge...",
+    icon: "Icon",
+    gradient: "Gradient",
+    startDate: "Start Date *",
+    endDate: "End Date *",
+    days: "Days",
+    daysPlaceholder: "Auto-calculated if empty",
+    periodDisplay: "Period Display",
+    periodPlaceholder: "e.g., May 2 – June 10, 2026",
+    maxReward: "Max Reward",
+    maxRewardPlaceholder: "e.g., ৳8,700 or 14%",
+    status: "Status",
+    rewardDescription: "Reward Description",
+    rewardPlaceholder: "e.g., 🏆 Badge + ৳1,000 bonus",
+    targetAmount: "Target Amount (Optional)",
+    targetPlaceholder: "Total savings target",
+    dailyTarget: "Daily Target (Optional)",
+    dailyPlaceholder: "Daily savings amount",
+    cancel: "Cancel",
+    updateChallenge: "Update Challenge",
+    createChallengeBtn: "Create Challenge",
+    
+    // Status Badges
+    activeStatus: "Active",
+    upcomingStatus: "Upcoming",
+    completedStatus: "Completed",
+    cancelledStatus: "Cancelled",
+    
+    // Buttons
+    edit: "Edit",
+    delete: "Delete",
+    activate: "Activate",
+    markComplete: "Mark Complete",
+    cancel: "Cancel",
+    view: "View",
+    
+    // Validation
+    fillRequiredFields: "Please fill all required fields",
+  },
+  bn: {
+    // Header
+    manageChallenges: "🏆 চ্যালেঞ্জ ব্যবস্থাপনা",
+    manageChallengesDesc: "মৌসুমি সঞ্চয় চ্যালেঞ্জ তৈরি ও পরিচালনা করুন",
+    createChallenge: "চ্যালেঞ্জ তৈরি করুন",
+    
+    // Statistics
+    totalChallenges: "মোট চ্যালেঞ্জ",
+    totalParticipants: "মোট অংশগ্রহণকারী",
+    completed: "সমাপ্ত",
+    mostPopular: "সর্বাধিক জনপ্রিয়",
+    active: "সক্রিয়",
+    challengers: "অংশগ্রহণকারী",
+    
+    // Filters
+    searchChallenges: "চ্যালেঞ্জ খুঁজুন...",
+    all: "সব",
+    allStatus: "সব",
+    upcoming: "আসন্ন",
+    cancelled: "বাতিল",
+    
+    // Messages
+    noChallengesFound: "কোন চ্যালেঞ্জ পাওয়া যায়নি",
+    createFirstChallenge: "আপনার প্রথম চ্যালেঞ্জ তৈরি করুন",
+    error: "ত্রুটি!",
+    success: "সফল!",
+    failedToLoad: "চ্যালেঞ্জ লোড করতে ব্যর্থ হয়েছে",
+    challengeUpdated: "চ্যালেঞ্জ সফলভাবে আপডেট করা হয়েছে",
+    challengeCreated: "চ্যালেঞ্জ সফলভাবে তৈরি করা হয়েছে",
+    failedToSave: "চ্যালেঞ্জ সংরক্ষণ করতে ব্যর্থ হয়েছে",
+    deleteChallenge: "চ্যালেঞ্জ ডিলিট করবেন?",
+    deleteConfirm: "আপনি কি নিশ্চিত যে <strong>{name}</strong> ডিলিট করতে চান?<br/>এতে সমস্ত অংশগ্রহণকারীর তথ্যও মুছে যাবে।",
+    yesDelete: "হ্যাঁ, ডিলিট করুন!",
+    deleted: "ডিলিট করা হয়েছে!",
+    challengeDeleted: "চ্যালেঞ্জ ডিলিট করা হয়েছে।",
+    failedToDelete: "চ্যালেঞ্জ ডিলিট করতে ব্যর্থ হয়েছে",
+    updated: "আপডেট করা হয়েছে!",
+    statusChanged: "চ্যালেঞ্জের অবস্থা পরিবর্তন করা হয়েছে {status}",
+    failedToUpdate: "অবস্থা পরিবর্তন করতে ব্যর্থ হয়েছে",
+    
+    // Modal
+    editChallenge: "চ্যালেঞ্জ সম্পাদনা",
+    createNewChallenge: "নতুন চ্যালেঞ্জ তৈরি",
+    updateChallengeDetails: "চ্যালেঞ্জের বিবরণ আপডেট করুন",
+    addNewChallenge: "একটি নতুন সঞ্চয় চ্যালেঞ্জ যোগ করুন",
+    challengeName: "চ্যালেঞ্জের নাম *",
+    challengeNamePlaceholder: "যেমন: রমজান চ্যালেঞ্জ",
+    description: "বিবরণ *",
+    descriptionPlaceholder: "চ্যালেঞ্জের বিবরণ লিখুন...",
+    icon: "আইকন",
+    gradient: "গ্রেডিয়েন্ট",
+    startDate: "শুরুর তারিখ *",
+    endDate: "শেষের তারিখ *",
+    days: "দিন",
+    daysPlaceholder: "খালি থাকলে স্বয়ংক্রিয় গণনা",
+    periodDisplay: "সময়কাল প্রদর্শন",
+    periodPlaceholder: "যেমন: ২ মে – ১০ জুন, ২০২৬",
+    maxReward: "সর্বোচ্চ পুরস্কার",
+    maxRewardPlaceholder: "যেমন: ৳৮,৭০০ অথবা ১৪%",
+    status: "অবস্থা",
+    rewardDescription: "পুরস্কারের বিবরণ",
+    rewardPlaceholder: "যেমন: 🏆 ব্যাজ + ৳১,০০০ বোনাস",
+    targetAmount: "লক্ষ্যমাত্রা (ঐচ্ছিক)",
+    targetPlaceholder: "মোট সঞ্চয় লক্ষ্য",
+    dailyTarget: "দৈনিক লক্ষ্য (ঐচ্ছিক)",
+    dailyPlaceholder: "দৈনিক সঞ্চয়ের পরিমাণ",
+    cancel: "বাতিল",
+    updateChallenge: "চ্যালেঞ্জ আপডেট",
+    createChallengeBtn: "চ্যালেঞ্জ তৈরি",
+    
+    // Status Badges
+    activeStatus: "সক্রিয়",
+    upcomingStatus: "আসন্ন",
+    completedStatus: "সমাপ্ত",
+    cancelledStatus: "বাতিল",
+    
+    // Buttons
+    edit: "সম্পাদনা",
+    delete: "ডিলিট",
+    activate: "সক্রিয় করুন",
+    markComplete: "সমাপ্ত চিহ্নিত",
+    cancel: "বাতিল",
+    view: "দেখুন",
+    
+    // Validation
+    fillRequiredFields: "সব প্রয়োজনীয় ঘর পূরণ করুন",
+  }
+};
+
 const AdminChallengesPage = () => {
   const [challenges, setChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState(null);
+  const [lang, setLang] = useState("bn");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -50,6 +229,15 @@ const AdminChallengesPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
   const gradientOptions = [
     "from-primary to-primary-light",
     "from-indigo-900 to-blue-900",
@@ -64,6 +252,12 @@ const AdminChallengesPage = () => {
 
   const iconOptions = ["🏆", "🌙", "🔥", "🎉", "💯", "🎓", "🌸", "🎄", "❄️", "⭐", "💪", "🎯"];
 
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
   // Fetch challenges
   const fetchChallenges = async () => {
     setLoading(true);
@@ -76,8 +270,8 @@ const AdminChallengesPage = () => {
     } catch (error) {
       console.error("Fetch challenges error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "Failed to load challenges",
+        title: t('error'),
+        text: t('failedToLoad'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -156,8 +350,8 @@ const AdminChallengesPage = () => {
     // Validation
     if (!formData.name || !formData.description || !formData.startDate || !formData.endDate) {
       Swal.fire({
-        title: "Error!",
-        text: "Please fill all required fields",
+        title: t('error'),
+        text: t('fillRequiredFields'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -174,8 +368,8 @@ const AdminChallengesPage = () => {
 
       if (response.data.success) {
         Swal.fire({
-          title: "Success!",
-          text: editingChallenge ? "Challenge updated successfully" : "Challenge created successfully",
+          title: t('success'),
+          text: editingChallenge ? t('challengeUpdated') : t('challengeCreated'),
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
@@ -188,8 +382,8 @@ const AdminChallengesPage = () => {
     } catch (error) {
       console.error("Submit challenge error:", error);
       Swal.fire({
-        title: "Error!",
-        text: error.response?.data?.message || "Failed to save challenge",
+        title: t('error'),
+        text: error.response?.data?.message || t('failedToSave'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -198,14 +392,14 @@ const AdminChallengesPage = () => {
 
   const deleteChallenge = async (challenge) => {
     const result = await Swal.fire({
-      title: "Delete Challenge?",
-      html: `Are you sure you want to delete <strong>${challenge.name}</strong>?<br/>This will also remove all participant data.`,
+      title: t('deleteChallenge'),
+      html: t('deleteConfirm', { name: challenge.name }),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#6c757d",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
+      confirmButtonText: t('yesDelete'),
+      cancelButtonText: t('cancel'),
     });
 
     if (result.isConfirmed) {
@@ -213,8 +407,8 @@ const AdminChallengesPage = () => {
         const response = await axiosInstance.delete(`/challenges/admin/${challenge._id}`);
         if (response.data.success) {
           Swal.fire({
-            title: "Deleted!",
-            text: "Challenge has been deleted.",
+            title: t('deleted'),
+            text: t('challengeDeleted'),
             icon: "success",
             timer: 1500,
             showConfirmButton: false,
@@ -225,8 +419,8 @@ const AdminChallengesPage = () => {
       } catch (error) {
         console.error("Delete challenge error:", error);
         Swal.fire({
-          title: "Error!",
-          text: error.response?.data?.message || "Failed to delete challenge",
+          title: t('error'),
+          text: error.response?.data?.message || t('failedToDelete'),
           icon: "error",
           confirmButtonColor: "#059669",
         });
@@ -241,8 +435,8 @@ const AdminChallengesPage = () => {
       });
       if (response.data.success) {
         Swal.fire({
-          title: "Updated!",
-          text: `Challenge status changed to ${newStatus}`,
+          title: t('updated'),
+          text: t('statusChanged', { status: newStatus }),
           icon: "success",
           timer: 1500,
           showConfirmButton: false,
@@ -253,8 +447,8 @@ const AdminChallengesPage = () => {
     } catch (error) {
       console.error("Update status error:", error);
       Swal.fire({
-        title: "Error!",
-        text: error.response?.data?.message || "Failed to update status",
+        title: t('error'),
+        text: error.response?.data?.message || t('failedToUpdate'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -262,18 +456,13 @@ const AdminChallengesPage = () => {
   };
 
   const getStatusBadge = (status) => {
-    switch (status) {
-      case "active":
-        return { icon: "🔴", text: "Active", class: "bg-green-500/10 text-green-500 border-green-500/20" };
-      case "upcoming":
-        return { icon: "📅", text: "Upcoming", class: "bg-amber-500/10 text-amber-500 border-amber-500/20" };
-      case "completed":
-        return { icon: "✅", text: "Completed", class: "bg-blue-500/10 text-blue-500 border-blue-500/20" };
-      case "cancelled":
-        return { icon: "❌", text: "Cancelled", class: "bg-red-500/10 text-red-500 border-red-500/20" };
-      default:
-        return { icon: "📅", text: "Upcoming", class: "bg-amber-500/10 text-amber-500 border-amber-500/20" };
-    }
+    const statusMap = {
+      active: { icon: "🔴", text: t('activeStatus'), class: "bg-green-500/10 text-green-500 border-green-500/20" },
+      upcoming: { icon: "📅", text: t('upcomingStatus'), class: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+      completed: { icon: "✅", text: t('completedStatus'), class: "bg-blue-500/10 text-blue-500 border-blue-500/20" },
+      cancelled: { icon: "❌", text: t('cancelledStatus'), class: "bg-red-500/10 text-red-500 border-red-500/20" },
+    };
+    return statusMap[status] || statusMap.upcoming;
   };
 
   const filteredChallenges = challenges.filter((challenge) => {
@@ -295,9 +484,9 @@ const AdminChallengesPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-foreground">🏆 Manage Challenges</h2>
+          <h2 className="text-2xl font-bold text-foreground">{t('manageChallenges')}</h2>
           <p className="text-sm text-foreground/50 mt-1">
-            Create and manage seasonal savings challenges
+            {t('manageChallengesDesc')}
           </p>
         </div>
         <button
@@ -305,7 +494,7 @@ const AdminChallengesPage = () => {
           className="px-5 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold flex items-center gap-2 hover:opacity-90 transition"
         >
           <Plus size={18} />
-          Create Challenge
+          {t('createChallenge')}
         </button>
       </div>
 
@@ -314,35 +503,35 @@ const AdminChallengesPage = () => {
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Trophy size={16} className="text-primary" />
-            <span className="text-xs text-foreground/50">Total Challenges</span>
+            <span className="text-xs text-foreground/50">{t('totalChallenges')}</span>
           </div>
           <div className="text-2xl font-bold text-foreground">{statistics.challenges?.total || 0}</div>
           <div className="text-xs text-green-500 mt-1">
-            {statistics.challenges?.active || 0} Active
+            {statistics.challenges?.active || 0} {t('active')}
           </div>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Users size={16} className="text-amber-500" />
-            <span className="text-xs text-foreground/50">Total Participants</span>
+            <span className="text-xs text-foreground/50">{t('totalParticipants')}</span>
           </div>
           <div className="text-2xl font-bold text-foreground">{statistics.participants?.total || 0}</div>
           <div className="text-xs text-green-500 mt-1">
-            {statistics.participants?.active || 0} Active
+            {statistics.participants?.active || 0} {t('active')}
           </div>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <CheckCircle size={16} className="text-green-500" />
-            <span className="text-xs text-foreground/50">Completed</span>
+            <span className="text-xs text-foreground/50">{t('completed')}</span>
           </div>
           <div className="text-2xl font-bold text-foreground">{statistics.participants?.completed || 0}</div>
-          <div className="text-xs text-foreground/50 mt-1">Challengers</div>
+          <div className="text-xs text-foreground/50 mt-1">{t('challengers')}</div>
         </div>
         <div className="bg-card border border-border rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
             <Clock size={16} className="text-blue-500" />
-            <span className="text-xs text-foreground/50">Most Popular</span>
+            <span className="text-xs text-foreground/50">{t('mostPopular')}</span>
           </div>
           <div className="text-sm font-bold text-foreground truncate">{statistics.mostPopular || "N/A"}</div>
           <div className="text-xs text-primary mt-1">{statistics.totalSaved}</div>
@@ -355,13 +544,13 @@ const AdminChallengesPage = () => {
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50" />
           <input
             type="text"
-            placeholder="Search challenges..."
+            placeholder={t('searchChallenges')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-9 pr-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary transition"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {["all", "active", "upcoming", "completed", "cancelled"].map((status) => (
             <button
               key={status}
@@ -372,7 +561,7 @@ const AdminChallengesPage = () => {
                   : "border-border bg-card text-foreground/60 hover:border-primary"
               }`}
             >
-              {status === "all" ? "All" : status.charAt(0).toUpperCase() + status.slice(1)}
+              {status === "all" ? t('all') : t(status)}
             </button>
           ))}
         </div>
@@ -383,12 +572,12 @@ const AdminChallengesPage = () => {
         {filteredChallenges.length === 0 ? (
           <div className="text-center py-12 bg-card rounded-xl border border-border">
             <div className="text-4xl mb-3">🏆</div>
-            <div className="text-foreground/50">No challenges found</div>
+            <div className="text-foreground/50">{t('noChallengesFound')}</div>
             <button
               onClick={openCreateModal}
               className="mt-4 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold"
             >
-              Create your first challenge
+              {t('createFirstChallenge')}
             </button>
           </div>
         ) : (
@@ -425,19 +614,19 @@ const AdminChallengesPage = () => {
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
                     <div className="bg-background rounded-lg p-2 text-center">
                       <div className="text-lg font-bold text-primary">{challenge.participants?.toLocaleString() || 0}</div>
-                      <div className="text-[10px] text-foreground/50">Participants</div>
+                      <div className="text-[10px] text-foreground/50">{t('totalParticipants')}</div>
                     </div>
                     <div className="bg-background rounded-lg p-2 text-center">
                       <div className="text-lg font-bold text-primary">{challenge.days}</div>
-                      <div className="text-[10px] text-foreground/50">Days</div>
+                      <div className="text-[10px] text-foreground/50">{t('days')}</div>
                     </div>
                     <div className="bg-background rounded-lg p-2 text-center">
                       <div className="text-lg font-bold text-primary">{challenge.completedCount || 0}</div>
-                      <div className="text-[10px] text-foreground/50">Completed</div>
+                      <div className="text-[10px] text-foreground/50">{t('completed')}</div>
                     </div>
                     <div className="bg-background rounded-lg p-2 text-center">
                       <div className="text-sm font-bold text-primary truncate">{challenge.maxReward}</div>
-                      <div className="text-[10px] text-foreground/50">Max Reward</div>
+                      <div className="text-[10px] text-foreground/50">{t('maxReward')}</div>
                     </div>
                   </div>
                   
@@ -447,14 +636,14 @@ const AdminChallengesPage = () => {
                       className="px-3 py-1.5 rounded-lg border border-border text-foreground/70 text-xs font-semibold hover:border-primary hover:text-primary transition"
                     >
                       <Edit size={12} className="inline mr-1" />
-                      Edit
+                      {t('edit')}
                     </button>
                     <button
                       onClick={() => deleteChallenge(challenge)}
                       className="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500 hover:text-white transition"
                     >
                       <Trash2 size={12} className="inline mr-1" />
-                      Delete
+                      {t('delete')}
                     </button>
                     {challenge.status !== "active" && challenge.status !== "completed" && (
                       <button
@@ -462,7 +651,7 @@ const AdminChallengesPage = () => {
                         className="px-3 py-1.5 rounded-lg border border-green-500/30 text-green-500 text-xs font-semibold hover:bg-green-500 hover:text-white transition"
                       >
                         <CheckCircle size={12} className="inline mr-1" />
-                        Activate
+                        {t('activate')}
                       </button>
                     )}
                     {challenge.status === "active" && (
@@ -471,7 +660,7 @@ const AdminChallengesPage = () => {
                         className="px-3 py-1.5 rounded-lg border border-blue-500/30 text-blue-500 text-xs font-semibold hover:bg-blue-500 hover:text-white transition"
                       >
                         <CheckCircle size={12} className="inline mr-1" />
-                        Mark Complete
+                        {t('markComplete')}
                       </button>
                     )}
                     {challenge.status === "active" && (
@@ -480,7 +669,7 @@ const AdminChallengesPage = () => {
                         className="px-3 py-1.5 rounded-lg border border-red-500/30 text-red-500 text-xs font-semibold hover:bg-red-500 hover:text-white transition"
                       >
                         <XCircle size={12} className="inline mr-1" />
-                        Cancel
+                        {t('cancel')}
                       </button>
                     )}
                     <button
@@ -488,7 +677,7 @@ const AdminChallengesPage = () => {
                       className="px-3 py-1.5 rounded-lg border border-border text-foreground/70 text-xs font-semibold hover:border-primary hover:text-primary transition"
                     >
                       <Eye size={12} className="inline mr-1" />
-                      View
+                      {t('view')}
                     </button>
                   </div>
                 </div>
@@ -515,10 +704,10 @@ const AdminChallengesPage = () => {
               <div className="sticky top-0 bg-card border-b border-border p-5 flex justify-between items-center">
                 <div>
                   <h3 className="text-xl font-bold text-foreground">
-                    {editingChallenge ? "Edit Challenge" : "Create New Challenge"}
+                    {editingChallenge ? t('editChallenge') : t('createNewChallenge')}
                   </h3>
                   <p className="text-sm text-foreground/50">
-                    {editingChallenge ? "Update challenge details" : "Add a new savings challenge"}
+                    {editingChallenge ? t('updateChallengeDetails') : t('addNewChallenge')}
                   </p>
                 </div>
                 <button
@@ -533,28 +722,28 @@ const AdminChallengesPage = () => {
                 {/* Basic Info */}
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-1">
-                    Challenge Name *
+                    {t('challengeName')}
                   </label>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
-                    placeholder="e.g., Ramadan Challenge"
+                    placeholder={t('challengeNamePlaceholder')}
                     className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                   />
                 </div>
                 
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-1">
-                    Description *
+                    {t('description')}
                   </label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    placeholder="Describe the challenge..."
+                    placeholder={t('descriptionPlaceholder')}
                     className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition resize-none"
                   />
                 </div>
@@ -562,7 +751,7 @@ const AdminChallengesPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Icon
+                      {t('icon')}
                     </label>
                     <select
                       name="icon"
@@ -579,7 +768,7 @@ const AdminChallengesPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Gradient
+                      {t('gradient')}
                     </label>
                     <select
                       name="bgGradient"
@@ -599,7 +788,7 @@ const AdminChallengesPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Start Date *
+                      {t('startDate')}
                     </label>
                     <input
                       type="date"
@@ -611,7 +800,7 @@ const AdminChallengesPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      End Date *
+                      {t('endDate')}
                     </label>
                     <input
                       type="date"
@@ -626,27 +815,27 @@ const AdminChallengesPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Days
+                      {t('days')}
                     </label>
                     <input
                       type="number"
                       name="days"
                       value={formData.days}
                       onChange={handleInputChange}
-                      placeholder="Auto-calculated if empty"
+                      placeholder={t('daysPlaceholder')}
                       className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Period Display
+                      {t('periodDisplay')}
                     </label>
                     <input
                       type="text"
                       name="period"
                       value={formData.period}
                       onChange={handleInputChange}
-                      placeholder="e.g., May 2 – June 10, 2026"
+                      placeholder={t('periodPlaceholder')}
                       className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                     />
                   </div>
@@ -655,20 +844,20 @@ const AdminChallengesPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Max Reward
+                      {t('maxReward')}
                     </label>
                     <input
                       type="text"
                       name="maxReward"
                       value={formData.maxReward}
                       onChange={handleInputChange}
-                      placeholder="e.g., ৳8,700 or 14%"
+                      placeholder={t('maxRewardPlaceholder')}
                       className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Status
+                      {t('status')}
                     </label>
                     <select
                       name="status"
@@ -676,24 +865,24 @@ const AdminChallengesPage = () => {
                       onChange={handleInputChange}
                       className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                     >
-                      <option value="upcoming">Upcoming</option>
-                      <option value="active">Active</option>
-                      <option value="completed">Completed</option>
-                      <option value="cancelled">Cancelled</option>
+                      <option value="upcoming">{t('upcoming')}</option>
+                      <option value="active">{t('active')}</option>
+                      <option value="completed">{t('completed')}</option>
+                      <option value="cancelled">{t('cancelled')}</option>
                     </select>
                   </div>
                 </div>
                 
                 <div>
                   <label className="block text-sm font-semibold text-foreground mb-1">
-                    Reward Description
+                    {t('rewardDescription')}
                   </label>
                   <input
                     type="text"
                     name="reward"
                     value={formData.reward}
                     onChange={handleInputChange}
-                    placeholder="e.g., 🏆 Badge + ৳1,000 bonus"
+                    placeholder={t('rewardPlaceholder')}
                     className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                   />
                 </div>
@@ -701,27 +890,27 @@ const AdminChallengesPage = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Target Amount (Optional)
+                      {t('targetAmount')}
                     </label>
                     <input
                       type="number"
                       name="targetAmount"
                       value={formData.targetAmount}
                       onChange={handleInputChange}
-                      placeholder="Total savings target"
+                      placeholder={t('targetPlaceholder')}
                       className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-foreground mb-1">
-                      Daily Target (Optional)
+                      {t('dailyTarget')}
                     </label>
                     <input
                       type="number"
                       name="dailyTarget"
                       value={formData.dailyTarget}
                       onChange={handleInputChange}
-                      placeholder="Daily savings amount"
+                      placeholder={t('dailyPlaceholder')}
                       className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                     />
                   </div>
@@ -733,13 +922,13 @@ const AdminChallengesPage = () => {
                   onClick={() => setShowModal(false)}
                   className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/70 font-semibold hover:border-primary transition"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   onClick={handleSubmit}
                   className="flex-1 py-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition"
                 >
-                  {editingChallenge ? "Update Challenge" : "Create Challenge"}
+                  {editingChallenge ? t('updateChallenge') : t('createChallengeBtn')}
                 </button>
               </div>
             </motion.div>

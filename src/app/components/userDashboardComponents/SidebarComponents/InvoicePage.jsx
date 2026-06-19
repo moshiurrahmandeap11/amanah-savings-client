@@ -17,6 +17,116 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Navigation
+    backTransactions: "← Transactions",
+    backInvoice: "Invoice",
+    
+    // Header
+    depositReceipt: "🧾 Deposit Receipt",
+    receiptSub: "Sanchoy Bondhu Digital Savings Community",
+    statusApproved: "Approved",
+    amountLabel: "Deposit Amount",
+    
+    // Details Labels
+    memberName: "Member Name",
+    mobileNumber: "Mobile Number",
+    paymentMethod: "Payment Method",
+    txid: "TxID",
+    depositDate: "Deposit Date",
+    time: "Time",
+    approvalTime: "Approval Time",
+    approvedBy: "Approved By",
+    goalProgress: "Goal Progress",
+    
+    // Footer
+    receiptNumber: "Receipt number · digitally signed",
+    verify: "sanchoybondhu.com/verify →",
+    
+    // Buttons
+    downloadPDF: "📥 Download PDF",
+    share: "📤 Share",
+    
+    // Share Sheet
+    shareReceipt: "📤 Share Receipt",
+    whatsapp: "WhatsApp",
+    facebook: "Facebook",
+    sms: "SMS",
+    email: "Email",
+    copyLink: "Copy Link",
+    saveImage: "Save Image",
+    print: "Print",
+    cancel: "Cancel",
+    
+    // Toast Messages
+    printing: "🖨️ Printing...",
+    sharingVia: "📤 Sharing via {channel}...",
+    linkCopied: "🔗 Link copied!",
+    savingImage: "🖼️ Saving image...",
+    
+    // Empty State
+    noDepositData: "No deposit data found",
+    
+    // Loading
+    loading: "Loading...",
+  },
+  bn: {
+    // Navigation
+    backTransactions: "← লেনদেন",
+    backInvoice: "ইনভয়েস",
+    
+    // Header
+    depositReceipt: "🧾 জমার রসিদ",
+    receiptSub: "সঞ্চয় বন্ধু ডিজিটাল সঞ্চয় কমিউনিটি",
+    statusApproved: "অনুমোদিত",
+    amountLabel: "জমার পরিমাণ",
+    
+    // Details Labels
+    memberName: "সদস্যের নাম",
+    mobileNumber: "মোবাইল নম্বর",
+    paymentMethod: "পেমেন্ট মাধ্যম",
+    txid: "ট্রানজেকশন আইডি",
+    depositDate: "জমার তারিখ",
+    time: "সময়",
+    approvalTime: "অনুমোদনের সময়",
+    approvedBy: "অনুমোদনকারী",
+    goalProgress: "লক্ষ্যের অগ্রগতি",
+    
+    // Footer
+    receiptNumber: "রসিদ নম্বর · ডিজিটাল স্বাক্ষরিত",
+    verify: "sanchoybondhu.com/verify →",
+    
+    // Buttons
+    downloadPDF: "📥 PDF ডাউনলোড",
+    share: "📤 শেয়ার করুন",
+    
+    // Share Sheet
+    shareReceipt: "📤 রসিদ শেয়ার করুন",
+    whatsapp: "হোয়াটসঅ্যাপ",
+    facebook: "ফেসবুক",
+    sms: "এসএমএস",
+    email: "ইমেইল",
+    copyLink: "লিংক কপি",
+    saveImage: "ছবি সেভ",
+    print: "প্রিন্ট",
+    cancel: "বাতিল",
+    
+    // Toast Messages
+    printing: "🖨️ প্রিন্ট হচ্ছে...",
+    sharingVia: "📤 {channel}-এ শেয়ার হচ্ছে...",
+    linkCopied: "🔗 লিংক কপি হয়েছে!",
+    savingImage: "🖼️ ছবি সংরক্ষণ করা হচ্ছে...",
+    
+    // Empty State
+    noDepositData: "কোন জমার তথ্য পাওয়া যায়নি",
+    
+    // Loading
+    loading: "লোড হচ্ছে...",
+  }
+};
+
 const InvoicePage = () => {
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
@@ -25,6 +135,11 @@ const InvoicePage = () => {
   const [receipt, setReceipt] = useState(null);
   const [loading, setLoading] = useState(true);
   const receiptRef = useRef(null);
+
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
 
   // Fetch latest approved deposit as receipt data
   useEffect(() => {
@@ -61,6 +176,10 @@ const InvoicePage = () => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
+
+    // Get language from localStorage
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
   }, []);
 
   const toggleTheme = () => {
@@ -77,16 +196,12 @@ const InvoicePage = () => {
 
   const printDocument = () => {
     window.print();
-    showToast(lang === "bn" ? "🖨️ প্রিন্ট হচ্ছে..." : "🖨️ Printing...");
+    showToast(t('printing'));
   };
 
   const shareVia = (channel) => {
     setShowShareSheet(false);
-    showToast(
-      lang === "bn"
-        ? `📤 ${channel}-এ শেয়ার হচ্ছে...`
-        : `📤 Sharing via ${channel}...`,
-    );
+    showToast(t('sharingVia').replace('{channel}', channel));
   };
 
   const copyLink = () => {
@@ -96,14 +211,12 @@ const InvoicePage = () => {
         ? `https://sanchoybondhu.com/invoice/${receipt.receiptId}`
         : "https://sanchoybondhu.com",
     );
-    showToast(lang === "bn" ? "🔗 লিংক কপি হয়েছে!" : "🔗 Link copied!");
+    showToast(t('linkCopied'));
   };
 
   const saveImage = () => {
     setShowShareSheet(false);
-    showToast(
-      lang === "bn" ? "🖼️ ছবি সংরক্ষণ করা হচ্ছে..." : "🖼️ Saving image...",
-    );
+    showToast(t('savingImage'));
   };
 
   const formatDate = (date, language) => {
@@ -141,38 +254,6 @@ const InvoicePage = () => {
   const toBanglaNum = (num) =>
     num?.toString().replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d]) || "";
 
-  const getLabels = () => {
-    const base = {
-      bn: {
-        back: "← লেনদেন",
-        backTitle: "ইনভয়েস",
-        header: "🧾 জমার রসিদ",
-        receiptSub: "Sanchoy Bondhu ডিজিটাল সঞ্চয় কমিউনিটি",
-        status: "অনুমোদিত",
-        amountLabel: "জমার পরিমাণ",
-        download: "📥 PDF ডাউনলোড",
-        share: "📤 শেয়ার করুন",
-        shareTitle: "📤 রসিদ শেয়ার করুন",
-        shareItems: ["WhatsApp", "Facebook", "SMS", "Email", "লিংক কপি", "ছবি সেভ", "প্রিন্ট", "বাতিল"],
-      },
-      en: {
-        back: "← Transactions",
-        backTitle: "Invoice",
-        header: "🧾 Deposit Receipt",
-        receiptSub: "Sanchoy Bondhu Digital Savings Community",
-        status: "Approved",
-        amountLabel: "Deposit Amount",
-        download: "📥 Download PDF",
-        share: "📤 Share",
-        shareTitle: "📤 Share Receipt",
-        shareItems: ["WhatsApp", "Facebook", "SMS", "Email", "Copy Link", "Save Image", "Print", "Cancel"],
-      },
-    };
-    return base[lang];
-  };
-
-  const labels = getLabels();
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -180,6 +261,18 @@ const InvoicePage = () => {
       </div>
     );
   }
+
+  // Share items with translations
+  const shareItems = [
+    { key: 'whatsapp', icon: '💬', label: t('whatsapp') },
+    { key: 'facebook', icon: '👤', label: t('facebook') },
+    { key: 'sms', icon: '📱', label: t('sms') },
+    { key: 'email', icon: '📧', label: t('email') },
+    { key: 'copyLink', icon: '🔗', label: t('copyLink') },
+    { key: 'saveImage', icon: '🖼️', label: t('saveImage') },
+    { key: 'print', icon: '🖨️', label: t('print') },
+    { key: 'cancel', icon: '✕', label: t('cancel') },
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -189,10 +282,10 @@ const InvoicePage = () => {
           href="/dashboard/transactions"
           className="flex items-center gap-1.5 text-primary text-sm font-semibold px-3 py-1.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition"
         >
-          <ArrowLeft size={14} /> {labels.back}
+          <ArrowLeft size={14} /> {t('backTransactions')}
         </Link>
         <span className="text-sm font-bold text-foreground flex-1">
-          {labels.backTitle}
+          {t('backInvoice')}
         </span>
       </div>
 
@@ -205,7 +298,7 @@ const InvoicePage = () => {
           <ArrowLeft size={18} />
         </button>
         <h1 className="text-white text-lg font-bold flex-1">
-          {labels.header}
+          {t('depositReceipt')}
         </h1>
         <button
           onClick={toggleTheme}
@@ -214,7 +307,11 @@ const InvoicePage = () => {
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <button
-          onClick={() => setLang(lang === "bn" ? "en" : "bn")}
+          onClick={() => {
+            const newLang = lang === "bn" ? "en" : "bn";
+            setLang(newLang);
+            localStorage.setItem('appLanguage', newLang);
+          }}
           className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white text-xs font-bold"
         >
           {lang === "bn" ? "EN" : "BN"}
@@ -231,18 +328,18 @@ const InvoicePage = () => {
               Sonchoy Bondhu Community
             </div>
             <div className="text-white/75 text-xs">
-              {labels.receiptSub}
+              {t('receiptSub')}
             </div>
             <div className="inline-flex items-center gap-1.5 bg-white/20 text-white px-4 py-1.5 rounded-full text-xs font-semibold mt-3">
               <span className="w-2 h-2 rounded-full bg-green-300 animate-pulse" />
-              {labels.status}
+              {t('statusApproved')}
             </div>
           </div>
 
           {/* Amount Section */}
           <div className="px-5 py-5 text-center border-b border-dashed border-border">
             <div className="text-xs text-foreground/60 mb-1">
-              {labels.amountLabel}
+              {t('amountLabel')}
             </div>
             <div className="text-4xl font-bold text-primary">
               ৳{receipt ? receipt.amount.toLocaleString() : "0"}
@@ -258,7 +355,7 @@ const InvoicePage = () => {
               <>
                 <div className="flex justify-between py-3 border-b border-border">
                   <span className="text-sm text-foreground/60">
-                    {lang === "bn" ? "সদস্যের নাম" : "Member Name"}
+                    {t('memberName')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {receipt.memberName}
@@ -266,7 +363,7 @@ const InvoicePage = () => {
                 </div>
                 <div className="flex justify-between py-3 border-b border-border">
                   <span className="text-sm text-foreground/60">
-                    {lang === "bn" ? "মোবাইল নম্বর" : "Mobile Number"}
+                    {t('mobileNumber')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {receipt.phone}
@@ -274,7 +371,7 @@ const InvoicePage = () => {
                 </div>
                 <div className="flex justify-between py-3 border-b border-border">
                   <span className="text-sm text-foreground/60">
-                    {lang === "bn" ? "পেমেন্ট মাধ্যম" : "Payment Method"}
+                    {t('paymentMethod')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {receipt.method}
@@ -282,7 +379,7 @@ const InvoicePage = () => {
                 </div>
                 <div className="flex justify-between py-3 border-b border-border">
                   <span className="text-sm text-foreground/60">
-                    {receipt.method} TxID
+                    {receipt.method} {t('txid')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {receipt.txid}
@@ -290,7 +387,7 @@ const InvoicePage = () => {
                 </div>
                 <div className="flex justify-between py-3 border-b border-border">
                   <span className="text-sm text-foreground/60">
-                    {lang === "bn" ? "জমার তারিখ" : "Deposit Date"}
+                    {t('depositDate')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {formatDate(receipt.date, lang)}
@@ -298,7 +395,7 @@ const InvoicePage = () => {
                 </div>
                 <div className="flex justify-between py-3 border-b border-border">
                   <span className="text-sm text-foreground/60">
-                    {lang === "bn" ? "সময়" : "Time"}
+                    {t('time')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {formatTime(receipt.date, lang)}
@@ -306,7 +403,7 @@ const InvoicePage = () => {
                 </div>
                 <div className="flex justify-between py-3 border-b border-border">
                   <span className="text-sm text-foreground/60">
-                    {lang === "bn" ? "অনুমোদনের সময়" : "Approval Time"}
+                    {t('approvalTime')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {formatTime(receipt.approvedAt, lang)}
@@ -314,7 +411,7 @@ const InvoicePage = () => {
                 </div>
                 <div className="flex justify-between py-3 border-b border-border">
                   <span className="text-sm text-foreground/60">
-                    {lang === "bn" ? "অনুমোদনকারী" : "Approved By"}
+                    {t('approvedBy')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {receipt.approvedBy}
@@ -322,7 +419,7 @@ const InvoicePage = () => {
                 </div>
                 <div className="flex justify-between py-3 border-b border-border last:border-0">
                   <span className="text-sm text-foreground/60">
-                    {lang === "bn" ? "লক্ষ্যের অগ্রগতি" : "Goal Progress"}
+                    {t('goalProgress')}
                   </span>
                   <span className="text-sm font-semibold text-foreground text-right">
                     {lang === "bn"
@@ -334,7 +431,7 @@ const InvoicePage = () => {
             ) : (
               <div className="py-8 text-center text-foreground/50">
                 <div className="text-4xl mb-2">📭</div>
-                <div>{lang === "bn" ? "কোন জমার তথ্য পাওয়া যায়নি" : "No deposit data found"}</div>
+                <div>{t('noDepositData')}</div>
               </div>
             )}
           </div>
@@ -356,10 +453,10 @@ const InvoicePage = () => {
                 {receipt ? receipt.receiptId : "AMN-0000-0000-0000"}
               </div>
               <div className="text-xs text-foreground/50">
-                {lang === "bn" ? "রসিদ নম্বর · ডিজিটাল স্বাক্ষরিত" : "Receipt number · digitally signed"}
+                {t('receiptNumber')}
               </div>
               <div className="text-xs text-primary font-semibold">
-                sanchoybondhu.com/verify →
+                {t('verify')}
               </div>
             </div>
           </div>
@@ -371,13 +468,13 @@ const InvoicePage = () => {
             onClick={printDocument}
             className="py-3.5 rounded-xl bg-linear-to-r from-primary to-primary-light text-white text-sm font-bold flex items-center justify-center gap-2"
           >
-            <Download size={16} /> {labels.download}
+            <Download size={16} /> {t('downloadPDF')}
           </button>
           <button
             onClick={() => setShowShareSheet(true)}
             className="py-3.5 rounded-xl border-2 border-border bg-card text-foreground text-sm font-bold flex items-center justify-center gap-2"
           >
-            <Share2 size={16} /> {labels.share}
+            <Share2 size={16} /> {t('share')}
           </button>
         </div>
       </div>
@@ -399,36 +496,25 @@ const InvoicePage = () => {
             >
               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
               <div className="font-bold text-foreground mb-1">
-                {labels.shareTitle}
+                {t('shareReceipt')}
               </div>
               <div className="grid grid-cols-4 gap-3 mt-3">
-                {labels.shareItems.map((item, idx) => (
+                {shareItems.map((item, idx) => (
                   <button
                     key={idx}
                     onClick={() => {
-                      if (item === "লিংক কপি" || item === "Copy Link")
-                        copyLink();
-                      else if (item === "ছবি সেভ" || item === "Save Image")
-                        saveImage();
-                      else if (item === "প্রিন্ট" || item === "Print")
-                        printDocument();
-                      else if (item === "বাতিল" || item === "Cancel")
-                        setShowShareSheet(false);
-                      else shareVia(item);
+                      if (item.key === 'copyLink') copyLink();
+                      else if (item.key === 'saveImage') saveImage();
+                      else if (item.key === 'print') printDocument();
+                      else if (item.key === 'cancel') setShowShareSheet(false);
+                      else shareVia(item.label);
                     }}
                     className="flex flex-col items-center gap-1"
                   >
                     <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-xl">
-                      {idx === 0 && "💬"}
-                      {idx === 1 && "👤"}
-                      {idx === 2 && "📱"}
-                      {idx === 3 && "📧"}
-                      {idx === 4 && "🔗"}
-                      {idx === 5 && "🖼️"}
-                      {idx === 6 && "🖨️"}
-                      {idx === 7 && "✕"}
+                      {item.icon}
                     </div>
-                    <span className="text-xs text-foreground/60">{item}</span>
+                    <span className="text-xs text-foreground/60">{item.label}</span>
                   </button>
                 ))}
               </div>

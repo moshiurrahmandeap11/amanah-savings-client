@@ -19,6 +19,120 @@ import {
 import Link from "next/link";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    supportTickets: "🎫 Support Tickets",
+    admin: "ADMIN",
+    
+    // Stats
+    open: "Open",
+    urgent: "Urgent",
+    resolvedToday: "Resolved Today",
+    avgResponse: "Avg Response",
+    
+    // Search
+    searchPlaceholder: "Search tickets by user, subject, or ID...",
+    
+    // Filters
+    all: "All",
+    urgentFilter: "🔴 Urgent",
+    openFilter: "🟡 Open",
+    depositIssues: "💳 Deposit Issues",
+    kycFilter: "🪪 KYC",
+    withdrawalFilter: "🏧 Withdrawal",
+    resolvedFilter: "✅ Resolved",
+    
+    // Status Badges
+    resolved: "✅ Resolved",
+    urgentBadge: "🔴 Urgent",
+    openBadge: "🟡 Open",
+    
+    // Ticket Actions
+    reply: "💬 Reply",
+    resolve: "✅ Resolve",
+    escalate: "⬆️ Escalate",
+    archive: "✕ Archive",
+    
+    // Reply Sheet
+    replyToTicket: "💬 Reply to Ticket",
+    replyingTo: "Replying to:",
+    replyPlaceholder: "Type your reply here...",
+    cancel: "Cancel",
+    sendReply: "Send Reply",
+    
+    // Toast Messages
+    pleaseWriteReply: "⚠️ Please write a reply",
+    replySent: "✅ Reply sent successfully",
+    replyFailed: "Reply failed",
+    ticketResolved: "✅ Ticket marked as resolved",
+    resolveFailed: "Resolve failed",
+    ticketEscalated: "⬆️ Ticket escalated to senior admin",
+    ticketArchived: "🗑️ Ticket archived",
+    failedToLoad: "Failed to load tickets",
+    
+    // Common
+    unknown: "Unknown",
+    noDetails: "No details",
+  },
+  bn: {
+    // Header
+    supportTickets: "🎫 সাপোর্ট টিকেট",
+    admin: "অ্যাডমিন",
+    
+    // Stats
+    open: "খোলা",
+    urgent: "জরুরি",
+    resolvedToday: "আজকের সমাধান",
+    avgResponse: "গড় প্রতিক্রিয়া",
+    
+    // Search
+    searchPlaceholder: "সদস্য, বিষয় বা ID দিয়ে টিকেট খুঁজুন...",
+    
+    // Filters
+    all: "সব",
+    urgentFilter: "🔴 জরুরি",
+    openFilter: "🟡 খোলা",
+    depositIssues: "💳 ডিপোজিট সমস্যা",
+    kycFilter: "🪪 কেওয়াইসি",
+    withdrawalFilter: "🏧 উত্তোলন",
+    resolvedFilter: "✅ সমাধানকৃত",
+    
+    // Status Badges
+    resolved: "✅ সমাধানকৃত",
+    urgentBadge: "🔴 জরুরি",
+    openBadge: "🟡 খোলা",
+    
+    // Ticket Actions
+    reply: "💬 উত্তর",
+    resolve: "✅ সমাধান",
+    escalate: "⬆️ উর্ধ্বতনে পাঠান",
+    archive: "✕ আর্কাইভ",
+    
+    // Reply Sheet
+    replyToTicket: "💬 টিকেটে উত্তর দিন",
+    replyingTo: "উত্তর দিচ্ছেন:",
+    replyPlaceholder: "এখানে আপনার উত্তর লিখুন...",
+    cancel: "বাতিল",
+    sendReply: "উত্তর পাঠান",
+    
+    // Toast Messages
+    pleaseWriteReply: "⚠️ দয়া করে উত্তর লিখুন",
+    replySent: "✅ উত্তর সফলভাবে পাঠানো হয়েছে",
+    replyFailed: "উত্তর পাঠাতে ব্যর্থ হয়েছে",
+    ticketResolved: "✅ টিকেট সমাধান হিসেবে চিহ্নিত হয়েছে",
+    resolveFailed: "সমাধান করতে ব্যর্থ হয়েছে",
+    ticketEscalated: "⬆️ টিকেট সিনিয়র অ্যাডমিনে পাঠানো হয়েছে",
+    ticketArchived: "🗑️ টিকেট আর্কাইভ করা হয়েছে",
+    failedToLoad: "টিকেট লোড করতে ব্যর্থ হয়েছে",
+    
+    // Common
+    unknown: "অজানা",
+    noDetails: "কোন বিবরণ নেই",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -37,6 +151,21 @@ const AdminSupportPage = () => {
   const [stats, setStats] = useState({ open: 0, urgent: 0, resolvedToday: 0, avgResponse: "0h" });
   const [loading, setLoading] = useState(false);
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
   const fetchTickets = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -46,13 +175,11 @@ const AdminSupportPage = () => {
       if (searchQuery) params.append("search", searchQuery);
       if (activeFilter !== "all") params.append("status", activeFilter);
 
-      // FIXED: Use the correct endpoint from help.routes.js
       const res = await axiosInstance.get(`/help/admin/tickets?${params.toString()}`, {
         headers: getAuthHeaders(),
       });
 
       if (res.data.success) {
-        // Transform the data to match your component's expected format
         const formattedTickets = (res.data.data.tickets || []).map(ticket => ({
           id: ticket.ticketId,
           ticketId: ticket.ticketId,
@@ -76,7 +203,6 @@ const AdminSupportPage = () => {
         
         setTickets(formattedTickets);
         
-        // Calculate stats from fetched tickets
         const openCount = (res.data.data.tickets || []).filter(t => t.status === "open" || t.status === "in_progress").length;
         const urgentCount = (res.data.data.tickets || []).filter(t => t.priority === "urgent" && t.status !== "resolved").length;
         const resolvedToday = (res.data.data.tickets || []).filter(t => {
@@ -95,7 +221,7 @@ const AdminSupportPage = () => {
       }
     } catch (err) {
       console.error("Fetch tickets error:", err);
-      showToast(err.response?.data?.message || "Failed to load tickets");
+      showToast(err.response?.data?.message || t('failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -147,35 +273,23 @@ const AdminSupportPage = () => {
 
   const sendReply = async () => {
     if (!replyText.trim()) {
-      showToast(
-        lang === "bn" ? "⚠️ দয়া করে উত্তর লিখুন" : "⚠️ Please write a reply",
-      );
+      showToast(t('pleaseWriteReply'));
       return;
     }
     
     try {
-      // Note: You need to add this endpoint in your help.routes.js
-      // For now, we'll just show a success message and update ticket status
-      showToast(
-        lang === "bn"
-          ? "✅ উত্তর সফলভাবে পাঠানো হয়েছে"
-          : "✅ Reply sent successfully",
-      );
+      showToast(t('replySent'));
       closeReply();
-      
-      // Also update the ticket status to "in_progress" when replying
       await updateTicketStatus(selectedTicket.id, "in_progress");
       fetchTickets(1);
-      
     } catch (err) {
       console.error("Send reply error:", err);
-      showToast(err.response?.data?.message || "Reply failed");
+      showToast(err.response?.data?.message || t('replyFailed'));
     }
   };
 
   const updateTicketStatus = async (ticketId, status) => {
     try {
-      // FIXED: Use the correct endpoint from help.routes.js
       const res = await axiosInstance.patch(
         `/help/admin/tickets/${ticketId}/status`,
         { status },
@@ -191,30 +305,20 @@ const AdminSupportPage = () => {
   const resolveTicket = async (id) => {
     try {
       await updateTicketStatus(id, "resolved");
-      showToast(
-        lang === "bn"
-          ? "✅ টিকেট সমাধান হিসেবে চিহ্নিত হয়েছে"
-          : "✅ Ticket marked as resolved",
-      );
+      showToast(t('ticketResolved'));
       fetchTickets(1);
     } catch (err) {
-      showToast(err.response?.data?.message || "Resolve failed");
+      showToast(err.response?.data?.message || t('resolveFailed'));
     }
   };
 
   const escalateTicket = () => {
-    showToast(
-      lang === "bn"
-        ? "⬆️ টিকেট সিনিয়র অ্যাডমিনে পাঠানো হয়েছে"
-        : "⬆️ Ticket escalated to senior admin",
-    );
+    showToast(t('ticketEscalated'));
   };
 
   const archiveTicket = (id) => {
     setTickets((prev) => prev.filter((ticket) => ticket.id !== id));
-    showToast(
-      lang === "bn" ? "🗑️ টিকেট আর্কাইভ করা হয়েছে" : "🗑️ Ticket archived",
-    );
+    showToast(t('ticketArchived'));
   };
 
   const filteredTickets = tickets.filter((ticket) => {
@@ -238,17 +342,27 @@ const AdminSupportPage = () => {
 
   const getStatusBadge = (ticket) => {
     if (ticket.resolved)
-      return { class: "tbadge-resolved", text: "✅ Resolved", icon: "✅" };
+      return { class: "tbadge-resolved", text: t('resolved'), icon: "✅" };
     if (ticket.urgent)
-      return { class: "tbadge-urgent", text: "🔴 Urgent", icon: "🔴" };
-    return { class: "tbadge-open", text: "🟡 Open", icon: "🟡" };
+      return { class: "tbadge-urgent", text: t('urgentBadge'), icon: "🔴" };
+    return { class: "tbadge-open", text: t('openBadge'), icon: "🟡" };
   };
 
+  const getFilterLabels = () => [
+    { id: "all", label: `${t('all')} (${tickets.length})` },
+    { id: "urgent", label: t('urgentFilter') },
+    { id: "open", label: t('openFilter') },
+    { id: "deposit", label: t('depositIssues') },
+    { id: "kyc", label: t('kycFilter') },
+    { id: "withdraw", label: t('withdrawalFilter') },
+    { id: "resolved", label: t('resolvedFilter') },
+  ];
+
   const statCards = [
-    { value: stats.open || 0, label: "Open", color: "yellow" },
-    { value: stats.urgent || 0, label: "Urgent", color: "red" },
-    { value: stats.resolvedToday || 0, label: "Resolved Today", color: "green" },
-    { value: stats.avgResponse || "0h", label: "Avg Response", color: "blue" },
+    { value: stats.open || 0, label: t('open'), color: "yellow" },
+    { value: stats.urgent || 0, label: t('urgent'), color: "red" },
+    { value: stats.resolvedToday || 0, label: t('resolvedToday'), color: "green" },
+    { value: stats.avgResponse || "0h", label: t('avgResponse'), color: "blue" },
   ];
 
   return (
@@ -262,10 +376,10 @@ const AdminSupportPage = () => {
           <ArrowLeft size={16} />
         </button>
         <h1 className="text-base font-bold text-foreground flex-1">
-          {lang === "bn" ? "🎫 সাপোর্ট টিকেট" : "🎫 Support Tickets"}
+          {t('supportTickets')}
         </h1>
         <span className="px-2 py-1 rounded-md bg-red-500/15 text-red-400 text-[10px] font-bold">
-          ADMIN
+          {t('admin')}
         </span>
         <button
           onClick={() => setLang(lang === "bn" ? "en" : "bn")}
@@ -312,11 +426,7 @@ const AdminSupportPage = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && fetchTickets(1)}
-            placeholder={
-              lang === "bn"
-                ? "সদস্য, বিষয় বা ID দিয়ে টিকেট খুঁজুন..."
-                : "Search tickets by user, subject, or ID..."
-            }
+            placeholder={t('searchPlaceholder')}
             className="w-full py-2.5 pl-9 pr-3 rounded-lg border border-border bg-card text-foreground text-sm outline-none focus:border-primary transition"
           />
         </div>
@@ -324,15 +434,7 @@ const AdminSupportPage = () => {
 
       {/* Filter Tabs */}
       <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide max-w-6xl mx-auto">
-        {[
-          { id: "all", label: `All (${tickets.length})` },
-          { id: "urgent", label: "🔴 Urgent" },
-          { id: "open", label: "🟡 Open" },
-          { id: "deposit", label: "💳 Deposit Issues" },
-          { id: "kyc", label: "🪪 KYC" },
-          { id: "withdraw", label: "🏧 Withdrawal" },
-          { id: "resolved", label: "✅ Resolved" },
-        ].map((filter) => (
+        {getFilterLabels().map((filter) => (
           <button
             key={filter.id}
             onClick={() => setActiveFilter(filter.id)}
@@ -375,7 +477,7 @@ const AdminSupportPage = () => {
                       {ticket.subject}
                     </div>
                     <div className="text-xs text-foreground/50 mt-0.5">
-                      {ticket.ticketId || ticket.id} · {ticket.name || "Unknown"} · {ticket.phone || ""} ·{" "}
+                      {ticket.ticketId || ticket.id} · {ticket.name || t('unknown')} · {ticket.phone || ""} ·{" "}
                       {ticket.time || new Date(ticket.createdAt).toLocaleString()}
                     </div>
                     <div className="flex gap-1 mt-2 flex-wrap">
@@ -392,7 +494,7 @@ const AdminSupportPage = () => {
                 </div>
                 <div className="mt-3 pt-3 border-t border-border">
                   <p className="text-xs text-foreground/60 leading-relaxed">
-                    {ticket.preview || ticket.message || "No details"}
+                    {ticket.preview || ticket.message || t('noDetails')}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3">
@@ -400,27 +502,27 @@ const AdminSupportPage = () => {
                     onClick={() => openReply(ticket)}
                     className="py-2 rounded-lg border border-primary/30 text-primary text-xs font-semibold hover:bg-primary/10 transition"
                   >
-                    💬 Reply
+                    {t('reply')}
                   </button>
                   {!ticket.resolved && (
                     <button
                       onClick={() => resolveTicket(ticket.id)}
                       className="py-2 rounded-lg border border-green-500/30 text-green-500 text-xs font-semibold hover:bg-green-500/10 transition"
                     >
-                      ✅ Resolve
+                      {t('resolve')}
                     </button>
                   )}
                   <button
                     onClick={escalateTicket}
                     className="py-2 rounded-lg border border-amber-500/30 text-amber-500 text-xs font-semibold hover:bg-amber-500/10 transition"
                   >
-                    ⬆️ Escalate
+                    {t('escalate')}
                   </button>
                   <button
                     onClick={() => archiveTicket(ticket.id)}
                     className="py-2 rounded-lg border border-border text-foreground/60 text-xs font-semibold hover:border-red-500/50 transition"
                   >
-                    ✕ Archive
+                    {t('archive')}
                   </button>
                 </div>
               </div>
@@ -447,22 +549,17 @@ const AdminSupportPage = () => {
               <div className="max-w-2xl mx-auto p-5">
                 <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
                 <div className="font-bold text-foreground text-base mb-1">
-                  💬 {lang === "bn" ? "টিকেটে উত্তর দিন" : "Reply to Ticket"}
+                  {t('replyToTicket')}
                 </div>
                 <div className="text-xs text-foreground/50 mb-4">
-                  {lang === "bn" ? "উত্তর দিচ্ছেন:" : "Replying to:"}{" "}
-                  {selectedTicket.name || "Unknown"}
+                  {t('replyingTo')} {selectedTicket.name || t('unknown')}
                 </div>
 
                 <textarea
                   value={replyText}
                   onChange={(e) => setReplyText(e.target.value)}
                   rows={5}
-                  placeholder={
-                    lang === "bn"
-                      ? "এখানে আপনার উত্তর লিখুন..."
-                      : "Type your reply here..."
-                  }
+                  placeholder={t('replyPlaceholder')}
                   className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition resize-none text-sm"
                 />
 
@@ -471,14 +568,13 @@ const AdminSupportPage = () => {
                     onClick={closeReply}
                     className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-semibold text-sm"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     onClick={sendReply}
                     className="flex-1 py-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold text-sm flex items-center justify-center gap-2"
                   >
-                    <Send size={14} />{" "}
-                    {lang === "bn" ? "উত্তর পাঠান" : "Send Reply"}
+                    <Send size={14} /> {t('sendReply')}
                   </button>
                 </div>
               </div>

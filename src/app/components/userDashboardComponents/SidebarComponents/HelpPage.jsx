@@ -21,6 +21,180 @@ import Swal from "sweetalert2";
 import { useRouter } from "next/navigation";
 import useSocket from "../../../hooks/useSocket";
 
+// Translations
+const translations = {
+  en: {
+    // Header
+    helpCenter: "🆘 Help Center",
+    
+    // Hero
+    howCanWeHelp: "How can we help you?",
+    helpArticles: "help articles",
+    searchPlaceholder: "Search help articles... e.g. bKash, password",
+    noResults: "No results found",
+    
+    // System Status
+    allSystemsNormal: "All systems normal —",
+    allServicesRunning: "All services are running",
+    details: "Details →",
+    
+    // Categories
+    browseByTopic: "Browse by topic",
+    go: "Go →",
+    
+    // Category Names (English)
+    account: "Account",
+    deposits: "Deposits",
+    savingsGoals: "Savings Goals",
+    kycVerification: "KYC Verification",
+    security: "Security",
+    plansSubscriptions: "Plans & Subscriptions",
+    
+    // Category Descriptions (English)
+    accountDesc: "Your profile & settings",
+    depositsDesc: "Deposit & withdraw money",
+    savingsGoalsDesc: "Manage your savings goals",
+    kycDesc: "Verify your identity",
+    securityDesc: "Change password & PIN",
+    plansDesc: "View our plans",
+    
+    // Popular Articles
+    popularQuestions: "Popular questions",
+    noArticles: "No articles found",
+    
+    // Contact
+    contactUsDirectly: "Contact us directly",
+    supportTicket: "Support Ticket",
+    replyWithin24: "Reply within 24 hours",
+    email: "Email",
+    hotline: "Hotline",
+    hotlineHours: "Sat–Thu, 9am–9pm",
+    liveChat: "Live Chat",
+    online: "Online — Chat now",
+    offline: "Offline — Send ticket",
+    
+    // Ticket Modal
+    ticketSubject: "Subject",
+    ticketMessage: "Describe your issue",
+    submit: "Submit",
+    pleaseFillAllFields: "Please fill all fields",
+    ticketSubmitted: "Ticket Submitted!",
+    ticketReply: "We'll reply within 24 hours",
+    failedToSubmit: "Failed to submit ticket",
+    
+    // Chat
+    support: "Sanchoy Bondhu Support",
+    onlineStatus: "Online",
+    offlineStatus: "Offline",
+    helloChat: "Hello! How can we help you today?",
+    typeMessage: "Type a message...",
+    typing: "typing...",
+    
+    // Article Modal
+    helpful: "Helpful",
+    needMoreHelp: "Need more help",
+    
+    // Toast
+    error: "Error!",
+    success: "Success!",
+    thankYou: "Thank You!",
+    gladHelpful: "Glad it was helpful!",
+    willImprove: "We'll improve this article",
+    failedToLoadArticle: "Failed to load article",
+    failedToSubmitFeedback: "Failed to submit feedback",
+    systemStatus: "System Status",
+    allOperational: "All systems operational",
+    
+    // Loading
+    loading: "Loading...",
+  },
+  bn: {
+    // Header
+    helpCenter: "🆘 সাহায্য কেন্দ্র",
+    
+    // Hero
+    howCanWeHelp: "আমরা কীভাবে সাহায্য করতে পারি?",
+    helpArticles: "সাহায্য নিবন্ধ",
+    searchPlaceholder: "সাহায্য অনুসন্ধান করুন... যেমন: bKash, পাসওয়ার্ড",
+    noResults: "কোন ফলাফল পাওয়া যায়নি",
+    
+    // System Status
+    allSystemsNormal: "সব সিস্টেম স্বাভাবিক —",
+    allServicesRunning: "সব সার্ভিস চালু আছে",
+    details: "বিস্তারিত →",
+    
+    // Categories
+    browseByTopic: "বিষয় অনুযায়ী ব্রাউজ করুন",
+    go: "যান →",
+    
+    // Category Names (Bengali)
+    account: "অ্যাকাউন্ট",
+    deposits: "জমা ও উত্তোলন",
+    savingsGoals: "সঞ্চয় লক্ষ্য",
+    kycVerification: "KYC যাচাই",
+    security: "নিরাপত্তা",
+    plansSubscriptions: "প্ল্যান ও সাবস্ক্রিপশন",
+    
+    // Category Descriptions (Bengali)
+    accountDesc: "আপনার প্রোফাইল ও সেটিংস",
+    depositsDesc: "টাকা জমা দিন ও উত্তোলন করুন",
+    savingsGoalsDesc: "আপনার সঞ্চয় লক্ষ্য ব্যবস্থাপনা",
+    kycDesc: "আপনার পরিচয় যাচাই করুন",
+    securityDesc: "পাসওয়ার্ড ও পিন পরিবর্তন",
+    plansDesc: "আমাদের প্ল্যান দেখুন",
+    
+    // Popular Articles
+    popularQuestions: "জনপ্রিয় প্রশ্ন",
+    noArticles: "কোন আর্টিকেল পাওয়া যায়নি",
+    
+    // Contact
+    contactUsDirectly: "সরাসরি যোগাযোগ করুন",
+    supportTicket: "সাপোর্ট টিকেট",
+    replyWithin24: "২৪ ঘণ্টায় রিপ্লাই",
+    email: "ইমেইল",
+    hotline: "হটলাইন",
+    hotlineHours: "শনি–বৃহস্পতি, সকাল ৯টা–রাত ৯টা",
+    liveChat: "লাইভ চ্যাট",
+    online: "অনলাইন — এখনই চ্যাট করুন",
+    offline: "অফলাইন — টিকেট পাঠান",
+    
+    // Ticket Modal
+    ticketSubject: "বিষয়",
+    ticketMessage: "বিস্তারিত জানান",
+    submit: "পাঠান",
+    pleaseFillAllFields: "সব ঘর পূরণ করুন",
+    ticketSubmitted: "টিকেট জমা হয়েছে!",
+    ticketReply: "আমরা ২৪ ঘণ্টার মধ্যে রিপ্লাই দেব",
+    failedToSubmit: "টিকেট জমা দিতে ব্যর্থ হয়েছে",
+    
+    // Chat
+    support: "সঞ্চয় বন্ধু সাপোর্ট",
+    onlineStatus: "অনলাইন",
+    offlineStatus: "অফলাইন",
+    helloChat: "হ্যালো! আমরা আপনাকে কীভাবে সাহায্য করতে পারি?",
+    typeMessage: "মেসেজ লিখুন...",
+    typing: "টাইপ করছে...",
+    
+    // Article Modal
+    helpful: "সহায়ক ছিল",
+    needMoreHelp: "আরও সাহায্য চাই",
+    
+    // Toast
+    error: "ত্রুটি!",
+    success: "সফল!",
+    thankYou: "ধন্যবাদ!",
+    gladHelpful: "সহায়ক হয়েছে জেনে খুশি হলাম!",
+    willImprove: "আমরা এই আর্টিকেল উন্নত করব",
+    failedToLoadArticle: "আর্টিকেল লোড করতে ব্যর্থ হয়েছে",
+    failedToSubmitFeedback: "ফিডব্যাক জমা দিতে ব্যর্থ হয়েছে",
+    systemStatus: "সিস্টেম স্ট্যাটাস",
+    allOperational: "সব সিস্টেম চালু আছে",
+    
+    // Loading
+    loading: "লোড হচ্ছে...",
+  }
+};
+
 const HelpPage = () => {
   const router = useRouter();
   const [isDark, setIsDark] = useState(false);
@@ -46,12 +220,21 @@ const HelpPage = () => {
   // Fetch user for socket
   const [currentUserId, setCurrentUserId] = useState(null);
   
+  // Translation function
+  const t = (key) => {
+    return translations[lang]?.[key] || translations.en[key] || key;
+  };
+  
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
       setCurrentUserId(parsed._id || parsed.id);
     }
+    
+    // Get language from localStorage
+    const savedLang = localStorage.getItem('appLanguage') || 'bn';
+    setLang(savedLang);
   }, []);
   
   // Socket hook for messaging
@@ -155,8 +338,8 @@ const HelpPage = () => {
     } catch (error) {
       console.error("Get article error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "Failed to load article",
+        title: t('error'),
+        text: t('failedToLoadArticle'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -168,8 +351,8 @@ const HelpPage = () => {
     try {
       await axiosInstance.post(`/help/articles/${articleId}/feedback`, { helpful });
       Swal.fire({
-        title: "Thank You!",
-        text: helpful ? "Glad it was helpful!" : "We'll improve this article",
+        title: t('thankYou'),
+        text: helpful ? t('gladHelpful') : t('willImprove'),
         icon: "success",
         timer: 2000,
         showConfirmButton: false,
@@ -177,8 +360,8 @@ const HelpPage = () => {
     } catch (error) {
       console.error("Feedback error:", error);
       Swal.fire({
-        title: "Error!",
-        text: "Failed to submit feedback",
+        title: t('error'),
+        text: t('failedToSubmitFeedback'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -266,50 +449,50 @@ const HelpPage = () => {
     { 
       id: "Account", 
       icon: "👤", 
-      name: { bn: "অ্যাকাউন্ট", en: "Account" }, 
+      name: { bn: t('account'), en: "Account" }, 
       color: "bg-primary/10",
       href: "/dashboard/profile",
-      description: { bn: "আপনার প্রোফাইল ও সেটিংস", en: "Your profile & settings" }
+      description: { bn: t('accountDesc'), en: "Your profile & settings" }
     },
     { 
       id: "Deposits", 
       icon: "💰", 
-      name: { bn: "জমা ও উত্তোলন", en: "Deposits" }, 
+      name: { bn: t('deposits'), en: "Deposits" }, 
       color: "bg-blue-500/10",
       href: "/dashboard/submit",
-      description: { bn: "টাকা জমা দিন ও উত্তোলন করুন", en: "Deposit & withdraw money" }
+      description: { bn: t('depositsDesc'), en: "Deposit & withdraw money" }
     },
     { 
       id: "Goals", 
       icon: "🎯", 
-      name: { bn: "সঞ্চয় লক্ষ্য", en: "Savings Goals" }, 
+      name: { bn: t('savingsGoals'), en: "Savings Goals" }, 
       color: "bg-amber-500/10",
       href: "/dashboard/goals",
-      description: { bn: "আপনার সঞ্চয় লক্ষ্য ব্যবস্থাপনা", en: "Manage your savings goals" }
+      description: { bn: t('savingsGoalsDesc'), en: "Manage your savings goals" }
     },
     { 
       id: "KYC", 
       icon: "🪪", 
-      name: { bn: "KYC যাচাই", en: "KYC Verification" }, 
+      name: { bn: t('kycVerification'), en: "KYC Verification" }, 
       color: "bg-red-500/10",
       href: "/dashboard/profile",
-      description: { bn: "আপনার পরিচয় যাচাই করুন", en: "Verify your identity" }
+      description: { bn: t('kycDesc'), en: "Verify your identity" }
     },
     { 
       id: "Security", 
       icon: "🔒", 
-      name: { bn: "নিরাপত্তা", en: "Security" }, 
+      name: { bn: t('security'), en: "Security" }, 
       color: "bg-purple-500/10",
       href: "/dashboard/security",
-      description: { bn: "পাসওয়ার্ড ও পিন পরিবর্তন", en: "Change password & PIN" }
+      description: { bn: t('securityDesc'), en: "Change password & PIN" }
     },
     { 
       id: "Plans", 
       icon: "💎", 
-      name: { bn: "প্ল্যান ও সাবস্ক্রিপশন", en: "Plans & Subscriptions" }, 
+      name: { bn: t('plansSubscriptions'), en: "Plans & Subscriptions" }, 
       color: "bg-pink-500/10",
       href: "/plans",
-      description: { bn: "আমাদের প্ল্যান দেখুন", en: "View our plans" }
+      description: { bn: t('plansDesc'), en: "View our plans" }
     },
   ];
 
@@ -331,7 +514,7 @@ const HelpPage = () => {
         >
           <ArrowLeft size={18} />
         </button>
-        <h1 className="text-white text-lg font-bold flex-1">🆘 Help Center</h1>
+        <h1 className="text-white text-lg font-bold flex-1">{t('helpCenter')}</h1>
         <button
           onClick={toggleTheme}
           className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white"
@@ -339,7 +522,11 @@ const HelpPage = () => {
           {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
         <button
-          onClick={() => setLang(lang === "bn" ? "en" : "bn")}
+          onClick={() => {
+            const newLang = lang === "bn" ? "en" : "bn";
+            setLang(newLang);
+            localStorage.setItem('appLanguage', newLang);
+          }}
           className="px-3 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold"
         >
           {lang === "bn" ? "EN" : "BN"}
@@ -349,10 +536,10 @@ const HelpPage = () => {
       {/* Hero + Search */}
       <div className="bg-linear-to-r from-primary to-primary-light px-5 pb-8 text-center">
         <div className="text-white text-xl font-bold mb-1">
-          {lang === "bn" ? "আমরা কীভাবে সাহায্য করতে পারি?" : "How can we help you?"}
+          {t('howCanWeHelp')}
         </div>
         <div className="text-white/80 text-sm mb-4">
-          {articles.length}+ {lang === "bn" ? "সাহায্য নিবন্ধ" : "help articles"}
+          {articles.length}+ {t('helpArticles')}
         </div>
         <div className="relative">
           <Search
@@ -363,7 +550,7 @@ const HelpPage = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            placeholder={lang === "bn" ? "সাহায্য অনুসন্ধান করুন... যেমন: bKash, পাসওয়ার্ড" : "Search help articles... e.g. bKash, password"}
+            placeholder={t('searchPlaceholder')}
             className="w-full py-3 pl-12 pr-10 rounded-xl bg-white text-black outline-none shadow-lg"
           />
           {searchQuery && (
@@ -406,7 +593,7 @@ const HelpPage = () => {
         )}
         {showResults && searchResults.length === 0 && searchQuery && !searching && (
           <div className="mt-2 bg-card border border-border rounded-xl p-4 text-center text-foreground/50">
-            😕 {lang === "bn" ? "কোন ফলাফল পাওয়া যায়নি" : "No results found"}
+            😕 {t('noResults')}
           </div>
         )}
       </div>
@@ -416,23 +603,28 @@ const HelpPage = () => {
         <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-3 mb-6">
           <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
           <div className="text-sm text-foreground/80 flex-1">
-            {lang === "bn" ? "সব সিস্টেম স্বাভাবিক —" : "All systems normal —"}{" "}
+            {t('allSystemsNormal')}{" "}
             <strong className="text-green-500">
-              {lang === "bn" ? "সব সার্ভিস চালু আছে" : "All services are running"}
+              {t('allServicesRunning')}
             </strong>
           </div>
           <button
-            onClick={() => Swal.fire({ title: "System Status", text: "All systems operational", icon: "success", confirmButtonColor: "#059669" })}
+            onClick={() => Swal.fire({ 
+              title: t('systemStatus'), 
+              text: t('allOperational'), 
+              icon: "success", 
+              confirmButtonColor: "#059669" 
+            })}
             className="text-xs text-primary font-semibold"
           >
-            {lang === "bn" ? "বিস্তারিত →" : "Details →"}
+            {t('details')}
           </button>
         </div>
 
         {/* Categories with Navigation */}
         <div className="flex justify-between items-center mb-3">
           <div className="font-bold text-foreground">
-            {lang === "bn" ? "বিষয় অনুযায়ী ব্রাউজ করুন" : "Browse by topic"}
+            {t('browseByTopic')}
           </div>
         </div>
         <div className="grid grid-cols-2 gap-3 mb-6">
@@ -454,7 +646,7 @@ const HelpPage = () => {
                 {cat.description[lang]}
               </div>
               <div className="text-xs text-primary mt-2 opacity-0 group-hover:opacity-100 transition flex items-center gap-1">
-                {lang === "bn" ? "যান →" : "Go →"}
+                {t('go')}
                 <ChevronRight size={12} />
               </div>
             </div>
@@ -464,7 +656,7 @@ const HelpPage = () => {
         {/* Popular Articles */}
         <div className="flex justify-between items-center mb-3">
           <div className="font-bold text-foreground">
-            {lang === "bn" ? "জনপ্রিয় প্রশ্ন" : "Popular questions"}
+            {t('popularQuestions')}
           </div>
         </div>
         <div className="space-y-2 mb-6">
@@ -472,7 +664,7 @@ const HelpPage = () => {
             <div className="text-center py-8 bg-card rounded-xl border border-border">
               <div className="text-4xl mb-2">📚</div>
               <div className="text-foreground/50">
-                {lang === "bn" ? "কোন আর্টিকেল পাওয়া যায়নি" : "No articles found"}
+                {t('noArticles')}
               </div>
             </div>
           ) : (
@@ -499,25 +691,25 @@ const HelpPage = () => {
 
         {/* Contact Options */}
         <div className="font-bold text-foreground mb-3">
-          {lang === "bn" ? "সরাসরি যোগাযোগ করুন" : "Contact us directly"}
+          {t('contactUsDirectly')}
         </div>
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={() => {
               Swal.fire({
-                title: lang === "bn" ? "সাপোর্ট টিকেট" : "Support Ticket",
+                title: t('supportTicket'),
                 html: `
-                  <input id="subject" class="swal2-input" placeholder="${lang === "bn" ? "বিষয়" : "Subject"}">
-                  <textarea id="message" class="swal2-textarea" placeholder="${lang === "bn" ? "বিস্তারিত জানান" : "Describe your issue"}"></textarea>
+                  <input id="subject" class="swal2-input" placeholder="${t('ticketSubject')}">
+                  <textarea id="message" class="swal2-textarea" placeholder="${t('ticketMessage')}"></textarea>
                 `,
                 showCancelButton: true,
                 confirmButtonColor: "#059669",
-                confirmButtonText: lang === "bn" ? "পাঠান" : "Submit",
+                confirmButtonText: t('submit'),
                 preConfirm: () => {
                   const subject = document.getElementById("subject").value;
                   const message = document.getElementById("message").value;
                   if (!subject || !message) {
-                    Swal.showValidationMessage(lang === "bn" ? "সব ঘর পূরণ করুন" : "Please fill all fields");
+                    Swal.showValidationMessage(t('pleaseFillAllFields'));
                   }
                   return { subject, message };
                 }
@@ -526,13 +718,13 @@ const HelpPage = () => {
                   try {
                     await axiosInstance.post("/help/tickets", result.value);
                     Swal.fire({
-                      title: lang === "bn" ? "টিকেট জমা হয়েছে!" : "Ticket Submitted!",
-                      text: lang === "bn" ? "আমরা ২৪ ঘণ্টার মধ্যে রিপ্লাই দেব" : "We'll reply within 24 hours",
+                      title: t('ticketSubmitted'),
+                      text: t('ticketReply'),
                       icon: "success",
                       confirmButtonColor: "#059669",
                     });
                   } catch (error) {
-                    Swal.fire("Error!", "Failed to submit ticket", "error");
+                    Swal.fire(t('error'), t('failedToSubmit'), "error");
                   }
                 }
               });
@@ -541,10 +733,10 @@ const HelpPage = () => {
           >
             <div className="text-3xl mb-1">🎫</div>
             <div className="font-bold text-sm text-foreground">
-              {lang === "bn" ? "সাপোর্ট টিকেট" : "Support Ticket"}
+              {t('supportTicket')}
             </div>
             <div className="text-xs text-foreground/50">
-              {lang === "bn" ? "২৪ ঘণ্টায় রিপ্লাই" : "Reply within 24 hours"}
+              {t('replyWithin24')}
             </div>
           </button>
           <a
@@ -552,7 +744,7 @@ const HelpPage = () => {
             className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary transition"
           >
             <div className="text-3xl mb-1">📧</div>
-            <div className="font-bold text-sm text-foreground">Email</div>
+            <div className="font-bold text-sm text-foreground">{t('email')}</div>
             <div className="text-xs text-foreground/50">
               support@sanchoybondhu.com
             </div>
@@ -563,10 +755,10 @@ const HelpPage = () => {
           >
             <div className="text-3xl mb-1">📞</div>
             <div className="font-bold text-sm text-foreground">
-              {lang === "bn" ? "হটলাইন" : "Hotline"}
+              {t('hotline')}
             </div>
             <div className="text-xs text-foreground/50">
-              {lang === "bn" ? "শনি–বৃহস্পতি, সকাল ৯টা–রাত ৯টা" : "Sat–Thu, 9am–9pm"}
+              {t('hotlineHours')}
             </div>
           </a>
           <button
@@ -575,13 +767,10 @@ const HelpPage = () => {
           >
             <div className="text-3xl mb-1">💬</div>
             <div className="font-bold text-sm text-foreground">
-              {lang === "bn" ? "লাইভ চ্যাট" : "Live Chat"}
+              {t('liveChat')}
             </div>
             <div className="text-xs text-foreground/50">
-              {isConnected 
-                ? (lang === "bn" ? "অনলাইন — এখনই চ্যাট করুন" : "Online — Chat now")
-                : (lang === "bn" ? "অফলাইন — টিকেট পাঠান" : "Offline — Send ticket")
-              }
+              {isConnected ? t('online') : t('offline')}
             </div>
           </button>
         </div>
@@ -608,14 +797,11 @@ const HelpPage = () => {
                 </div>
                 <div className="flex-1">
                   <div className="font-bold text-white text-sm">
-                    {lang === "bn" ? "Sanchoy Bondhu সাপোর্ট" : "Sanchoy Bondhu Support"}
+                    {t('support')}
                   </div>
                   <div className="text-white/70 text-xs flex items-center gap-1">
                     <span className={`w-2 h-2 rounded-full ${isConnected ? "bg-green-400" : "bg-gray-400"}`} />
-                    {isConnected 
-                      ? (lang === "bn" ? "অনলাইন" : "Online") 
-                      : (lang === "bn" ? "অফলাইন" : "Offline")
-                    }
+                    {isConnected ? t('onlineStatus') : t('offlineStatus')}
                   </div>
                 </div>
                 <button
@@ -632,10 +818,7 @@ const HelpPage = () => {
                   <div className="text-center py-8">
                     <div className="text-4xl mb-2">👋</div>
                     <div className="text-foreground/50 text-sm">
-                      {lang === "bn" 
-                        ? "হ্যালো! আমরা আপনাকে কীভাবে সাহায্য করতে পারি?" 
-                        : "Hello! How can we help you today?"
-                      }
+                      {t('helloChat')}
                     </div>
                   </div>
                 )}
@@ -661,7 +844,7 @@ const HelpPage = () => {
                 {isTyping && (
                   <div className="flex justify-start">
                     <div className="bg-muted px-3 py-2 rounded-xl rounded-bl-none text-sm text-foreground/60">
-                      <span className="animate-pulse">●●●</span> {lang === "bn" ? "টাইপ করছে..." : "typing..."}
+                      <span className="animate-pulse">●●●</span> {t('typing')}
                     </div>
                   </div>
                 )}
@@ -676,7 +859,7 @@ const HelpPage = () => {
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     onKeyDown={handleKeyPress}
-                    placeholder={lang === "bn" ? "মেসেজ লিখুন..." : "Type a message..."}
+                    placeholder={t('typeMessage')}
                     className="flex-1 px-3 py-2 rounded-xl bg-background border border-border text-sm outline-none focus:border-primary"
                     disabled={!isConnected}
                   />
@@ -729,13 +912,13 @@ const HelpPage = () => {
                   onClick={() => markHelpful(true)}
                   className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-semibold hover:border-green-500 hover:text-green-500 transition"
                 >
-                  👍 {lang === "bn" ? "সহায়ক ছিল" : "Helpful"}
+                  👍 {t('helpful')}
                 </button>
                 <button
                   onClick={() => markHelpful(false)}
                   className="flex-1 py-3 rounded-xl border-2 border-border text-foreground/60 font-semibold hover:border-red-500 hover:text-red-500 transition"
                 >
-                  👎 {lang === "bn" ? "আরও সাহায্য চাই" : "Need more help"}
+                  👎 {t('needMoreHelp')}
                 </button>
               </div>
             </motion.div>

@@ -21,6 +21,138 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    analyticsReports: "Analytics & Reports",
+    reportDownload: "Report Download",
+    email: "Email",
+    
+    // Date Range
+    days7: "7 days",
+    days30: "30 days",
+    months3: "3 months",
+    year1: "1 year",
+    loadingReport: "📊 Loading {label} report...",
+    reportReady: "Report is ready to print",
+    
+    // KPI Labels
+    totalSavings: "Total Savings",
+    newMembers: "New Members",
+    activeMembers: "Active Members",
+    kycCompleted: "KYC Completed",
+    vsLastMonth: "vs last month",
+    
+    // Chart Labels
+    monthlySavingsTrend: "Monthly Savings Trend",
+    deposits: "Deposits",
+    withdrawals: "Withdrawals",
+    goalCategories: "Goal Categories",
+    totalGoals: "Total Goals",
+    
+    // Top Savers
+    topSavers: "Top Savers",
+    csvDownload: "CSV Download",
+    member: "Member",
+    totalSavingsLabel: "Total Savings",
+    thisMonth: "This Month",
+    consistency: "Streak",
+    goalProgress: "Goal Progress",
+    
+    // Toast Messages
+    csvDownloadComplete: "✅ CSV download complete!",
+    reportSentEmail: "📧 Report has been sent by email",
+    failedToLoad: "Failed to load reports",
+    
+    // Months (for chart)
+    jan: "Jan",
+    feb: "Feb",
+    mar: "Mar",
+    apr: "Apr",
+    may: "May",
+    jun: "Jun",
+    jul: "Jul",
+    aug: "Aug",
+    sep: "Sep",
+    oct: "Oct",
+    nov: "Nov",
+    dec: "Dec",
+    
+    // Days (for range)
+    day: "day",
+    days: "days",
+    month: "month",
+    months: "months",
+    year: "year",
+    years: "years",
+  },
+  bn: {
+    // Page Title
+    analyticsReports: "অ্যানালিটিক্স ও রিপোর্ট",
+    reportDownload: "রিপোর্ট ডাউনলোড",
+    email: "ইমেইল করুন",
+    
+    // Date Range
+    days7: "৭ দিন",
+    days30: "৩০ দিন",
+    months3: "৩ মাস",
+    year1: "১ বছর",
+    loadingReport: "📊 {label} রিপোর্ট লোড হচ্ছে...",
+    reportReady: "রিপোর্ট প্রিন্টের জন্য প্রস্তুত",
+    
+    // KPI Labels
+    totalSavings: "মোট সঞ্চয়",
+    newMembers: "নতুন সদস্য",
+    activeMembers: "সক্রিয় সদস্য",
+    kycCompleted: "KYC সম্পন্ন",
+    vsLastMonth: "গত মাসের তুলনায়",
+    
+    // Chart Labels
+    monthlySavingsTrend: "মাসিক সঞ্চয় প্রবণতা",
+    deposits: "জমা",
+    withdrawals: "উত্তোলন",
+    goalCategories: "লক্ষ্য বিভাগ",
+    totalGoals: "মোট লক্ষ্য",
+    
+    // Top Savers
+    topSavers: "শীর্ষ সঞ্চয়কারী",
+    csvDownload: "CSV ডাউনলোড",
+    member: "সদস্য",
+    totalSavingsLabel: "মোট সঞ্চয়",
+    thisMonth: "এই মাস",
+    consistency: "ধারাবাহিকতা",
+    goalProgress: "লক্ষ্যপূরণ",
+    
+    // Toast Messages
+    csvDownloadComplete: "✅ CSV ডাউনলোড সম্পন্ন!",
+    reportSentEmail: "📧 রিপোর্ট ইমেইলে পাঠানো হয়েছে",
+    failedToLoad: "রিপোর্ট লোড করতে ব্যর্থ হয়েছে",
+    
+    // Months (for chart)
+    jan: "জান",
+    feb: "ফেব",
+    mar: "মার",
+    apr: "এপ্র",
+    may: "মে",
+    jun: "জুন",
+    jul: "জুল",
+    aug: "আগ",
+    sep: "সেপ",
+    oct: "অক্ট",
+    nov: "নভ",
+    dec: "ডিস",
+    
+    // Days (for range)
+    day: "দিন",
+    days: "দিন",
+    month: "মাস",
+    months: "মাস",
+    year: "বছর",
+    years: "বছর",
+  }
+};
+
 const getAuthHeaders = () => {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -41,11 +173,26 @@ const AdminReportsPage = () => {
   const [monthlyTrends, setMonthlyTrends] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("admin_lang") || "bn";
+    setLang(savedLang);
+  }, []);
+
   const ranges = [
-    { id: "7d", labelBn: "৭ দিন", labelEn: "7 days" },
-    { id: "30d", labelBn: "৩০ দিন", labelEn: "30 days" },
-    { id: "3m", labelBn: "৩ মাস", labelEn: "3 months" },
-    { id: "1y", labelBn: "১ বছর", labelEn: "1 year" },
+    { id: "7d", labelBn: t('days7'), labelEn: "7 days" },
+    { id: "30d", labelBn: t('days30'), labelEn: "30 days" },
+    { id: "3m", labelBn: t('months3'), labelEn: "3 months" },
+    { id: "1y", labelBn: t('year1'), labelEn: "1 year" },
   ];
 
   const fetchReports = useCallback(async () => {
@@ -57,19 +204,17 @@ const AdminReportsPage = () => {
       if (res.data.success) {
         const data = res.data.data;
         
-        // Convert kpis object to array if needed
         let kpisArray = [];
         if (data.kpis) {
           if (Array.isArray(data.kpis)) {
             kpisArray = data.kpis;
           } else {
-            // Convert kpis object to array format
             kpisArray = [
               {
                 icon: <DollarSign size={20} className="text-primary" />,
                 value: formatAmount(data.kpis.totalDepositsAmount || 0),
                 valueEn: formatAmount(data.kpis.totalDepositsAmount || 0),
-                labelBn: "মোট সঞ্চয়",
+                labelBn: t('totalSavings'),
                 labelEn: "Total Savings",
                 change: `+${data.kpis.totalDepositsAmount ? ((data.kpis.totalDepositsAmount / 100000) * 5).toFixed(1) : 0}%`,
                 changeUp: true,
@@ -80,7 +225,7 @@ const AdminReportsPage = () => {
                 icon: <Users size={20} className="text-blue-500" />,
                 value: data.kpis.newUsers?.toLocaleString() || "0",
                 valueEn: data.kpis.newUsers?.toLocaleString() || "0",
-                labelBn: "নতুন সদস্য",
+                labelBn: t('newMembers'),
                 labelEn: "New Members",
                 change: `+${data.kpis.userGrowth || 0}%`,
                 changeUp: (data.kpis.userGrowth || 0) >= 0,
@@ -91,7 +236,7 @@ const AdminReportsPage = () => {
                 icon: <Activity size={20} className="text-green-500" />,
                 value: `${data.kpis.activeUsers?.toLocaleString() || "0"}`,
                 valueEn: `${data.kpis.activeUsers?.toLocaleString() || "0"}`,
-                labelBn: "সক্রিয় সদস্য",
+                labelBn: t('activeMembers'),
                 labelEn: "Active Members",
                 change: `+${data.kpis.activeGrowth || 0}%`,
                 changeUp: true,
@@ -102,7 +247,7 @@ const AdminReportsPage = () => {
                 icon: <CheckCircle size={20} className="text-amber-500" />,
                 value: `${data.kpis.kycRate || 0}%`,
                 valueEn: `${data.kpis.kycRate || 0}%`,
-                labelBn: "KYC সম্পন্ন",
+                labelBn: t('kycCompleted'),
                 labelEn: "KYC Completed",
                 change: `+${data.kpis.kycGrowth || 0}%`,
                 changeUp: true,
@@ -113,11 +258,9 @@ const AdminReportsPage = () => {
           }
         }
         
-        // Set monthly trends for charts
         const trends = data.monthlyTrends || [];
         setMonthlyTrends(trends);
         
-        // Extract deposits and withdrawals from monthlyTrends
         const depositValues = trends.map(t => t.deposits || 0);
         const withdrawalValues = trends.map(t => t.withdrawals || 0);
         
@@ -129,8 +272,7 @@ const AdminReportsPage = () => {
       }
     } catch (err) {
       console.error("Fetch reports error:", err);
-      showToast(err.response?.data?.message || "Failed to load reports");
-      // Set fallback data
+      showToast(err.response?.data?.message || t('failedToLoad'));
       setKpis(getFallbackKpis());
       setDeposits([12.5, 18.2, 22.1, 24.5, 28.3, 32.1]);
       setWithdrawals([4.2, 5.1, 6.8, 7.2, 8.5, 9.1]);
@@ -157,7 +299,7 @@ const AdminReportsPage = () => {
       icon: <DollarSign size={20} className="text-primary" />,
       value: "৳0",
       valueEn: "৳0",
-      labelBn: "মোট সঞ্চয়",
+      labelBn: t('totalSavings'),
       labelEn: "Total Savings",
       change: "0%",
       changeUp: true,
@@ -168,7 +310,7 @@ const AdminReportsPage = () => {
       icon: <Users size={20} className="text-blue-500" />,
       value: "0",
       valueEn: "0",
-      labelBn: "নতুন সদস্য",
+      labelBn: t('newMembers'),
       labelEn: "New Members",
       change: "0%",
       changeUp: true,
@@ -179,7 +321,7 @@ const AdminReportsPage = () => {
       icon: <Activity size={20} className="text-green-500" />,
       value: "0",
       valueEn: "0",
-      labelBn: "সক্রিয় সদস্য",
+      labelBn: t('activeMembers'),
       labelEn: "Active Members",
       change: "0%",
       changeUp: true,
@@ -190,7 +332,7 @@ const AdminReportsPage = () => {
       icon: <CheckCircle size={20} className="text-amber-500" />,
       value: "0%",
       valueEn: "0%",
-      labelBn: "KYC সম্পন্ন",
+      labelBn: t('kycCompleted'),
       labelEn: "KYC Completed",
       change: "0%",
       changeUp: true,
@@ -235,50 +377,36 @@ const AdminReportsPage = () => {
   const setRange = (rangeId) => {
     setActiveRange(rangeId);
     const rangeLabels = {
-      "7d": lang === "bn" ? "৭ দিনের" : "7-day",
-      "30d": lang === "bn" ? "৩০ দিনের" : "30-day",
-      "3m": lang === "bn" ? "৩ মাসের" : "3-month",
-      "1y": lang === "bn" ? "১ বছরের" : "1-year",
+      "7d": lang === "bn" ? t('days7') : "7-day",
+      "30d": lang === "bn" ? t('days30') : "30-day",
+      "3m": lang === "bn" ? t('months3') : "3-month",
+      "1y": lang === "bn" ? t('year1') : "1-year",
     };
-    showToast(
-      lang === "bn"
-        ? `📊 ${rangeLabels[rangeId]} রিপোর্ট লোড হচ্ছে...`
-        : `📊 Loading ${rangeLabels[rangeId]} report...`,
-    );
+    showToast(t('loadingReport', { label: rangeLabels[rangeId] }));
   };
 
   const printReport = () => {
-    showToast(
-      lang === "bn"
-        ? "রিপোর্ট প্রিন্টের জন্য প্রস্তুত"
-        : "Report is ready to print",
-    );
+    showToast(t('reportReady'));
     window.print();
   };
 
   const exportCSV = () => {
     const locale = lang === "bn" ? "bn-BD" : "en-US";
-    const csv = `Report,Value\nDate,${new Date().toLocaleDateString(locale)}\nTotal Savings,${kpis[0]?.value || "N/A"}\nNew Members,${kpis[1]?.value || "N/A"}`;
+    const csv = `Report,Value\nDate,${new Date().toLocaleDateString(locale)}\n${t('totalSavings')},${kpis[0]?.value || "N/A"}\n${t('newMembers')},${kpis[1]?.value || "N/A"}`;
     const a = document.createElement("a");
     a.href = "data:text/csv;charset=utf-8," + encodeURIComponent("\ufeff" + csv);
     a.download = "amanah-report.csv";
     document.body.appendChild(a);
     a.click();
     a.remove();
-    showToast(
-      lang === "bn" ? "✅ CSV ডাউনলোড সম্পন্ন!" : "✅ CSV download complete!",
-    );
+    showToast(t('csvDownloadComplete'));
   };
 
   const sendEmail = () => {
-    showToast(
-      lang === "bn"
-        ? "📧 রিপোর্ট ইমেইলে পাঠানো হয়েছে"
-        : "📧 Report has been sent by email",
-    );
+    showToast(t('reportSentEmail'));
   };
 
-  const months = monthlyTrends.length ? monthlyTrends.map(t => t.month) : (lang === "bn" ? ["জান", "ফেব", "মার", "এপ্র", "মে", "জুন"] : ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
+  const months = monthlyTrends.length ? monthlyTrends.map(t => t.month) : (lang === "bn" ? [t('jan'), t('feb'), t('mar'), t('apr'), t('may'), t('jun')] : ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]);
   const maxVal = Math.max(...(deposits.length ? deposits : [1]), ...(withdrawals.length ? withdrawals : [0])) || 1;
   const getBarHeight = (value) => (value / maxVal) * 160;
 
@@ -287,7 +415,7 @@ const AdminReportsPage = () => {
       {/* Topbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-lg font-bold text-foreground">
-          {lang === "bn" ? "অ্যানালিটিক্স ও রিপোর্ট" : "Analytics & Reports"}
+          {t('analyticsReports')}
         </h1>
         <div className="flex gap-3 flex-wrap">
           <button
@@ -300,14 +428,13 @@ const AdminReportsPage = () => {
             onClick={printReport}
             className="px-4 py-2 rounded-lg border border-border text-foreground/70 text-sm font-semibold hover:border-primary transition flex items-center gap-2"
           >
-            <Download size={14} />{" "}
-            {lang === "bn" ? "রিপোর্ট ডাউনলোড" : "Report Download"}
+            <Download size={14} /> {t('reportDownload')}
           </button>
           <button
             onClick={sendEmail}
             className="px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-sm font-semibold flex items-center gap-2"
           >
-            <Mail size={14} /> {lang === "bn" ? "ইমেইল করুন" : "Email"}
+            <Mail size={14} /> {t('email')}
           </button>
         </div>
       </div>
@@ -397,7 +524,7 @@ const AdminReportsPage = () => {
             {kpi.changeUp !== undefined && (
               <div className={`text-xs mt-2 ${kpi.changeUp ? "text-green-500" : "text-red-500"}`}>
                 {kpi.changeUp ? "↑" : "↓"}{" "}
-                {lang === "bn" ? "গত মাসের তুলনায়" : "vs last month"}
+                {t('vsLastMonth')}
               </div>
             )}
           </div>
@@ -410,19 +537,19 @@ const AdminReportsPage = () => {
         <div className="bg-card border border-border rounded-xl p-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
             <h3 className="font-semibold text-foreground">
-              {lang === "bn" ? "মাসিক সঞ্চয় প্রবণতা" : "Monthly Savings Trend"}
+              {t('monthlySavingsTrend')}
             </h3>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-primary" />
                 <span className="text-xs text-foreground/60">
-                  {lang === "bn" ? "জমা" : "Deposits"}
+                  {t('deposits')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-cyan-500" />
                 <span className="text-xs text-foreground/60">
-                  {lang === "bn" ? "উত্তোলন" : "Withdrawals"}
+                  {t('withdrawals')}
                 </span>
               </div>
             </div>
@@ -440,12 +567,12 @@ const AdminReportsPage = () => {
                   <div
                     className="flex-1 rounded-t-sm bg-primary cursor-pointer hover:opacity-80 transition"
                     style={{ height: `${getBarHeight(deposits[idx] || 0)}px` }}
-                    title={`${lang === "bn" ? "জমা" : "Deposits"}: ৳${deposits[idx] || 0}`}
+                    title={`${t('deposits')}: ৳${deposits[idx] || 0}`}
                   />
                   <div
                     className="flex-1 rounded-t-sm bg-cyan-500 cursor-pointer hover:opacity-80 transition"
                     style={{ height: `${getBarHeight(withdrawals[idx] || 0)}px` }}
-                    title={`${lang === "bn" ? "উত্তোলন" : "Withdrawals"}: ৳${withdrawals[idx] || 0}`}
+                    title={`${t('withdrawals')}: ৳${withdrawals[idx] || 0}`}
                   />
                 </div>
                 <span className="text-[10px] text-foreground/50">{month}</span>
@@ -457,7 +584,7 @@ const AdminReportsPage = () => {
         {/* Donut Chart */}
         <div className="bg-card border border-border rounded-xl p-5">
           <h3 className="font-semibold text-foreground mb-4">
-            {lang === "bn" ? "লক্ষ্য বিভাগ" : "Goal Categories"}
+            {t('goalCategories')}
           </h3>
           <div className="flex flex-col items-center">
             <div className="relative w-36 h-36">
@@ -508,7 +635,7 @@ const AdminReportsPage = () => {
                   fontSize="10"
                   opacity="0.5"
                 >
-                  {lang === "bn" ? "মোট লক্ষ্য" : "Total Goals"}
+                  {t('totalGoals')}
                 </text>
               </svg>
             </div>
@@ -540,13 +667,13 @@ const AdminReportsPage = () => {
       {/* Top Savers Table */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
         <h3 className="font-semibold text-foreground">
-          {lang === "bn" ? "শীর্ষ সঞ্চয়কারী" : "Top Savers"}
+          {t('topSavers')}
         </h3>
         <button
           onClick={exportCSV}
           className="px-4 py-2 rounded-lg border border-border text-foreground/70 text-sm font-semibold hover:border-primary transition"
         >
-          {lang === "bn" ? "CSV ডাউনলোড" : "CSV Download"}
+          {t('csvDownload')}
         </button>
       </div>
 
@@ -557,19 +684,19 @@ const AdminReportsPage = () => {
               <tr className="border-b border-border bg-background">
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">#</th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  {lang === "bn" ? "সদস্য" : "Member"}
+                  {t('member')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  {lang === "bn" ? "মোট সঞ্চয়" : "Total Savings"}
+                  {t('totalSavingsLabel')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  {lang === "bn" ? "এই মাস" : "This Month"}
+                  {t('thisMonth')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  {lang === "bn" ? "ধারাবাহিকতা" : "Streak"}
+                  {t('consistency')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">
-                  {lang === "bn" ? "লক্ষ্যপূরণ" : "Goal Progress"}
+                  {t('goalProgress')}
                 </th>
               </tr>
             </thead>

@@ -8,48 +8,128 @@ import {
   Target,
   Trophy,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 
-const steps = [
-  {
-    id: 1,
-    Icon: FilePenLine,
-    title: "1. Register",
-    description: "Create your account with phone or email in under 2 minutes",
-  },
-  {
-    id: 2,
-    Icon: IdCard,
-    title: "2. Verify",
-    description: "Complete NID & phone verification for maximum security",
-  },
-  {
-    id: 3,
-    Icon: Target,
-    title: "3. Choose Goal",
-    description: "Pick a savings goal or join an active community circle",
-  },
-  {
-    id: 4,
-    Icon: CreditCard,
-    title: "4. Deposit",
-    description: "Send weekly or monthly via bKash, Nagad, or bank transfer",
-  },
-  {
-    id: 5,
-    Icon: Trophy,
-    title: "5. Complete",
-    description: "Reach your goal maturity and withdraw your full savings",
-  },
-];
+// Translations
+const translations = {
+  en: {
+    // Hero Section
+    heroBadge: "Simple Process",
+    heroTitle: "How ",
+    heroTitleHighlight: "Sanchoy Bondhu",
+    heroTitleEnd: " Works",
+    heroDesc: "Five simple steps to start your savings journey with community discipline and digital security.",
 
-const stats = [
-  { value: "12,400+", label: "Verified member" },
-  { value: "৳48 Cr+", label: "Community savings" },
-  { value: "1,240+", label: "Active circle" },
-  { value: "98%", label: "Completion rate" },
-];
+    // Steps
+    step1Title: "1. Register",
+    step1Desc: "Create your account with phone or email in under 2 minutes",
+    step2Title: "2. Verify",
+    step2Desc: "Complete NID & phone verification for maximum security",
+    step3Title: "3. Choose Goal",
+    step3Desc: "Pick a savings goal or join an active community circle",
+    step4Title: "4. Deposit",
+    step4Desc: "Send weekly or monthly via bKash, Nagad, or bank transfer",
+    step5Title: "5. Complete",
+    step5Desc: "Reach your goal maturity and withdraw your full savings",
+
+    // Stats
+    stat1Value: "12,400+",
+    stat1Label: "Verified member",
+    stat2Value: "৳48 Cr+",
+    stat2Label: "Community savings",
+    stat3Value: "1,240+",
+    stat3Label: "Active circle",
+    stat4Value: "98%",
+    stat4Label: "Completion rate",
+  },
+  bn: {
+    // Hero Section
+    heroBadge: "সহজ প্রক্রিয়া",
+    heroTitle: "",
+    heroTitleHighlight: "সঞ্চয় বন্ধু",
+    heroTitleEnd: " কীভাবে কাজ করে",
+    heroDesc: "কমিউনিটি শৃঙ্খলা এবং ডিজিটাল নিরাপত্তার সাথে আপনার সঞ্চয় যাত্রা শুরু করতে পাঁচটি সহজ ধাপ।",
+
+    // Steps
+    step1Title: "১. নিবন্ধন",
+    step1Desc: "২ মিনিটের মধ্যে ফোন বা ইমেইলের মাধ্যমে আপনার অ্যাকাউন্ট তৈরি করুন",
+    step2Title: "২. যাচাইকরণ",
+    step2Desc: "সর্বোচ্চ নিরাপত্তার জন্য এনআইডি ও ফোন যাচাইকরণ সম্পূর্ণ করুন",
+    step3Title: "৩. লক্ষ্য নির্বাচন",
+    step3Desc: "একটি সঞ্চয় লক্ষ্য বেছে নিন বা একটি সক্রিয় কমিউনিটি সার্কেলে যোগ দিন",
+    step4Title: "৪. জমা",
+    step4Desc: "বিকাশ, নগদ বা ব্যাংক ট্রান্সফারের মাধ্যমে সাপ্তাহিক বা মাসিক পাঠান",
+    step5Title: "৫. সম্পূর্ণ",
+    step5Desc: "আপনার লক্ষ্য পরিপক্কতায় পৌঁছান এবং আপনার সম্পূর্ণ সঞ্চয় উত্তোলন করুন",
+
+    // Stats
+    stat1Value: "১২,৪০০+",
+    stat1Label: "যাচাইকৃত সদস্য",
+    stat2Value: "৳৪৮ কোটি+",
+    stat2Label: "কমিউনিটি সঞ্চয়",
+    stat3Value: "১,২৪০+",
+    stat3Label: "সক্রিয় সার্কেল",
+    stat4Value: "৯৮%",
+    stat4Label: "সম্পূর্ণতার হার",
+  }
+};
 
 const HowItWorksPage = () => {
+  const [language, setLanguage] = useState('en');
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLanguage(savedLang);
+  }, []);
+
+  // Translation function
+  const t = (key) => {
+    return translations[language]?.[key] || translations.en[key] || key;
+  };
+
+  // Get steps with translations
+  const steps = [
+    {
+      id: 1,
+      Icon: FilePenLine,
+      title: t('step1Title'),
+      description: t('step1Desc'),
+    },
+    {
+      id: 2,
+      Icon: IdCard,
+      title: t('step2Title'),
+      description: t('step2Desc'),
+    },
+    {
+      id: 3,
+      Icon: Target,
+      title: t('step3Title'),
+      description: t('step3Desc'),
+    },
+    {
+      id: 4,
+      Icon: CreditCard,
+      title: t('step4Title'),
+      description: t('step4Desc'),
+    },
+    {
+      id: 5,
+      Icon: Trophy,
+      title: t('step5Title'),
+      description: t('step5Desc'),
+    },
+  ];
+
+  // Stats with translations
+  const stats = [
+    { value: t('stat1Value'), label: t('stat1Label') },
+    { value: t('stat2Value'), label: t('stat2Label') },
+    { value: t('stat3Value'), label: t('stat3Label') },
+    { value: t('stat4Value'), label: t('stat4Label') },
+  ];
+
   return (
     <>
       <section
@@ -58,23 +138,24 @@ const HowItWorksPage = () => {
       >
         <div className="mx-auto max-w-[1200px] px-6 text-center">
           <span className="mb-4 inline-block rounded-full border border-[#059669]/15 bg-[#059669]/[0.08] px-4 py-1.5 text-[13px] font-semibold text-[#059669]">
-            Simple Process
+            {t('heroBadge')}
           </span>
 
           <h2 className="mb-4 text-[clamp(28px,4vw,42px)] font-extrabold leading-[1.2] tracking-normal">
-            How <span className="text-[#059669]">Sanchoy Bondhu</span> Works
+            {t('heroTitle')}
+            <span className="text-[#059669]">{t('heroTitleHighlight')}</span>
+            {t('heroTitleEnd')}
           </h2>
 
           <p className="mx-auto max-w-[580px] text-lg leading-[1.6] text-[#475569] dark:text-[#94a3b8]">
-            Five simple steps to start your savings journey with community
-            discipline and digital security.
+            {t('heroDesc')}
           </p>
 
           <div className="relative mt-14 flex items-start justify-between gap-4 max-md:flex-col max-md:items-center max-md:gap-6">
             <div className="absolute left-[10%] right-[10%] top-7 z-0 h-0.5 bg-[linear-gradient(90deg,#059669,#3b82f6)] opacity-30 max-md:hidden" />
 
             {steps.map((step, index) => (
-              <StepItem key={step.id} step={step} index={index} />
+              <StepItem key={step.id} step={step} index={index} language={language} />
             ))}
           </div>
         </div>
@@ -104,8 +185,11 @@ const HowItWorksPage = () => {
   );
 };
 
-const StepItem = ({ step, index }) => {
+const StepItem = ({ step, index, language }) => {
   const { Icon } = step;
+
+  // Check if language is Bangla for RTL support
+  const isBangla = language === 'bn';
 
   return (
     <motion.div
@@ -119,11 +203,11 @@ const StepItem = ({ step, index }) => {
         <Icon size={24} strokeWidth={2.2} aria-hidden="true" />
       </div>
 
-      <h3 className="mb-2 text-base font-bold text-[#0f172a] dark:text-[#f1f5f9]">
+      <h3 className={`mb-2 text-base font-bold text-[#0f172a] dark:text-[#f1f5f9] ${isBangla ? 'font-noto' : ''}`}>
         {step.title}
       </h3>
 
-      <p className="text-[13px] leading-[1.5] text-[#475569] dark:text-[#94a3b8]">
+      <p className={`text-[13px] leading-[1.5] text-[#475569] dark:text-[#94a3b8] ${isBangla ? 'font-noto' : ''}`}>
         {step.description}
       </p>
     </motion.div>

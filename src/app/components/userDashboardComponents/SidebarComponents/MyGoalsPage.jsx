@@ -32,6 +32,272 @@ import {
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+// Translations
+const translations = {
+  en: {
+    // Page Title
+    pageTitle: "My Savings Goals",
+    pageSubtitle: "{count} active goals · Total saved {amount}",
+    
+    // Buttons
+    newGoal: "New Goal",
+    deposit: "+ Deposit",
+    details: "Details",
+    delete: "Delete",
+    close: "Close",
+    makeDeposit: "+ Make a Deposit",
+    cancel: "Cancel",
+    createGoal: "Create Goal",
+    creating: "Creating...",
+    
+    // Stats
+    activeGoals: "Active Goals",
+    totalSaved: "Total Saved",
+    monthlyDeposit: "Monthly Deposit",
+    onPause: "On Pause",
+    
+    // Empty State
+    noGoals: "No Goals Yet",
+    noGoalsDesc: "Create your first savings goal to start your journey",
+    createFirstGoal: "Create Your First Goal",
+    
+    // Goal Status
+    active: "Active",
+    paused: "Paused",
+    completed: "Completed",
+    pause: "Pause",
+    resume: "Resume",
+    
+    // Goal Details
+    goalDetails: "Goal Details",
+    overallProgress: "Overall Progress",
+    currentSaved: "Current Saved",
+    targetAmount: "Target Amount",
+    monthlyDepositLabel: "Monthly Deposit",
+    perMonth: "per month",
+    totalGoal: "total goal",
+    targetDate: "Target Date",
+    estimatedCompletion: "Est. Completion",
+    expectedCompletion: "expected completion",
+    monthsRemaining: "{months} months remaining",
+    description: "Description",
+    journeyTimeline: "Journey Timeline",
+    started: "Started:",
+    estimatedCompletionDate: "Estimated Completion:",
+    duration: "Duration:",
+    months: "months",
+    monthlyProgress: "Monthly Progress",
+    perMonthProgress: "{percent}% / month",
+    toReachTarget: "To Reach Target",
+    ribaFree: "Riba-free",
+    
+    // Modal Titles
+    createNewGoal: "Create New Goal",
+    createSubtitle: "Set a new savings target to stay motivated",
+    goalType: "Goal Type",
+    goalName: "Goal Name",
+    goalNamePlaceholder: "e.g., My Hajj Fund 2027",
+    targetAmountLabel: "Target Amount",
+    monthlyDepositLabelForm: "Monthly Deposit",
+    targetDateLabel: "Target Date",
+    descriptionOptional: "Description (Optional)",
+    descriptionPlaceholder: "Write something about this goal...",
+    ribaFreeMode: "Riba-free Savings Mode",
+    ribaFreeDesc: "Interest-free (halal) savings",
+    
+    // Goal Types
+    hajj: "Hajj/Umrah",
+    wedding: "Wedding",
+    home: "Home",
+    education: "Education",
+    car: "Car",
+    business: "Business",
+    emergency: "Emergency",
+    travel: "Travel",
+    other: "Other",
+    emergencyFund: "Emergency Fund",
+    goal: "Goal",
+    
+    // Validation
+    error: "Error",
+    enterGoalName: "Please enter a goal name",
+    validTargetAmount: "Please enter a valid target amount",
+    validMonthlyDeposit: "Please enter a valid monthly deposit amount",
+    selectTargetDate: "Please select a target date",
+    loginAgain: "Please login again",
+    sessionExpired: "Session Expired",
+    
+    // Success
+    success: "Success!",
+    goalCreated: "Goal created successfully",
+    updated: "Updated!",
+    goalResumed: "Goal resumed successfully",
+    goalPaused: "Goal paused successfully",
+    deleted: "Deleted!",
+    goalDeleted: "Goal deleted successfully",
+    
+    // Confirmation Dialogs
+    pauseGoal: "Pause Goal?",
+    pauseGoalText: "Are you sure you want to pause this goal?",
+    resumeGoal: "Resume Goal?",
+    resumeGoalText: "Are you sure you want to resume this goal?",
+    confirmPause: "Yes, pause it",
+    confirmResume: "Yes, resume it",
+    deleteGoal: "Delete Goal?",
+    deleteGoalText: "Are you sure you want to delete this goal? This action cannot be undone.",
+    confirmDelete: "Yes, delete it",
+    
+    // Toast
+    goalPausedToast: "Goal paused successfully",
+    goalResumedToast: "Goal resumed successfully",
+    
+    // Pro Tip
+    proTip: "Pro Tip:",
+    proTipText: "Setting up auto-save for your goals helps you stay consistent and reach your targets faster. You can pause any goal anytime from settings.",
+    
+    // Loading
+    loadingGoals: "Loading your goals...",
+    
+    // Dates
+    notSet: "Not set",
+    invalidDate: "Invalid date",
+    completedLabel: "Completed!",
+    almostThere: "Almost there!",
+    inProgress: "In progress",
+  },
+  bn: {
+    // Page Title
+    pageTitle: "আমার সঞ্চয় লক্ষ্য",
+    pageSubtitle: "{count} সক্রিয় লক্ষ্য · মোট সঞ্চয় {amount}",
+    
+    // Buttons
+    newGoal: "নতুন লক্ষ্য",
+    deposit: "+ জমা দিন",
+    details: "বিস্তারিত",
+    delete: "মুছে ফেলুন",
+    close: "বন্ধ করুন",
+    makeDeposit: "+ জমা দিন",
+    cancel: "বাতিল",
+    createGoal: "লক্ষ্য তৈরি করুন",
+    creating: "তৈরি হচ্ছে...",
+    
+    // Stats
+    activeGoals: "সক্রিয় লক্ষ্য",
+    totalSaved: "মোট সঞ্চয়",
+    monthlyDeposit: "মাসিক জমা",
+    onPause: "বিরতিতে",
+    
+    // Empty State
+    noGoals: "কোন লক্ষ্য নেই",
+    noGoalsDesc: "আপনার যাত্রা শুরু করতে আপনার প্রথম সঞ্চয় লক্ষ্য তৈরি করুন",
+    createFirstGoal: "আপনার প্রথম লক্ষ্য তৈরি করুন",
+    
+    // Goal Status
+    active: "সক্রিয়",
+    paused: "বিরতি",
+    completed: "সম্পন্ন",
+    pause: "বিরতি",
+    resume: "পুনরায় শুরু",
+    
+    // Goal Details
+    goalDetails: "লক্ষ্যের বিবরণ",
+    overallProgress: "সামগ্রিক অগ্রগতি",
+    currentSaved: "বর্তমান সঞ্চয়",
+    targetAmount: "লক্ষ্যমাত্রার পরিমাণ",
+    monthlyDepositLabel: "মাসিক জমা",
+    perMonth: "প্রতি মাস",
+    totalGoal: "মোট লক্ষ্য",
+    targetDate: "লক্ষ্যমাত্রার তারিখ",
+    estimatedCompletion: "আনু. সমাপ্তি",
+    expectedCompletion: "প্রত্যাশিত সমাপ্তি",
+    monthsRemaining: "{months} মাস বাকি",
+    description: "বর্ণনা",
+    journeyTimeline: "যাত্রার সময়রেখা",
+    started: "শুরু:",
+    estimatedCompletionDate: "আনুমানিক সমাপ্তি:",
+    duration: "মেয়াদ:",
+    months: "মাস",
+    monthlyProgress: "মাসিক অগ্রগতি",
+    perMonthProgress: "{percent}% / মাস",
+    toReachTarget: "লক্ষ্যে পৌঁছাতে",
+    ribaFree: "সুদ-মুক্ত",
+    
+    // Modal Titles
+    createNewGoal: "নতুন লক্ষ্য তৈরি করুন",
+    createSubtitle: "উদ্দীপিত থাকতে একটি নতুন সঞ্চয় লক্ষ্য নির্ধারণ করুন",
+    goalType: "লক্ষ্যের ধরন",
+    goalName: "লক্ষ্যের নাম",
+    goalNamePlaceholder: "যেমন: আমার হজ ফান্ড ২০২৭",
+    targetAmountLabel: "লক্ষ্যমাত্রার পরিমাণ",
+    monthlyDepositLabelForm: "মাসিক জমা",
+    targetDateLabel: "লক্ষ্যমাত্রার তারিখ",
+    descriptionOptional: "বর্ণনা (ঐচ্ছিক)",
+    descriptionPlaceholder: "এই লক্ষ্য সম্পর্কে কিছু লিখুন...",
+    ribaFreeMode: "সুদ-মুক্ত সঞ্চয় মোড",
+    ribaFreeDesc: "সুদ-মুক্ত (হালাল) সঞ্চয়",
+    
+    // Goal Types
+    hajj: "হজ/ওমরাহ",
+    wedding: "বিয়ে",
+    home: "ঘর",
+    education: "শিক্ষা",
+    car: "গাড়ি",
+    business: "ব্যবসা",
+    emergency: "জরুরি",
+    travel: "ভ্রমণ",
+    other: "অন্যান্য",
+    emergencyFund: "জরুরি তহবিল",
+    goal: "লক্ষ্য",
+    
+    // Validation
+    error: "ত্রুটি",
+    enterGoalName: "অনুগ্রহ করে একটি লক্ষ্যের নাম লিখুন",
+    validTargetAmount: "অনুগ্রহ করে একটি বৈধ লক্ষ্যমাত্রার পরিমাণ লিখুন",
+    validMonthlyDeposit: "অনুগ্রহ করে একটি বৈধ মাসিক জমার পরিমাণ লিখুন",
+    selectTargetDate: "অনুগ্রহ করে একটি লক্ষ্যমাত্রার তারিখ নির্বাচন করুন",
+    loginAgain: "অনুগ্রহ করে পুনরায় লগইন করুন",
+    sessionExpired: "সেশন শেষ হয়েছে",
+    
+    // Success
+    success: "সফল!",
+    goalCreated: "লক্ষ্য সফলভাবে তৈরি হয়েছে",
+    updated: "আপডেট করা হয়েছে!",
+    goalResumed: "লক্ষ্য পুনরায় শুরু করা হয়েছে",
+    goalPaused: "লক্ষ্য বিরতি দেওয়া হয়েছে",
+    deleted: "মুছে ফেলা হয়েছে!",
+    goalDeleted: "লক্ষ্য সফলভাবে মুছে ফেলা হয়েছে",
+    
+    // Confirmation Dialogs
+    pauseGoal: "লক্ষ্য বিরতি দিবেন?",
+    pauseGoalText: "আপনি কি এই লক্ষ্য বিরতি দিতে চান?",
+    resumeGoal: "লক্ষ্য পুনরায় শুরু করবেন?",
+    resumeGoalText: "আপনি কি এই লক্ষ্য পুনরায় শুরু করতে চান?",
+    confirmPause: "হ্যাঁ, বিরতি দিন",
+    confirmResume: "হ্যাঁ, পুনরায় শুরু করুন",
+    deleteGoal: "লক্ষ্য মুছে ফেলবেন?",
+    deleteGoalText: "আপনি কি এই লক্ষ্য মুছে ফেলতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।",
+    confirmDelete: "হ্যাঁ, মুছে ফেলুন",
+    
+    // Toast
+    goalPausedToast: "লক্ষ্য বিরতি দেওয়া হয়েছে",
+    goalResumedToast: "লক্ষ্য পুনরায় শুরু করা হয়েছে",
+    
+    // Pro Tip
+    proTip: "প্রো টিপ:",
+    proTipText: "আপনার লক্ষ্যের জন্য অটো-সেভ সেটআপ করা আপনাকে ধারাবাহিক থাকতে এবং দ্রুত লক্ষ্যে পৌঁছাতে সাহায্য করে। আপনি যেকোনো সময় সেটিংস থেকে যেকোনো লক্ষ্য বিরতি দিতে পারেন।",
+    
+    // Loading
+    loadingGoals: "আপনার লক্ষ্য লোড হচ্ছে...",
+    
+    // Dates
+    notSet: "নির্ধারিত নয়",
+    invalidDate: "অবৈধ তারিখ",
+    completedLabel: "সম্পন্ন!",
+    almostThere: "প্রায় শেষ!",
+    inProgress: "চলমান",
+  }
+};
+
 const MyGoalsPage = () => {
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -40,6 +306,7 @@ const MyGoalsPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [goals, setGoals] = useState([]);
+  const [lang, setLang] = useState("en");
   const [statistics, setStatistics] = useState({
     totalGoals: 0,
     activeGoals: 0,
@@ -58,16 +325,31 @@ const MyGoalsPage = () => {
     islamicMode: true,
   });
 
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Get language from localStorage
+  useEffect(() => {
+    const savedLang = localStorage.getItem('appLanguage') || 'en';
+    setLang(savedLang);
+  }, []);
+
   const goalTypes = [
-    { icon: <Star size={20} />, name: "Hajj/Umrah", value: "hajj" },
-    { icon: <Heart size={20} />, name: "Wedding", value: "wedding" },
-    { icon: <Home size={20} />, name: "Home", value: "home" },
-    { icon: <GraduationCap size={20} />, name: "Education", value: "education" },
-    { icon: <Car size={20} />, name: "Car", value: "car" },
-    { icon: <Briefcase size={20} />, name: "Business", value: "business" },
-    { icon: <Shield size={20} />, name: "Emergency", value: "emergency" },
-    { icon: <Plane size={20} />, name: "Travel", value: "travel" },
-    { icon: <Target size={20} />, name: "Other", value: "other" },
+    { icon: <Star size={20} />, name: t('hajj'), value: "hajj" },
+    { icon: <Heart size={20} />, name: t('wedding'), value: "wedding" },
+    { icon: <Home size={20} />, name: t('home'), value: "home" },
+    { icon: <GraduationCap size={20} />, name: t('education'), value: "education" },
+    { icon: <Car size={20} />, name: t('car'), value: "car" },
+    { icon: <Briefcase size={20} />, name: t('business'), value: "business" },
+    { icon: <Shield size={20} />, name: t('emergency'), value: "emergency" },
+    { icon: <Plane size={20} />, name: t('travel'), value: "travel" },
+    { icon: <Target size={20} />, name: t('other'), value: "other" },
   ];
 
   const getGoalIcon = (goalType) => {
@@ -106,12 +388,12 @@ const MyGoalsPage = () => {
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "Not set";
+    if (!dateString) return t('notSet');
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
     } catch (error) {
-      return "Invalid date";
+      return t('invalidDate');
     }
   };
 
@@ -143,17 +425,17 @@ const MyGoalsPage = () => {
 
   const getGoalTypeName = (goalType) => {
     const typeMap = {
-      hajj: "Hajj/Umrah",
-      wedding: "Wedding",
-      home: "Home",
-      education: "Education",
-      car: "Car",
-      business: "Business",
-      emergency: "Emergency Fund",
-      travel: "Travel",
-      other: "Other",
+      hajj: t('hajj'),
+      wedding: t('wedding'),
+      home: t('home'),
+      education: t('education'),
+      car: t('car'),
+      business: t('business'),
+      emergency: t('emergencyFund'),
+      travel: t('travel'),
+      other: t('other'),
     };
-    return typeMap[goalType] || "Goal";
+    return typeMap[goalType] || t('goal');
   };
 
   const calculateRemainingMonths = (goal) => {
@@ -164,9 +446,9 @@ const MyGoalsPage = () => {
   };
 
   const calculateEstimatedCompletion = (goal) => {
-    if (goal.status === "completed") return "Completed!";
+    if (goal.status === "completed") return t('completedLabel');
     const months = calculateRemainingMonths(goal);
-    if (months <= 0) return "Almost there!";
+    if (months <= 0) return t('almostThere');
     
     const currentDate = new Date();
     const completionDate = new Date(currentDate);
@@ -213,8 +495,8 @@ const MyGoalsPage = () => {
     // Validation
     if (!formData.goalName.trim()) {
       Swal.fire({
-        title: "Error",
-        text: "Please enter a goal name",
+        title: t('error'),
+        text: t('enterGoalName'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -223,8 +505,8 @@ const MyGoalsPage = () => {
 
     if (!formData.targetAmount || parseFloat(formData.targetAmount) <= 0) {
       Swal.fire({
-        title: "Error",
-        text: "Please enter a valid target amount",
+        title: t('error'),
+        text: t('validTargetAmount'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -233,8 +515,8 @@ const MyGoalsPage = () => {
 
     if (!formData.monthlyDeposit || parseFloat(formData.monthlyDeposit) <= 0) {
       Swal.fire({
-        title: "Error",
-        text: "Please enter a valid monthly deposit amount",
+        title: t('error'),
+        text: t('validMonthlyDeposit'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -243,8 +525,8 @@ const MyGoalsPage = () => {
 
     if (!formData.targetDate) {
       Swal.fire({
-        title: "Error",
-        text: "Please select a target date",
+        title: t('error'),
+        text: t('selectTargetDate'),
         icon: "error",
         confirmButtonColor: "#059669",
       });
@@ -257,8 +539,8 @@ const MyGoalsPage = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         Swal.fire({
-          title: "Error",
-          text: "Please login again",
+          title: t('error'),
+          text: t('loginAgain'),
           icon: "error",
           confirmButtonColor: "#059669",
         });
@@ -282,8 +564,8 @@ const MyGoalsPage = () => {
 
       if (response.data.success) {
         Swal.fire({
-          title: "Success!",
-          text: "Goal created successfully",
+          title: t('success'),
+          text: t('goalCreated'),
           icon: "success",
           confirmButtonColor: "#059669",
           timer: 2000,
@@ -309,8 +591,8 @@ const MyGoalsPage = () => {
       
       if (error.response?.status === 401) {
         Swal.fire({
-          title: "Session Expired",
-          text: "Please login again",
+          title: t('sessionExpired'),
+          text: t('loginAgain'),
           icon: "error",
           confirmButtonColor: "#059669",
         }).then(() => {
@@ -322,7 +604,7 @@ const MyGoalsPage = () => {
       }
       
       Swal.fire({
-        title: "Error",
+        title: t('error'),
         text: error.response?.data?.message || "Failed to create goal",
         icon: "error",
         confirmButtonColor: "#059669",
@@ -338,13 +620,13 @@ const MyGoalsPage = () => {
     const action = newStatus === "active" ? "resume" : "pause";
 
     const result = await Swal.fire({
-      title: `${action === "pause" ? "Pause" : "Resume"} Goal?`,
-      text: `Are you sure you want to ${action} this goal?`,
+      title: action === "pause" ? t('pauseGoal') : t('resumeGoal'),
+      text: action === "pause" ? t('pauseGoalText') : t('resumeGoalText'),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#059669",
       cancelButtonColor: "#ef4444",
-      confirmButtonText: `Yes, ${action} it`,
+      confirmButtonText: action === "pause" ? t('confirmPause') : t('confirmResume'),
     });
 
     if (result.isConfirmed) {
@@ -355,8 +637,8 @@ const MyGoalsPage = () => {
 
         if (response.data.success) {
           Swal.fire({
-            title: "Updated!",
-            text: `Goal ${newStatus === "active" ? "resumed" : "paused"} successfully`,
+            title: t('updated'),
+            text: newStatus === "active" ? t('goalResumed') : t('goalPaused'),
             icon: "success",
             confirmButtonColor: "#059669",
             timer: 1500,
@@ -368,7 +650,7 @@ const MyGoalsPage = () => {
       } catch (error) {
         console.error("Toggle status error:", error);
         Swal.fire({
-          title: "Error",
+          title: t('error'),
           text: error.response?.data?.message || "Failed to update goal status",
           icon: "error",
           confirmButtonColor: "#059669",
@@ -380,13 +662,13 @@ const MyGoalsPage = () => {
   // Delete goal
   const deleteGoal = async (goalId) => {
     const result = await Swal.fire({
-      title: "Delete Goal?",
-      text: "Are you sure you want to delete this goal? This action cannot be undone.",
+      title: t('deleteGoal'),
+      text: t('deleteGoalText'),
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#059669",
-      confirmButtonText: "Yes, delete it",
+      confirmButtonText: t('confirmDelete'),
     });
 
     if (result.isConfirmed) {
@@ -395,8 +677,8 @@ const MyGoalsPage = () => {
 
         if (response.data.success) {
           Swal.fire({
-            title: "Deleted!",
-            text: "Goal deleted successfully",
+            title: t('deleted'),
+            text: t('goalDeleted'),
             icon: "success",
             confirmButtonColor: "#059669",
             timer: 1500,
@@ -408,7 +690,7 @@ const MyGoalsPage = () => {
       } catch (error) {
         console.error("Delete goal error:", error);
         Swal.fire({
-          title: "Error",
+          title: t('error'),
           text: error.response?.data?.message || "Failed to delete goal",
           icon: "error",
           confirmButtonColor: "#059669",
@@ -436,28 +718,28 @@ const MyGoalsPage = () => {
     {
       icon: <Target size={20} />,
       value: activeGoalsCount.toString(),
-      label: "Active Goals",
+      label: t('activeGoals'),
       bg: "bg-primary/10",
       accent: "from-[#059669] to-[#0891b2]",
     },
     {
       icon: <DollarSign size={20} />,
       value: formatCurrency(totalSavedAmount),
-      label: "Total Saved",
+      label: t('totalSaved'),
       bg: "bg-blue-500/10",
       accent: "from-blue-500 to-cyan-500",
     },
     {
       icon: <Calendar size={20} />,
       value: formatCurrency(monthlyDepositTotal),
-      label: "Monthly Deposit",
+      label: t('monthlyDeposit'),
       bg: "bg-amber-500/10",
       accent: "from-amber-500 to-orange-500",
     },
     {
       icon: <CheckCircle size={20} />,
       value: pausedGoalsCount.toString(),
-      label: "On Pause",
+      label: t('onPause'),
       bg: "bg-cyan-500/10",
       accent: "from-cyan-500 to-teal-500",
     },
@@ -473,7 +755,7 @@ const MyGoalsPage = () => {
       <div className="w-full h-64 flex items-center justify-center">
         <div className="text-center">
           <Loader2 size={40} className="animate-spin text-primary mx-auto mb-4" />
-          <p className="text-foreground/60">Loading your goals...</p>
+          <p className="text-foreground/60">{t('loadingGoals')}</p>
         </div>
       </div>
     );
@@ -485,10 +767,13 @@ const MyGoalsPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground flex items-center gap-2">
-            <Target size={28} /> My Savings Goals
+            <Target size={28} /> {t('pageTitle')}
           </h2>
           <p className="text-xs sm:text-sm text-foreground/60 mt-1">
-            {activeGoalsCount} active goals · Total saved {formatCurrency(totalSavedAmount)}
+            {t('pageSubtitle', { 
+              count: activeGoalsCount, 
+              amount: formatCurrency(totalSavedAmount) 
+            })}
           </p>
         </div>
         <button
@@ -496,7 +781,7 @@ const MyGoalsPage = () => {
           className="px-4 sm:px-5 py-2.5 bg-[linear-gradient(135deg,#059669,#0891b2)] text-white rounded-xl font-semibold shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/25 transition w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base"
         >
           <Plus size={18} />
-          <span>New Goal</span>
+          <span>{t('newGoal')}</span>
         </button>
       </div>
 
@@ -530,15 +815,15 @@ const MyGoalsPage = () => {
       {goals.length === 0 ? (
         <div className="bg-card border border-border rounded-xl p-12 text-center">
           <Target size={64} className="text-foreground/30 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-foreground mb-2">No Goals Yet</h3>
+          <h3 className="text-xl font-bold text-foreground mb-2">{t('noGoals')}</h3>
           <p className="text-foreground/60 mb-4">
-            Create your first savings goal to start your journey
+            {t('noGoalsDesc')}
           </p>
           <button
             onClick={() => setShowGoalModal(true)}
             className="px-6 py-2.5 bg-[linear-gradient(135deg,#059669,#0891b2)] text-white rounded-xl font-semibold shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/25 transition inline-flex items-center gap-2"
           >
-            <Plus size={18} /> Create Your First Goal
+            <Plus size={18} /> {t('createFirstGoal')}
           </button>
         </div>
       ) : (
@@ -562,12 +847,12 @@ const MyGoalsPage = () => {
                       {goal.goalName}
                     </h3>
                     <p className="text-[10px] sm:text-xs text-foreground/50">
-                      {formatCurrency(goal.monthlyDeposit)} / month · 
+                      {formatCurrency(goal.monthlyDeposit)} / {t('perMonth')} · 
                       {goal.status === "completed" 
-                        ? " Completed!" 
+                        ? ` ${t('completedLabel')}` 
                         : goal.targetDate 
-                          ? ` Due ${formatDate(goal.targetDate)}` 
-                          : " In progress"}
+                          ? ` ${t('targetDate')} ${formatDate(goal.targetDate)}` 
+                          : ` ${t('inProgress')}`}
                     </p>
                   </div>
                 </div>
@@ -583,17 +868,17 @@ const MyGoalsPage = () => {
                   >
                     {getStatusIcon(goal.status)}
                     {goal.status === "active" 
-                      ? "Active" 
+                      ? t('active') 
                       : goal.status === "paused" 
-                        ? "Paused" 
-                        : "Completed"}
+                        ? t('paused') 
+                        : t('completed')}
                   </span>
                   {goal.status !== "completed" && (
                     <button
                       onClick={() => toggleGoalStatus(goal._id, goal.status)}
                       className="text-xs text-foreground/50 hover:text-primary transition"
                     >
-                      {goal.status === "active" ? "Pause" : "Resume"}
+                      {goal.status === "active" ? t('pause') : t('resume')}
                     </button>
                   )}
                 </div>
@@ -623,20 +908,20 @@ const MyGoalsPage = () => {
                   href={`/dashboard/submit?goalId=${goal._id}`}
                   className="flex-1 py-2 text-center rounded-lg bg-[linear-gradient(135deg,#059669,#0891b2)] text-white text-xs sm:text-sm font-semibold shadow-md shadow-emerald-600/15 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-600/20 transition px-3"
                 >
-                  + Deposit
+                  {t('deposit')}
                 </Link>
                 <button
                   onClick={() => handleViewDetails(goal)}
                   className="flex-1 py-2 text-center rounded-lg border border-primary/20 bg-gradient-to-r from-primary/10 to-cyan-500/10 text-primary text-xs sm:text-sm font-semibold hover:border-primary hover:from-primary/15 hover:to-cyan-500/15 transition px-3 flex items-center justify-center gap-1"
                 >
-                  <Eye size={14} /> Details
+                  <Eye size={14} /> {t('details')}
                 </button>
                 {goal.currentSaved === 0 && goal.status !== "completed" && (
                   <button
                     onClick={() => deleteGoal(goal._id)}
                     className="py-2 px-3 rounded-lg border border-red-500/30 bg-gradient-to-r from-red-500/10 to-rose-500/10 text-red-500 text-xs sm:text-sm font-semibold hover:from-red-500/15 hover:to-rose-500/15 transition flex items-center justify-center gap-1"
                   >
-                    <Trash2 size={14} /> Delete
+                    <Trash2 size={14} /> {t('delete')}
                   </button>
                 )}
               </div>
@@ -651,9 +936,7 @@ const MyGoalsPage = () => {
           <div className="flex gap-3">
             <Info size={16} className="text-primary shrink-0 mt-0.5" />
             <p className="text-[11px] sm:text-xs text-foreground/60 leading-relaxed">
-              <span className="font-semibold">Pro Tip:</span> Setting up
-              auto-save for your goals helps you stay consistent and reach your
-              targets faster. You can pause any goal anytime from settings.
+              <span className="font-semibold">{t('proTip')}</span> {t('proTipText')}
             </p>
           </div>
         </div>
@@ -699,14 +982,14 @@ const MyGoalsPage = () => {
                       >
                         {getStatusIcon(selectedGoal.status)}
                         {selectedGoal.status === "active"
-                          ? "Active"
+                          ? t('active')
                           : selectedGoal.status === "paused"
-                          ? "Paused"
-                          : "Completed"}
+                          ? t('paused')
+                          : t('completed')}
                       </span>
                       {selectedGoal.islamicMode && (
                         <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500">
-                          <Star size={12} /> Riba-free
+                          <Star size={12} /> {t('ribaFree')}
                         </span>
                       )}
                     </div>
@@ -726,7 +1009,7 @@ const MyGoalsPage = () => {
                 <div className="bg-primary/5 rounded-xl p-4 sm:p-5">
                   <div className="flex justify-between items-center mb-3">
                     <span className="text-sm font-semibold text-foreground/70">
-                      Overall Progress
+                      {t('overallProgress')}
                     </span>
                     <span className="text-lg sm:text-xl font-bold text-primary">
                       {selectedGoal.progress || 0}%
@@ -739,7 +1022,7 @@ const MyGoalsPage = () => {
                     />
                   </div>
                   <div className="flex justify-between items-center text-xs sm:text-sm">
-                    <span className="text-foreground/60">Current Saved</span>
+                    <span className="text-foreground/60">{t('currentSaved')}</span>
                     <span className="font-semibold text-foreground">
                       {formatCurrency(selectedGoal.currentSaved || 0)} / {formatCurrency(selectedGoal.targetAmount)}
                     </span>
@@ -752,53 +1035,53 @@ const MyGoalsPage = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <Wallet size={18} className="text-primary" />
                       <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
-                        Monthly Deposit
+                        {t('monthlyDepositLabel')}
                       </span>
                     </div>
                     <div className="text-xl sm:text-2xl font-bold text-foreground">
                       {formatCurrency(selectedGoal.monthlyDeposit)}
                     </div>
-                    <p className="text-xs text-foreground/50 mt-1">per month</p>
+                    <p className="text-xs text-foreground/50 mt-1">{t('perMonth')}</p>
                   </div>
 
                   <div className="bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Target size={18} className="text-primary" />
                       <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
-                        Target Amount
+                        {t('targetAmount')}
                       </span>
                     </div>
                     <div className="text-xl sm:text-2xl font-bold text-foreground">
                       {formatCurrency(selectedGoal.targetAmount)}
                     </div>
-                    <p className="text-xs text-foreground/50 mt-1">total goal</p>
+                    <p className="text-xs text-foreground/50 mt-1">{t('totalGoal')}</p>
                   </div>
 
                   <div className="bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Calendar size={18} className="text-primary" />
                       <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
-                        Target Date
+                        {t('targetDate')}
                       </span>
                     </div>
                     <div className="text-lg sm:text-xl font-bold text-foreground">
                       {formatDate(selectedGoal.targetDate)}
                     </div>
-                    <p className="text-xs text-foreground/50 mt-1">expected completion</p>
+                    <p className="text-xs text-foreground/50 mt-1">{t('expectedCompletion')}</p>
                   </div>
 
                   <div className="bg-card border border-border rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Clock size={18} className="text-primary" />
                       <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
-                        Est. Completion
+                        {t('estimatedCompletion')}
                       </span>
                     </div>
                     <div className="text-base sm:text-lg font-bold text-foreground">
                       {calculateEstimatedCompletion(selectedGoal)}
                     </div>
                     <p className="text-xs text-foreground/50 mt-1">
-                      {calculateRemainingMonths(selectedGoal)} months remaining
+                      {t('monthsRemaining', { months: calculateRemainingMonths(selectedGoal) })}
                     </p>
                   </div>
                 </div>
@@ -809,7 +1092,7 @@ const MyGoalsPage = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <Info size={18} className="text-primary" />
                       <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wider">
-                        Description
+                        {t('description')}
                       </span>
                     </div>
                     <p className="text-sm sm:text-base text-foreground/80 leading-relaxed">
@@ -822,11 +1105,11 @@ const MyGoalsPage = () => {
                 <div className="bg-gradient-to-r from-primary/5 to-primary-light/5 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <TrendingUp size={18} className="text-primary" />
-                    <span className="text-sm font-semibold text-foreground">Journey Timeline</span>
+                    <span className="text-sm font-semibold text-foreground">{t('journeyTimeline')}</span>
                   </div>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
-                      <span className="text-foreground/60">Started:</span>
+                      <span className="text-foreground/60">{t('started')}</span>
                       <span className="font-medium text-foreground">
                         {new Date(selectedGoal.createdAt).toLocaleDateString("en-US", {
                           month: "long",
@@ -837,7 +1120,7 @@ const MyGoalsPage = () => {
                     </div>
                     {selectedGoal.estimatedCompletionDate && (
                       <div className="flex justify-between">
-                        <span className="text-foreground/60">Estimated Completion:</span>
+                        <span className="text-foreground/60">{t('estimatedCompletionDate')}</span>
                         <span className="font-medium text-foreground">
                           {new Date(selectedGoal.estimatedCompletionDate).toLocaleDateString("en-US", {
                             month: "long",
@@ -847,9 +1130,9 @@ const MyGoalsPage = () => {
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-foreground/60">Duration:</span>
+                      <span className="text-foreground/60">{t('duration')}</span>
                       <span className="font-medium text-foreground">
-                        {selectedGoal.durationInMonths} months
+                        {selectedGoal.durationInMonths} {t('months')}
                       </span>
                     </div>
                   </div>
@@ -859,16 +1142,16 @@ const MyGoalsPage = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-3 text-center">
                     <Target size={24} className="mx-auto mb-1 text-green-500" />
-                    <div className="text-xs text-foreground/60">Monthly Progress</div>
+                    <div className="text-xs text-foreground/60">{t('monthlyProgress')}</div>
                     <div className="text-sm font-bold text-green-500">
-                      {Math.round((selectedGoal.monthlyDeposit / selectedGoal.targetAmount) * 100)}% / month
+                      {t('perMonthProgress', { percent: Math.round((selectedGoal.monthlyDeposit / selectedGoal.targetAmount) * 100) })}
                     </div>
                   </div>
                   <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 text-center">
                     <Clock size={24} className="mx-auto mb-1 text-blue-500" />
-                    <div className="text-xs text-foreground/60">To Reach Target</div>
+                    <div className="text-xs text-foreground/60">{t('toReachTarget')}</div>
                     <div className="text-sm font-bold text-blue-500">
-                      {calculateRemainingMonths(selectedGoal)} months
+                      {calculateRemainingMonths(selectedGoal)} {t('months')}
                     </div>
                   </div>
                 </div>
@@ -881,13 +1164,13 @@ const MyGoalsPage = () => {
                     onClick={() => setShowDetailsModal(false)}
                     className="flex-1 py-2.5 sm:py-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 to-cyan-500/10 text-primary font-semibold hover:border-primary hover:from-primary/15 hover:to-cyan-500/15 transition text-sm sm:text-base"
                   >
-                    Close
+                    {t('close')}
                   </button>
                   <Link
                     href={`/dashboard/submit?goalId=${selectedGoal._id}`}
                     className="flex-1 py-2.5 sm:py-3 rounded-xl bg-[linear-gradient(135deg,#059669,#0891b2)] text-white font-semibold shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/25 transition text-center text-sm sm:text-base"
                   >
-                    + Make a Deposit
+                    {t('makeDeposit')}
                   </Link>
                 </div>
               </div>
@@ -916,10 +1199,10 @@ const MyGoalsPage = () => {
                 <div className="flex justify-between items-center">
                   <div>
                     <h3 className="text-lg sm:text-xl font-bold text-foreground flex items-center gap-2">
-                      <Target size={20} /> Create New Goal
+                      <Target size={20} /> {t('createNewGoal')}
                     </h3>
                     <p className="text-xs sm:text-sm text-foreground/60 mt-1">
-                      Set a new savings target to stay motivated
+                      {t('createSubtitle')}
                     </p>
                   </div>
                   <button
@@ -937,7 +1220,7 @@ const MyGoalsPage = () => {
                 {/* Goal Type Selection */}
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-2 sm:mb-3">
-                    Goal Type
+                    {t('goalType')}
                   </label>
                   <div className="grid grid-cols-3 sm:grid-cols-3 gap-2">
                     {goalTypes.map((type) => (
@@ -965,7 +1248,7 @@ const MyGoalsPage = () => {
                 {/* Goal Name */}
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                    Goal Name
+                    {t('goalName')}
                   </label>
                   <input
                     type="text"
@@ -973,7 +1256,7 @@ const MyGoalsPage = () => {
                     value={formData.goalName}
                     onChange={handleInputChange}
                     disabled={submitting}
-                    placeholder="e.g., My Hajj Fund 2027"
+                    placeholder={t('goalNamePlaceholder')}
                     className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
                   />
                 </div>
@@ -982,7 +1265,7 @@ const MyGoalsPage = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                      <Target size={14} className="inline mr-1" /> Target Amount
+                      <Target size={14} className="inline mr-1" /> {t('targetAmountLabel')}
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">
@@ -1001,7 +1284,7 @@ const MyGoalsPage = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                      <Wallet size={14} className="inline mr-1" /> Monthly Deposit
+                      <Wallet size={14} className="inline mr-1" /> {t('monthlyDepositLabelForm')}
                     </label>
                     <div className="relative">
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">
@@ -1023,7 +1306,7 @@ const MyGoalsPage = () => {
                 {/* Target Date */}
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                    <Calendar size={14} className="inline mr-1" /> Target Date
+                    <Calendar size={14} className="inline mr-1" /> {t('targetDateLabel')}
                   </label>
                   <input
                     type="month"
@@ -1038,7 +1321,7 @@ const MyGoalsPage = () => {
                 {/* Description */}
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                    Description (Optional)
+                    {t('descriptionOptional')}
                   </label>
                   <textarea
                     name="description"
@@ -1046,7 +1329,7 @@ const MyGoalsPage = () => {
                     onChange={handleInputChange}
                     disabled={submitting}
                     rows={3}
-                    placeholder="Write something about this goal..."
+                    placeholder={t('descriptionPlaceholder')}
                     className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition resize-none text-sm sm:text-base disabled:opacity-50"
                   />
                 </div>
@@ -1057,10 +1340,10 @@ const MyGoalsPage = () => {
                     <Star size={24} className="text-primary" />
                     <div>
                       <div className="font-semibold text-foreground text-sm sm:text-base">
-                        Riba-free Savings Mode
+                        {t('ribaFreeMode')}
                       </div>
                       <p className="text-[10px] sm:text-xs text-foreground/50">
-                        Interest-free (halal) savings
+                        {t('ribaFreeDesc')}
                       </p>
                     </div>
                   </div>
@@ -1093,7 +1376,7 @@ const MyGoalsPage = () => {
                     disabled={submitting}
                     className="flex-1 py-2.5 sm:py-3 rounded-xl border border-red-500/25 bg-gradient-to-r from-red-500/10 to-rose-500/10 text-red-500 font-semibold hover:border-red-500/50 hover:from-red-500/15 hover:to-rose-500/15 transition text-sm sm:text-base order-2 sm:order-1 disabled:opacity-50"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                   <button
                     onClick={createGoal}
@@ -1103,12 +1386,12 @@ const MyGoalsPage = () => {
                     {submitting ? (
                       <>
                         <Loader2 size={16} className="animate-spin" />
-                        Creating...
+                        {t('creating')}
                       </>
                     ) : (
                       <>
                         <CheckCircle size={16} />
-                        Create Goal
+                        {t('createGoal')}
                       </>
                     )}
                   </button>
