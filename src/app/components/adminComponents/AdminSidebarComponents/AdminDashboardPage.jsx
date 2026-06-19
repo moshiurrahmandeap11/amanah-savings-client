@@ -72,9 +72,9 @@ const AdminDashboardPage = () => {
     const canvas = document.getElementById("growthChart");
     if (canvas && !loading && stats) {
       const ctx = canvas.getContext("2d");
-      const isDark = document.documentElement.getAttribute("data-theme") === "dark";
-      const tickColor = isDark ? "#64748b" : "#94a3b8";
-      const gridColor = isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.06)";
+      const isDark = document.documentElement.classList.contains("dark");
+      const tickColor = isDark ? "#94a3b8" : "#64748b";
+      const gridColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
 
       if (growthChart.current) growthChart.current.destroy();
       
@@ -333,11 +333,11 @@ const AdminDashboardPage = () => {
             <Calendar size={14} className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground/50 pointer-events-none" />
           </div>
           
-          {/* Export CSV Button */}
+          {/* Export CSV Button - GRADIENT */}
           <button 
             onClick={exportToCSV} 
             disabled={exporting}
-            className="px-4 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1 hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {exporting ? (
               <>
@@ -353,18 +353,22 @@ const AdminDashboardPage = () => {
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - DARKER BACKGROUNDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         {statCards.map((stat, idx) => (
-          <div key={idx} onClick={() => navigateTo(stat.onClick)} className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:shadow-lg transition">
+          <div 
+            key={idx} 
+            onClick={() => navigateTo(stat.onClick)} 
+            className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 cursor-pointer hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+          >
             <div className="flex justify-between items-start">
               <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center text-xl`}>{stat.icon}</div>
-              <span className={`text-xs font-bold px-2 py-1 rounded-full ${stat.trendUp ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"}`}>{stat.trend}</span>
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${stat.trendUp ? "bg-green-500/20 text-green-500 dark:bg-green-500/30" : "bg-red-500/20 text-red-500 dark:bg-red-500/30"}`}>{stat.trend}</span>
             </div>
             <div className="text-2xl font-bold text-foreground mt-3">{stat.value}</div>
             <div className="text-xs text-foreground/50 mt-1">{stat.label}</div>
-            <div className="h-1 bg-border rounded-full mt-3 overflow-hidden">
-              <div className="h-full w-[78%] bg-linear-to-r from-primary to-primary-light rounded-full" />
+            <div className="h-1 bg-border/50 dark:bg-border/30 rounded-full mt-3 overflow-hidden">
+              <div className="h-full w-[78%] bg-gradient-to-r from-primary to-primary-light rounded-full" />
             </div>
           </div>
         ))}
@@ -374,14 +378,14 @@ const AdminDashboardPage = () => {
       <div className="grid lg:grid-cols-3 gap-5 mb-5">
         {/* Left Column */}
         <div className="lg:col-span-2 space-y-5">
-          {/* Growth Chart Card */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          {/* Growth Chart Card - DARKER */}
+          <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               <div className="font-bold text-foreground">📈 Platform Growth ({getRangeLabel(selectedRange)})</div>
               <div className="flex gap-2">
-                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-primary text-white">Members</button>
-                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card border border-border text-foreground/70 hover:border-primary transition">Savings</button>
-                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card border border-border text-foreground/70 hover:border-primary transition">Revenue</button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20">Members</button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card/50 border border-border text-foreground/70 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">Savings</button>
+                <button className="px-3 py-1 rounded-lg text-xs font-semibold bg-card/50 border border-border text-foreground/70 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">Revenue</button>
               </div>
             </div>
             <div className="h-64">
@@ -391,26 +395,26 @@ const AdminDashboardPage = () => {
 
           {/* Action Queue Grid */}
           <div className="grid md:grid-cols-2 gap-5">
-            {/* Pending Withdrawals */}
-            <div className="bg-card border border-border rounded-xl p-5">
+            {/* Pending Withdrawals - DARKER */}
+            <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
               <div className="flex justify-between items-center mb-4">
                 <div className="font-bold text-foreground">🏧 Pending Withdrawals</div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500">{stats.pendingWithdrawals} pending</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">{stats.pendingWithdrawals} pending</span>
               </div>
               <div className="space-y-3">
                 {recent.withdrawals.length === 0 ? (
                   <div className="text-sm text-foreground/50 text-center py-4">No pending withdrawals</div>
                 ) : (
                   recent.withdrawals.map((wd, idx) => (
-                    <div key={idx} className="p-3 rounded-lg bg-background border border-border">
+                    <div key={idx} className="p-3 rounded-lg bg-background/80 dark:bg-background/60 border border-border/50 dark:border-border/30">
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="font-bold text-lg text-primary">{formatCurrency(wd.amount)}</div>
-                          <div className="text-sm text-foreground">User ID: {wd.userId}</div>
-                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block bg-amber-500/20 text-amber-500">⏳ Pending</span>
+                          <div className="text-sm text-foreground/70">User ID: {wd.userId}</div>
+                          <span className="text-xs font-semibold px-2 py-0.5 rounded-full mt-1 inline-block bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">⏳ Pending</span>
                         </div>
                         <div className="flex flex-col gap-2">
-                          <button onClick={() => navigateTo("withdrawals")} className="px-3 py-1 rounded-lg text-xs font-bold bg-primary/10 text-primary border border-primary/30 hover:bg-primary hover:text-white transition">Review</button>
+                          <button onClick={() => navigateTo("withdrawals")} className="px-3 py-1 rounded-lg text-xs font-bold bg-gradient-to-r from-primary to-primary-light text-white hover:shadow-lg hover:shadow-primary/25 transition-all duration-300">Review</button>
                         </div>
                       </div>
                     </div>
@@ -419,19 +423,19 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
-            {/* KYC Queue */}
-            <div className="bg-card border border-border rounded-xl p-5">
+            {/* KYC Queue - DARKER */}
+            <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
               <div className="flex justify-between items-center mb-4">
                 <div className="font-bold text-foreground">🪪 KYC Queue</div>
-                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-500">{stats.pendingKyc} pending</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-500/20 dark:bg-blue-500/30 text-blue-500 dark:text-blue-400">{stats.pendingKyc} pending</span>
               </div>
               <div className="space-y-3">
                 {recent.users.filter(u => u.kycStatus === "pending").length === 0 ? (
                   <div className="text-sm text-foreground/50 text-center py-4">No pending KYC</div>
                 ) : (
                   recent.users.filter(u => u.kycStatus === "pending").slice(0, 5).map((kyc, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-background border border-border">
-                      <div className="w-9 h-9 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold">
+                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg bg-background/80 dark:bg-background/60 border border-border/50 dark:border-border/30">
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold">
                         {kyc.name?.[0] || "?"}
                       </div>
                       <div className="flex-1">
@@ -439,8 +443,8 @@ const AdminDashboardPage = () => {
                         <div className="text-xs text-foreground/50">Submitted {new Date(kyc.createdAt).toLocaleDateString()}</div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => navigateTo("kyc")} className="w-8 h-8 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition">✓</button>
-                        <button onClick={() => navigateTo("kyc")} className="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition">✗</button>
+                        <button onClick={() => navigateTo("kyc")} className="w-8 h-8 rounded-lg bg-green-500/20 dark:bg-green-500/30 text-green-600 dark:text-green-400 hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-500 hover:text-white transition-all duration-300">✓</button>
+                        <button onClick={() => navigateTo("kyc")} className="w-8 h-8 rounded-lg bg-red-500/20 dark:bg-red-500/30 text-red-600 dark:text-red-400 hover:bg-gradient-to-r hover:from-red-500 hover:to-rose-500 hover:text-white transition-all duration-300">✗</button>
                       </div>
                     </div>
                   ))
@@ -452,14 +456,14 @@ const AdminDashboardPage = () => {
 
         {/* Right Column */}
         <div className="space-y-5">
-          {/* Fraud Alerts */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          {/* Fraud Alerts - DARKER */}
+          <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold text-foreground">🚨 Fraud Alerts</div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-500">{stats.bannedUsers} banned</span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-500/20 dark:bg-red-500/30 text-red-500 dark:text-red-400">{stats.bannedUsers} banned</span>
             </div>
             <div className="space-y-3">
-              <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/5">
+              <div className="p-3 rounded-lg border border-amber-500/30 dark:border-amber-500/20 bg-amber-500/10 dark:bg-amber-500/5">
                 <div className="flex items-start gap-2">
                   <span className="text-xl">🟡</span>
                   <div className="flex-1">
@@ -471,11 +475,11 @@ const AdminDashboardPage = () => {
             </div>
           </div>
 
-          {/* Today's Deposits */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          {/* Today's Deposits - DARKER */}
+          <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold text-foreground">📥 Today&apos;s Deposits</div>
-              <button onClick={() => navigateTo("deposits")} className="text-xs text-primary font-semibold">View all →</button>
+              <button onClick={() => navigateTo("deposits")} className="text-xs text-primary font-semibold hover:text-primary-light transition">View all →</button>
             </div>
             <div className="grid grid-cols-3 gap-3 mb-4">
               <div className="text-center">
@@ -487,7 +491,7 @@ const AdminDashboardPage = () => {
                 <div className="text-xs text-foreground/50">Pending</div>
               </div>
               <div className="text-center">
-                <div className="text-lg font-bold text-amber-500">{stats.monthDeposits > 0 ? formatCurrency(stats.monthDeposits) : "৳0"}</div>
+                <div className="text-lg font-bold text-amber-500 dark:text-amber-400">{stats.monthDeposits > 0 ? formatCurrency(stats.monthDeposits) : "৳0"}</div>
                 <div className="text-xs text-foreground/50">This Month</div>
               </div>
             </div>
@@ -496,19 +500,19 @@ const AdminDashboardPage = () => {
                 <div className="text-sm text-foreground/50 text-center py-2">No deposits today</div>
               ) : (
                 recent.deposits.map((deposit, idx) => (
-                  <div key={idx} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
+                  <div key={idx} className="flex items-center gap-3 py-2 border-b border-border/50 dark:border-border/30 last:border-0">
                     <span>💳</span>
-                    <span className="flex-1 text-sm">User {deposit.userId?.toString().slice(-4)}</span>
+                    <span className="flex-1 text-sm text-foreground/80">User {deposit.userId?.toString().slice(-4)}</span>
                     <span className="font-bold text-primary">{formatCurrency(deposit.amount)}</span>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500">Pending</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400">Pending</span>
                   </div>
                 ))
               )}
             </div>
           </div>
 
-          {/* Revenue Streams */}
-          <div className="bg-card border border-border rounded-xl p-5">
+          {/* Revenue Streams - DARKER */}
+          <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5">
             <div className="flex justify-between items-center mb-4">
               <div className="font-bold text-foreground">💵 Revenue Streams</div>
               <span className="text-xs text-foreground/50">{getRangeLabel(selectedRange)}</span>
@@ -516,25 +520,25 @@ const AdminDashboardPage = () => {
             <div className="space-y-3">
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Deposits</span>
-                  <span className="font-bold">{formatCurrency(stats.monthDeposits)}</span>
+                  <span className="text-foreground/80">Deposits</span>
+                  <span className="font-bold text-foreground">{formatCurrency(stats.monthDeposits)}</span>
                 </div>
-                <div className="h-1.5 bg-border rounded-full overflow-hidden">
-                  <div className="h-full rounded-full bg-linear-to-r from-primary to-primary-light" style={{ width: "60%" }} />
+                <div className="h-1.5 bg-border/50 dark:bg-border/30 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-gradient-to-r from-primary to-primary-light" style={{ width: "60%" }} />
                 </div>
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Withdrawals</span>
-                  <span className="font-bold">{formatCurrency(stats.monthWithdrawals)}</span>
+                  <span className="text-foreground/80">Withdrawals</span>
+                  <span className="font-bold text-foreground">{formatCurrency(stats.monthWithdrawals)}</span>
                 </div>
-                <div className="h-1.5 bg-border rounded-full overflow-hidden">
-                  <div className="h-full rounded-full bg-linear-to-r from-blue-500 to-cyan-500" style={{ width: "35%" }} />
+                <div className="h-1.5 bg-border/50 dark:bg-border/30 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-500" style={{ width: "35%" }} />
                 </div>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-primary/5 border border-primary/15 rounded-lg flex justify-between items-center">
-              <span className="text-sm font-semibold">Net Flow</span>
+            <div className="mt-4 p-3 bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/15 rounded-lg flex justify-between items-center">
+              <span className="text-sm font-semibold text-foreground/80">Net Flow</span>
               <span className="text-xl font-bold text-primary">{formatCurrency(stats.monthDeposits - stats.monthWithdrawals)}</span>
             </div>
           </div>
@@ -543,7 +547,7 @@ const AdminDashboardPage = () => {
 
       {/* Toast */}
       {toast.show && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white px-5 py-3 rounded-full text-sm shadow-lg animate-in fade-in slide-in-from-bottom-4">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-foreground/90 dark:bg-foreground/95 text-background px-5 py-3 rounded-full text-sm shadow-lg animate-in fade-in slide-in-from-bottom-4 backdrop-blur-sm">
           {toast.message}
         </div>
       )}

@@ -23,6 +23,7 @@ import {
   PieChart,
   Newspaper,
   HelpCircle,
+  Contact
 } from "lucide-react";
 
 const AdminSidebar = ({ closeSidebar }) => {
@@ -53,6 +54,12 @@ const AdminSidebar = ({ closeSidebar }) => {
           href: "/admin/analytics",
           id: "analytics",
         },
+        {
+          name: "Contact",
+          icon: <Contact size={18} />,
+          href: "/admin/contacts",
+          id: "contacts",
+        }
       ],
     },
     {

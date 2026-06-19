@@ -272,14 +272,14 @@ const UserManagementPage = () => {
 
   const getBadgeClass = (type, color) => {
     const classes = {
-      ok: "bg-green-500/10 text-green-500",
-      warn: "bg-amber-500/10 text-amber-500",
-      info: "bg-blue-500/10 text-blue-500",
-      danger: "bg-red-500/10 text-red-500",
-      primary: "bg-primary/10 text-primary",
-      warning: "bg-amber-500/10 text-amber-500",
-      gray: "bg-gray-500/10 text-gray-500",
-      purple: "bg-purple-500/10 text-purple-500",
+      ok: "bg-green-500/20 dark:bg-green-500/30 text-green-500 dark:text-green-400",
+      warn: "bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400",
+      info: "bg-blue-500/20 dark:bg-blue-500/30 text-blue-500 dark:text-blue-400",
+      danger: "bg-red-500/20 dark:bg-red-500/30 text-red-500 dark:text-red-400",
+      primary: "bg-primary/20 dark:bg-primary/30 text-primary dark:text-primary-light",
+      warning: "bg-amber-500/20 dark:bg-amber-500/30 text-amber-500 dark:text-amber-400",
+      gray: "bg-gray-500/20 dark:bg-gray-500/30 text-gray-500 dark:text-gray-400",
+      purple: "bg-purple-500/20 dark:bg-purple-500/30 text-purple-500 dark:text-purple-400",
     };
     return classes[color] || classes.ok;
   };
@@ -342,7 +342,7 @@ const UserManagementPage = () => {
 
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-3 mb-5">
-        <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background">
+        <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg border border-border bg-background/80 dark:bg-background/60 backdrop-blur-sm">
           <Search size={16} className="text-foreground/50" />
           <input
             type="text"
@@ -358,10 +358,10 @@ const UserManagementPage = () => {
             <button
               key={filter}
               onClick={() => { setActiveFilter(filter); fetchUsers(1); }}
-              className={`px-4 py-1.5 rounded-lg text-xs font-semibold border transition ${
+              className={`px-4 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300 ${
                 activeFilter === filter
-                  ? "bg-primary/10 border-primary text-primary"
-                  : "border-border bg-card text-foreground/60 hover:border-primary"
+                  ? "bg-gradient-to-r from-primary to-primary-light text-white border-primary shadow-lg shadow-primary/20"
+                  : "border-border bg-card/80 dark:bg-card/60 backdrop-blur-sm text-foreground/60 hover:border-primary/50 hover:bg-primary/5"
               }`}
             >
               {filter}
@@ -370,7 +370,7 @@ const UserManagementPage = () => {
           <button
             onClick={exportToExcel}
             disabled={exporting}
-            className="px-4 py-1.5 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1 disabled:opacity-50"
+            className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white text-xs font-semibold flex items-center gap-1 hover:shadow-lg hover:shadow-primary/25 transition-all duration-300 disabled:opacity-50"
           >
             {exporting ? (
               <>
@@ -387,7 +387,7 @@ const UserManagementPage = () => {
       </div>
 
       {/* Users Table */}
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 size={32} className="animate-spin text-primary" />
@@ -397,7 +397,7 @@ const UserManagementPage = () => {
             <div className="overflow-x-auto">
               <table className="w-full min-w-[800px]">
                 <thead>
-                  <tr className="border-b border-border bg-background">
+                  <tr className="border-b border-border/50 dark:border-border/30 bg-background/80 dark:bg-background/60">
                     <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Member</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Phone</th>
                     <th className="px-4 py-3 text-left text-xs font-semibold text-foreground/60">Plan</th>
@@ -422,10 +422,10 @@ const UserManagementPage = () => {
                       const plan = getPlanDisplay(user.selectedPlan);
                       const avatar = user.firstName?.[0]?.toUpperCase() || "?";
                       return (
-                        <tr key={user.id} className="border-b border-border last:border-0 hover:bg-primary/5 transition">
+                        <tr key={user.id} className="border-b border-border/50 dark:border-border/30 last:border-0 hover:bg-primary/5 dark:hover:bg-primary/10 transition-all duration-200">
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-full bg-linear-to-r ${getAvatarBg(idx)} flex items-center justify-center text-white font-bold text-sm`}>
+                              <div className={`w-8 h-8 rounded-full bg-gradient-to-r ${getAvatarBg(idx)} flex items-center justify-center text-white font-bold text-sm shadow-lg`}>
                                 {avatar}
                               </div>
                               <div>
@@ -454,24 +454,24 @@ const UserManagementPage = () => {
                           <td className="px-4 py-3 text-xs text-foreground/50">{formatDate(user.createdAt)}</td>
                           <td className="px-4 py-3">
                             <div className="flex gap-2">
-                              <button onClick={() => openUserModal(user)} className="p-1.5 rounded-lg border border-border hover:border-primary transition" title="View">
-                                <Eye size={14} />
+                              <button onClick={() => openUserModal(user)} className="p-1.5 rounded-lg border border-border/60 dark:border-border/40 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300" title="View">
+                                <Eye size={14} className="text-foreground/70" />
                               </button>
                               {user.isBanned ? (
-                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-green-500/30 text-green-500 hover:bg-green-500/10 transition" title="Unban">
+                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-green-500/30 text-green-500 hover:bg-green-500/10 transition-all duration-300" title="Unban">
                                   <CheckCircle size={14} />
                                 </button>
                               ) : user.kycStatus === "pending" ? (
-                                <button onClick={() => handleAction("approveKYC", user)} className="p-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition" title="Approve KYC">
+                                <button onClick={() => handleAction("approveKYC", user)} className="p-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-all duration-300" title="Approve KYC">
                                   <CheckCircle size={14} />
                                 </button>
                               ) : (
-                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition" title="Suspend">
+                                <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 transition-all duration-300" title="Suspend">
                                   <XCircle size={14} />
                                 </button>
                               )}
                               {!user.isBanned && (
-                                <button onClick={() => handleAction("ban", user)} className="p-1.5 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition" title="Ban">
+                                <button onClick={() => handleAction("ban", user)} className="p-1.5 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/10 transition-all duration-300" title="Ban">
                                   <Ban size={14} />
                                 </button>
                               )}
@@ -486,7 +486,7 @@ const UserManagementPage = () => {
             </div>
 
             {/* Pagination */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-t border-border">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-3 p-4 border-t border-border/50 dark:border-border/30 bg-background/80 dark:bg-background/60">
               <div className="text-xs text-foreground/50">
                 Showing {users.length} of {pagination.totalItems} members
               </div>
@@ -494,7 +494,7 @@ const UserManagementPage = () => {
                 <button
                   onClick={() => fetchUsers(pagination.currentPage - 1)}
                   disabled={pagination.currentPage <= 1}
-                  className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition disabled:opacity-50"
+                  className="px-3 py-1 rounded-lg border border-border/60 dark:border-border/40 text-xs font-semibold hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   ← Prev
                 </button>
@@ -504,10 +504,10 @@ const UserManagementPage = () => {
                     <button
                       key={page}
                       onClick={() => fetchUsers(page)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition ${
+                      className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-300 ${
                         pagination.currentPage === page
-                          ? "bg-linear-to-r from-primary to-primary-light text-white border-none"
-                          : "border border-border hover:border-primary"
+                          ? "bg-gradient-to-r from-primary to-primary-light text-white shadow-lg shadow-primary/20"
+                          : "border border-border/60 dark:border-border/40 hover:border-primary/50 hover:bg-primary/5"
                       }`}
                     >
                       {page}
@@ -517,7 +517,7 @@ const UserManagementPage = () => {
                 <button
                   onClick={() => fetchUsers(pagination.currentPage + 1)}
                   disabled={pagination.currentPage >= pagination.totalPages}
-                  className="px-3 py-1 rounded-lg border border-border text-xs font-semibold hover:border-primary transition disabled:opacity-50"
+                  className="px-3 py-1 rounded-lg border border-border/60 dark:border-border/40 text-xs font-semibold hover:border-primary/50 hover:bg-primary/5 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next →
                 </button>
@@ -527,21 +527,21 @@ const UserManagementPage = () => {
         )}
       </div>
 
-      {/* User Modal */}
+      {/* User Modal - DARKER */}
       <AnimatePresence>
         {showUserModal && selectedUser && (
-          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={closeUserModal}>
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeUserModal}>
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-card rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+              className="bg-card/95 dark:bg-card/90 backdrop-blur-sm rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-border/50"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="bg-linear-to-r from-primary to-primary-light p-6 text-white relative">
-                <button onClick={closeUserModal} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition">✕</button>
+              <div className="bg-gradient-to-r from-primary to-primary-light p-6 text-white relative">
+                <button onClick={closeUserModal} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-all duration-300">✕</button>
                 <div className="flex flex-col items-center">
-                  <div className={`w-16 h-16 rounded-full bg-linear-to-r ${getAvatarBg(0)} flex items-center justify-center text-white text-2xl font-bold mb-3`}>
+                  <div className={`w-16 h-16 rounded-full bg-gradient-to-r ${getAvatarBg(0)} flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-lg`}>
                     {selectedUser.firstName?.[0]?.toUpperCase() || "?"}
                   </div>
                   <div className="text-xl font-bold">{selectedUser.fullName || `${selectedUser.firstName} ${selectedUser.lastName || ""}`.trim()}</div>
@@ -558,35 +558,35 @@ const UserManagementPage = () => {
                 <div className="mb-5">
                   <div className="text-xs font-bold text-foreground/50 uppercase tracking-wider mb-3">Account Overview</div>
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-background rounded-xl p-3">
+                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
                       <div className="text-[10px] text-foreground/50">Total Savings</div>
                       <div className="text-lg font-bold text-primary">{formatCurrency(selectedUser.totalSaved)}</div>
                     </div>
-                    <div className="bg-background rounded-xl p-3">
+                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
                       <div className="text-[10px] text-foreground/50">Total Deposits</div>
                       <div className="text-lg font-bold text-foreground">{selectedUser.totalDeposits || 0}</div>
                     </div>
-                    <div className="bg-background rounded-xl p-3">
+                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
                       <div className="text-[10px] text-foreground/50">Total Withdrawals</div>
                       <div className="text-lg font-bold text-foreground">{selectedUser.totalWithdrawals || 0}</div>
                     </div>
-                    <div className="bg-background rounded-xl p-3">
+                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
                       <div className="text-[10px] text-foreground/50">Level</div>
                       <div className="text-lg font-bold text-foreground">{selectedUser.level || 1}</div>
                     </div>
-                    <div className="bg-background rounded-xl p-3">
+                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
                       <div className="text-[10px] text-foreground/50">Member Since</div>
                       <div className="text-sm font-semibold text-foreground">{formatDate(selectedUser.createdAt)}</div>
                     </div>
-                    <div className="bg-background rounded-xl p-3">
+                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
                       <div className="text-[10px] text-foreground/50">Last Login</div>
                       <div className="text-sm font-semibold text-foreground">{formatDate(selectedUser.lastLogin)}</div>
                     </div>
-                    <div className="bg-background rounded-xl p-3">
+                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
                       <div className="text-[10px] text-foreground/50">Division</div>
                       <div className="text-sm font-semibold text-foreground">{selectedUser.division || "N/A"}</div>
                     </div>
-                    <div className="bg-background rounded-xl p-3">
+                    <div className="bg-background/90 dark:bg-background/80 backdrop-blur-sm rounded-xl p-3 border border-border/50">
                       <div className="text-[10px] text-foreground/50">Referral Code</div>
                       <div className="text-sm font-semibold text-foreground">{selectedUser.referralCode || "N/A"}</div>
                     </div>
@@ -594,10 +594,10 @@ const UserManagementPage = () => {
                 </div>
               </div>
 
-              <div className="p-4 border-t border-border flex gap-3">
-                <button className="flex-1 py-3 rounded-xl border-2 border-primary/30 text-primary font-semibold hover:bg-primary/5 transition">📧 Message</button>
-                <button onClick={() => { handleAction("suspend", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl border-2 border-amber-500/30 text-amber-500 font-semibold hover:bg-amber-500/5 transition">⏸️ Suspend</button>
-                <button onClick={() => { handleAction("ban", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl border-2 border-red-500/30 text-red-500 font-semibold hover:bg-red-500/5 transition">🚫 Ban</button>
+              <div className="p-4 border-t border-border/50 dark:border-border/30 flex gap-3">
+                <button className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-semibold hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300">📧 Message</button>
+                <button onClick={() => { handleAction("suspend", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300">⏸️ Suspend</button>
+                <button onClick={() => { handleAction("ban", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">🚫 Ban</button>
               </div>
             </motion.div>
           </div>
@@ -611,8 +611,8 @@ const UserManagementPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
-            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-sm shadow-lg whitespace-nowrap max-w-[90vw] text-center ${
-              toast.type === "error" ? "bg-red-500" : toast.type === "warning" ? "bg-amber-500" : toast.type === "info" ? "bg-blue-500" : "bg-green-500"
+            className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-sm shadow-lg whitespace-nowrap max-w-[90vw] text-center backdrop-blur-sm ${
+              toast.type === "error" ? "bg-red-500/90" : toast.type === "warning" ? "bg-amber-500/90" : toast.type === "info" ? "bg-blue-500/90" : "bg-green-500/90"
             } text-white`}
           >
             {toast.message}

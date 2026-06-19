@@ -149,7 +149,7 @@ const AnalyticsPage = () => {
 
     const isDarkMode = document.documentElement.classList.contains("dark");
     const textColor = isDarkMode ? "#94a3b8" : "#64748b";
-    const gridColor = isDarkMode ? "#1e2d3d" : "#e2e8f0";
+    const gridColor = isDarkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
 
     // DAU Chart — canvas ref দিয়ে
     if (dauCanvasRef.current && dauData.labels?.length > 0) {
@@ -169,7 +169,7 @@ const AnalyticsPage = () => {
               tension: 0.4,
               pointRadius: 3,
               pointBackgroundColor: "#059669",
-              pointBorderColor: "#fff",
+              pointBorderColor: isDarkMode ? "#1e293b" : "#fff",
               pointBorderWidth: 1,
             },
           ],
@@ -254,10 +254,13 @@ const AnalyticsPage = () => {
     <div>
       <h2 className="text-lg font-bold text-foreground mb-5">📈 Analytics</h2>
 
-      {/* Stats Grid */}
+      {/* Stats Grid - DARKER BACKGROUNDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         {displayStats.map((stat, idx) => (
-          <div key={idx} className="bg-card border border-border rounded-xl p-4">
+          <div 
+            key={idx} 
+            className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300"
+          >
             <div className="flex justify-between items-start">
               <div
                 className={`w-10 h-10 rounded-xl ${
@@ -270,8 +273,8 @@ const AnalyticsPage = () => {
                 <span
                   className={`text-xs font-bold px-2 py-1 rounded-full ${
                     stat.trendUp
-                      ? "bg-green-500/10 text-green-500"
-                      : "bg-red-500/10 text-red-500"
+                      ? "bg-green-500/20 dark:bg-green-500/30 text-green-500 dark:text-green-400"
+                      : "bg-red-500/20 dark:bg-red-500/30 text-red-500 dark:text-red-400"
                   }`}
                 >
                   {stat.trend}
@@ -282,53 +285,64 @@ const AnalyticsPage = () => {
               {stat.value}
             </div>
             <div className="text-xs text-foreground/50 mt-1">{stat.label}</div>
+            <div className="h-1 bg-border/50 dark:bg-border/30 rounded-full mt-3 overflow-hidden">
+              <div className="h-full w-[78%] bg-gradient-to-r from-primary to-primary-light rounded-full" />
+            </div>
           </div>
         ))}
       </div>
 
-      {/* Additional Stats Row */}
+      {/* Additional Stats Row - DARKER BACKGROUNDS */}
       {additionalStats.avgSessionsPerUser > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-          <div className="bg-card border border-border rounded-xl p-4">
+          <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
             <div className="text-xs text-foreground/50">
               Avg Sessions per User (14d)
             </div>
             <div className="text-2xl font-bold text-foreground mt-1">
               {additionalStats.avgSessionsPerUser}
             </div>
+            <div className="h-1 bg-border/50 dark:bg-border/30 rounded-full mt-3 overflow-hidden">
+              <div className="h-full w-[65%] bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full" />
+            </div>
           </div>
-          <div className="bg-card border border-border rounded-xl p-4">
+          <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
             <div className="text-xs text-foreground/50">
               Active Users (Last 7 days)
             </div>
             <div className="text-2xl font-bold text-foreground mt-1">
               {additionalStats.activeUsersLast7Days?.toLocaleString() || 0}
             </div>
+            <div className="h-1 bg-border/50 dark:bg-border/30 rounded-full mt-3 overflow-hidden">
+              <div className="h-full w-[85%] bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" />
+            </div>
           </div>
-          <div className="bg-card border border-border rounded-xl p-4">
+          <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
             <div className="text-xs text-foreground/50">Retention Rate</div>
             <div className="text-2xl font-bold text-foreground mt-1">
               {additionalStats.retentionRate || 0}%
+            </div>
+            <div className="h-1 bg-border/50 dark:bg-border/30 rounded-full mt-3 overflow-hidden">
+              <div className="h-full w-[70%] bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" />
             </div>
           </div>
         </div>
       )}
 
-      {/* Charts Grid */}
+      {/* Charts Grid - DARKER BACKGROUNDS */}
       <div className="grid lg:grid-cols-2 gap-5 mb-5">
         {/* DAU Chart */}
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
           <div className="font-bold text-foreground mb-4">
             📊 Daily Active Users (Last 14 days)
           </div>
           <div className="h-64 relative">
-            {/* string id বাদ, ref ব্যবহার করছি */}
             <canvas ref={dauCanvasRef} />
           </div>
         </div>
 
         {/* Device Doughnut Chart */}
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
           <div className="font-bold text-foreground mb-4">
             🔵 Device Breakdown
           </div>
@@ -338,10 +352,10 @@ const AnalyticsPage = () => {
         </div>
       </div>
 
-      {/* Device & Divisions Progress Bars */}
+      {/* Device & Divisions Progress Bars - DARKER BACKGROUNDS */}
       <div className="grid md:grid-cols-2 gap-5">
         {/* Device Breakdown */}
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
           <div className="font-bold text-foreground mb-4">
             📱 Device Breakdown
           </div>
@@ -351,19 +365,19 @@ const AnalyticsPage = () => {
               : getFallbackDeviceData()
             ).map((device, idx) => (
               <div key={idx} className="flex items-center gap-3">
-                <span className="w-20 text-sm text-foreground">
+                <span className="w-20 text-sm text-foreground font-medium">
                   {device.name}
                 </span>
-                <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-border/50 dark:bg-border/30 rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full"
+                    className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${device.percentage}%`,
-                      background: device.color || "#059669",
+                      background: `linear-gradient(90deg, ${device.color || '#059669'}, ${device.color || '#059669'}cc)`,
                     }}
                   />
                 </div>
-                <span className="text-xs text-foreground/50">
+                <span className="text-xs font-semibold text-foreground/60">
                   {device.percentage}%
                 </span>
               </div>
@@ -372,7 +386,7 @@ const AnalyticsPage = () => {
         </div>
 
         {/* Top Divisions */}
-        <div className="bg-card border border-border rounded-xl p-5">
+        <div className="bg-card/90 dark:bg-card/80 backdrop-blur-sm border border-border rounded-xl p-5 hover:shadow-lg hover:border-primary/30 transition-all duration-300">
           <div className="font-bold text-foreground mb-4">
             🌍 Top Divisions
           </div>
@@ -382,19 +396,19 @@ const AnalyticsPage = () => {
               : getFallbackDivisionData()
             ).map((division, idx) => (
               <div key={idx} className="flex items-center gap-3">
-                <span className="w-24 text-sm text-foreground truncate">
+                <span className="w-24 text-sm text-foreground font-medium truncate">
                   {division.name}
                 </span>
-                <div className="flex-1 h-2 bg-border rounded-full overflow-hidden">
+                <div className="flex-1 h-2 bg-border/50 dark:bg-border/30 rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full"
+                    className="h-full rounded-full transition-all duration-500"
                     style={{
                       width: `${division.percentage}%`,
-                      background: division.color || "#059669",
+                      background: `linear-gradient(90deg, ${division.color || '#059669'}, ${division.color || '#059669'}cc)`,
                     }}
                   />
                 </div>
-                <span className="text-xs text-foreground/50">
+                <span className="text-xs font-semibold text-foreground/60">
                   {division.percentage}%
                 </span>
               </div>
