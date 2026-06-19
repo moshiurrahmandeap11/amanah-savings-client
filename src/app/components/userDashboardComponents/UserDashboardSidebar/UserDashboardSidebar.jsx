@@ -38,7 +38,14 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
+    const shouldUseDark =
+      savedTheme === "dark" ||
+      (!savedTheme && document.documentElement.classList.contains("dark"));
+
+    document.documentElement.classList.toggle("dark", shouldUseDark);
+    const frame = window.requestAnimationFrame(() => setIsDark(shouldUseDark));
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const navSections = [
@@ -207,28 +214,30 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
   };
 
   return (
-    <aside className="w-64 sm:w-72 h-full bg-sidebar text-sidebar-text flex flex-col shadow-xl">
+    <aside className="flex h-full w-64 flex-col border-r border-[#e2e8f0] bg-[#f8fafc] text-[#475569] shadow-xl dark:border-white/[0.06] dark:bg-[#070d1a] dark:text-white/70 sm:w-72">
       {/* Logo Section - Fixed/Sticky Top */}
-      <div className="sticky top-0 z-10 bg-sidebar p-4 sm:p-2.5 border-b border-gray-700">
+      <div className="sticky top-0 z-10 border-b border-[#e2e8f0] bg-[#f8fafc]/95 p-4 backdrop-blur dark:border-white/[0.06] dark:bg-[#070d1a]/95 sm:p-2.5">
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white text-lg sm:text-xl shadow-lg group-hover:scale-105 transition-transform">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#059669,#0891b2)] text-lg text-white shadow-lg shadow-emerald-950/10 transition-transform group-hover:scale-105 sm:h-10 sm:w-10 sm:text-xl dark:shadow-black/30">
             🌿
           </div>
           <div>
-            <span className="font-bold text-white text-base sm:text-lg">
+            <span className="text-base font-bold text-[#0f172a] dark:text-white sm:text-lg">
               Sanchoy
             </span>
-            <span className="block text-xs text-primary-light">Bondhu</span>
+            <span className="block text-xs text-[#059669] dark:text-[#6ee7b7]">
+              Bondhu
+            </span>
           </div>
         </Link>
       </div>
 
       {/* User Info Section - Sticky below logo */}
-      <div className="sticky top-14 z-10 bg-sidebar p-4 border-b border-gray-700">
+      <div className="sticky top-14 z-10 border-b border-[#e2e8f0] bg-[#f8fafc]/95 p-4 backdrop-blur dark:border-white/[0.06] dark:bg-[#070d1a]/95">
         <div className="flex items-center gap-3">
           {/* Profile Picture or Initial */}
           <div className="relative">
-            <div className="w-11 h-15 sm:w-12 sm:h-12 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-base sm:text-lg overflow-hidden">
+            <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-[linear-gradient(135deg,#059669,#0891b2)] text-base font-bold text-white sm:h-12 sm:w-12 sm:text-lg">
               {getProfilePicture() ? (
                 <Image
                   src={getProfilePicture()}
@@ -241,20 +250,20 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
                 getUserInitial()
               )}
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-sidebar"></span>
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-[#f8fafc] bg-[#10b981] dark:border-[#070d1a]"></span>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-semibold text-white text-sm sm:text-base truncate">
+            <div className="truncate text-sm font-semibold text-[#0f172a] dark:text-white sm:text-base">
               {getUserDisplayName()}
             </div>
-            <div className="text-xs text-sidebar-text flex items-center gap-1">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+            <div className="flex items-center gap-1 text-xs text-[#64748b] dark:text-white/70">
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-[#059669]"></span>
               {user?.selectedPlan
                 ? `${user.selectedPlan.charAt(0).toUpperCase() + user.selectedPlan.slice(1)} Saver`
                 : "Member"}
             </div>
           </div>
-          <div className="text-xs text-green-400" title="Verified">
+          <div className="text-xs text-[#10b981]" title="Verified">
             ✓
           </div>
         </div>
@@ -264,7 +273,7 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
       <nav className="flex-1 overflow-y-auto py-4 custom-scrollbar">
         {navSections.map((section, idx) => (
           <div key={idx} className="mb-4">
-            <div className="px-5 py-2 text-xs font-bold text-sidebar-text/50 uppercase tracking-wider">
+            <div className="px-5 py-2 text-xs font-bold uppercase tracking-wider text-[#94a3b8] dark:text-white/30">
               {section.title}
             </div>
             {section.items.map((item) => (
@@ -274,8 +283,8 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
                 onClick={closeSidebar}
                 className={`flex items-center gap-3 px-5 py-2.5 mx-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive(item.path)
-                    ? "bg-primary/20 text-primary-light"
-                    : "text-sidebar-text hover:bg-sidebar-hover hover:text-white"
+                    ? "border border-[#bbf7d0] bg-[#ecfdf5] text-[#047857] dark:border-transparent dark:bg-[rgba(5,150,105,0.2)] dark:text-[#6ee7b7]"
+                    : "text-[#475569] hover:bg-[#ecfdf5] hover:text-[#047857] dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
                 }`}
               >
                 <span className="w-5 shrink-0">{item.icon}</span>
@@ -284,7 +293,7 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
                   <span
                     className={`text-xs px-1.5 py-0.5 rounded-full shrink-0 ${
                       item.badge === "4"
-                        ? "bg-primary/30 text-primary-light"
+                        ? "bg-[#059669]/20 text-[#047857] dark:bg-[#059669]/30 dark:text-[#6ee7b7]"
                         : item.badge === "৳500"
                           ? "bg-amber-500/20 text-amber-400"
                           : "bg-red-500/20 text-red-400"
@@ -300,22 +309,22 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
       </nav>
 
       {/* Footer Actions - Sticky Bottom */}
-      <div className="sticky bottom-0 bg-sidebar p-4 border-t border-gray-700">
+      <div className="sticky bottom-0 border-t border-[#e2e8f0] bg-[#f8fafc]/95 p-4 backdrop-blur dark:border-white/[0.06] dark:bg-[#070d1a]/95">
         <div className="flex gap-2">
           <button
             onClick={toggleTheme}
-            className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-sidebar-hover text-sidebar-text hover:text-white transition"
+            className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-[#e2e8f0] bg-white py-2 text-[#475569] transition hover:border-[#059669] hover:text-[#047857] dark:border-transparent dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white"
           >
             {isDark ? <Sun size={14} /> : <Moon size={14} />}
             <span className="text-xs hidden sm:inline">Theme</span>
           </button>
-          <button className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-sidebar-hover text-sidebar-text hover:text-white transition">
+          <button className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-[#e2e8f0] bg-white py-2 text-[#475569] transition hover:border-[#059669] hover:text-[#047857] dark:border-transparent dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-white">
             <Globe size={14} />
             <span className="text-xs hidden sm:inline">EN</span>
           </button>
           <button
             onClick={handleLogout}
-            className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg bg-sidebar-hover text-sidebar-text hover:text-red-400 transition"
+            className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-[#e2e8f0] bg-white py-2 text-[#475569] transition hover:border-red-500/40 hover:text-red-500 dark:border-transparent dark:bg-white/5 dark:text-white/70 dark:hover:bg-white/10 dark:hover:text-red-400"
           >
             <LogOut size={14} />
             <span className="text-xs hidden sm:inline">Exit</span>

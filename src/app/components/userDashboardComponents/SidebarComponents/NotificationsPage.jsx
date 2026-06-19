@@ -144,7 +144,7 @@ const NotificationsPage = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-full mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -156,12 +156,6 @@ const NotificationsPage = () => {
           )}
         </h2>
         <div className="flex gap-3">
-          <Link
-            href="/dashboard/notification-settings"
-            className="px-4 py-2 rounded-lg border border-border bg-background text-foreground text-sm font-semibold hover:border-primary hover:text-primary transition flex items-center gap-2"
-          >
-            <Settings size={14} /> Settings
-          </Link>
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}

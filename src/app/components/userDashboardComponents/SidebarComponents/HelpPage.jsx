@@ -411,7 +411,7 @@ const HelpPage = () => {
         )}
       </div>
 
-      <div className="px-4 py-6 max-w-6xl mx-auto">
+      <div className="px-4 py-6 max-w-full mx-auto">
         {/* System Status */}
         <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center gap-3 mb-6">
           <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />

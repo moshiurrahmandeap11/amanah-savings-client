@@ -310,7 +310,7 @@ const SettingsPage = () => {
   ];
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-full mx-auto">
       <h2 className="text-2xl font-bold text-foreground mb-5">⚙️ Settings</h2>
 
       {/* Account Summary Card */}

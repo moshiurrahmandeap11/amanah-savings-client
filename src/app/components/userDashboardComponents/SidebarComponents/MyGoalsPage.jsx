@@ -438,24 +438,28 @@ const MyGoalsPage = () => {
       value: activeGoalsCount.toString(),
       label: "Active Goals",
       bg: "bg-primary/10",
+      accent: "from-[#059669] to-[#0891b2]",
     },
     {
       icon: <DollarSign size={20} />,
       value: formatCurrency(totalSavedAmount),
       label: "Total Saved",
       bg: "bg-blue-500/10",
+      accent: "from-blue-500 to-cyan-500",
     },
     {
       icon: <Calendar size={20} />,
       value: formatCurrency(monthlyDepositTotal),
       label: "Monthly Deposit",
       bg: "bg-amber-500/10",
+      accent: "from-amber-500 to-orange-500",
     },
     {
       icon: <CheckCircle size={20} />,
       value: pausedGoalsCount.toString(),
       label: "On Pause",
       bg: "bg-cyan-500/10",
+      accent: "from-cyan-500 to-teal-500",
     },
   ];
 
@@ -489,7 +493,7 @@ const MyGoalsPage = () => {
         </div>
         <button
           onClick={() => setShowGoalModal(true)}
-          className="px-4 sm:px-5 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base"
+          className="px-4 sm:px-5 py-2.5 bg-[linear-gradient(135deg,#059669,#0891b2)] text-white rounded-xl font-semibold shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/25 transition w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base"
         >
           <Plus size={18} />
           <span>New Goal</span>
@@ -504,8 +508,9 @@ const MyGoalsPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: idx * 0.1 }}
-            className="bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:shadow-lg transition group"
+            className="relative overflow-hidden bg-card border border-border rounded-xl sm:rounded-2xl p-3 sm:p-4 hover:shadow-lg transition group"
           >
+            <div className={`absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${stat.accent}`} />
             <div
               className={`w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl ${stat.bg} flex items-center justify-center mb-2 sm:mb-3 group-hover:scale-110 transition text-primary`}
             >
@@ -531,7 +536,7 @@ const MyGoalsPage = () => {
           </p>
           <button
             onClick={() => setShowGoalModal(true)}
-            className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition inline-flex items-center gap-2"
+            className="px-6 py-2.5 bg-[linear-gradient(135deg,#059669,#0891b2)] text-white rounded-xl font-semibold shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/25 transition inline-flex items-center gap-2"
           >
             <Plus size={18} /> Create Your First Goal
           </button>
@@ -616,20 +621,20 @@ const MyGoalsPage = () => {
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4">
                 <Link
                   href={`/dashboard/submit?goalId=${goal._id}`}
-                  className="flex-1 py-2 text-center rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs sm:text-sm font-semibold hover:opacity-90 transition px-3"
+                  className="flex-1 py-2 text-center rounded-lg bg-[linear-gradient(135deg,#059669,#0891b2)] text-white text-xs sm:text-sm font-semibold shadow-md shadow-emerald-600/15 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-600/20 transition px-3"
                 >
                   + Deposit
                 </Link>
                 <button
                   onClick={() => handleViewDetails(goal)}
-                  className="flex-1 py-2 text-center rounded-lg border border-border text-foreground text-xs sm:text-sm font-semibold hover:border-primary hover:text-primary transition px-3 flex items-center justify-center gap-1"
+                  className="flex-1 py-2 text-center rounded-lg border border-primary/20 bg-gradient-to-r from-primary/10 to-cyan-500/10 text-primary text-xs sm:text-sm font-semibold hover:border-primary hover:from-primary/15 hover:to-cyan-500/15 transition px-3 flex items-center justify-center gap-1"
                 >
                   <Eye size={14} /> Details
                 </button>
                 {goal.currentSaved === 0 && goal.status !== "completed" && (
                   <button
                     onClick={() => deleteGoal(goal._id)}
-                    className="py-2 px-3 rounded-lg border border-red-500/30 text-red-500 text-xs sm:text-sm font-semibold hover:bg-red-500/10 transition flex items-center justify-center gap-1"
+                    className="py-2 px-3 rounded-lg border border-red-500/30 bg-gradient-to-r from-red-500/10 to-rose-500/10 text-red-500 text-xs sm:text-sm font-semibold hover:from-red-500/15 hover:to-rose-500/15 transition flex items-center justify-center gap-1"
                   >
                     <Trash2 size={14} /> Delete
                   </button>
@@ -874,13 +879,13 @@ const MyGoalsPage = () => {
                 <div className="flex flex-col sm:flex-row gap-3">
                   <button
                     onClick={() => setShowDetailsModal(false)}
-                    className="flex-1 py-2.5 sm:py-3 rounded-xl border border-border text-foreground font-semibold hover:bg-primary/5 hover:border-primary transition text-sm sm:text-base"
+                    className="flex-1 py-2.5 sm:py-3 rounded-xl border border-primary/20 bg-gradient-to-r from-primary/10 to-cyan-500/10 text-primary font-semibold hover:border-primary hover:from-primary/15 hover:to-cyan-500/15 transition text-sm sm:text-base"
                   >
                     Close
                   </button>
                   <Link
                     href={`/dashboard/submit?goalId=${selectedGoal._id}`}
-                    className="flex-1 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition text-center text-sm sm:text-base"
+                    className="flex-1 py-2.5 sm:py-3 rounded-xl bg-[linear-gradient(135deg,#059669,#0891b2)] text-white font-semibold shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/25 transition text-center text-sm sm:text-base"
                   >
                     + Make a Deposit
                   </Link>
@@ -942,8 +947,8 @@ const MyGoalsPage = () => {
                         disabled={submitting}
                         className={`p-2 sm:p-3 rounded-xl border-2 text-center transition-all ${
                           selectedGoalType === type.value
-                            ? "border-primary bg-primary/5 shadow-md"
-                            : "border-border hover:border-primary/50 hover:bg-primary/5"
+                            ? "border-primary bg-gradient-to-r from-primary/10 to-cyan-500/10 shadow-md"
+                            : "border-border hover:border-primary/50 hover:bg-gradient-to-r hover:from-primary/5 hover:to-cyan-500/5"
                         } disabled:opacity-50 disabled:cursor-not-allowed`}
                       >
                         <div className="flex justify-center mb-1 text-primary">
@@ -1086,14 +1091,14 @@ const MyGoalsPage = () => {
                   <button
                     onClick={() => setShowGoalModal(false)}
                     disabled={submitting}
-                    className="flex-1 py-2.5 sm:py-3 rounded-xl border border-border text-foreground font-semibold hover:border-red-500 hover:text-red-500 transition text-sm sm:text-base order-2 sm:order-1 disabled:opacity-50"
+                    className="flex-1 py-2.5 sm:py-3 rounded-xl border border-red-500/25 bg-gradient-to-r from-red-500/10 to-rose-500/10 text-red-500 font-semibold hover:border-red-500/50 hover:from-red-500/15 hover:to-rose-500/15 transition text-sm sm:text-base order-2 sm:order-1 disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={createGoal}
                     disabled={submitting}
-                    className="flex-1 py-2.5 sm:py-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2 disabled:opacity-50"
+                    className="flex-1 py-2.5 sm:py-3 rounded-xl bg-[linear-gradient(135deg,#059669,#0891b2)] text-white font-semibold shadow-lg shadow-emerald-600/20 hover:-translate-y-0.5 hover:shadow-xl hover:shadow-emerald-600/25 transition flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2 disabled:opacity-50 disabled:hover:translate-y-0"
                   >
                     {submitting ? (
                       <>

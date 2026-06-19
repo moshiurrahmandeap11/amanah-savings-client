@@ -77,7 +77,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-full mx-auto">
       <h2 className="text-2xl font-bold text-foreground mb-5">👤 Profile & KYC</h2>
 
       {/* Profile Header Card */}

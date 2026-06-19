@@ -181,7 +181,7 @@ const ReferralPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-full mx-auto">
       <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
         <Gift size={28} className="text-primary" /> Referral Program
       </h2>

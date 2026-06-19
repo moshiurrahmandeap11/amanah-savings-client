@@ -82,7 +82,7 @@ const AchievementsPage = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-full mx-auto">
       <h2 className="text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
         <Trophy size={28} className="text-amber-500" /> Achievements & Badges
       </h2>

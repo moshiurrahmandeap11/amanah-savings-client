@@ -88,7 +88,7 @@ const LeaderboardPage = () => {
   const restLeaderboard = leaderboardData.slice(3);
 
   return (
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-full mx-auto">
       {/* Page Title */}
       <div className="mb-5">
         <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">

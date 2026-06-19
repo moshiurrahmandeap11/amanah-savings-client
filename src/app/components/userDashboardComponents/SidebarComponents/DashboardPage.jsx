@@ -32,6 +32,9 @@ import {
   XCircle,
 } from "lucide-react";
 
+const dashboardColorScope =
+  "min-h-screen bg-background text-foreground [--background:#f1f5f9] [--foreground:#0f172a] [--card:#ffffff] [--card-hover:#f1f5f9] [--border:#e2e8f0] [--primary:#059669] [--primary-hover:#047857] [--primary-light:#10b981] dark:[--background:#0a0f1e] dark:[--foreground:#f1f5f9] dark:[--card:#131e2e] dark:[--card-hover:#1e2d3d] dark:[--border:#1e2d3d] dark:[--primary:#059669] dark:[--primary-hover:#047857] dark:[--primary-light:#10b981]";
+
 const DashboardPage = () => {
   const { user: authUser, isLoading: authLoading } = useAuth();
   const router = useRouter();
@@ -483,7 +486,7 @@ const DashboardPage = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className={`${dashboardColorScope} flex items-center justify-center`}>
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-foreground/60">Loading dashboard...</p>
@@ -493,7 +496,7 @@ const DashboardPage = () => {
   }
 
   return (
-    <div>
+    <div className={dashboardColorScope}>
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -720,7 +723,7 @@ const DashboardPage = () => {
                   <div key={idx} className="flex items-center gap-4">
                     <div className="relative w-16 h-16 shrink-0">
                       <svg className="w-16 h-16 -rotate-90" viewBox="0 0 72 72">
-                        <circle cx="36" cy="36" r="30" fill="none" stroke="#e2e8f0" strokeWidth="6" />
+                        <circle cx="36" cy="36" r="30" fill="none" stroke="var(--border)" strokeWidth="6" />
                         <circle cx="36" cy="36" r="30" fill="none" stroke="#059669" strokeWidth="6" strokeDasharray="188.4" strokeDashoffset={188.4 * (1 - Math.min(goal.progress, 100) / 100)} strokeLinecap="round" />
                       </svg>
                       <div className="absolute inset-0 flex items-center justify-center text-sm font-bold text-foreground">{Math.min(goal.progress, 100)}%</div>
