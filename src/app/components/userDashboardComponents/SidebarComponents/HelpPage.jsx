@@ -290,12 +290,16 @@ const HelpPage = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-      setCurrentUserId(parsed._id || parsed.id);
+      requestAnimationFrame(() => {
+        setCurrentUserId(parsed._id || parsed.id);
+      });
     }
     
     // Get language from localStorage
     const savedLang = localStorage.getItem('appLanguage') || 'bn';
-    setLang(savedLang);
+    requestAnimationFrame(() => {
+      setLang(savedLang);
+    });
   }, []);
   
   // Socket hook for messaging
@@ -304,11 +308,13 @@ const HelpPage = () => {
   // Sync socket messages to chat
   useEffect(() => {
     if (socketMessages.length > 0) {
-      const lastMsg = socketMessages[socketMessages.length - 1];
-      setChatMessages((prev) => {
-        const exists = prev.find((m) => m._id === lastMsg._id);
-        if (exists) return prev;
-        return [...prev, { ...lastMsg, sender: lastMsg.senderRole === "admin" ? "admin" : "user" }];
+      requestAnimationFrame(() => {
+        const lastMsg = socketMessages[socketMessages.length - 1];
+        setChatMessages((prev) => {
+          const exists = prev.find((m) => m._id === lastMsg._id);
+          if (exists) return prev;
+          return [...prev, { ...lastMsg, sender: lastMsg.senderRole === "admin" ? "admin" : "user" }];
+        });
       });
     }
   }, [socketMessages]);
@@ -316,7 +322,9 @@ const HelpPage = () => {
   // Typing indicator
   useEffect(() => {
     if (typingUser) {
-      setIsTyping(true);
+      requestAnimationFrame(() => {
+        setIsTyping(true);
+      });
       const timer = setTimeout(() => setIsTyping(false), 3000);
       return () => clearTimeout(timer);
     }

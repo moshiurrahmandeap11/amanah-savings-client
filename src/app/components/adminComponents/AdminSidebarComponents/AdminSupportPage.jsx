@@ -198,6 +198,18 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+const getCategoryIcon = (category) => {
+  const icons = {
+    deposit: "💳",
+    withdrawal: "🏧",
+    kyc: "🪪",
+    general: "🎫",
+    technical: "🔧",
+    other: "📝"
+  };
+  return icons[category?.toLowerCase()] || "🎫";
+};
+
 const AdminSupportPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
@@ -229,7 +241,9 @@ const AdminSupportPage = () => {
     if (storedUser) {
       try {
         const parsed = JSON.parse(storedUser);
-        setCurrentAdminId(parsed._id || parsed.id);
+        requestAnimationFrame(() => {
+          setCurrentAdminId(parsed._id || parsed.id);
+        });
       } catch (e) {
         console.error("Error parsing user:", e);
       }
@@ -259,65 +273,67 @@ const AdminSupportPage = () => {
     if (socketMessages && socketMessages.length > 0) {
       const lastMsg = socketMessages[socketMessages.length - 1];
       
-      // Update ticket messages if viewing a ticket
-      if (selectedTicket && lastMsg.ticketId === selectedTicket.ticketId) {
-        setTicketMessages(prev => {
-          const exists = prev.find(m => m._id === lastMsg._id);
-          if (exists) return prev;
-          return [...prev, {
-            _id: lastMsg._id || Date.now().toString(),
-            message: lastMsg.message,
-            sender: lastMsg.senderRole === "admin" ? "admin" : "user",
-            senderName: lastMsg.senderName || (lastMsg.senderRole === "admin" ? "Admin" : lastMsg.senderName),
-            createdAt: lastMsg.createdAt || new Date(),
-            isAdmin: lastMsg.senderRole === "admin"
-          }];
-        });
-      }
-      
-      // Update conversation messages if viewing a conversation
-      if (selectedConversation && lastMsg.senderId === selectedConversation.userId) {
-        setConversationMessages(prev => {
-          const exists = prev.find(m => m._id === lastMsg._id);
-          if (exists) return prev;
-          return [...prev, {
-            _id: lastMsg._id || Date.now().toString(),
-            message: lastMsg.message,
-            sender: lastMsg.senderRole === "admin" ? "admin" : "user",
-            senderName: lastMsg.senderName || (lastMsg.senderRole === "admin" ? "Admin" : lastMsg.senderName),
-            createdAt: lastMsg.createdAt || new Date(),
-            isAdmin: lastMsg.senderRole === "admin"
-          }];
-        });
-      }
-      
-      // Update ticket list
-      setTickets(prev => prev.map(ticket => {
-        if (ticket.ticketId === lastMsg.ticketId) {
-          return {
-            ...ticket,
-            hasNewMessage: lastMsg.senderRole !== "admin",
-            lastMessage: lastMsg.message,
-            lastMessageTime: lastMsg.createdAt
-          };
+      requestAnimationFrame(() => {
+        // Update ticket messages if viewing a ticket
+        if (selectedTicket && lastMsg.ticketId === selectedTicket.ticketId) {
+          setTicketMessages(prev => {
+            const exists = prev.find(m => m._id === lastMsg._id);
+            if (exists) return prev;
+            return [...prev, {
+              _id: lastMsg._id || Date.now().toString(),
+              message: lastMsg.message,
+              sender: lastMsg.senderRole === "admin" ? "admin" : "user",
+              senderName: lastMsg.senderName || (lastMsg.senderRole === "admin" ? "Admin" : lastMsg.senderName),
+              createdAt: lastMsg.createdAt || new Date(),
+              isAdmin: lastMsg.senderRole === "admin"
+            }];
+          });
         }
-        return ticket;
-      }));
-      
-      // Update conversation list
-      if (lastMsg.senderId) {
-        setConversations(prev => {
-          const exists = prev.find(c => c.userId === lastMsg.senderId);
-          if (exists) {
-            return prev.map(c => 
-              c.userId === lastMsg.senderId 
-                ? { ...c, lastMessage: lastMsg.message, lastMessageTime: lastMsg.createdAt, hasUnread: lastMsg.senderRole !== "admin" }
-                : c
-            );
+        
+        // Update conversation messages if viewing a conversation
+        if (selectedConversation && lastMsg.senderId === selectedConversation.userId) {
+          setConversationMessages(prev => {
+            const exists = prev.find(m => m._id === lastMsg._id);
+            if (exists) return prev;
+            return [...prev, {
+              _id: lastMsg._id || Date.now().toString(),
+              message: lastMsg.message,
+              sender: lastMsg.senderRole === "admin" ? "admin" : "user",
+              senderName: lastMsg.senderName || (lastMsg.senderRole === "admin" ? "Admin" : lastMsg.senderName),
+              createdAt: lastMsg.createdAt || new Date(),
+              isAdmin: lastMsg.senderRole === "admin"
+            }];
+          });
+        }
+        
+        // Update ticket list
+        setTickets(prev => prev.map(ticket => {
+          if (ticket.ticketId === lastMsg.ticketId) {
+            return {
+              ...ticket,
+              hasNewMessage: lastMsg.senderRole !== "admin",
+              lastMessage: lastMsg.message,
+              lastMessageTime: lastMsg.createdAt
+            };
           }
-          return prev;
-        });
-      }
+          return ticket;
+        }));
+        
+        // Update conversation list
+        if (lastMsg.senderId) {
+          setConversations(prev => {
+            const exists = prev.find(c => c.userId === lastMsg.senderId);
+            if (exists) {
+              return prev.map(c => 
+                c.userId === lastMsg.senderId 
+                  ? { ...c, lastMessage: lastMsg.message, lastMessageTime: lastMsg.createdAt, hasUnread: lastMsg.senderRole !== "admin" }
+                  : c
+              );
+            }
+            return prev;
+          });
+        }
+      });
     }
   }, [socketMessages, selectedTicket, selectedConversation]);
 
@@ -343,7 +359,71 @@ const AdminSupportPage = () => {
   // Load language preference
   useEffect(() => {
     const savedLang = localStorage.getItem("admin_lang") || "bn";
-    setLang(savedLang);
+    requestAnimationFrame(() => {
+      setLang(savedLang);
+    });
+  }, []);
+
+  const showToast = (message) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: "" }), 3000);
+  };
+
+  // Build conversations from tickets
+  const buildConversations = useCallback((ticketsData) => {
+    const conversationMap = new Map();
+    
+    if (!ticketsData || ticketsData.length === 0) {
+      setConversations([]);
+      return;
+    }
+    
+    ticketsData.forEach(ticket => {
+      const userId = ticket.userId;
+      if (!userId) return;
+      
+      const userName = ticket.name || "Unknown User";
+      const userPhone = ticket.phone || "";
+      const userEmail = ticket.email || "";
+      const userAvatar = (userName || "U")[0].toUpperCase();
+      
+      if (!conversationMap.has(userId)) {
+        conversationMap.set(userId, {
+          userId: userId,
+          name: userName,
+          phone: userPhone,
+          email: userEmail,
+          avatar: userAvatar,
+          lastMessage: ticket.lastMessage || ticket.preview || ticket.subject || "No messages",
+          lastMessageTime: ticket.lastMessageTime || ticket.createdAt || new Date(),
+          hasUnread: ticket.hasNewMessage || false,
+          ticketCount: 1,
+          tickets: [ticket],
+        });
+      } else {
+        const existing = conversationMap.get(userId);
+        existing.ticketCount += 1;
+        existing.tickets.push(ticket);
+        // Update last message if newer
+        const existingTime = new Date(existing.lastMessageTime);
+        const newTime = new Date(ticket.lastMessageTime || ticket.createdAt);
+        if (newTime > existingTime) {
+          existing.lastMessage = ticket.lastMessage || ticket.preview || ticket.subject || "No messages";
+          existing.lastMessageTime = ticket.lastMessageTime || ticket.createdAt;
+        }
+        if (ticket.hasNewMessage) {
+          existing.hasUnread = true;
+        }
+      }
+    });
+    
+    const conversationsArray = Array.from(conversationMap.values());
+    // Sort by lastMessageTime descending (newest first)
+    conversationsArray.sort((a, b) => {
+      return new Date(b.lastMessageTime) - new Date(a.lastMessageTime);
+    });
+    
+    setConversations(conversationsArray);
   }, []);
 
   const fetchTickets = useCallback(async (page = 1) => {
@@ -412,70 +492,17 @@ const AdminSupportPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, searchQuery]);
-
-  // Build conversations from tickets
-  const buildConversations = (ticketsData) => {
-    const conversationMap = new Map();
-    
-    if (!ticketsData || ticketsData.length === 0) {
-      setConversations([]);
-      return;
-    }
-    
-    ticketsData.forEach(ticket => {
-      const userId = ticket.userId;
-      if (!userId) return;
-      
-      const userName = ticket.name || "Unknown User";
-      const userPhone = ticket.phone || "";
-      const userEmail = ticket.email || "";
-      const userAvatar = (userName || "U")[0].toUpperCase();
-      
-      if (!conversationMap.has(userId)) {
-        conversationMap.set(userId, {
-          userId: userId,
-          name: userName,
-          phone: userPhone,
-          email: userEmail,
-          avatar: userAvatar,
-          lastMessage: ticket.lastMessage || ticket.preview || ticket.subject || "No messages",
-          lastMessageTime: ticket.lastMessageTime || ticket.createdAt || new Date(),
-          hasUnread: ticket.hasNewMessage || false,
-          ticketCount: 1,
-          tickets: [ticket],
-        });
-      } else {
-        const existing = conversationMap.get(userId);
-        existing.ticketCount += 1;
-        existing.tickets.push(ticket);
-        // Update last message if newer
-        const existingTime = new Date(existing.lastMessageTime);
-        const newTime = new Date(ticket.lastMessageTime || ticket.createdAt);
-        if (newTime > existingTime) {
-          existing.lastMessage = ticket.lastMessage || ticket.preview || ticket.subject || "No messages";
-          existing.lastMessageTime = ticket.lastMessageTime || ticket.createdAt;
-        }
-        if (ticket.hasNewMessage) {
-          existing.hasUnread = true;
-        }
-      }
-    });
-    
-    const conversationsArray = Array.from(conversationMap.values());
-    // Sort by lastMessageTime descending (newest first)
-    conversationsArray.sort((a, b) => {
-      return new Date(b.lastMessageTime) - new Date(a.lastMessageTime);
-    });
-    
-    setConversations(conversationsArray);
-  };
+  }, [activeFilter, searchQuery, buildConversations]);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
+    requestAnimationFrame(() => {
+      setIsDark(savedTheme === "dark");
+    });
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-    fetchTickets(1);
+    // Defer fetchTickets to avoid setState cascade
+    const timer = setTimeout(() => fetchTickets(1), 0);
+    return () => clearTimeout(timer);
   }, [fetchTickets]);
 
   const toggleTheme = () => {
@@ -485,30 +512,12 @@ const AdminSupportPage = () => {
     document.documentElement.classList.toggle("dark", newTheme);
   };
 
-  const showToast = (message) => {
-    setToast({ show: true, message });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
-  };
-
-  const getCategoryIcon = (category) => {
-    const icons = {
-      deposit: "💳",
-      withdrawal: "🏧",
-      kyc: "🪪",
-      general: "🎫",
-      technical: "🔧",
-      other: "📝"
-    };
-    return icons[category?.toLowerCase()] || "🎫";
-  };
-
   const openReply = (ticket) => {
     setSelectedTicket(ticket);
     setReplyText("");
     setTicketMessages([]);
     setShowMessages(true);
     setShowReplySheet(true);
-    document.body.style.overflow = "hidden";
     
     if (joinTicketRoom && ticket.ticketId) {
       joinTicketRoom(ticket.ticketId);
@@ -525,23 +534,68 @@ const AdminSupportPage = () => {
 
   const loadTicketMessages = async (ticketId) => {
     try {
-      const res = await axiosInstance.get(`/help/tickets/${ticketId}`, {
+      // Use admin endpoint to get ticket with replies
+      const res = await axiosInstance.get(`/admin/tickets/${ticketId}`, {
         headers: getAuthHeaders(),
       });
       if (res.data.success) {
+        const ticket = res.data.data.ticket;
         const replies = res.data.data.replies || [];
-        const formattedMessages = replies.map(reply => ({
-          _id: reply._id || Date.now().toString(),
-          message: reply.message,
-          sender: reply.isAdmin ? "admin" : "user",
-          senderName: reply.isAdmin ? "Admin" : reply.senderName || "User",
-          createdAt: reply.createdAt,
-          isAdmin: reply.isAdmin || false,
-        }));
+        
+        // Build message history: original ticket message + all replies
+        const formattedMessages = [];
+        
+        // Add original ticket message as first message
+        if (ticket.message) {
+          formattedMessages.push({
+            _id: ticket._id || Date.now().toString(),
+            message: ticket.message,
+            sender: "user",
+            senderName: ticket.user?.fullName || ticket.user?.firstName || "User",
+            createdAt: ticket.createdAt,
+            isAdmin: false,
+          });
+        }
+        
+        // Add all replies sorted by time
+        replies.forEach(reply => {
+          formattedMessages.push({
+            _id: reply.id || reply._id || Date.now().toString(),
+            message: reply.message,
+            sender: reply.isAdmin ? "admin" : "user",
+            senderName: reply.isAdmin ? "Admin" : (reply.user?.fullName || "User"),
+            createdAt: reply.createdAt,
+            isAdmin: reply.isAdmin || false,
+          });
+        });
+        
+        // Sort by createdAt
+        formattedMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+        
         setTicketMessages(formattedMessages);
       }
     } catch (err) {
       console.error("Load ticket messages error:", err);
+      // Fallback: try user endpoint
+      try {
+        const res = await axiosInstance.get(`/help/tickets/${ticketId}`, {
+          headers: getAuthHeaders(),
+        });
+        if (res.data.success) {
+          const replies = res.data.data.replies || [];
+          const formattedMessages = replies.map(reply => ({
+            _id: reply._id || Date.now().toString(),
+            message: reply.message,
+            sender: reply.isAdmin ? "admin" : "user",
+            senderName: reply.isAdmin ? "Admin" : reply.senderName || "User",
+            createdAt: reply.createdAt,
+            isAdmin: reply.isAdmin || false,
+          }));
+          setTicketMessages(formattedMessages);
+        }
+      } catch (fallbackErr) {
+        console.error("Fallback load ticket messages error:", fallbackErr);
+      }
     }
   };
 
@@ -569,8 +623,9 @@ const AdminSupportPage = () => {
     }
 
     try {
+      // Use admin endpoint for ticket replies
       await axiosInstance.post(
-        `/help/tickets/${selectedTicket.ticketId}/reply`,
+        `/admin/tickets/${selectedTicket.ticketId}/reply`,
         { message: replyText.trim() },
         { headers: getAuthHeaders() }
       );
@@ -698,9 +753,9 @@ const AdminSupportPage = () => {
     setSelectedConversation(conversation);
     setConversationMessages([]);
     
-    // Load messages for this user
+    // Load messages for this user from the messages API
     try {
-      const res = await axiosInstance.get(`/admin/messages/${conversation.userId}`, {
+      const res = await axiosInstance.get(`/help/admin/messages/${conversation.userId}`, {
         headers: getAuthHeaders(),
       });
       
@@ -710,18 +765,19 @@ const AdminSupportPage = () => {
           _id: msg._id || Date.now().toString(),
           message: msg.message,
           sender: msg.senderRole === "admin" ? "admin" : "user",
-          senderName: msg.senderName || (msg.senderRole === "admin" ? "Admin" : msg.senderName),
+          senderName: msg.senderRole === "admin" ? "Admin" : (conversation.name || "User"),
           createdAt: msg.createdAt || new Date(),
           isAdmin: msg.senderRole === "admin",
         }));
+        // Sort by time ascending
+        formattedMessages.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
         setConversationMessages(formattedMessages);
       } else {
-        // If API fails, show empty messages
         setConversationMessages([]);
       }
     } catch (err) {
-      console.error("Load conversation error:", err);
-      // If API fails, we can still show messages from tickets
+      console.error("Load conversation messages error:", err);
+      // Fallback: show messages from tickets if API fails
       const ticketMessages = [];
       if (conversation.tickets && conversation.tickets.length > 0) {
         conversation.tickets.forEach(ticket => {
@@ -775,15 +831,18 @@ const AdminSupportPage = () => {
         );
       }
 
-      // Also try to send via API
+      // Also save via API for persistence
       try {
         await axiosInstance.post(
-          `/admin/messages/${selectedConversation.userId}`,
-          { message: messageInput.trim() },
+          `/help/admin/messages/${selectedConversation.userId}`,
+          { 
+            message: messageInput.trim(),
+            ticketId: selectedConversation.tickets?.[0]?.ticketId || null 
+          },
           { headers: getAuthHeaders() }
         );
       } catch (apiErr) {
-        console.warn("API message send failed, but socket message sent:", apiErr);
+        console.warn("API message save failed, but socket message sent:", apiErr);
       }
 
       const newMessage = {
