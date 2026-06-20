@@ -709,6 +709,14 @@ const MyGoalsPage = () => {
     setShowDetailsModal(true);
   };
 
+  const sortedGoals = [...goals].sort((a, b) => {
+    const aCompleted = a.status === "completed";
+    const bCompleted = b.status === "completed";
+
+    if (aCompleted === bCompleted) return 0;
+    return aCompleted ? 1 : -1;
+  });
+
   const activeGoalsCount = goals.filter((g) => g.status === "active").length;
   const totalSavedAmount = goals.reduce((sum, g) => sum + (g.currentSaved || 0), 0);
   const monthlyDepositTotal = goals.reduce((sum, g) => sum + (g.monthlyDeposit || 0), 0);
@@ -828,7 +836,7 @@ const MyGoalsPage = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-          {goals.map((goal) => (
+          {sortedGoals.map((goal) => (
             <motion.div
               key={goal._id}
               initial={{ opacity: 0, y: 20 }}
