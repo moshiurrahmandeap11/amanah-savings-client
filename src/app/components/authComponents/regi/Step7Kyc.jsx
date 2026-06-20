@@ -197,6 +197,7 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     const result = await uploadFileToServer(file, 'kyc_nid_front');
     if (result) {
       updateField("nidFrontImage", result.url);
+      updateField("nidFrontPublicId", result.publicId);
       updateField("nidFrontUploaded", true);
       console.log("NID Front URL:", result.url);
     }
@@ -213,6 +214,7 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     const result = await uploadFileToServer(file, 'kyc_nid_back');
     if (result) {
       updateField("nidBackImage", result.url);
+      updateField("nidBackPublicId", result.publicId);
       updateField("nidBackUploaded", true);
       console.log("NID Back URL:", result.url);
     }
@@ -229,6 +231,7 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     const result = await uploadFileToServer(file, 'kyc_birth_certificate');
     if (result) {
       updateField("birthCertificateImage", result.url);
+      updateField("birthCertificatePublicId", result.publicId);
       updateField("birthCertificateUploaded", true);
       console.log("Birth Certificate URL:", result.url);
     }
@@ -245,6 +248,7 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     const result = await uploadFileToServer(file, 'kyc_passport');
     if (result) {
       updateField("passportImage", result.url);
+      updateField("passportPublicId", result.publicId);
       updateField("passportUploaded", true);
       console.log("Passport URL:", result.url);
     }
@@ -261,6 +265,7 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     const result = await uploadFileToServer(file, 'kyc_selfie');
     if (result) {
       updateField("selfieImage", result.url);
+      updateField("selfiePublicId", result.publicId);
       updateField("selfieTaken", true);
       console.log("Selfie URL:", result.url);
       if (showAlert) showAlert(t('uploadSuccess'), t('uploadSuccess'), 'success');
@@ -307,6 +312,7 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
       if (result) {
         setSelfieImage(imageData);
         updateField("selfieImage", result.url);
+        updateField("selfiePublicId", result.publicId);
         updateField("selfieTaken", true);
         console.log("Selfie URL:", result.url);
       }
@@ -325,7 +331,8 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
 
   const retakePhoto = () => {
     setSelfieImage(null);
-    updateField("selfieImage", null);
+    updateField("selfieImage", "");
+    updateField("selfiePublicId", "");
     updateField("selfieTaken", false);
     startCamera();
   };
@@ -344,8 +351,10 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     if (formData.kycSkipped) return true;
 
     const newErrors = {};
-    const hasNid = formData.nidFrontUploaded || formData.nidBackUploaded;
-    const hasBirthCert = formData.birthCertificateUploaded;
+    const hasNidFront = formData.nidFrontImage && formData.nidFrontImage.trim() !== '';
+    const hasNidBack = formData.nidBackImage && formData.nidBackImage.trim() !== '';
+    const hasNid = hasNidFront || hasNidBack;
+    const hasBirthCert = formData.birthCertificateImage && formData.birthCertificateImage.trim() !== '';
     
     if (!hasNid && !hasBirthCert) newErrors.nidUpload = t('nidRequired');
     
@@ -358,7 +367,7 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
       }
     }
     
-    if (!formData.selfieTaken) newErrors.selfie = t('selfieRequired');
+    if (!formData.selfieImage || formData.selfieImage.trim() === '') newErrors.selfie = t('selfieRequired');
     if (!formData.kycConsent) newErrors.kycConsent = t('kycConsentRequired');
     
     if (Object.keys(newErrors).length > 0) {
