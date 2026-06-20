@@ -365,7 +365,7 @@ const Step3Personal = ({ formData, updateField, errors, districts, handleNext, h
         </div>
       </div>
 
-      <button onClick={validateStep} className="w-full py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold mb-3">{t('nextButton')}</button>
+      <button onClick={validateStep} className="w-full mt-5 py-3 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold mb-3">{t('nextButton')}</button>
       <button onClick={handleBack} className="w-full py-3 border border-border rounded-xl font-semibold text-foreground/70 hover:border-primary transition">{t('previous')}</button>
     </motion.div>
   );
