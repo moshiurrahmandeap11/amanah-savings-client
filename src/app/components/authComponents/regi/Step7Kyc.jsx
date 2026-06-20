@@ -158,6 +158,71 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     checkCamera();
   }, []);
 
+  const prepareImageForUpload = (file, fileName = "selfie.jpg") => {
+    return new Promise((resolve) => {
+      const imageType = file.type || "";
+      const hasImageExtension = /\.(jpe?g|png|webp|gif)$/i.test(file.name || "");
+      const isHeic =
+        imageType.includes("heic") ||
+        imageType.includes("heif") ||
+        /\.(heic|heif)$/i.test(file.name || "");
+
+      if (isHeic) {
+        resolve(file);
+        return;
+      }
+
+      if (!imageType.startsWith("image/") && !hasImageExtension) {
+        resolve(file);
+        return;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      const image = new Image();
+
+      image.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+
+        const maxDimension = 1600;
+        const scale = Math.min(
+          1,
+          maxDimension / Math.max(image.width, image.height),
+        );
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              resolve(file);
+              return;
+            }
+
+            resolve(
+              new File([blob], fileName, {
+                type: "image/jpeg",
+                lastModified: Date.now(),
+              }),
+            );
+          },
+          "image/jpeg",
+          0.82,
+        );
+      };
+
+      image.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        resolve(file);
+      };
+
+      image.src = objectUrl;
+    });
+  };
+
   const uploadFileToServer = async (file, folder) => {
     // Validate file size (max 5MB for KYC documents)
     const MAX_KYC_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -170,10 +235,11 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     }
     
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
-    if (!allowedTypes.includes(file.type)) {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif'];
+    const hasAllowedExtension = /\.(jpe?g|png|webp|gif|heic|heif)$/i.test(file.name || "");
+    if (!allowedTypes.includes(file.type) && !hasAllowedExtension) {
       console.error(`[Client Upload] Invalid file type: ${file.type}`);
-      const errorMessage = t('invalidFile') || 'Invalid file type. Please upload JPEG, PNG, or WEBP.';
+      const errorMessage = t('selectValidImage') || 'Invalid file type. Please upload JPEG, PNG, or WEBP.';
       setUploadErrors(prev => ({ ...prev, [folder]: errorMessage }));
       if (showAlert) showAlert(t('uploadError'), errorMessage, "error");
       return null;
@@ -191,7 +257,9 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
       const response = await axiosInstance.post(`/upload/kyc/${folder}`, formDataUpload, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          const percentCompleted = progressEvent.total
+            ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+            : 0;
           setUploadProgress(prev => ({ ...prev, [folder]: percentCompleted }));
         },
       });
@@ -287,14 +355,15 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
   };
 
   const handleSelfieUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
+    const uploadFile = await prepareImageForUpload(file, `selfie-${Date.now()}.jpg`);
     const reader = new FileReader();
     reader.onload = (event) => { setSelfieImage(event.target.result); };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(uploadFile.type === "image/jpeg" ? uploadFile : file);
 
-    const result = await uploadFileToServer(file, 'kyc_selfie');
+    const result = await uploadFileToServer(uploadFile, 'kyc_selfie');
     if (result) {
       updateField("selfieImage", result.url);
       updateField("selfiePublicId", result.publicId);
@@ -302,6 +371,8 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
       console.log("Selfie URL:", result.url);
       if (showAlert) showAlert(t('uploadSuccess'), t('uploadSuccess'), 'success');
     }
+
+    e.target.value = "";
   };
 
   const startCamera = async () => {
@@ -312,7 +383,23 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: 320, height: 400 } });
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 720 },
+            height: { ideal: 960 },
+          },
+          audio: false,
+        });
+      } catch (primaryError) {
+        console.warn("Front camera request failed, trying default camera:", primaryError);
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false,
+        });
+      }
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.play();
@@ -500,6 +587,7 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
         
         <div className="selfie-zone border-2 border-dashed rounded-xl overflow-hidden bg-background relative" style={{ minHeight: '200px' }}>
           <canvas ref={canvasRef} style={{ display: 'none' }} />
+          <input ref={selfieInputRef} type="file" accept="image/*,.heic,.heif" capture="user" onChange={handleSelfieUpload} className="hidden" disabled={uploading} />
           
           {uploadProgress['kyc_selfie'] > 0 && uploadProgress['kyc_selfie'] < 100 && (
             <div className="absolute inset-0 bg-black/50 rounded-xl flex items-center justify-center z-10">
@@ -530,7 +618,6 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
 
           {showUploadOption && !selfieImage && !cameraActive && (
             <div className="flex flex-col items-center justify-center h-48 cursor-pointer hover:bg-primary/5 transition p-4" onClick={() => selfieInputRef.current?.click()}>
-              <input ref={selfieInputRef} type="file" accept="image/*" onChange={handleSelfieUpload} className="hidden" disabled={uploading} />
               <div className="text-4xl mb-3">📤</div>
               <div className="text-base font-semibold text-center">{t('selfieUpload')}</div>
               <div className="text-sm text-foreground/50 text-center mt-1">{t('selfieUploadHint')}</div>
@@ -539,10 +626,28 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
           )}
 
           {!cameraActive && !selfieImage && !showUploadOption && (
-            <div className="flex flex-col items-center justify-center h-48 cursor-pointer hover:bg-primary/5 transition" onClick={startCamera}>
+            <div className="flex flex-col items-center justify-center h-48 hover:bg-primary/5 transition p-4">
               <div className="text-5xl mb-3">🤳</div>
               <div className="text-base font-semibold">{t('selfieMain')}</div>
               <div className="text-sm text-foreground/50">{t('selfieHint')}</div>
+              <div className="flex flex-col sm:flex-row gap-2 mt-4">
+                <button
+                  type="button"
+                  onClick={startCamera}
+                  disabled={uploading}
+                  className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary/90 transition disabled:opacity-50"
+                >
+                  <Camera size={16} /> {t('selfieMain')}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => selfieInputRef.current?.click()}
+                  disabled={uploading}
+                  className="px-4 py-2 border border-primary/30 text-primary rounded-lg text-sm font-semibold flex items-center justify-center gap-2 hover:bg-primary/10 transition disabled:opacity-50"
+                >
+                  <Smartphone size={16} /> {t('uploadSelfie')}
+                </button>
+              </div>
               {hasCamera === false && <div className="mt-2 text-xs text-amber-500">{t('noCamera')}</div>}
             </div>
           )}
