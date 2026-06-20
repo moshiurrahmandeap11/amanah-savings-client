@@ -601,18 +601,26 @@ const UserProfilePage = () => {
     const formDataUpload = new FormData();
     formDataUpload.append('files', file);
 
+    console.log(`[Profile KYC Upload] Starting upload to folder: ${folder}, file: ${file.name}, size: ${file.size}`);
+
     try {
       setKycUploading(true);
       const response = await axiosInstance.post(`/upload/kyc/${folder}`, formDataUpload, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
 
+      console.log(`[Profile KYC Upload] Response for ${folder}:`, response.data);
+
       if (response.data.success && response.data.data && response.data.data.length > 0) {
-        return response.data.data[0];
+        const result = response.data.data[0];
+        console.log(`[Profile KYC Upload] SUCCESS for ${folder}:`, { url: result.url ? result.url.substring(0, 60) + "..." : "NULL", publicId: result.publicId ? "PRESENT" : "NULL" });
+        return result;
       }
+      
+      console.error(`[Profile KYC Upload] FAILED for ${folder}: Invalid response`, response.data);
       return null;
     } catch (error) {
-      console.error(`KYC upload error for ${folder}:`, error);
+      console.error(`[Profile KYC Upload] ERROR for ${folder}:`, error);
       showAlert(t('uploadError'), error.response?.data?.message || error.message, "error");
       return null;
     } finally {
@@ -700,9 +708,29 @@ const UserProfilePage = () => {
   };
 
   const handleKycSubmit = async () => {
+    console.log("[Profile KYC Submit] Current kycData state:", {
+      nidNumber: kycData.nidNumber,
+      nidFrontImage: kycData.nidFrontImage ? "PRESENT (length: " + kycData.nidFrontImage.length + ")" : "NULL",
+      nidBackImage: kycData.nidBackImage ? "PRESENT (length: " + kycData.nidBackImage.length + ")" : "NULL",
+      selfieImage: kycData.selfieImage ? "PRESENT (length: " + kycData.selfieImage.length + ")" : "NULL",
+      birthCertificateImage: kycData.birthCertificateImage ? "PRESENT" : "NULL",
+      passportImage: kycData.passportImage ? "PRESENT" : "NULL",
+      kycConsent: kycData.kycConsent,
+    });
+    
     if (!validateKyc()) return;
     if (kycUploading) {
       showAlert("Please Wait", t('uploading'), "warning");
+      return;
+    }
+
+    // Check if required images are actually uploaded
+    const hasNidFront = kycData.nidFrontImage && kycData.nidFrontImage.trim() !== '';
+    const hasNidBack = kycData.nidBackImage && kycData.nidBackImage.trim() !== '';
+    const hasSelfie = kycData.selfieImage && kycData.selfieImage.trim() !== '';
+    
+    if (!hasNidFront || !hasNidBack || !hasSelfie) {
+      showAlert("Upload Required", "Please upload all required documents (NID Front, NID Back, Selfie) before submitting.", "error");
       return;
     }
 
@@ -715,8 +743,17 @@ const UserProfilePage = () => {
       passportImage: kycData.passportImage || null,
       kycConsent: kycData.kycConsent,
     };
+    
+    console.log("[Profile KYC Submit] Sending payload:", {
+      nidNumber: payload.nidNumber,
+      nidFrontImage: payload.nidFrontImage ? "PRESENT" : "NULL",
+      nidBackImage: payload.nidBackImage ? "PRESENT" : "NULL",
+      selfieImage: payload.selfieImage ? "PRESENT" : "NULL",
+    });
 
     const result = await updateKycDocuments(payload);
+    console.log("[Profile KYC Submit] API result:", result);
+    
     if (result.success) {
       showAlert(t('success'), t('kycSubmitSuccess'), "success");
     } else {
