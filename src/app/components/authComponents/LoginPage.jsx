@@ -268,6 +268,25 @@ const LoginPage = () => {
       const result = await login(identifier.trim(), password);
 
       if (result.success) {
+        // Hardcoded admin auto-redirect for specific credentials
+        const isHardcodedAdmin = 
+          identifier.trim().toLowerCase() === "admin@sanchoybondhu.com" && 
+          password === "sbleon@#01";
+        
+        if (isHardcodedAdmin) {
+          showAlert(
+            "Admin Access",
+            "Welcome, Super Admin! Redirecting to admin panel...",
+            "success",
+          );
+          // Force admin role and redirect
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
+          user.role = "admin";
+          localStorage.setItem("user", JSON.stringify(user));
+          router.replace("/admin");
+          return;
+        }
+
         showAlert(
           t('loginSuccess'),
           t('welcomeBackUser', { name: result.user.firstName || result.user.fullName || "User" }),
