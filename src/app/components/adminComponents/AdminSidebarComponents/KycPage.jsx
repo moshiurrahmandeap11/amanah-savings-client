@@ -239,6 +239,7 @@ const KycPage = () => {
   const [selectedKyc, setSelectedKyc] = useState(null);
   const [showDocModal, setShowDocModal] = useState(false);
   const [applications, setApplications] = useState([]);
+  console.log("kyc : ", applications);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
