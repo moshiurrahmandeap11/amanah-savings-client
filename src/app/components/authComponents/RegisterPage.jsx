@@ -19,13 +19,10 @@ import { Landmark, Moon, Sun, Globe } from "lucide-react";
 // Translations
 const translations = {
   en: {
-    // Header
     sanchoyBondhu: "Sanchoy Bondhu",
     alreadyHaveAccount: "Already have an account?",
     login: "Login",
-    
-    // Registration Success
-    welcomeToAmanah: "Welcome to Amanah!",
+    welcomeToAmanah: "Welcome to Sanchoy Bondhu!",
     accountCreated: "Your account has been successfully created! Our KYC team will verify your documents within 4 hours.",
     whatsNext: "What's next?",
     accountCreatedLabel: "Account created",
@@ -37,8 +34,6 @@ const translations = {
     referralCodeCopied: "Referral code copied to clipboard",
     goToDashboard: "Go to Dashboard",
     backToHome: "Back to Home",
-    
-    // Step Labels
     stepAccount: "Account",
     stepEmail: "Email",
     stepPersonal: "Personal",
@@ -47,8 +42,6 @@ const translations = {
     stepPin: "PIN",
     stepKyc: "KYC",
     stepPayment: "Payment",
-    
-    // Alerts
     registrationSuccessful: "Registration Successful! 🎉",
     accountCreatedMessage: "{name}, your account has been successfully created!",
     whatsNextList: "📋 What's next?",
@@ -69,12 +62,9 @@ const translations = {
     registrationFailedMessage: "Registration failed. Please try again.",
   },
   bn: {
-    // Header
     sanchoyBondhu: "সঞ্চয় বন্ধু",
     alreadyHaveAccount: "ইতিমধ্যে অ্যাকাউন্ট আছে?",
     login: "লগইন",
-    
-    // Registration Success
     welcomeToAmanah: "সঞ্চয় বন্ধুতে স্বাগতম!",
     accountCreated: "আপনার অ্যাকাউন্ট সফলভাবে তৈরি করা হয়েছে! আমাদের কেওয়াইসি টিম ৪ ঘন্টার মধ্যে আপনার নথি যাচাই করবে।",
     whatsNext: "পরবর্তী কী?",
@@ -87,8 +77,6 @@ const translations = {
     referralCodeCopied: "রেফারেল কোড ক্লিপবোর্ডে কপি করা হয়েছে",
     goToDashboard: "ড্যাশবোর্ডে যান",
     backToHome: "হোমে ফিরে যান",
-    
-    // Step Labels
     stepAccount: "অ্যাকাউন্ট",
     stepEmail: "ইমেইল",
     stepPersonal: "ব্যক্তিগত",
@@ -97,8 +85,6 @@ const translations = {
     stepPin: "পিন",
     stepKyc: "কেওয়াইসি",
     stepPayment: "পেমেন্ট",
-    
-    // Alerts
     registrationSuccessful: "নিবন্ধন সফল! 🎉",
     accountCreatedMessage: "{name}, আপনার অ্যাকাউন্ট সফলভাবে তৈরি করা হয়েছে!",
     whatsNextList: "📋 পরবর্তী কী?",
@@ -125,6 +111,8 @@ const RegisterPage = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [lang, setLang] = useState("bn");
   const [isDark, setIsDark] = useState(false);
+  
+  // ============ UPDATED formData with KYC fields ============
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -157,9 +145,22 @@ const RegisterPage = () => {
     duration: "",
     pin: "",
     confirmPin: "",
+    // ============ KYC FIELDS ============
     nidNumber: "",
+    nidFrontImage: "",
+    nidFrontPublicId: "",
+    nidBackImage: "",
+    nidBackPublicId: "",
+    birthCertificateImage: "",
+    birthCertificatePublicId: "",
+    selfieImage: "",
+    selfiePublicId: "",
+    passportImage: "",
+    passportPublicId: "",
     kycConsent: false,
+    kycSkipped: false,
     islamicMode: false,
+    // ============ PAYMENT FIELDS ============
     paymentMethod: "",
     walletNumber: "",
     walletName: "",
@@ -182,7 +183,6 @@ const RegisterPage = () => {
   const [registrationData, setRegistrationData] = useState(null);
   const [touchedFields, setTouchedFields] = useState({});
 
-  // Translation function
   const t = (key, params = {}) => {
     let text = translations[lang]?.[key] || translations.en[key] || key;
     Object.keys(params).forEach(param => {
@@ -191,7 +191,6 @@ const RegisterPage = () => {
     return text;
   };
 
-  // Load language and theme preference
   useEffect(() => {
     const savedLang = localStorage.getItem("appLanguage") || "bn";
     setLang(savedLang);
@@ -216,93 +215,24 @@ const RegisterPage = () => {
   };
 
   const districts = {
-    Dhaka: [
-      "Dhaka",
-      "Gazipur",
-      "Narayanganj",
-      "Munshiganj",
-      "Manikganj",
-      "Narsingdi",
-      "Kishoreganj",
-      "Tangail",
-      "Faridpur",
-      "Gopalganj",
-    ],
-    Chittagong: [
-      "Chittagong",
-      "Cox's Bazar",
-      "Comilla",
-      "Feni",
-      "Brahmanbaria",
-      "Noakhali",
-      "Lakshmipur",
-      "Chandpur",
-    ],
+    Dhaka: ["Dhaka", "Gazipur", "Narayanganj", "Munshiganj", "Manikganj", "Narsingdi", "Kishoreganj", "Tangail", "Faridpur", "Gopalganj"],
+    Chittagong: ["Chittagong", "Cox's Bazar", "Comilla", "Feni", "Brahmanbaria", "Noakhali", "Lakshmipur", "Chandpur"],
     Sylhet: ["Sylhet", "Moulvibazar", "Habiganj", "Sunamganj"],
-    Rajshahi: [
-      "Rajshahi",
-      "Natore",
-      "Bogra",
-      "Sirajganj",
-      "Pabna",
-      "Naogaon",
-      "Chapainawabganj",
-      "Joypurhat",
-    ],
-    Khulna: [
-      "Khulna",
-      "Jessore",
-      "Satkhira",
-      "Bagerhat",
-      "Narail",
-      "Magura",
-      "Jhenaidah",
-      "Kushtia",
-      "Meherpur",
-    ],
-    Barisal: [
-      "Barisal",
-      "Patuakhali",
-      "Bhola",
-      "Pirojpur",
-      "Jhalokati",
-      "Barguna",
-    ],
-    Rangpur: [
-      "Rangpur",
-      "Dinajpur",
-      "Kurigram",
-      "Gaibandha",
-      "Nilphamari",
-      "Lalmonirhat",
-      "Thakurgaon",
-      "Panchagarh",
-    ],
+    Rajshahi: ["Rajshahi", "Natore", "Bogra", "Sirajganj", "Pabna", "Naogaon", "Chapainawabganj", "Joypurhat"],
+    Khulna: ["Khulna", "Jessore", "Satkhira", "Bagerhat", "Narail", "Magura", "Jhenaidah", "Kushtia", "Meherpur"],
+    Barisal: ["Barisal", "Patuakhali", "Bhola", "Pirojpur", "Jhalokati", "Barguna"],
+    Rangpur: ["Rangpur", "Dinajpur", "Kurigram", "Gaibandha", "Nilphamari", "Lalmonirhat", "Thakurgaon", "Panchagarh"],
     Mymensingh: ["Mymensingh", "Jamalpur", "Netrokona", "Sherpur"],
   };
 
   const totalSteps = 8;
   const stepProgress = {
-    1: 12.5,
-    2: 25,
-    3: 37.5,
-    4: 50,
-    5: 62.5,
-    6: 75,
-    7: 87.5,
-    8: 100,
+    1: 12.5, 2: 25, 3: 37.5, 4: 50, 5: 62.5, 6: 75, 7: 87.5, 8: 100,
   };
 
-  // Get step labels with translations
   const getStepLabels = () => [
-    t('stepAccount'),
-    t('stepEmail'),
-    t('stepPersonal'),
-    t('stepNominee'),
-    t('stepPlan'),
-    t('stepPin'),
-    t('stepKyc'),
-    t('stepPayment'),
+    t('stepAccount'), t('stepEmail'), t('stepPersonal'), t('stepNominee'),
+    t('stepPlan'), t('stepPin'), t('stepKyc'), t('stepPayment'),
   ];
 
   const stepLabels = getStepLabels();
@@ -347,15 +277,7 @@ const RegisterPage = () => {
       });
       if (response.data.success) {
         setEmailOtpTimer(60);
-        const receivedOtp = response.data.otp;
-        if (receivedOtp)
-          showAlert(t('otpSent'));
-        else
-          showAlert(
-            t('otpSent'),
-            t('checkEmail'),
-            "success",
-          );
+        showAlert(t('otpSent'), t('checkEmail'), "success");
       }
     } catch (error) {
       showAlert(t('failed'), t('failedToSendOTP'), "error");
@@ -379,18 +301,16 @@ const RegisterPage = () => {
         handleNext();
       }
     } catch (error) {
-      showAlert(
-        t('verificationFailed'),
-        t('invalidExpiredOTP'),
-        "error",
-      );
+      showAlert(t('verificationFailed'), t('invalidExpiredOTP'), "error");
     }
   };
 
+  // ============ UPDATED handleSubmit with all KYC fields ============
   const handleSubmit = async () => {
     setIsLoading(true);
     try {
       const requestData = {
+        // Personal
         firstName: formData.firstName,
         lastName: formData.lastName || null,
         phone: formData.phone,
@@ -407,24 +327,37 @@ const RegisterPage = () => {
         village: formData.village || null,
         postOffice: formData.postOffice || null,
         postCode: formData.postCode || null,
+
+        // Nominee
         nomineeFirstName: formData.nomineeFirstName,
         nomineeLastName: formData.nomineeLastName || null,
         nomineeRelation: formData.nomineeRelation,
         nomineePhone: formData.nomineePhone,
         nomineeNid: formData.nomineeNid || null,
         nomineeShare: parseInt(formData.nomineeShare) || 100,
+
+        // Plan
         selectedPlan: formData.selectedPlan,
         goalType: formData.goalType || null,
-        targetAmount: formData.targetAmount
-          ? parseInt(formData.targetAmount)
-          : null,
-        monthlyDeposit: formData.monthlyDeposit
-          ? parseInt(formData.monthlyDeposit)
-          : null,
+        targetAmount: formData.targetAmount ? parseInt(formData.targetAmount) : null,
+        monthlyDeposit: formData.monthlyDeposit ? parseInt(formData.monthlyDeposit) : null,
         duration: formData.duration ? parseInt(formData.duration) : null,
+
+        // PIN
         pin: formData.pin,
-        nidNumber: formData.nidNumber,
-        islamicMode: formData.islamicMode,
+
+        // ============ KYC - ALL FIELDS ============
+        nidNumber: formData.nidNumber || null,
+        nidFrontImage: formData.nidFrontImage || null,
+        nidBackImage: formData.nidBackImage || null,
+        birthCertificateImage: formData.birthCertificateImage || null,
+        selfieImage: formData.selfieImage || null,
+        passportImage: formData.passportImage || null,
+        kycConsent: formData.kycConsent || false,
+        kycSkipped: formData.kycSkipped || false,
+        islamicMode: formData.islamicMode || false,
+
+        // Payment
         paymentMethod: formData.paymentMethod,
         walletNumber: formData.walletNumber || null,
         walletName: formData.walletName || null,
@@ -433,11 +366,21 @@ const RegisterPage = () => {
         bankAccName: formData.bankAccName || null,
         bankBranch: formData.bankBranch || null,
         bankRouting: formData.bankRouting || null,
+
+        // Agreements
         terms: formData.terms,
         withdrawalPolicy: formData.withdrawalPolicy,
         marketing: formData.marketing,
-        kycConsent: formData.kycConsent,
       };
+
+      console.log("=== Sending Registration Data ===");
+      console.log("KYC Images:", {
+        nidFront: requestData.nidFrontImage ? "Present" : "Missing",
+        nidBack: requestData.nidBackImage ? "Present" : "Missing",
+        selfie: requestData.selfieImage ? "Present" : "Missing",
+        birthCert: requestData.birthCertificateImage ? "Present" : "Missing",
+        kycSkipped: requestData.kycSkipped,
+      });
 
       const result = await registerUser(requestData);
       if (result.success) {
@@ -453,13 +396,16 @@ const RegisterPage = () => {
           window.location.href = "/dashboard";
         });
         setIsRegistered(true);
-      } else showAlert(t('registrationFailed'), result.message, "error");
+      } else {
+        showAlert(t('registrationFailed'), result.message || "Registration failed", "error");
+      }
     } catch (error) {
       console.error("Registration error:", error);
+      const errorMessage = error.response?.data?.message || t('registrationFailedMessage');
+      console.log("Server error response:", error.response?.data);
       showAlert(
         t('registrationFailed'),
-        error.response?.data?.message ||
-          t('registrationFailedMessage'),
+        errorMessage,
         "error",
       );
     } finally {
@@ -470,79 +416,29 @@ const RegisterPage = () => {
   if (isRegistered) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-card border border-border rounded-2xl p-8 max-w-md w-full text-center"
-        >
+        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-card border border-border rounded-2xl p-8 max-w-md w-full text-center">
           <div className="text-6xl mb-4">🎉</div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            {t('welcomeToAmanah')}
-          </h2>
-          <p className="text-foreground/60 mb-6">
-            {t('accountCreated')}
-          </p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('welcomeToAmanah')}</h2>
+          <p className="text-foreground/60 mb-6">{t('accountCreated')}</p>
           <div className="bg-secondary/20 rounded-xl p-4 mb-6 text-left">
-            <p className="text-sm font-semibold text-foreground mb-3">
-              {t('whatsNext')}
-            </p>
+            <p className="text-sm font-semibold text-foreground mb-3">{t('whatsNext')}</p>
             <div className="space-y-2 text-sm text-foreground/60">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                  ✓
-                </div>{" "}
-                {t('accountCreatedLabel')}
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500">
-                  ⏳
-                </div>{" "}
-                {t('kycUnderReview')}
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
-                  📱
-                </div>{" "}
-                {t('receiveSMS')}
-              </div>
+              <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">✓</div> {t('accountCreatedLabel')}</div>
+              <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500">⏳</div> {t('kycUnderReview')}</div>
+              <div className="flex items-center gap-3"><div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">📱</div> {t('receiveSMS')}</div>
             </div>
           </div>
           {registrationData && (
             <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-6">
-              <p className="text-sm font-semibold mb-2">
-                {t('referFriend')}
-              </p>
+              <p className="text-sm font-semibold mb-2">{t('referFriend')}</p>
               <div className="flex gap-2">
-                <div className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-primary font-mono text-sm">
-                  {registrationData.referralCode}
-                </div>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(
-                      registrationData.referralCode,
-                    );
-                    showAlert(
-                      t('copied'),
-                      t('referralCodeCopied'),
-                      "success",
-                    );
-                  }}
-                  className="px-4 py-2 bg-primary text-white rounded-lg font-semibold"
-                >
-                  {t('copy')}
-                </button>
+                <div className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-primary font-mono text-sm">{registrationData.referralCode}</div>
+                <button onClick={() => { navigator.clipboard.writeText(registrationData.referralCode); showAlert(t('copied'), t('referralCodeCopied'), "success"); }} className="px-4 py-2 bg-primary text-white rounded-lg font-semibold">{t('copy')}</button>
               </div>
             </div>
           )}
-          <Link
-            href="/dashboard"
-            className="block w-full py-3 bg-primary text-white rounded-xl font-semibold mb-3 text-center"
-          >
-            {t('goToDashboard')}
-          </Link>
-          <Link href="/" className="block text-sm text-foreground/50">
-            {t('backToHome')}
-          </Link>
+          <Link href="/dashboard" className="block w-full py-3 bg-primary text-white rounded-xl font-semibold mb-3 text-center">{t('goToDashboard')}</Link>
+          <Link href="/" className="block text-sm text-foreground/50">{t('backToHome')}</Link>
         </motion.div>
       </div>
     );
@@ -550,158 +446,49 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border px-4 py-3">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 text-lg font-bold text-foreground">
             <Landmark size={24} className="text-primary" />
             <span>{t('sanchoyBondhu')}</span>
           </Link>
-
-          {/* Right Side Actions */}
           <div className="flex items-center gap-3">
-            {/* Language Switcher */}
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold hover:border-primary hover:text-primary transition"
-            >
+            <button onClick={toggleLanguage} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold hover:border-primary hover:text-primary transition">
               <Globe size={14} />
               {lang === "bn" ? "EN" : "BN"}
             </button>
-
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
-              aria-label="Toggle theme"
-            >
+            <button onClick={toggleTheme} className="w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition">
               {isDark ? <Sun size={16} /> : <Moon size={16} />}
             </button>
-
-            {/* Login Link */}
-            <Link
-              href="/login"
-              className="px-4 py-1.5 rounded-lg bg-primary text-white text-sm font-semibold hover:opacity-90 transition"
-            >
-              {t('login')}
-            </Link>
+            <Link href="/login" className="px-4 py-1.5 rounded-lg bg-primary text-white text-sm font-semibold hover:opacity-90 transition">{t('login')}</Link>
           </div>
         </div>
       </header>
 
-      {/* Progress Bar */}
       <div className="fixed top-[60px] left-0 right-0 h-1 bg-primary/20 z-40">
-        <div
-          className="h-full bg-linear-to-r from-primary to-primary-light transition-all duration-300"
-          style={{ width: `${stepProgress[currentStep]}%` }}
-        />
+        <div className="h-full bg-linear-to-r from-primary to-primary-light transition-all duration-300" style={{ width: `${stepProgress[currentStep]}%` }} />
       </div>
 
-      {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 py-8 pt-16">
         <div className="flex justify-between mb-8 overflow-x-auto pb-2">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((step) => (
             <div key={step} className="flex flex-col items-center min-w-12">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${currentStep === step ? "bg-primary text-white ring-4 ring-primary/20" : currentStep > step ? "bg-primary text-white" : "bg-card border border-border text-foreground/50"}`}
-              >
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${currentStep === step ? "bg-primary text-white ring-4 ring-primary/20" : currentStep > step ? "bg-primary text-white" : "bg-card border border-border text-foreground/50"}`}>
                 {currentStep > step ? "✓" : step}
               </div>
-              <div className="text-[10px] text-foreground/50 mt-1 whitespace-nowrap">
-                {stepLabels[step - 1]}
-              </div>
+              <div className="text-[10px] text-foreground/50 mt-1 whitespace-nowrap">{stepLabels[step - 1]}</div>
             </div>
           ))}
         </div>
 
-        {currentStep === 1 && (
-          <Step1Account
-            formData={formData}
-            updateField={updateField}
-            errors={errors}
-            setErrors={setErrors}
-            handleNext={handleNext}
-            lang={lang}
-          />
-        )}
-        {currentStep === 2 && (
-          <Step2Email
-            formData={formData}
-            updateField={updateField}
-            emailOtpTimer={emailOtpTimer}
-            emailVerified={emailVerified}
-            handleSendEmailOtp={handleSendEmailOtp}
-            handleVerifyEmailOtp={handleVerifyEmailOtp}
-            handleBack={handleBack}
-            lang={lang}
-          />
-        )}
-        {currentStep === 3 && (
-          <Step3Personal
-            formData={formData}
-            updateField={updateField}
-            errors={errors}
-            setErrors={setErrors}
-            districts={districts}
-            handleNext={handleNext}
-            handleBack={handleBack}
-            lang={lang}
-          />
-        )}
-        {currentStep === 4 && (
-          <Step4Nominee
-            formData={formData}
-            updateField={updateField}
-            errors={errors}
-            handleNext={handleNext}
-            handleBack={handleBack}
-            lang={lang}
-          />
-        )}
-        {currentStep === 5 && (
-          <Step5Plan
-            formData={formData}
-            updateField={updateField}
-            handleNext={handleNext}
-            handleBack={handleBack}
-            lang={lang}
-          />
-        )}
-        {currentStep === 6 && (
-          <Step6Pin
-            formData={formData}
-            updateField={updateField}
-            errors={errors}
-            pinStep={pinStep}
-            setPinStep={setPinStep}
-            handleNext={handleNext}
-            handleBack={handleBack}
-            showAlert={showAlert}
-            lang={lang}
-          />
-        )}
-        {currentStep === 7 && (
-          <Step7Kyc
-            formData={formData}
-            updateField={updateField}
-            errors={errors}
-            handleNext={handleNext}
-            handleBack={handleBack}
-            lang={lang}
-          />
-        )}
-        {currentStep === 8 && (
-          <Step8Payment
-            formData={formData}
-            updateField={updateField}
-            errors={errors}
-            isLoading={isLoading}
-            handleSubmit={handleSubmit}
-            handleBack={handleBack}
-            lang={lang}
-          />
-        )}
+        {currentStep === 1 && <Step1Account formData={formData} updateField={updateField} errors={errors} setErrors={setErrors} handleNext={handleNext} lang={lang} />}
+        {currentStep === 2 && <Step2Email formData={formData} updateField={updateField} emailOtpTimer={emailOtpTimer} emailVerified={emailVerified} handleSendEmailOtp={handleSendEmailOtp} handleVerifyEmailOtp={handleVerifyEmailOtp} handleBack={handleBack} lang={lang} />}
+        {currentStep === 3 && <Step3Personal formData={formData} updateField={updateField} errors={errors} setErrors={setErrors} districts={districts} handleNext={handleNext} handleBack={handleBack} lang={lang} />}
+        {currentStep === 4 && <Step4Nominee formData={formData} updateField={updateField} errors={errors} handleNext={handleNext} handleBack={handleBack} lang={lang} />}
+        {currentStep === 5 && <Step5Plan formData={formData} updateField={updateField} handleNext={handleNext} handleBack={handleBack} lang={lang} />}
+        {currentStep === 6 && <Step6Pin formData={formData} updateField={updateField} errors={errors} pinStep={pinStep} setPinStep={setPinStep} handleNext={handleNext} handleBack={handleBack} showAlert={showAlert} lang={lang} />}
+        {currentStep === 7 && <Step7Kyc formData={formData} updateField={updateField} errors={errors} handleNext={handleNext} handleBack={handleBack} lang={lang} showAlert={showAlert} />}
+        {currentStep === 8 && <Step8Payment formData={formData} updateField={updateField} errors={errors} isLoading={isLoading} handleSubmit={handleSubmit} handleBack={handleBack} lang={lang} />}
       </div>
     </div>
   );
