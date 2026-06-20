@@ -1,42 +1,4 @@
-  // Update KYC documents
-  const updateKycDocuments = async (kycData) => {
-    setIsLoading(true);
-    try {
-      const response = await axiosInstance.post("/users/kyc-documents", kycData);
-
-      if (response.data.success) {
-        // Refresh user data to get updated KYC info
-        await getCurrentUser();
-
-        Swal.fire({
-          title: "KYC Documents Updated",
-          text: "Your KYC documents have been submitted for review.",
-          icon: "success",
-          confirmButtonColor: "#059669",
-          confirmButtonText: "OK",
-        });
-        return { success: true };
-      } else {
-        return { success: false, message: response.data.message };
-      }
-    } catch (error) {
-      console.error("Update KYC documents error:", error);
-      let message = "Failed to update KYC documents.";
-      if (error.response?.data?.message) {
-        message = error.response.data.message;
-      }
-      Swal.fire({
-        title: "Update Failed",
-        text: message,
-        icon: "error",
-        confirmButtonColor: "#059669",
-        confirmButtonText: "OK",
-      });
-      return { success: false, message };
-    } finally {
-      setIsLoading(false);
-    }
-  };"use client";
+"use client";
 
 import { useState, useEffect, createContext, useContext } from "react";
 import { useRouter } from "next/navigation";
@@ -408,6 +370,46 @@ export const AuthProvider = ({ children }) => {
         confirmButtonText: "OK",
       });
       return { success: false, message: "Delete failed" };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Update KYC documents
+  const updateKycDocuments = async (kycData) => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.post("/users/kyc-documents", kycData);
+
+      if (response.data.success) {
+        // Refresh user data to get updated KYC info
+        await getCurrentUser();
+
+        Swal.fire({
+          title: "KYC Documents Updated",
+          text: "Your KYC documents have been submitted for review.",
+          icon: "success",
+          confirmButtonColor: "#059669",
+          confirmButtonText: "OK",
+        });
+        return { success: true };
+      } else {
+        return { success: false, message: response.data.message };
+      }
+    } catch (error) {
+      console.error("Update KYC documents error:", error);
+      let message = "Failed to update KYC documents.";
+      if (error.response?.data?.message) {
+        message = error.response.data.message;
+      }
+      Swal.fire({
+        title: "Update Failed",
+        text: message,
+        icon: "error",
+        confirmButtonColor: "#059669",
+        confirmButtonText: "OK",
+      });
+      return { success: false, message };
     } finally {
       setIsLoading(false);
     }
