@@ -440,30 +440,34 @@ const AdminSupportPage = () => {
       });
 
       if (res.data.success) {
-        const formattedTickets = (res.data.data.tickets || []).map(ticket => ({
-          id: ticket.ticketId,
-          ticketId: ticket.ticketId,
-          subject: ticket.subject,
-          message: ticket.message || ticket.subject,
-          preview: ticket.subject,
-          category: ticket.category,
-          categoryIcon: getCategoryIcon(ticket.category),
-          priority: ticket.priority,
-          urgent: ticket.priority === "urgent",
-          resolved: ticket.status === "resolved" || ticket.status === "closed",
-          status: ticket.status,
-          name: ticket.user?.fullName || ticket.user?.name || "Unknown User",
-          phone: ticket.user?.phone,
-          email: ticket.user?.email,
-          avatar: (ticket.user?.fullName || ticket.user?.name)?.[0] || "U",
-          avatarBg: "from-primary to-primary-light",
-          time: new Date(ticket.createdAt).toLocaleString(),
-          createdAt: ticket.createdAt,
-          userId: ticket.userId || ticket.user?._id,
-          hasNewMessage: false,
-          lastMessage: null,
-          lastMessageTime: null,
-        }));
+        const formattedTickets = (res.data.data.tickets || []).map(ticket => {
+          // Server returns user as array from $lookup, extract first element
+          const user = Array.isArray(ticket.user) ? ticket.user[0] : ticket.user;
+          return {
+            id: ticket.ticketId,
+            ticketId: ticket.ticketId,
+            subject: ticket.subject,
+            message: ticket.message || ticket.subject,
+            preview: ticket.subject,
+            category: ticket.category,
+            categoryIcon: getCategoryIcon(ticket.category),
+            priority: ticket.priority,
+            urgent: ticket.priority === "urgent",
+            resolved: ticket.status === "resolved" || ticket.status === "closed",
+            status: ticket.status,
+            name: user?.fullName || user?.name || "Unknown User",
+            phone: user?.phone,
+            email: user?.email,
+            avatar: (user?.fullName || user?.name)?.[0] || "U",
+            avatarBg: "from-primary to-primary-light",
+            time: new Date(ticket.createdAt).toLocaleString(),
+            createdAt: ticket.createdAt,
+            userId: ticket.userId || user?._id,
+            hasNewMessage: false,
+            lastMessage: null,
+            lastMessageTime: null,
+          };
+        });
         
         setTickets(formattedTickets);
         
