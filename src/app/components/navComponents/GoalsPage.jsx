@@ -7,9 +7,7 @@ import {
   Baby,
   Bike,
   Briefcase,
-  Calendar,
   CheckSquare,
-  Edit3,
   Flame,
   Gem,
   GraduationCap,
@@ -308,6 +306,35 @@ const buildAvatars = (name = "S") => {
   ]);
 };
 
+const getAuthToken = () => (typeof window !== "undefined" ? localStorage.getItem("token") : null);
+
+const getShareUrl = (item) => {
+  if (typeof window === "undefined") return "";
+  const origin = window.location.origin;
+  if (item?.source === "circle") return `${origin}/dashboard/circles/${item.id}`;
+  return `${origin}/goals-circles?goal=${item?.id || ""}`;
+};
+
+const shareItem = async (item) => {
+  const url = getShareUrl(item);
+  const text = `Check out ${item?.name || "this savings item"}: ${url}`;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: item?.name || "Savings",
+        text,
+        url,
+      });
+      return;
+    } catch (error) {
+      if (error.name === "AbortError") return;
+    }
+  }
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+};
+
 const normalizeGoal = (goal, t) => {
   const progress = Math.max(0, Math.min(Number(goal.progress) || 0, 100));
   return {
@@ -331,12 +358,14 @@ const normalizeGoal = (goal, t) => {
   };
 };
 
-const normalizeCircle = (circle, t) => {
+const normalizeCircle = (circle, t, joinedCircleIds = new Set()) => {
+  const circleId = String(circle._id || circle.id);
   const members = Number(circle.members ?? circle.currentMembers) || 0;
   const maxMembers = Number(circle.maxMembers) || members || 1;
   const progress = Math.max(0, Math.min(Math.round((members / maxMembers) * 100), 100));
+  const joined = joinedCircleIds.has(circleId);
   return {
-    id: circle._id || circle.id,
+    id: circleId,
     source: "circle",
     name: circle.name || circle.circleName || "Public Circle",
     desc: circle.description || `${members}/${maxMembers} members saving together.`,
@@ -344,15 +373,16 @@ const normalizeCircle = (circle, t) => {
     icon: Users,
     glow: "#0891b2",
     progressColor: "linear-gradient(90deg,#0891b2,#059669)",
-    badge: progress >= 80 ? t('goalBadgeFilling') : t('goalBadgeOpen'),
-    badgeType: progress >= 80 ? "filling" : "open",
+    badge: joined ? "Joined" : progress >= 80 ? t('goalBadgeFilling') : t('goalBadgeOpen'),
+    badgeType: joined ? "joined" : progress >= 80 ? "filling" : "open",
     members,
-    memberText: `${members}/${maxMembers} ${t('goalMembers')}`,
+    memberText: joined ? "You are already joined" : `${members}/${maxMembers} ${t('goalMembers')}`,
     progress,
     monthly: formatCurrency(circle.minDeposit),
     duration: circle.totalPool || formatCurrency(circle.totalPoolValue),
     avatars: buildAvatars(circle.name || circle.circleName),
     createdAt: circle.createdAt,
+    joined,
   };
 };
 
@@ -584,9 +614,9 @@ const GoalsPage = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedGoals, setSelectedGoals] = useState(new Set());
-  const [joinedChallenges, setJoinedChallenges] = useState(new Set());
   const [publicGoals, setPublicGoals] = useState([]);
   const [publicCircles, setPublicCircles] = useState([]);
+  const [joinedCircleIds, setJoinedCircleIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [joiningCircle, setJoiningCircle] = useState(false);
@@ -597,7 +627,7 @@ const GoalsPage = () => {
   useEffect(() => {
     const savedLang = localStorage.getItem('appLanguage') || 'en';
     setLanguage(savedLang);
-    setIsLoggedIn(Boolean(localStorage.getItem("token")));
+    setIsLoggedIn(Boolean(getAuthToken()));
   }, []);
 
   // Translation function
@@ -610,17 +640,17 @@ const GoalsPage = () => {
   const goals = useMemo(
     () => [
       ...publicGoals.map((goal) => normalizeGoal(goal, t)),
-      ...publicCircles.map((circle) => normalizeCircle(circle, t)),
+      ...publicCircles.map((circle) => normalizeCircle(circle, t, joinedCircleIds)),
     ],
-    [publicGoals, publicCircles, language],
+    [publicGoals, publicCircles, joinedCircleIds, language],
   );
   const featuredCircle = useMemo(
-    () => publicCircles[0] ? normalizeCircle(publicCircles[0], t) : null,
-    [publicCircles, language],
+    () => publicCircles[0] ? normalizeCircle(publicCircles[0], t, joinedCircleIds) : null,
+    [publicCircles, joinedCircleIds, language],
   );
   const publicCircleCards = useMemo(
-    () => publicCircles.map((circle) => normalizeCircle(circle, t)),
-    [publicCircles, language],
+    () => publicCircles.map((circle) => normalizeCircle(circle, t, joinedCircleIds)),
+    [publicCircles, joinedCircleIds, language],
   );
   const challenges = useMemo(
     () =>
@@ -634,6 +664,7 @@ const GoalsPage = () => {
           [circle.monthly, "blue"],
         ],
         participants: circle.memberText,
+        joined: circle.joined,
       })),
     [publicCircleCards],
   );
@@ -647,10 +678,51 @@ const GoalsPage = () => {
 
   const selectedGoal = goals.find((goal) => goal.id === joinModalOpen);
 
+  const goToCustomGoal = () => {
+    window.location.href = "/dashboard/goals";
+  };
+
+  const goToDeposit = () => {
+    if (selectedGoals.size === 0) {
+      window.alert("Please select at least one item before deposit.");
+      return;
+    }
+    window.location.href = "/dashboard/submit";
+  };
+
+  const shareSelected = () => {
+    const selectedItems = goals.filter((goal) => selectedGoals.has(goal.id));
+    if (!selectedItems.length) return;
+    shareItem(selectedItems[0]);
+  };
+
+  const openDetails = (item) => {
+    const token = getAuthToken();
+    setIsLoggedIn(Boolean(token));
+
+    if (item.source === "circle") {
+      if (!token) {
+        setJoinMessage("Please register or login first to view circle details.");
+        setJoinModalOpen(item.id);
+        return;
+      }
+      window.location.href = `/dashboard/circles/${item.id}`;
+      return;
+    }
+
+    window.location.href = "/dashboard/goals";
+  };
+
   const openJoinFlow = async (itemId) => {
     const item = goals.find((goal) => goal.id === itemId);
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     setIsLoggedIn(Boolean(token));
+
+    if (item?.source === "circle" && item.joined) {
+      setJoinMessage("You are already joined in this circle.");
+      setJoinModalOpen(itemId);
+      return;
+    }
 
     if (!token || item?.source !== "circle") {
       setJoinMessage("");
@@ -694,6 +766,7 @@ const GoalsPage = () => {
       setLoadError("");
 
       try {
+        const token = getAuthToken();
         const [goalsResponse, circlesResponse] = await Promise.all([
           axiosInstance.get("/goals", { params: { limit: 100 } }),
           axiosInstance.get("/circles/public", { params: { limit: 100 } }),
@@ -701,6 +774,22 @@ const GoalsPage = () => {
 
         setPublicGoals(goalsResponse.data?.data?.goals || []);
         setPublicCircles(circlesResponse.data?.data?.circles || []);
+
+        if (token) {
+          try {
+            const userCirclesResponse = await axiosInstance.get("/circles", {
+              params: { limit: 100 },
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const userCircles = userCirclesResponse.data?.data?.circles || [];
+            setJoinedCircleIds(new Set(userCircles.map((circle) => String(circle._id || circle.id))));
+          } catch (error) {
+            console.error("Fetch joined circles error:", error);
+            setJoinedCircleIds(new Set());
+          }
+        } else {
+          setJoinedCircleIds(new Set());
+        }
       } catch (error) {
         console.error("Fetch public goals/circles error:", error);
         setLoadError(error.response?.data?.message || "Failed to load public savings data");
@@ -770,7 +859,7 @@ const GoalsPage = () => {
             </Link>
             <button
               type="button"
-              onClick={() => setCreateModalOpen(true)}
+              onClick={goToCustomGoal}
               className="inline-flex items-center gap-2 rounded-[9px] border border-[#e2e8f0] bg-transparent px-6 py-3 text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:text-[#f1f5f9]"
             >
               <Sparkles className="h-4 w-4" />
@@ -783,43 +872,46 @@ const GoalsPage = () => {
       {/* Sticky Filter Bar */}
       <div className="sticky top-16 z-30 border-b border-[#e2e8f0] bg-white py-4 shadow-[0_2px_8px_rgba(0,0,0,.04)] dark:border-[#1e2d3d] dark:bg-[#1a2235]">
         <div className="mx-auto max-w-[1160px] px-6">
-          <div className="flex items-center gap-2.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
-            {filters.map((filter) => {
-              const Icon = filter.icon;
-              const active = activeFilter === filter.id;
-              return (
-                <button
-                  key={filter.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveFilter(filter.id);
-                    setSelectedGoals(new Set());
-                  }}
-                  className={`flex shrink-0 items-center gap-1.5 rounded-full border-[1.5px] px-4 py-2 text-[13px] font-semibold transition ${
-                    active
-                      ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white shadow-[0_3px_10px_rgba(5,150,105,.25)]"
-                      : "border-[#e2e8f0] bg-white text-[#475569] hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {filter.label}
-                </button>
-              );
-            })}
-            <div className="ml-auto flex shrink-0 items-center gap-2 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-2 dark:border-[#1e2d3d] dark:bg-[#0a0f1e]">
+          <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div className="flex min-w-0 items-center gap-2.5 overflow-x-auto pb-0.5 [scrollbar-width:none]">
+              {filters.map((filter) => {
+                const Icon = filter.icon;
+                const active = activeFilter === filter.id;
+                return (
+                  <button
+                    key={filter.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveFilter(filter.id);
+                      setSelectedGoals(new Set());
+                    }}
+                    className={`flex shrink-0 items-center gap-1.5 rounded-full border-[1.5px] px-4 py-2 text-[13px] font-semibold transition ${
+                      active
+                        ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white shadow-[0_3px_10px_rgba(5,150,105,.25)]"
+                        : "border-[#e2e8f0] bg-white text-[#475569] hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]"
+                    }`}
+                  >
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
+                    <span className="whitespace-nowrap">{filter.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_auto] lg:w-[390px]">
+              <div className="flex min-w-0 items-center gap-2 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3.5 py-2 dark:border-[#1e2d3d] dark:bg-[#0a0f1e]">
               <Search className="h-3.5 w-3.5 text-[#94a3b8]" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={t('searchPlaceholder')}
-                className="w-32 bg-transparent text-[13px] text-[#0f172a] outline-none placeholder:text-[#94a3b8] dark:text-[#f1f5f9]"
+                className="min-w-0 flex-1 bg-transparent text-[13px] text-[#0f172a] outline-none placeholder:text-[#94a3b8] dark:text-[#f1f5f9]"
               />
             </div>
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
-              className="shrink-0 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3 py-2 text-[13px] font-semibold text-[#0f172a] outline-none dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#f1f5f9]"
+              className="min-w-0 rounded-full border-[1.5px] border-[#e2e8f0] bg-white px-3 py-2 text-[13px] font-semibold text-[#0f172a] outline-none dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#f1f5f9]"
             >
               <option value="default">{t('sortDefault')}</option>
               <option value="progress-desc">{t('sortProgressHigh')}</option>
@@ -827,6 +919,7 @@ const GoalsPage = () => {
               <option value="members-desc">{t('sortMembersHigh')}</option>
               <option value="newest">{t('sortNewest')}</option>
             </select>
+            </div>
           </div>
         </div>
       </div>
@@ -846,14 +939,15 @@ const GoalsPage = () => {
             </label>
             <div className="h-5 w-px bg-white/30" />
             {[
-              [t('bulkDeposit'), Wallet],
-              [t('bulkPause'), Lock],
-              [t('bulkShare'), Share2],
-              [t('bulkDelete'), Trash2],
-            ].map(([label, Icon]) => (
+              [t('bulkDeposit'), Wallet, goToDeposit],
+              [t('bulkShare'), Share2, shareSelected],
+              [t('bulkPause'), Lock, undefined],
+              [t('bulkDelete'), Trash2, undefined],
+            ].map(([label, Icon, action]) => (
               <button
                 key={label}
                 type="button"
+                onClick={action}
                 className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-bold text-white ${
                   label === t('bulkDelete')
                     ? "border-red-400/50 bg-red-500/30"
@@ -922,11 +1016,11 @@ const GoalsPage = () => {
                   onClick={() => openJoinFlow(featuredCircle.id)}
                   className="inline-flex items-center gap-2 rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-bold text-[#059669] transition hover:-translate-y-px"
                 >
-                  {t('featuredButton')} <ArrowRight className="h-3.5 w-3.5" />
+                  {featuredCircle.joined ? "Joined" : t('featuredButton')} <ArrowRight className="h-3.5 w-3.5" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => openJoinFlow(featuredCircle.id)}
+                  onClick={() => openDetails(featuredCircle)}
                   className="rounded-[10px] border-[1.5px] border-white/30 bg-white/15 px-5 py-2.5 text-[13px] font-bold text-white transition hover:bg-white/25"
                 >
                   {t('featuredButton2')}
@@ -971,6 +1065,8 @@ const GoalsPage = () => {
                   selected={selectedGoals.has(goal.id)}
                   onSelect={() => toggleGoalSelection(goal.id)}
                   onJoin={openJoinFlow}
+                  onDetails={openDetails}
+                  onShare={shareItem}
                   t={t}
                 />
               ))}
@@ -987,7 +1083,7 @@ const GoalsPage = () => {
             </p>
             <button
               type="button"
-              onClick={() => setCreateModalOpen(true)}
+              onClick={goToCustomGoal}
               className="inline-flex items-center gap-2 rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] px-7 py-3 text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
             >
               <Sparkles className="h-4 w-4" />
@@ -1013,7 +1109,7 @@ const GoalsPage = () => {
           <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {challenges.map((challenge) => {
               const Icon = challenge.icon;
-              const joined = joinedChallenges.has(challenge.id);
+              const joined = challenge.joined;
               return (
                 <article
                   key={challenge.id}
@@ -1048,7 +1144,7 @@ const GoalsPage = () => {
                         : "border-[#05966933] bg-[#05966914] text-[#059669] hover:border-transparent hover:bg-[linear-gradient(135deg,#059669,#0891b2)] hover:text-white"
                     }`}
                   >
-                    {t('featuredButton')}
+                    {joined ? "Joined" : t('featuredButton')}
                   </button>
                 </article>
               );
@@ -1214,7 +1310,7 @@ function Tag({ type, children }) {
 }
 
 // GoalCard Component with translations
-function GoalCard({ goal, bulkMode, selected, onSelect, onJoin, t }) {
+function GoalCard({ goal, bulkMode, selected, onSelect, onJoin, onDetails, onShare, t }) {
   const Icon = goal.icon;
 
   return (
@@ -1243,7 +1339,9 @@ function GoalCard({ goal, bulkMode, selected, onSelect, onJoin, t }) {
           </div>
           <span
             className={`rounded-lg px-[9px] py-[3px] text-[11px] font-semibold ${
-              goal.badgeType === "filling"
+              goal.badgeType === "joined"
+                ? "bg-[#059669] text-white"
+                : goal.badgeType === "filling"
                 ? "bg-[#f59e0b1a] text-[#d97706]"
                 : "bg-[#0596691a] text-[#059669]"
             }`}
@@ -1297,21 +1395,28 @@ function GoalCard({ goal, bulkMode, selected, onSelect, onJoin, t }) {
           <span className="text-xs font-medium text-[#94a3b8]">{goal.memberText}</span>
         </div>
         <div className="mb-2 flex gap-1.5">
-          {[
-            [t('goalDetails'), Search, "/goal-detail"],
-            [t('goalEdit'), Edit3, "/goal-edit"],
-            [t('goalShare'), Share2, "/goal-share"],
-          ].map(([label, ActionIcon, href]) => (
-            <Link
-              key={label}
-              href={href}
-              onClick={(event) => event.stopPropagation()}
-              className="flex flex-1 items-center justify-center gap-1 rounded-[9px] border border-[#e2e8f0] bg-white p-2 text-xs font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
-            >
-              <ActionIcon className="h-3 w-3" />
-              {label}
-            </Link>
-          ))}
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDetails(goal);
+            }}
+            className="flex flex-1 items-center justify-center gap-1 rounded-[9px] border border-[#e2e8f0] bg-white p-2 text-xs font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+          >
+            <Search className="h-3 w-3" />
+            {t('goalDetails')}
+          </button>
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              onShare(goal);
+            }}
+            className="flex flex-1 items-center justify-center gap-1 rounded-[9px] border border-[#e2e8f0] bg-white p-2 text-xs font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+          >
+            <Share2 className="h-3 w-3" />
+            {t('goalShare')}
+          </button>
         </div>
         <button
           type="button"
@@ -1321,7 +1426,7 @@ function GoalCard({ goal, bulkMode, selected, onSelect, onJoin, t }) {
           }}
           className="w-full rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[11px] text-[13px] font-bold text-white shadow-[0_3px_10px_rgba(5,150,105,.25)] transition hover:-translate-y-px hover:shadow-[0_6px_18px_rgba(5,150,105,.35)]"
         >
-          {t('goalJoin').replace('{name}', goal.name.split(" ")[0])}
+          {goal.joined ? "Joined" : t('goalJoin').replace('{name}', goal.name.split(" ")[0])}
         </button>
       </div>
     </article>

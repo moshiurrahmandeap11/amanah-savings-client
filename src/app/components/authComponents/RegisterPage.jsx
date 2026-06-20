@@ -394,7 +394,7 @@ const RegisterPage = () => {
         setRegistrationData(result.user);
         Swal.fire({
           title: t('registrationSuccessful'),
-          html: `<div style="text-align: left;"><p><strong>${formData.firstName}</strong>, ${t('accountCreatedMessage', { name: formData.firstName })}</p><br><p>${t('whatsNextList')}</p><ul><li>✅ ${t('accountCreatedLabel')}</li><li>⏳ ${t('kycUnderReview')}</li><li>📱 ${t('receiveSMS')}</li></ul><br><p>${t('referralBonus')}</p><p style="background: #f0fdf4; padding: 8px; border-radius: 8px; font-family: monospace;">${result.user.referralCode}</p></div>`,
+          html: `<div style="text-align: left;"><p><strong>${formData.firstName}</strong>, ${t('accountCreatedMessage', )}</p><br><p>${t('whatsNextList')}</p><ul><li>✅ ${t('accountCreatedLabel')}</li><li>⏳ ${t('kycUnderReview')}</li><li>📱 ${t('receiveSMS')}</li></ul><br><p>${t('referralBonus')}</p><p style="background: #f0fdf4; padding: 8px; border-radius: 8px; font-family: monospace;">${result.user.referralCode}</p></div>`,
           icon: "success",
           confirmButtonColor: "#059669",
           confirmButtonText: t('goToDashboard'),

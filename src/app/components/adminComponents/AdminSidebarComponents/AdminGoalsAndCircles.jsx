@@ -217,7 +217,7 @@ export default function AdminGoalsAndCircles() {
 
   return (
     <div className="min-h-screen bg-[#f8fafc] px-4 py-6 text-[#0f172a] sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-full">
         <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
