@@ -197,13 +197,17 @@ const RegisterPage = () => {
   };
 
   useEffect(() => {
-    const savedLang = localStorage.getItem("appLanguage") || "bn";
-    setLang(savedLang);
-    
-    const savedTheme = localStorage.getItem("theme");
-    const shouldUseDark = savedTheme === "dark" || (!savedTheme && document.documentElement.classList.contains("dark"));
-    setIsDark(shouldUseDark);
-    document.documentElement.classList.toggle("dark", shouldUseDark);
+    const timer = setTimeout(() => {
+      const savedLang = localStorage.getItem("appLanguage") || "bn";
+      setLang(savedLang);
+      
+      const savedTheme = localStorage.getItem("theme");
+      const shouldUseDark = savedTheme === "dark" || (!savedTheme && document.documentElement.classList.contains("dark"));
+      setIsDark(shouldUseDark);
+      document.documentElement.classList.toggle("dark", shouldUseDark);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const toggleTheme = () => {
@@ -247,6 +251,18 @@ const RegisterPage = () => {
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
     setTouchedFields((prev) => ({ ...prev, [field]: true }));
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(window.location.search);
+      const referralFromUrl = params.get("ref") || params.get("referralCode");
+      if (referralFromUrl) {
+        updateField("referralCode", referralFromUrl.trim().toUpperCase());
+      }
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const showAlert = (title, message, type = "success") => {
     Swal.fire({

@@ -203,6 +203,14 @@ const Step3Personal = ({ formData, updateField, errors, districts, handleNext, h
     };
   }, [debounceTimer]);
 
+  useEffect(() => {
+    const code = formData.referralCode?.trim();
+    if (code && code.length >= 4 && referralStatus === null) {
+      const timer = setTimeout(() => checkReferralCode(code), 0);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   // Get gender options with translations
   const getGenderOptions = () => [
     { value: "", label: t('selectGender') },

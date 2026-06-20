@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Copy, Check, Share2, Users, Gift, TrendingUp, Loader2, X, Trophy, Medal, Crown, Star, Award, UserPlus, Wallet, Calendar, ArrowUp, MessageCircle, Facebook, Phone } from "lucide-react";
+import { Copy, Check, Share2, Users, Gift, TrendingUp, Loader2, X, Trophy, Medal, Crown, Star, Award, UserPlus, Wallet, Calendar, Clock, ArrowUp, MessageCircle, Facebook, Phone } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 import { FaFacebook } from "react-icons/fa";
@@ -162,8 +162,12 @@ const ReferralPage = () => {
 
   // Get language from localStorage
   useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage') || 'en';
-    setLang(savedLang);
+    const timer = setTimeout(() => {
+      const savedLang = localStorage.getItem('appLanguage') || 'en';
+      setLang(savedLang);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // Fetch referral stats
@@ -171,7 +175,15 @@ const ReferralPage = () => {
     try {
       const response = await axiosInstance.get("/referrals/stats");
       if (response.data.success) {
-        setReferralData(response.data.data);
+        const data = response.data.data;
+        const referralLink = data.referralCode && typeof window !== "undefined"
+          ? `${window.location.origin}/register?ref=${encodeURIComponent(data.referralCode)}`
+          : data.referralLink;
+
+        setReferralData({
+          ...data,
+          referralLink,
+        });
       }
     } catch (error) {
       console.error("Fetch stats error:", error);
@@ -227,8 +239,12 @@ const ReferralPage = () => {
   };
 
   useEffect(() => {
-    fetchReferralStats();
-    fetchReferralHistory();
+    const timer = setTimeout(() => {
+      fetchReferralStats();
+      fetchReferralHistory();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const copyToClipboard = () => {
