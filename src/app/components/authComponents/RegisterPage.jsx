@@ -380,11 +380,13 @@ const RegisterPage = () => {
 
       console.log("=== Sending Registration Data ===");
       console.log("KYC Images:", {
-        nidFront: requestData.nidFrontImage ? "Present" : "Missing",
-        nidBack: requestData.nidBackImage ? "Present" : "Missing",
-        selfie: requestData.selfieImage ? "Present" : "Missing",
-        birthCert: requestData.birthCertificateImage ? "Present" : "Missing",
+        nidFront: requestData.nidFrontImage ? `Present (length: ${requestData.nidFrontImage.length})` : "Missing",
+        nidBack: requestData.nidBackImage ? `Present (length: ${requestData.nidBackImage.length})` : "Missing",
+        selfie: requestData.selfieImage ? `Present (length: ${requestData.selfieImage.length})` : "Missing",
+        birthCert: requestData.birthCertificateImage ? `Present (length: ${requestData.birthCertificateImage.length})` : "Missing",
+        passport: requestData.passportImage ? `Present (length: ${requestData.passportImage.length})` : "Missing",
         kycSkipped: requestData.kycSkipped,
+        nidNumber: requestData.nidNumber,
       });
 
       const result = await registerUser(requestData);

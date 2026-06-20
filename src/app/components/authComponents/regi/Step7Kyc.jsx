@@ -155,14 +155,16 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
   }, []);
 
   const uploadFileToServer = async (file, folder) => {
-    const formData = new FormData();
-    formData.append('files', file);
+    const formDataUpload = new FormData();
+    formDataUpload.append('files', file);
+
+    console.log(`[Client Upload] Starting upload to folder: ${folder}, file: ${file.name}, size: ${file.size}`);
 
     try {
       setUploading(true);
       setUploadErrors(prev => ({ ...prev, [folder]: null }));
       
-      const response = await axiosInstance.post(`/upload/kyc/${folder}`, formData, {
+      const response = await axiosInstance.post(`/upload/kyc/${folder}`, formDataUpload, {
         headers: { 'Content-Type': 'multipart/form-data' },
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
@@ -170,12 +172,18 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
         },
       });
 
-      if (response.data.success) {
-        return response.data.data[0];
+      console.log(`[Client Upload] Response for ${folder}:`, response.data);
+
+      if (response.data.success && response.data.data && response.data.data.length > 0) {
+        const result = response.data.data[0];
+        console.log(`[Client Upload] SUCCESS for ${folder}:`, { url: result.url ? "PRESENT" : "MISSING", publicId: result.publicId ? "PRESENT" : "MISSING" });
+        return result;
       }
+      
+      console.error(`[Client Upload] FAILED for ${folder}: Invalid response`, response.data);
       return null;
     } catch (error) {
-      console.error('Upload error:', error);
+      console.error(`[Client Upload] ERROR for ${folder}:`, error);
       const errorMessage = error.response?.data?.message || error.message || t('uploadError');
       setUploadErrors(prev => ({ ...prev, [folder]: errorMessage }));
       if (showAlert) showAlert(t('uploadError'), errorMessage, "error");
@@ -379,6 +387,10 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
   };
 
   const handleNextClick = () => {
+    if (uploading) {
+      if (showAlert) showAlert("Please Wait", t('uploading'), "warning");
+      return;
+    }
     if (validateStep()) handleNext();
   };
 

@@ -25,6 +25,7 @@ import {
   Lock,
   Upload,
   Trash2,
+  Loader2,
   FileText,
   FileSpreadsheet,
   Receipt,
@@ -149,8 +150,33 @@ const translations = {
     notProvided: "Not provided",
     kycUnderReview: "⏳ Your KYC is under review. Our team will verify within 4 hours.",
     kycVerifiedMsg: "✓ Your KYC has been verified. Your account is fully active.",
+    kycRejectedMsg: "❌ Your KYC was rejected. Please re-submit your documents.",
+    kycSkippedMsg: "⚠️ You skipped KYC during registration. Please submit your documents to activate your account.",
     pending: "pending",
     verified: "verified",
+    rejected: "rejected",
+    skipped: "skipped",
+    updateKycDocuments: "Update KYC Documents",
+    nidFront: "NID Front Side",
+    nidBack: "NID Back Side",
+    selfiePhoto: "Selfie Photo",
+    birthCertificate: "Birth Certificate (Optional)",
+    passport: "Passport (Optional)",
+    uploadDocument: "Upload Document",
+    changeDocument: "Change Document",
+    documentUploaded: "Document uploaded",
+    submitKyc: "Submit KYC Documents",
+    kycSubmitSuccess: "KYC documents submitted successfully! Our team will review within 4 hours.",
+    kycSubmitFailed: "Failed to submit KYC documents. Please try again.",
+    kycConsent: "I confirm that the documents provided are my own and the information is accurate.",
+    kycConsentRequired: "Please agree to the consent statement.",
+    nidNumberRequired: "NID number is required",
+    nidInvalid: "NID must be 10 or 17 digits",
+    selfieRequired: "Selfie photo is required",
+    nidOrBirthRequired: "Please upload NID (front or back) or Birth Certificate",
+    documentPreview: "Document Preview",
+    noDocument: "No document uploaded",
+    kycUpdateBtn: "Update KYC",
     
     // Security
     securitySettings: "Security Settings",
@@ -329,8 +355,33 @@ const translations = {
     notProvided: "প্রদান করা হয়নি",
     kycUnderReview: "⏳ আপনার কেওয়াইসি পর্যালোচনাধীন। আমাদের টিম ৪ ঘন্টার মধ্যে যাচাই করবে।",
     kycVerifiedMsg: "✓ আপনার কেওয়াইসি যাচাই করা হয়েছে। আপনার অ্যাকাউন্ট সম্পূর্ণ সক্রিয়।",
+    kycRejectedMsg: "❌ আপনার কেওয়াইসি প্রত্যাখ্যান করা হয়েছে। দয়া করে নথি আবার জমা দিন।",
+    kycSkippedMsg: "⚠️ আপনি রেজিস্ট্রেশনের সময় কেওয়াইসি স্কিপ করেছেন। আপনার অ্যাকাউন্ট সক্রিয় করতে নথি জমা দিন।",
     pending: "প্রক্রিয়াধীন",
     verified: "যাচাইকৃত",
+    rejected: "প্রত্যাখ্যাত",
+    skipped: "স্কিপ করা হয়েছে",
+    updateKycDocuments: "কেওয়াইসি নথি আপডেট করুন",
+    nidFront: "এনআইডি সামনের পাশ",
+    nidBack: "এনআইডি পেছনের পাশ",
+    selfiePhoto: "সেলফি ছবি",
+    birthCertificate: "জন্ম নিবন্ধন সনদ (ঐচ্ছিক)",
+    passport: "পাসপোর্ট (ঐচ্ছিক)",
+    uploadDocument: "নথি আপলোড করুন",
+    changeDocument: "নথি পরিবর্তন করুন",
+    documentUploaded: "নথি আপলোড হয়েছে",
+    submitKyc: "কেওয়াইসি নথি জমা দিন",
+    kycSubmitSuccess: "কেওয়াইসি নথি সফলভাবে জমা দেওয়া হয়েছে! আমাদের টিম ৪ ঘন্টার মধ্যে পর্যালোচনা করবে।",
+    kycSubmitFailed: "কেওয়াইসি নথি জমা দিতে ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
+    kycConsent: "আমি নিশ্চিত করছি যে দেওয়া নথি আমার নিজের এবং তথ্য সঠিক।",
+    kycConsentRequired: "দয়া করে সম্মতি বিবৃতিতে সম্মত হন।",
+    nidNumberRequired: "এনআইডি নম্বর প্রয়োজন",
+    nidInvalid: "এনআইডি ১০ বা ১৭ অঙ্কের হতে হবে",
+    selfieRequired: "সেলফি ছবি প্রয়োজন",
+    nidOrBirthRequired: "এনআইডি (সামনে বা পেছনে) বা জন্ম নিবন্ধন সনদ আপলোড করুন",
+    documentPreview: "নথি প্রিভিউ",
+    noDocument: "কোনো নথি আপলোড করা হয়নি",
+    kycUpdateBtn: "কেওয়াইসি আপডেট করুন",
     
     // Security
     securitySettings: "নিরাপত্তা সেটিংস",
@@ -412,6 +463,7 @@ const UserProfilePage = () => {
     changePin,
     uploadProfilePicture,
     deleteProfilePicture,
+    updateKycDocuments,
   } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -422,6 +474,24 @@ const UserProfilePage = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [lang, setLang] = useState("bn");
   const fileInputRef = useRef(null);
+
+  // KYC Re-upload states
+  const [kycData, setKycData] = useState({
+    nidNumber: "",
+    nidFrontImage: "",
+    nidBackImage: "",
+    birthCertificateImage: "",
+    selfieImage: "",
+    passportImage: "",
+    kycConsent: false,
+  });
+  const [kycUploading, setKycUploading] = useState(false);
+  const [kycErrors, setKycErrors] = useState({});
+  const nidFrontInputRef = useRef(null);
+  const nidBackInputRef = useRef(null);
+  const birthInputRef = useRef(null);
+  const selfieInputRef = useRef(null);
+  const passportInputRef = useRef(null);
 
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -510,10 +580,149 @@ const UserProfilePage = () => {
           nomineeNid: user.nominee?.nid || "",
           nomineeShare: user.nominee?.share?.toString() || "100",
         });
+        
+        // Populate KYC data from user
+        setKycData({
+          nidNumber: user.kyc?.nidNumber || "",
+          nidFrontImage: user.kyc?.nidFrontImage || "",
+          nidBackImage: user.kyc?.nidBackImage || "",
+          birthCertificateImage: user.kyc?.birthCertificateImage || "",
+          selfieImage: user.kyc?.selfieImage || "",
+          passportImage: user.kyc?.passportImage || "",
+          kycConsent: user.kyc?.kycConsent || false,
+        });
       };
       tryCall();
     }
   }, [user]);
+
+  // ==================== KYC UPLOAD HELPERS ====================
+  const uploadKycFile = async (file, folder) => {
+    const formDataUpload = new FormData();
+    formDataUpload.append('files', file);
+
+    try {
+      setKycUploading(true);
+      const response = await axiosInstance.post(`/upload/kyc/${folder}`, formDataUpload, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      if (response.data.success && response.data.data && response.data.data.length > 0) {
+        return response.data.data[0];
+      }
+      return null;
+    } catch (error) {
+      console.error(`KYC upload error for ${folder}:`, error);
+      showAlert(t('uploadError'), error.response?.data?.message || error.message, "error");
+      return null;
+    } finally {
+      setKycUploading(false);
+    }
+  };
+
+  const handleKycNidFrontUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const result = await uploadKycFile(file, 'kyc_nid_front');
+    if (result) {
+      setKycData(prev => ({ ...prev, nidFrontImage: result.url }));
+      setKycErrors(prev => ({ ...prev, nidFront: null }));
+    }
+  };
+
+  const handleKycNidBackUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const result = await uploadKycFile(file, 'kyc_nid_back');
+    if (result) {
+      setKycData(prev => ({ ...prev, nidBackImage: result.url }));
+      setKycErrors(prev => ({ ...prev, nidBack: null }));
+    }
+  };
+
+  const handleKycBirthUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const result = await uploadKycFile(file, 'kyc_birth_certificate');
+    if (result) {
+      setKycData(prev => ({ ...prev, birthCertificateImage: result.url }));
+    }
+  };
+
+  const handleKycSelfieUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const result = await uploadKycFile(file, 'kyc_selfie');
+    if (result) {
+      setKycData(prev => ({ ...prev, selfieImage: result.url }));
+      setKycErrors(prev => ({ ...prev, selfie: null }));
+    }
+  };
+
+  const handleKycPassportUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const result = await uploadKycFile(file, 'kyc_passport');
+    if (result) {
+      setKycData(prev => ({ ...prev, passportImage: result.url }));
+    }
+  };
+
+  const validateKyc = () => {
+    const errors = {};
+    const hasNidFront = kycData.nidFrontImage && kycData.nidFrontImage.trim() !== '';
+    const hasNidBack = kycData.nidBackImage && kycData.nidBackImage.trim() !== '';
+    const hasBirthCert = kycData.birthCertificateImage && kycData.birthCertificateImage.trim() !== '';
+    
+    if (!hasNidFront && !hasNidBack && !hasBirthCert) {
+      errors.nidOrBirth = t('nidOrBirthRequired');
+    }
+    
+    if ((hasNidFront || hasNidBack) && (!kycData.nidNumber || kycData.nidNumber.trim() === '')) {
+      errors.nidNumber = t('nidNumberRequired');
+    } else if (kycData.nidNumber && kycData.nidNumber.trim() !== '') {
+      const cleaned = kycData.nidNumber.replace(/\D/g, '');
+      if (cleaned.length !== 10 && cleaned.length !== 17) {
+        errors.nidNumber = t('nidInvalid');
+      }
+    }
+    
+    if (!kycData.selfieImage || kycData.selfieImage.trim() === '') {
+      errors.selfie = t('selfieRequired');
+    }
+    
+    if (!kycData.kycConsent) {
+      errors.kycConsent = t('kycConsentRequired');
+    }
+    
+    setKycErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleKycSubmit = async () => {
+    if (!validateKyc()) return;
+    if (kycUploading) {
+      showAlert("Please Wait", t('uploading'), "warning");
+      return;
+    }
+
+    const payload = {
+      nidNumber: kycData.nidNumber || null,
+      nidFrontImage: kycData.nidFrontImage || null,
+      nidBackImage: kycData.nidBackImage || null,
+      birthCertificateImage: kycData.birthCertificateImage || null,
+      selfieImage: kycData.selfieImage || null,
+      passportImage: kycData.passportImage || null,
+      kycConsent: kycData.kycConsent,
+    };
+
+    const result = await updateKycDocuments(payload);
+    if (result.success) {
+      showAlert(t('success'), t('kycSubmitSuccess'), "success");
+    } else {
+      showAlert(t('error'), result.message || t('kycSubmitFailed'), "error");
+    }
+  };
 
   const showAlert = (title, message, type = "success") => {
     Swal.fire({
@@ -1391,7 +1600,9 @@ const UserProfilePage = () => {
               <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                 <Shield size={20} /> {t('kycInformation')}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              {/* Current KYC Status */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <div>
                   <label className="block text-sm font-semibold text-foreground/70 mb-1">
                     {t('nidNumber')}
@@ -1411,35 +1622,238 @@ const UserProfilePage = () => {
                           ? "bg-green-500/10 text-green-500"
                           : user.kyc?.status === "pending"
                             ? "bg-yellow-500/10 text-yellow-500"
-                            : "bg-red-500/10 text-red-500"
+                            : user.kyc?.status === "rejected"
+                              ? "bg-red-500/10 text-red-500"
+                              : user.kyc?.status === "skipped"
+                                ? "bg-amber-500/10 text-amber-500"
+                                : "bg-gray-500/10 text-gray-500"
                       }`}
                     >
                       {user.kyc?.status === "verified" && <Check size={14} />}
                       {user.kyc?.status === "verified" ? t('verified') : 
                        user.kyc?.status === "pending" ? t('pending') : 
+                       user.kyc?.status === "rejected" ? t('rejected') :
+                       user.kyc?.status === "skipped" ? t('skipped') :
                        user.kyc?.status || t('pending')}
                     </span>
                   </div>
                 </div>
+                
+                {/* Status Messages */}
                 {user.kyc?.status === "pending" && (
                   <div className="md:col-span-2">
                     <div className="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                      <p className="text-yellow-500 text-sm">
-                        {t('kycUnderReview')}
-                      </p>
+                      <p className="text-yellow-500 text-sm">{t('kycUnderReview')}</p>
                     </div>
                   </div>
                 )}
                 {user.kyc?.status === "verified" && (
                   <div className="md:col-span-2">
                     <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                      <p className="text-green-500 text-sm">
-                        {t('kycVerifiedMsg')}
-                      </p>
+                      <p className="text-green-500 text-sm">{t('kycVerifiedMsg')}</p>
+                    </div>
+                  </div>
+                )}
+                {user.kyc?.status === "rejected" && (
+                  <div className="md:col-span-2">
+                    <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                      <p className="text-red-500 text-sm">{t('kycRejectedMsg')}</p>
+                      {user.kyc?.rejectionReason && (
+                        <p className="text-red-500/80 text-xs mt-1">Reason: {user.kyc.rejectionReason}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                {(user.kyc?.status === "skipped" || !user.kyc?.status) && (
+                  <div className="md:col-span-2">
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                      <p className="text-amber-500 text-sm">{t('kycSkippedMsg')}</p>
                     </div>
                   </div>
                 )}
               </div>
+
+              {/* KYC Document Update Form - Show for non-verified users */}
+              {user.kyc?.status !== "verified" && (
+                <div className="border border-border rounded-2xl p-5 bg-card">
+                  <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                    <Upload size={18} /> {t('updateKycDocuments')}
+                  </h3>
+                  
+                  {/* NID Number */}
+                  <div className="mb-4">
+                    <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                      {t('nidNumber')} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={kycData.nidNumber}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        setKycData(prev => ({ ...prev, nidNumber: value }));
+                        setKycErrors(prev => ({ ...prev, nidNumber: null }));
+                      }}
+                      className={`w-full p-3 rounded-xl border ${kycErrors.nidNumber ? "border-red-500" : "border-border"} bg-background text-foreground outline-none focus:border-primary`}
+                      placeholder={t('nidNumber')}
+                      maxLength="17"
+                    />
+                    {kycErrors.nidNumber && <p className="text-xs text-red-500 mt-1">{kycErrors.nidNumber}</p>}
+                  </div>
+
+                  {/* Document Upload Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    {/* NID Front */}
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                        {t('nidFront')} <span className="text-red-500">*</span>
+                      </label>
+                      <div 
+                        className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition hover:border-primary ${kycData.nidFrontImage ? "border-primary bg-primary/5" : "border-border"}`}
+                        onClick={() => nidFrontInputRef.current?.click()}
+                      >
+                        <input ref={nidFrontInputRef} type="file" accept="image/*" onChange={handleKycNidFrontUpload} className="hidden" />
+                        {kycData.nidFrontImage ? (
+                          <div className="relative">
+                            <img src={kycData.nidFrontImage} alt="NID Front" className="w-full h-24 object-contain rounded-lg" />
+                            <p className="text-xs text-green-500 mt-1">{t('documentUploaded')}</p>
+                          </div>
+                        ) : (
+                          <div className="py-4">
+                            <div className="text-2xl mb-1">🪪</div>
+                            <p className="text-sm font-semibold">{t('uploadDocument')}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* NID Back */}
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                        {t('nidBack')} <span className="text-red-500">*</span>
+                      </label>
+                      <div 
+                        className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition hover:border-primary ${kycData.nidBackImage ? "border-primary bg-primary/5" : "border-border"}`}
+                        onClick={() => nidBackInputRef.current?.click()}
+                      >
+                        <input ref={nidBackInputRef} type="file" accept="image/*" onChange={handleKycNidBackUpload} className="hidden" />
+                        {kycData.nidBackImage ? (
+                          <div className="relative">
+                            <img src={kycData.nidBackImage} alt="NID Back" className="w-full h-24 object-contain rounded-lg" />
+                            <p className="text-xs text-green-500 mt-1">{t('documentUploaded')}</p>
+                          </div>
+                        ) : (
+                          <div className="py-4">
+                            <div className="text-2xl mb-1">🪪</div>
+                            <p className="text-sm font-semibold">{t('uploadDocument')}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Selfie */}
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                        {t('selfiePhoto')} <span className="text-red-500">*</span>
+                      </label>
+                      <div 
+                        className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition hover:border-primary ${kycData.selfieImage ? "border-primary bg-primary/5" : "border-border"}`}
+                        onClick={() => selfieInputRef.current?.click()}
+                      >
+                        <input ref={selfieInputRef} type="file" accept="image/*" onChange={handleKycSelfieUpload} className="hidden" />
+                        {kycData.selfieImage ? (
+                          <div className="relative">
+                            <img src={kycData.selfieImage} alt="Selfie" className="w-full h-24 object-contain rounded-lg" />
+                            <p className="text-xs text-green-500 mt-1">{t('documentUploaded')}</p>
+                          </div>
+                        ) : (
+                          <div className="py-4">
+                            <div className="text-2xl mb-1">🤳</div>
+                            <p className="text-sm font-semibold">{t('uploadDocument')}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Birth Certificate (Optional) */}
+                    <div>
+                      <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                        {t('birthCertificate')}
+                      </label>
+                      <div 
+                        className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition hover:border-primary ${kycData.birthCertificateImage ? "border-primary bg-primary/5" : "border-border"}`}
+                        onClick={() => birthInputRef.current?.click()}
+                      >
+                        <input ref={birthInputRef} type="file" accept="image/*" onChange={handleKycBirthUpload} className="hidden" />
+                        {kycData.birthCertificateImage ? (
+                          <div className="relative">
+                            <img src={kycData.birthCertificateImage} alt="Birth Certificate" className="w-full h-24 object-contain rounded-lg" />
+                            <p className="text-xs text-green-500 mt-1">{t('documentUploaded')}</p>
+                          </div>
+                        ) : (
+                          <div className="py-4">
+                            <div className="text-2xl mb-1">📜</div>
+                            <p className="text-sm font-semibold">{t('uploadDocument')}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Passport (Optional) */}
+                    <div className="sm:col-span-2">
+                      <label className="block text-sm font-semibold text-foreground/70 mb-1">
+                        {t('passport')}
+                      </label>
+                      <div 
+                        className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition hover:border-primary ${kycData.passportImage ? "border-primary bg-primary/5" : "border-border"}`}
+                        onClick={() => passportInputRef.current?.click()}
+                      >
+                        <input ref={passportInputRef} type="file" accept="image/*" onChange={handleKycPassportUpload} className="hidden" />
+                        {kycData.passportImage ? (
+                          <div className="relative">
+                            <img src={kycData.passportImage} alt="Passport" className="w-full h-24 object-contain rounded-lg" />
+                            <p className="text-xs text-green-500 mt-1">{t('documentUploaded')}</p>
+                          </div>
+                        ) : (
+                          <div className="py-4">
+                            <div className="text-2xl mb-1">🛂</div>
+                            <p className="text-sm font-semibold">{t('uploadDocument')}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {kycErrors.nidOrBirth && <p className="text-sm text-red-500 mb-3">{kycErrors.nidOrBirth}</p>}
+                  {kycErrors.selfie && <p className="text-sm text-red-500 mb-3">{kycErrors.selfie}</p>}
+
+                  {/* KYC Consent */}
+                  <div className="mb-4">
+                    <div 
+                      className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer transition ${kycData.kycConsent ? "bg-primary/5 border border-primary/20" : "bg-background border border-border"}`}
+                      onClick={() => setKycData(prev => ({ ...prev, kycConsent: !prev.kycConsent }))}
+                    >
+                      <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 ${kycData.kycConsent ? "bg-primary border-primary" : "border-border"}`}>
+                        {kycData.kycConsent && <Check size={12} className="text-white" />}
+                      </div>
+                      <p className="text-sm text-foreground/70">{t('kycConsent')}</p>
+                    </div>
+                    {kycErrors.kycConsent && <p className="text-xs text-red-500 mt-1">{kycErrors.kycConsent}</p>}
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    onClick={handleKycSubmit}
+                    disabled={kycUploading}
+                    className="w-full py-3 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {kycUploading ? (
+                      <><Loader2 size={18} className="animate-spin" /> {t('uploading')}</>
+                    ) : (
+                      <><Upload size={18} /> {t('submitKyc')}</>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
