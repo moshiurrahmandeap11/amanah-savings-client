@@ -23,7 +23,8 @@ import {
   PieChart,
   Newspaper,
   HelpCircle,
-  Contact
+  Contact,
+  Target // Goals & Circles এর জন্য আইকন
 } from "lucide-react";
 
 // Translations
@@ -45,6 +46,7 @@ const translations = {
     dashboard: "Dashboard",
     analytics: "Analytics",
     contact: "Contact",
+    goalsCircles: "Goals & Circles",
     
     // Nav Items - Members
     userManagement: "User Management",
@@ -89,6 +91,7 @@ const translations = {
     dashboard: "ড্যাশবোর্ড",
     analytics: "বিশ্লেষণ",
     contact: "যোগাযোগ",
+    goalsCircles: "লক্ষ্য ও সার্কেল",
     
     // Nav Items - Members
     userManagement: "ব্যবহারকারী ব্যবস্থাপনা",
@@ -122,6 +125,7 @@ const AdminSidebar = ({ closeSidebar }) => {
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(false);
   const [currentLang, setCurrentLang] = useState("en");
+  const [langLoaded, setLangLoaded] = useState(false);
 
   // Translation function
   const t = (key, params = {}) => {
@@ -137,9 +141,32 @@ const AdminSidebar = ({ closeSidebar }) => {
     setIsDark(savedTheme === "dark");
     const savedLang = localStorage.getItem("admin_lang") || "en";
     setCurrentLang(savedLang);
+    setLangLoaded(true);
   }, []);
 
-  // Get nav items with translations
+  // ল্যাঙ্গুয়েজ চেঞ্জ শুনতে localStorage এ event listener
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === "admin_lang") {
+        setCurrentLang(e.newValue || "en");
+      }
+    };
+
+    // কাস্টম ইভেন্ট শুনুন (যদি অন্য কোনো কম্পোনেন্ট থেকে ল্যাঙ্গুয়েজ চেইঞ্জ হয়)
+    const handleLangChange = (e) => {
+      setCurrentLang(e.detail || "en");
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("languageChanged", handleLangChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("languageChanged", handleLangChange);
+    };
+  }, []);
+
+  // Get nav items with translations - currentLang এর উপর ভিত্তি করে
   const getNavItems = () => [
     {
       section: t('overview'),
@@ -161,6 +188,12 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <Contact size={18} />,
           href: "/admin/contacts",
           id: "contacts",
+        },
+        {
+          name: t('goalsCircles'), // Goals & Circles যোগ করা হলো
+          icon: <Target size={18} />,
+          href: "/admin/goals-and-circles",
+          id: "goals-circles",
         }
       ],
     },
@@ -290,6 +323,7 @@ const AdminSidebar = ({ closeSidebar }) => {
     },
   ];
 
+  // প্রতিবার currentLang পরিবর্তন হলে navItems রি-জেনারেট হবে
   const navItems = getNavItems();
 
   const isActive = (href) => {

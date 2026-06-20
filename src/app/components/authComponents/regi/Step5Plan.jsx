@@ -135,6 +135,58 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
     return text;
   };
 
+  const getPositiveNumber = (value) => {
+    const number = Number(value);
+    return Number.isFinite(number) && number > 0 ? number : 0;
+  };
+
+  const getPositiveInteger = (value) => {
+    const number = parseInt(value, 10);
+    return Number.isFinite(number) && number > 0 ? number : 0;
+  };
+
+  const syncGoalCalculation = (field, value) => {
+    updateField(field, value);
+
+    const nextTarget = getPositiveNumber(
+      field === "targetAmount" ? value : formData.targetAmount,
+    );
+    const nextMonthly = getPositiveNumber(
+      field === "monthlyDeposit" ? value : formData.monthlyDeposit,
+    );
+    const nextDuration = getPositiveInteger(
+      field === "duration" ? value : formData.duration,
+    );
+
+    if (!value) return;
+
+    if (field === "targetAmount") {
+      if (nextTarget > 0 && nextDuration > 0) {
+        updateField("monthlyDeposit", String(Math.ceil(nextTarget / nextDuration)));
+      } else if (nextTarget > 0 && nextMonthly > 0) {
+        updateField("duration", String(Math.ceil(nextTarget / nextMonthly)));
+      }
+      return;
+    }
+
+    if (field === "monthlyDeposit") {
+      if (nextTarget > 0 && nextMonthly > 0) {
+        updateField("duration", String(Math.ceil(nextTarget / nextMonthly)));
+      } else if (nextMonthly > 0 && nextDuration > 0) {
+        updateField("targetAmount", String(nextMonthly * nextDuration));
+      }
+      return;
+    }
+
+    if (field === "duration") {
+      if (nextTarget > 0 && nextDuration > 0) {
+        updateField("monthlyDeposit", String(Math.ceil(nextTarget / nextDuration)));
+      } else if (nextMonthly > 0 && nextDuration > 0) {
+        updateField("targetAmount", String(nextMonthly * nextDuration));
+      }
+    }
+  };
+
   // Calculate monthly breakdown
   const calculation = useMemo(() => {
     const target = parseFloat(formData.targetAmount) || 0;
@@ -276,16 +328,16 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
         </div>
         <div className="mb-4">
           <label className="block text-sm font-semibold text-foreground/70 mb-1">{t('targetAmount')}</label>
-          <input type="number" value={formData.targetAmount} onChange={(e) => updateField("targetAmount", e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('targetPlaceholder')} />
+          <input type="number" value={formData.targetAmount} onChange={(e) => syncGoalCalculation("targetAmount", e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('targetPlaceholder')} />
         </div>
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block text-sm font-semibold text-foreground/70 mb-1">{t('monthlyDeposit')}</label>
-            <input type="number" value={formData.monthlyDeposit} onChange={(e) => updateField("monthlyDeposit", e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('monthlyPlaceholder')} />
+            <input type="number" value={formData.monthlyDeposit} onChange={(e) => syncGoalCalculation("monthlyDeposit", e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('monthlyPlaceholder')} />
           </div>
           <div>
             <label className="block text-sm font-semibold text-foreground/70 mb-1">{t('duration')}</label>
-            <input type="number" value={formData.duration} onChange={(e) => updateField("duration", e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('durationPlaceholder')} />
+            <input type="number" value={formData.duration} onChange={(e) => syncGoalCalculation("duration", e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('durationPlaceholder')} />
           </div>
         </div>
 

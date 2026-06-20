@@ -627,7 +627,7 @@ const MyCirclesPage = () => {
             {t('pageSubtitle')}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col min-[420px]:flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={() => setShowJoinModal(true)}
             className="px-4 sm:px-5 py-2.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition w-full sm:w-auto flex items-center justify-center gap-2 text-sm sm:text-base"
@@ -653,23 +653,23 @@ const MyCirclesPage = () => {
           <p className="text-foreground/60 mb-4">
             {t('noCirclesDesc')}
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col min-[420px]:flex-row gap-3 justify-center">
             <button
               onClick={() => setShowCircleModal(true)}
-              className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition inline-flex items-center gap-2"
+              className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition inline-flex items-center justify-center gap-2"
             >
               <Plus size={18} /> {t('createCircle')}
             </button>
             <button
               onClick={() => setShowJoinModal(true)}
-              className="px-6 py-2.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition inline-flex items-center gap-2"
+              className="px-6 py-2.5 bg-primary/10 text-primary rounded-xl font-semibold hover:bg-primary/20 transition inline-flex items-center justify-center gap-2"
             >
               <Search size={18} /> {t('joinCircle')}
             </button>
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 mb-8">
           {circles.map((circle, idx) => (
             <motion.div
               key={circle._id || idx}
@@ -677,22 +677,22 @@ const MyCirclesPage = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.1 }}
               whileHover={{ y: -4 }}
-              className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-5 hover:border-primary/40 hover:shadow-xl transition-all cursor-pointer group"
+              className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-5 hover:border-primary/40 hover:shadow-xl transition-all cursor-pointer group min-w-0"
             >
               {/* Circle Header with Actions */}
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
                   <div
-                    className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-primary/10 to-primary-light/10 flex items-center justify-center text-primary group-hover:scale-110 transition`}
+                    className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-primary/10 to-primary-light/10 flex items-center justify-center text-primary group-hover:scale-110 transition shrink-0`}
                   >
                     <Users size={24} />
                   </div>
-                  <div>
-                    <h3 className="font-bold text-foreground text-sm sm:text-base">{circle.name}</h3>
-                    <p className="text-[10px] sm:text-xs text-foreground/50">{circle.type}</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-foreground text-sm sm:text-base leading-snug break-words">{circle.name}</h3>
+                    <p className="text-[10px] sm:text-xs text-foreground/50 break-words">{circle.type}</p>
                   </div>
                 </div>
-                <div className="flex gap-1">
+                <div className="flex gap-1 justify-end shrink-0">
                   {/* Show invite button only for private circles */}
                   {circle.circleType === "private" && (
                     <button
@@ -701,7 +701,7 @@ const MyCirclesPage = () => {
                         generateInvite(circle._id);
                       }}
                       disabled={isGeneratingInvite}
-                      className="p-1.5 rounded-lg hover:bg-primary/10 transition text-foreground/50 hover:text-primary"
+                      className="w-8 h-8 rounded-lg hover:bg-primary/10 transition text-foreground/50 hover:text-primary flex items-center justify-center disabled:opacity-50"
                       title="Generate Invite Link"
                     >
                       {isGeneratingInvite ? (
@@ -716,7 +716,7 @@ const MyCirclesPage = () => {
                       e.stopPropagation();
                       deleteCircle(circle._id, circle.name);
                     }}
-                    className="p-1.5 rounded-lg hover:bg-red-500/10 transition text-foreground/50 hover:text-red-500"
+                    className="w-8 h-8 rounded-lg hover:bg-red-500/10 transition text-foreground/50 hover:text-red-500 flex items-center justify-center"
                     title="Delete Circle"
                   >
                     <Trash2 size={14} />
@@ -725,23 +725,23 @@ const MyCirclesPage = () => {
               </div>
 
               {/* Circle Stats */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
-                <div className="text-center p-2 bg-background rounded-lg">
-                  <div className="text-lg sm:text-xl font-bold text-primary">{circle.members}</div>
-                  <div className="text-[8px] sm:text-[10px] text-foreground/50">{t('members')}</div>
+              <div className="grid grid-cols-1 min-[380px]:grid-cols-3 gap-2 sm:gap-3 mb-4">
+                <div className="text-center p-2.5 bg-background rounded-lg min-w-0">
+                  <div className="text-base sm:text-lg font-bold text-primary break-words leading-tight">{circle.members}</div>
+                  <div className="text-[10px] text-foreground/50 leading-tight">{t('members')}</div>
                 </div>
-                <div className="text-center p-2 bg-background rounded-lg">
-                  <div className="text-lg sm:text-xl font-bold text-primary">{circle.totalPool}</div>
-                  <div className="text-[8px] sm:text-[10px] text-foreground/50">{t('totalPool')}</div>
+                <div className="text-center p-2.5 bg-background rounded-lg min-w-0">
+                  <div className="text-base sm:text-lg font-bold text-primary break-words leading-tight">{circle.totalPool}</div>
+                  <div className="text-[10px] text-foreground/50 leading-tight">{t('totalPool')}</div>
                 </div>
-                <div className="text-center p-2 bg-background rounded-lg">
-                  <div className="text-lg sm:text-xl font-bold text-primary">{circle.nextPayout}</div>
-                  <div className="text-[8px] sm:text-[10px] text-foreground/50">{t('nextPayout')}</div>
+                <div className="text-center p-2.5 bg-background rounded-lg min-w-0">
+                  <div className="text-base sm:text-lg font-bold text-primary break-words leading-tight">{circle.nextPayout}</div>
+                  <div className="text-[10px] text-foreground/50 leading-tight">{t('nextPayout')}</div>
                 </div>
               </div>
 
               <Link href={`/dashboard/circles/${circle._id}`}>
-                <button className="w-full py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs sm:text-sm font-semibold hover:opacity-90 transition">
+                <button className="w-full min-h-10 px-3 py-2 rounded-lg bg-linear-to-r from-primary to-primary-light text-white text-xs sm:text-sm font-semibold hover:opacity-90 transition whitespace-normal leading-snug">
                   {t('viewDetails')}
                 </button>
               </Link>
@@ -856,6 +856,7 @@ const MyCirclesPage = () => {
                         disabled={submitting}
                         placeholder={t('targetPlaceholder')}
                         className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                        style={{ paddingLeft: '2rem' }}  
                       />
                     </div>
                   </div>
@@ -905,6 +906,7 @@ const MyCirclesPage = () => {
                       disabled={submitting}
                       placeholder={t('minDepositPlaceholder')}
                       className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                      style={{ paddingLeft: '2rem' }}  
                     />
                   </div>
                 </div>
@@ -1087,32 +1089,32 @@ const MyCirclesPage = () => {
                         key={circle._id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition"
+                        className="bg-card border border-border rounded-xl p-4 hover:border-primary/40 transition min-w-0"
                       >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                               <Users size={20} />
                             </div>
-                            <div>
-                              <h4 className="font-bold text-foreground">{circle.name}</h4>
-                              <p className="text-xs text-foreground/50">{circle.purpose}</p>
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-bold text-foreground break-words leading-snug">{circle.name}</h4>
+                              <p className="text-xs text-foreground/50 break-words">{circle.purpose}</p>
                             </div>
                           </div>
                           <button
                             onClick={() => joinCircle(circle._id)}
-                            className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:opacity-90 transition"
+                            className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:opacity-90 transition shrink-0"
                           >
                             {t('join')}
                           </button>
                         </div>
-                        <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                          <div>
-                            <div className="font-bold text-primary">{circle.members}/{circle.maxMembers}</div>
+                        <div className="grid grid-cols-1 min-[380px]:grid-cols-3 gap-2 text-center text-xs">
+                          <div className="min-w-0 bg-background rounded-lg p-2">
+                            <div className="font-bold text-primary break-words">{circle.members}/{circle.maxMembers}</div>
                             <div className="text-foreground/50">{t('members')}</div>
                           </div>
-                          <div>
-                            <div className="font-bold text-primary">{circle.totalPool}</div>
+                          <div className="min-w-0 bg-background rounded-lg p-2">
+                            <div className="font-bold text-primary break-words">{circle.totalPool}</div>
                             <div className="text-foreground/50">{t('pool')}</div>
                           </div>
                           <div>

@@ -1277,18 +1277,19 @@ const MyGoalsPage = () => {
       <Target size={14} className="inline mr-1" /> {t('targetAmountLabel')}
     </label>
     <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">
-        ৳
+      <span className="absolute left-3  top-1/2 -translate-y-1/2 text-foreground/50">
+        ৳    
       </span>
-      <input
-        type="number"
-        name="targetAmount"
-        value={formData.targetAmount}
-        onChange={handleInputChange}
-        disabled={submitting}
-        placeholder="   20000"  
-        className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
-      />
+<input
+  type="number"
+  name="targetAmount"
+  value={formData.targetAmount}
+  onChange={handleInputChange}
+  disabled={submitting}
+  placeholder="20000"
+  className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+  style={{ paddingLeft: '2rem' }}  
+/>
     </div>
   </div>
   <div>
@@ -1307,6 +1308,7 @@ const MyGoalsPage = () => {
         disabled={submitting}
         placeholder="   5000"  
         className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+        style={{ paddingLeft: '2rem' }}  
       />
     </div>
   </div>

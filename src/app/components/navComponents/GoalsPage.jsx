@@ -28,6 +28,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import axiosInstance from "../shared/AxiosInstance/AxiosInstance";
 
 // Translations
 const translations = {
@@ -261,6 +262,100 @@ const getFilters = (t) => [
   { id: "business", label: t('filterBusiness'), icon: Briefcase },
 ];
 
+const formatCurrency = (amount) => {
+  const value = Number(amount) || 0;
+  return `৳${value.toLocaleString("en-BD")}`;
+};
+
+const getGoalIcon = (type = "") => {
+  const normalized = type.toLowerCase();
+  if (normalized.includes("hajj") || normalized.includes("umrah")) return Moon;
+  if (normalized.includes("education")) return GraduationCap;
+  if (normalized.includes("business")) return Briefcase;
+  if (normalized.includes("emergency")) return Shield;
+  if (normalized.includes("wedding")) return Heart;
+  if (normalized.includes("gadget") || normalized.includes("device")) return Smartphone;
+  if (normalized.includes("bike") || normalized.includes("car") || normalized.includes("vehicle")) return Bike;
+  if (normalized.includes("child") || normalized.includes("kids")) return Baby;
+  return Target;
+};
+
+const getGoalCategory = (goal) => {
+  const text = `${goal.goalType || ""} ${goal.goalName || ""}`.toLowerCase();
+  const categories = [];
+  if (text.includes("hajj") || text.includes("umrah") || goal.islamicMode) categories.push("islamic");
+  if (text.includes("education") || text.includes("school") || text.includes("university")) categories.push("education");
+  if (text.includes("business")) categories.push("business");
+  if (text.includes("emergency")) categories.push("emergency");
+  if (text.includes("wedding") || text.includes("child") || text.includes("kids") || text.includes("family")) categories.push("family");
+  if (text.includes("gadget") || text.includes("device") || text.includes("phone") || text.includes("laptop")) categories.push("tech");
+  if (text.includes("travel") || text.includes("bike") || text.includes("car") || text.includes("home")) categories.push("lifestyle");
+  return categories.length ? categories.join(" ") : "lifestyle";
+};
+
+const buildAvatars = (name = "S") => {
+  const letters = String(name)
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase());
+  const initials = letters.length ? letters : ["S"];
+  return initials.map((letter, index) => [
+    letter,
+    index === 0
+      ? "linear-gradient(135deg,#059669,#0891b2)"
+      : "linear-gradient(135deg,#f59e0b,#f97316)",
+  ]);
+};
+
+const normalizeGoal = (goal, t) => {
+  const progress = Math.max(0, Math.min(Number(goal.progress) || 0, 100));
+  return {
+    id: goal._id || goal.id,
+    source: "goal",
+    name: goal.goalName || "Savings Goal",
+    desc: goal.description || `${formatCurrency(goal.currentSaved)} saved toward ${formatCurrency(goal.targetAmount)}.`,
+    category: getGoalCategory(goal),
+    icon: getGoalIcon(goal.goalType || goal.goalName),
+    glow: goal.islamicMode ? "#10b981" : "#059669",
+    progressColor: "linear-gradient(90deg,#059669,#0891b2)",
+    badge: goal.islamicMode ? t('goalBadgeIslamic') : t('goalBadgeOpen'),
+    badgeType: "open",
+    members: 1,
+    memberText: goal.status || t('tagActive'),
+    progress,
+    monthly: formatCurrency(goal.monthlyDeposit),
+    duration: `${goal.durationInMonths || Math.ceil((Number(goal.targetAmount) || 0) / (Number(goal.monthlyDeposit) || 1))} mo`,
+    avatars: buildAvatars(goal.goalName),
+    createdAt: goal.createdAt,
+  };
+};
+
+const normalizeCircle = (circle, t) => {
+  const members = Number(circle.members ?? circle.currentMembers) || 0;
+  const maxMembers = Number(circle.maxMembers) || members || 1;
+  const progress = Math.max(0, Math.min(Math.round((members / maxMembers) * 100), 100));
+  return {
+    id: circle._id || circle.id,
+    source: "circle",
+    name: circle.name || circle.circleName || "Public Circle",
+    desc: circle.description || `${members}/${maxMembers} members saving together.`,
+    category: circle.purpose || "lifestyle",
+    icon: Users,
+    glow: "#0891b2",
+    progressColor: "linear-gradient(90deg,#0891b2,#059669)",
+    badge: progress >= 80 ? t('goalBadgeFilling') : t('goalBadgeOpen'),
+    badgeType: progress >= 80 ? "filling" : "open",
+    members,
+    memberText: `${members}/${maxMembers} ${t('goalMembers')}`,
+    progress,
+    monthly: formatCurrency(circle.minDeposit),
+    duration: circle.totalPool || formatCurrency(circle.totalPoolValue),
+    avatars: buildAvatars(circle.name || circle.circleName),
+    createdAt: circle.createdAt,
+  };
+};
+
 // Get goal translations
 const getGoals = (t) => [
   {
@@ -490,11 +585,19 @@ const GoalsPage = () => {
   const [bulkMode, setBulkMode] = useState(false);
   const [selectedGoals, setSelectedGoals] = useState(new Set());
   const [joinedChallenges, setJoinedChallenges] = useState(new Set());
+  const [publicGoals, setPublicGoals] = useState([]);
+  const [publicCircles, setPublicCircles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [joiningCircle, setJoiningCircle] = useState(false);
+  const [joinMessage, setJoinMessage] = useState("");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   // Get language from localStorage
   useEffect(() => {
     const savedLang = localStorage.getItem('appLanguage') || 'en';
     setLanguage(savedLang);
+    setIsLoggedIn(Boolean(localStorage.getItem("token")));
   }, []);
 
   // Translation function
@@ -504,17 +607,110 @@ const GoalsPage = () => {
 
   // Get dynamic data with translations
   const filters = getFilters(t);
-  const goals = getGoals(t);
-  const challenges = getChallenges(t);
+  const goals = useMemo(
+    () => [
+      ...publicGoals.map((goal) => normalizeGoal(goal, t)),
+      ...publicCircles.map((circle) => normalizeCircle(circle, t)),
+    ],
+    [publicGoals, publicCircles, language],
+  );
+  const featuredCircle = useMemo(
+    () => publicCircles[0] ? normalizeCircle(publicCircles[0], t) : null,
+    [publicCircles, language],
+  );
+  const publicCircleCards = useMemo(
+    () => publicCircles.map((circle) => normalizeCircle(circle, t)),
+    [publicCircles, language],
+  );
+  const challenges = useMemo(
+    () =>
+      publicCircleCards.map((circle) => ({
+        id: circle.id,
+        icon: circle.icon,
+        title: circle.name,
+        desc: circle.desc,
+        tags: [
+          [circle.badge, circle.badgeType === "filling" ? "gold" : "green"],
+          [circle.monthly, "blue"],
+        ],
+        participants: circle.memberText,
+      })),
+    [publicCircleCards],
+  );
 
   const filteredGoals = useMemo(() => {
     const filtered = goals
       .filter((goal) => activeFilter === "all" || goal.category.includes(activeFilter))
       .filter((goal) => goal.name.toLowerCase().includes(searchQuery.toLowerCase()));
     return sortGoals(filtered, sortBy);
-  }, [activeFilter, searchQuery, sortBy, language]);
+  }, [goals, activeFilter, searchQuery, sortBy]);
 
   const selectedGoal = goals.find((goal) => goal.id === joinModalOpen);
+
+  const openJoinFlow = async (itemId) => {
+    const item = goals.find((goal) => goal.id === itemId);
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(Boolean(token));
+
+    if (!token || item?.source !== "circle") {
+      setJoinMessage("");
+      setJoinModalOpen(itemId);
+      return;
+    }
+
+    setJoiningCircle(true);
+    try {
+      const response = await axiosInstance.post(
+        `/circles/${itemId}/join`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      setJoinMessage(response.data?.message || "Successfully joined the circle");
+      setJoinModalOpen(itemId);
+
+      const circlesResponse = await axiosInstance.get("/circles/public", {
+        params: { limit: 100 },
+      });
+      setPublicCircles(circlesResponse.data?.data?.circles || []);
+    } catch (error) {
+      setJoinMessage(error.response?.data?.message || "Failed to join circle");
+      setJoinModalOpen(itemId);
+    } finally {
+      setJoiningCircle(false);
+    }
+  };
+
+  const rememberCircleBeforeRegister = () => {
+    if (selectedGoal?.source === "circle") {
+      localStorage.setItem("pendingCircleId", selectedGoal.id);
+      localStorage.setItem("pendingCircleName", selectedGoal.name);
+    }
+  };
+
+  useEffect(() => {
+    const fetchPublicData = async () => {
+      setLoading(true);
+      setLoadError("");
+
+      try {
+        const [goalsResponse, circlesResponse] = await Promise.all([
+          axiosInstance.get("/goals", { params: { limit: 100 } }),
+          axiosInstance.get("/circles/public", { params: { limit: 100 } }),
+        ]);
+
+        setPublicGoals(goalsResponse.data?.data?.goals || []);
+        setPublicCircles(circlesResponse.data?.data?.circles || []);
+      } catch (error) {
+        console.error("Fetch public goals/circles error:", error);
+        setLoadError(error.response?.data?.message || "Failed to load public savings data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPublicData();
+  }, []);
 
   const toggleGoalSelection = (id) => {
     setSelectedGoals((current) => {
@@ -535,6 +731,17 @@ const GoalsPage = () => {
     setBulkMode(false);
     setSelectedGoals(new Set());
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
+        <div className="text-center">
+          <div className="mx-auto mb-3 h-10 w-10 animate-spin rounded-full border-4 border-[#05966933] border-t-[#059669]" />
+          <p className="text-sm text-[#475569] dark:text-[#94a3b8]">Loading public goals and circles...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white font-['Inter',sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
@@ -671,7 +878,14 @@ const GoalsPage = () => {
       {/* Main Content */}
       <main className="px-6 py-10">
         <div className="mx-auto max-w-[1160px]">
+          {loadError && (
+            <div className="mb-6 rounded-[14px] border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-600 dark:border-red-900/50 dark:bg-red-950/30">
+              {loadError}
+            </div>
+          )}
+
           {/* Featured Circle */}
+          {featuredCircle && (
           <section className="relative mb-8 overflow-hidden rounded-[20px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-7 text-white">
             <div className="absolute right-[-80px] top-[-80px] h-[300px] w-[300px] rounded-full bg-white/[.06]" />
             <div className="relative">
@@ -679,16 +893,16 @@ const GoalsPage = () => {
                 <Star className="h-3.5 w-3.5 fill-white" />
                 {t('featuredBadge')}
               </div>
-              <h2 className="mb-1.5 text-[22px] font-black">{t('featuredTitle')}</h2>
+              <h2 className="mb-1.5 text-[22px] font-black">{featuredCircle.name}</h2>
               <p className="mb-4 max-w-[500px] text-sm leading-relaxed text-white/85">
-                {t('featuredDesc')}
+                {featuredCircle.desc}
               </p>
               <div className="mb-5 flex flex-wrap gap-6">
                 {[
-                  ["857", t('featuredMembers')],
-                  ["৳4.2 Cr", t('featuredTotalSaved')],
-                  ["24 mo", t('featuredDuration')],
-                  ["68%", t('featuredProgress')],
+                  [featuredCircle.members.toLocaleString(), t('featuredMembers')],
+                  [featuredCircle.duration, t('featuredTotalSaved')],
+                  [featuredCircle.monthly, t('goalMonthly')],
+                  [`${featuredCircle.progress}%`, t('featuredProgress')],
                 ].map(([value, label]) => (
                   <div key={label}>
                     <div className="text-xl font-extrabold">{value}</div>
@@ -697,21 +911,22 @@ const GoalsPage = () => {
                 ))}
               </div>
               <div className="mb-2 h-2 rounded bg-white/20">
-                <div className="h-full w-[68%] rounded bg-white" />
+                <div className="h-full rounded bg-white" style={{ width: `${featuredCircle.progress}%` }} />
               </div>
               <p className="mb-4 text-xs text-white/75">
-                ৳2.8 Cr {t('featuredTotalSaved')} · ৳1.4 Cr {t('featuredRemaining')} · 143 {t('featuredSpotsLeft')}
+                {featuredCircle.memberText}
               </p>
               <div className="flex flex-wrap gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setJoinModalOpen("wedding")}
+                  onClick={() => openJoinFlow(featuredCircle.id)}
                   className="inline-flex items-center gap-2 rounded-[10px] bg-white px-5 py-2.5 text-[13px] font-bold text-[#059669] transition hover:-translate-y-px"
                 >
                   {t('featuredButton')} <ArrowRight className="h-3.5 w-3.5" />
                 </button>
                 <button
                   type="button"
+                  onClick={() => openJoinFlow(featuredCircle.id)}
                   className="rounded-[10px] border-[1.5px] border-white/30 bg-white/15 px-5 py-2.5 text-[13px] font-bold text-white transition hover:bg-white/25"
                 >
                   {t('featuredButton2')}
@@ -719,6 +934,7 @@ const GoalsPage = () => {
               </div>
             </div>
           </section>
+          )}
 
           {/* Goals Grid */}
           <div className="mb-5 flex items-center justify-between gap-4">
@@ -741,19 +957,25 @@ const GoalsPage = () => {
           </div>
 
           {/* Goal Cards - শুধু changes দেখাচ্ছি, GoalCard component টি আগের মতোই থাকবে */}
-          <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {filteredGoals.map((goal) => (
-              <GoalCard
-                key={goal.id}
-                goal={goal}
-                bulkMode={bulkMode}
-                selected={selectedGoals.has(goal.id)}
-                onSelect={() => toggleGoalSelection(goal.id)}
-                onJoin={setJoinModalOpen}
-                t={t}
-              />
-            ))}
-          </div>
+          {filteredGoals.length === 0 ? (
+            <div className="mb-10 rounded-[20px] border border-[#e2e8f0] bg-white p-8 text-center text-sm font-semibold text-[#475569] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]">
+              No public goals or circles found.
+            </div>
+          ) : (
+            <div className="mb-10 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+              {filteredGoals.map((goal) => (
+                <GoalCard
+                  key={`${goal.source}-${goal.id}`}
+                  goal={goal}
+                  bulkMode={bulkMode}
+                  selected={selectedGoals.has(goal.id)}
+                  onSelect={() => toggleGoalSelection(goal.id)}
+                  onJoin={openJoinFlow}
+                  t={t}
+                />
+              ))}
+            </div>
+          )}
 
           {/* Custom Goal CTA */}
           <section className="mt-4 rounded-[20px] border border-[#e2e8f0] bg-[#f8fafc] p-7 text-center dark:border-[#1e2d3d] dark:bg-[#111827]">
@@ -779,14 +1001,14 @@ const GoalsPage = () => {
       <section className="bg-[linear-gradient(135deg,#ecfdf5,#eff6ff)] px-6 py-14 text-center dark:bg-[linear-gradient(135deg,#022c22,#0c1a3a)]">
         <div className="mx-auto max-w-[1160px]">
           <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-[#05966926] bg-[#05966914] px-3.5 py-1.5 text-xs font-semibold text-[#059669]">
-            <Flame className="h-3.5 w-3.5" />
-            {t('challengeBadge')}
+            <Users className="h-3.5 w-3.5" />
+            Public Circles
           </div>
           <h2 className="mb-2 text-[clamp(24px,3.5vw,36px)] font-black">
-            {t('challengeTitle')} <span className="text-[#059669]">{t('challengeTitleHighlight')}</span>
+            Public Savings <span className="text-[#059669]">Circles</span>
           </h2>
           <p className="mx-auto max-w-[520px] text-[15px] text-[#475569] dark:text-[#94a3b8]">
-            {t('challengeDesc')}
+            Browse active public circles. Private circles stay invite-only.
           </p>
           <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
             {challenges.map((challenge) => {
@@ -819,16 +1041,14 @@ const GoalsPage = () => {
                   </div>
                   <button
                     type="button"
-                    onClick={() =>
-                      setJoinedChallenges((current) => new Set(current).add(challenge.id))
-                    }
+                    onClick={() => openJoinFlow(challenge.id)}
                     className={`w-full rounded-[9px] border p-2.5 text-xs font-bold transition ${
                       joined
                         ? "border-transparent bg-[linear-gradient(135deg,#059669,#0891b2)] text-white"
                         : "border-[#05966933] bg-[#05966914] text-[#059669] hover:border-transparent hover:bg-[linear-gradient(135deg,#059669,#0891b2)] hover:text-white"
                     }`}
                   >
-                    {joined ? t('challengeJoined') : t('challengeJoin')}
+                    {t('featuredButton')}
                   </button>
                 </article>
               );
@@ -861,25 +1081,38 @@ const GoalsPage = () => {
               {t('joinTitle').replace('{name}', selectedGoal?.name || 'Savings')}
             </h3>
             <p className="mb-5 text-center text-[13px] text-[#475569] dark:text-[#94a3b8]">
-              {t('joinDesc')}
+              {joinMessage || t('joinDesc')}
             </p>
             <div className="mb-4 rounded-xl bg-[#f8fafc] p-4 text-[13px] leading-relaxed text-[#475569] dark:bg-[#111827] dark:text-[#94a3b8]">
               <Lock className="mr-1 inline h-3.5 w-3.5" />
               {t('joinLocked')}
             </div>
             <div className="flex flex-col gap-2.5">
-              <Link
-                href="/register"
-                className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
-              >
-                {t('joinButton')}
-              </Link>
-              <Link
-                href="/login"
-                className="rounded-[11px] border-[1.5px] border-[#e2e8f0] bg-white p-3 text-center text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
-              >
-                {t('joinButton2')}
-              </Link>
+              {isLoggedIn && selectedGoal?.source === "circle" ? (
+                <button
+                  type="button"
+                  onClick={() => setJoinModalOpen(null)}
+                  className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
+                >
+                  Close
+                </button>
+              ) : (
+                <>
+                  <Link
+                    href={selectedGoal?.source === "circle" ? `/register?circleId=${selectedGoal.id}` : "/register"}
+                    onClick={rememberCircleBeforeRegister}
+                    className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
+                  >
+                    {joiningCircle ? "Joining..." : t('joinButton')}
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="rounded-[11px] border-[1.5px] border-[#e2e8f0] bg-white p-3 text-center text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+                  >
+                    {t('joinButton2')}
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
