@@ -37,6 +37,7 @@ import {
   Car,
   Briefcase,
   Plane,
+  Banknote,
 } from "lucide-react";
 
 // Translations
@@ -102,6 +103,8 @@ const translations = {
     viewAllTransactions: "View all",
     noTransactions: "No transactions yet",
     pending: "Pending",
+    rejected: "Rejected",
+    approved: "Approved",
     
     // AI Assistant
     aiAssistant: "Sanchoy Bondhu AI Assistant",
@@ -205,6 +208,8 @@ const translations = {
     viewAllTransactions: "সব দেখুন",
     noTransactions: "কোন লেনদেন নেই",
     pending: "বিচারাধীন",
+    rejected: "বাতিল",
+    approved: "অনুমোদিত",
     
     // AI Assistant
     aiAssistant: "সঞ্চয় বন্ধু এআই সহায়ক",
@@ -443,7 +448,7 @@ const DashboardPage = () => {
             amount: d.depositAmount || d.amount || 0,
             status: d.status,
             date: d.createdAt,
-            color: "text-green-500",
+            color: d.status === "rejected" ? "text-red-500" : d.status === "approved" ? "text-green-500" : "text-amber-500",
           });
         });
       }
@@ -457,7 +462,7 @@ const DashboardPage = () => {
             amount: w.withdrawalAmount || w.amount || 0,
             status: w.status,
             date: w.createdAt,
-            color: "text-red-500",
+            color: w.status === "rejected" ? "text-red-500" : w.status === "approved" ? "text-green-500" : "text-amber-500",
           });
         });
       }
@@ -713,6 +718,26 @@ const DashboardPage = () => {
   const progressPercent = targetAmount > 0 ? Math.min(100, Math.round((totalSaved / targetAmount) * 100)) : 0;
   const nextDueDays = 7;
 
+  // Get status display text
+  const getStatusText = (status) => {
+    switch(status) {
+      case "pending": return t('pending');
+      case "rejected": return t('rejected');
+      case "approved": return t('approved');
+      default: return status;
+    }
+  };
+
+  // Get status color class
+  const getStatusColorClass = (status) => {
+    switch(status) {
+      case "pending": return "text-amber-500";
+      case "rejected": return "text-red-500";
+      case "approved": return "text-green-500";
+      default: return "text-foreground/50";
+    }
+  };
+
   if (authLoading) {
     return (
       <div className={`${dashboardColorScope} flex items-center justify-center`}>
@@ -735,7 +760,7 @@ const DashboardPage = () => {
           </p>
         </div>
         <Link href="/dashboard/submit" className="px-5 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold hover:opacity-90 transition w-full sm:w-auto text-center inline-flex items-center justify-center gap-2">
-          <DollarSign size={16} /> {t('deposit')}
+          <Banknote size={16} /> {t('deposit')}
         </Link>
       </div>
 
@@ -892,23 +917,56 @@ const DashboardPage = () => {
               <div className="text-center py-6 text-foreground/50 text-sm">{t('noTransactions')}</div>
             ) : (
               <div className="space-y-3">
-                {recentTransactions.map((tx, idx) => (
-                  <div key={idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg ${tx.type === "deposit" ? "bg-green-500/10" : "bg-red-500/10"} flex items-center justify-center`}>
-                        {tx.type === "deposit" ? <DollarSign size={14} className="text-green-500" /> : <Send size={14} className="text-red-500" />}
+                {recentTransactions.map((tx, idx) => {
+                  const isDeposit = tx.type === "deposit";
+                  const isRejected = tx.status === "rejected";
+                  const isPending = tx.status === "pending";
+                  const isApproved = tx.status === "approved";
+                  
+                  let bgColor = "bg-green-500/10";
+                  let iconColor = "text-green-500";
+                  let amountColor = "text-green-500";
+                  let amountPrefix = "+";
+                  
+                  if (isRejected) {
+                    bgColor = "bg-red-500/10";
+                    iconColor = "text-red-500";
+                    amountColor = "text-red-500";
+                    amountPrefix = "✕ ";
+                  } else if (isPending) {
+                    bgColor = "bg-amber-500/10";
+                    iconColor = "text-amber-500";
+                    amountColor = "text-amber-500";
+                    amountPrefix = isDeposit ? "+" : "-";
+                  } else if (isApproved) {
+                    bgColor = isDeposit ? "bg-green-500/10" : "bg-red-500/10";
+                    iconColor = isDeposit ? "text-green-500" : "text-red-500";
+                    amountColor = isDeposit ? "text-green-500" : "text-red-500";
+                    amountPrefix = isDeposit ? "+" : "-";
+                  }
+                  
+                  return (
+                    <div key={idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-lg ${bgColor} flex items-center justify-center`}>
+                          {isDeposit ? <Banknote size={14} className={iconColor} /> : <Send size={14} className={iconColor} />}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-foreground capitalize">{tx.type}</div>
+                          <div className="text-xs text-foreground/50">{new Date(tx.date).toLocaleDateString()}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div className="text-sm font-semibold text-foreground capitalize">{tx.type}</div>
-                        <div className="text-xs text-foreground/50">{new Date(tx.date).toLocaleDateString()}</div>
+                      <div className="text-right">
+                        <div className={`text-sm font-bold ${amountColor}`}>
+                          {isRejected ? "✕ " : amountPrefix}{formatCurrency(tx.amount)}
+                        </div>
+                        <div className={`text-xs ${getStatusColorClass(tx.status)}`}>
+                          {getStatusText(tx.status)}
+                        </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className={`text-sm font-bold ${tx.type === "deposit" ? "text-green-500" : "text-red-500"}`}>{tx.type === "deposit" ? "+" : "-"}{formatCurrency(tx.amount)}</div>
-                      <div className={`text-xs ${tx.status === "pending" ? "text-amber-500" : "text-green-500"}`}>{tx.status === "pending" ? t('pending') : tx.status}</div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

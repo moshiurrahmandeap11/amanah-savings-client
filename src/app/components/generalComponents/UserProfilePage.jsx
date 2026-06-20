@@ -25,11 +25,19 @@ import {
   Lock,
   Upload,
   Trash2,
+  FileText,
+  FileSpreadsheet,
+  Receipt,
+  BadgeCheck,
+  CalendarDays,
+  Award,
+  ChevronRight,
 } from "lucide-react";
 import Swal from "sweetalert2";
 import useAuth from "../../hooks/useAuth";
 import axiosInstance from "../shared/AxiosInstance/AxiosInstance";
 import Image from "next/image";
+import Link from "next/link";
 
 // Translations
 const translations = {
@@ -202,6 +210,16 @@ const translations = {
     failed: "Failed",
     deleted: "Deleted!",
     ok: "OK",
+
+    // Footer Section - Account Documents & Reports
+    accountDocuments: "Account Documents & Reports",
+    monthlyReport: "Monthly Savings Report",
+    taxCertificate: "Tax Certificate",
+    depositReceipt: "Deposit Receipt",
+    kycStatus: "KYC Status",
+    annualSummary: "Annual Summary",
+    myBadges: "My Badges",
+    viewAll: "View All",
   },
   bn: {
     // Page Header
@@ -372,6 +390,16 @@ const translations = {
     failed: "ব্যর্থ",
     deleted: "মুছে ফেলা হয়েছে!",
     ok: "ঠিক আছে",
+
+    // Footer Section - Account Documents & Reports
+    accountDocuments: "অ্যাকাউন্ট ডকুমেন্ট ও রিপোর্ট",
+    monthlyReport: "মাসিক সঞ্চয় রিপোর্ট",
+    taxCertificate: "ট্যাক্স সার্টিফিকেট",
+    depositReceipt: "জমার রসিদ",
+    kycStatus: "কেওয়াইসি স্ট্যাটাস",
+    annualSummary: "বার্ষিক সারসংক্ষেপ",
+    myBadges: "আমার ব্যাজ",
+    viewAll: "সব দেখুন",
   }
 };
 
@@ -697,6 +725,37 @@ const UserProfilePage = () => {
     return `৳${amount.toLocaleString()}`;
   };
 
+  // Footer section items
+  const footerItems = [
+    {
+      id: "tax-certificate",
+      icon: FileText,
+      label: t('taxCertificate'),
+      labelBn: "ট্যাক্স সার্টিফিকেট",
+      href: "/dashboard/tax-certificate",
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+    },
+    {
+      id: "deposit-receipt",
+      icon: Receipt,
+      label: t('depositReceipt'),
+      labelBn: "জমার রসিদ",
+      href: "/dashboard/deposit-receipt",
+      color: "text-green-500",
+      bg: "bg-green-500/10",
+    },
+    {
+      id: "annual-summary",
+      icon: CalendarDays,
+      label: t('annualSummary'),
+      labelBn: "বার্ষিক সারসংক্ষেপ",
+      href: "/dashboard/annual",
+      color: "text-rose-500",
+      bg: "bg-rose-500/10",
+    },
+  ];
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -735,7 +794,7 @@ const UserProfilePage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4">
+    <div className="min-h-screen bg-background py-8 px-4 pb-32">
       <div className="max-w-full mx-auto">
         {/* Header */}
         <motion.div
@@ -757,7 +816,7 @@ const UserProfilePage = () => {
                       className="w-20 h-20 rounded-full object-cover border-2 border-primary"
                     />
                   ) : (
-                    <div className="w-20 h-20 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white text-3xl font-bold">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-r from-primary to-primary-light flex items-center justify-center text-white text-3xl font-bold">
                       {user.firstName?.[0] || user.fullName?.[0] || "U"}
                     </div>
                   )}
@@ -889,7 +948,7 @@ const UserProfilePage = () => {
           })}
         </div>
 
-        {/* Tab Content - Rest of your existing code remains the same */}
+        {/* Tab Content */}
         <motion.div
           key={activeTab}
           initial={{ opacity: 0, x: 20 }}
@@ -1416,6 +1475,44 @@ const UserProfilePage = () => {
               </div>
             </div>
           )}
+        </motion.div>
+
+        {/* ==================== FOOTER SECTION ==================== */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="mt-8"
+        >
+          <div className="bg-card border border-border rounded-2xl p-6">
+            <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+              <FileText size={20} className="text-primary" />
+              {t('accountDocuments')}
+            </h2>
+            
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {footerItems.map((item) => {
+                const IconComponent = item.icon;
+                const displayLabel = lang === 'bn' ? item.labelBn : item.label;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    className="group flex flex-col items-center justify-center p-4 rounded-xl border border-border hover:border-primary transition-all duration-200 hover:shadow-md hover:-translate-y-1"
+                  >
+                    <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center mb-2 group-hover:scale-110 transition-transform duration-200`}>
+                      <IconComponent size={24} className={item.color} />
+                    </div>
+                    <span className="text-xs font-medium text-foreground/70 text-center leading-tight group-hover:text-primary transition-colors duration-200">
+                      {displayLabel}
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* View All Button */}
+          </div>
         </motion.div>
       </div>
 

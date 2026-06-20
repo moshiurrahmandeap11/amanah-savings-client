@@ -217,8 +217,9 @@ const ZakatPage = () => {
     totalAssets: 0,
     totalLiabilities: 0,
     net: 0,
-    zakat: 0,
+    zakatDue: 0,
     aboveNisab: false,
+    nisab: 0,
   });
   const [showShareModal, setShowShareModal] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -244,11 +245,16 @@ const ZakatPage = () => {
     
     const savedCalculation = localStorage.getItem("zakatCalculation");
     if (savedCalculation) {
-      const data = JSON.parse(savedCalculation);
-      setAssets(data.assets || assets);
-      setLiabilities(data.liabilities || liabilities);
-      setGoldRate(data.goldRate || 11000);
-      setSilverRate(data.silverRate || 130);
+      try {
+        const data = JSON.parse(savedCalculation);
+        if (data.assets) setAssets(data.assets);
+        if (data.liabilities) setLiabilities(data.liabilities);
+        if (data.goldRate) setGoldRate(data.goldRate);
+        if (data.silverRate) setSilverRate(data.silverRate);
+        if (data.result) setResult(data.result);
+      } catch (e) {
+        console.error("Error loading saved calculation:", e);
+      }
     }
   }, []);
 
@@ -259,8 +265,11 @@ const ZakatPage = () => {
       ...data,
       goldRate,
       silverRate,
+      assets,
+      liabilities,
+      result,
     }));
-  }, [goldRate, silverRate]);
+  }, [goldRate, silverRate, assets, liabilities, result]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
@@ -289,31 +298,40 @@ const ZakatPage = () => {
     setLoading(true);
     
     try {
+      // Prepare assets with correct field names for backend
+      const assetsForBackend = {
+        cash: assets.cash || 0,
+        sanchoy: assets.sanchoy || 0,
+        mobile: assets.mobile || 0,
+        invest: assets.invest || 0,
+        gold_g: assets.gold_g || 0,
+        silver_g: assets.silver_g || 0,
+        stock: assets.stock || 0,
+        recv: assets.recv || 0,
+      };
+
+      const liabilitiesForBackend = {
+        loan: liabilities.loan || 0,
+        bills: liabilities.bills || 0,
+        other: liabilities.other || 0,
+      };
+
       const response = await axiosInstance.post("/zakat/calculate", {
-        goldRate,
-        silverRate,
-        assets,
-        liabilities,
+        goldRate: goldRate || 0,
+        silverRate: silverRate || 0,
+        assets: assetsForBackend,
+        liabilities: liabilitiesForBackend,
       });
       
       if (response.data.success) {
-        setResult(response.data.data);
-        
-        localStorage.setItem("zakatCalculation", JSON.stringify({
-          assets,
-          liabilities,
-          goldRate,
-          silverRate,
-          result: response.data.data,
-          timestamp: new Date().toISOString(),
-        }));
-        
-        await axiosInstance.post("/zakat/save", {
-          goldRate,
-          silverRate,
-          assets,
-          liabilities,
-          ...response.data.data,
+        const data = response.data.data;
+        setResult({
+          totalAssets: data.totalAssets || 0,
+          totalLiabilities: data.totalLiabilities || 0,
+          net: data.net || 0,
+          zakatDue: data.zakatDue || 0,
+          aboveNisab: data.aboveNisab || false,
+          nisab: data.nisab || getNisab(),
         });
       }
     } catch (error) {
@@ -322,14 +340,22 @@ const ZakatPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [goldRate, silverRate, assets, liabilities]);
+  }, [goldRate, silverRate, assets, liabilities, getNisab]);
 
   const updateAsset = useCallback((field, value) => {
-    setAssets((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
+    const numValue = parseFloat(value);
+    setAssets((prev) => ({ 
+      ...prev, 
+      [field]: isNaN(numValue) ? 0 : numValue 
+    }));
   }, []);
 
   const updateLiability = useCallback((field, value) => {
-    setLiabilities((prev) => ({ ...prev, [field]: parseFloat(value) || 0 }));
+    const numValue = parseFloat(value);
+    setLiabilities((prev) => ({ 
+      ...prev, 
+      [field]: isNaN(numValue) ? 0 : numValue 
+    }));
   }, []);
 
   const resetCalculator = useCallback(() => {
@@ -350,14 +376,15 @@ const ZakatPage = () => {
       totalAssets: 0,
       totalLiabilities: 0,
       net: 0,
-      zakat: 0,
+      zakatDue: 0,
       aboveNisab: false,
+      nisab: 0,
     });
     showToast(t('resetDone'), "success");
   }, [lang]);
 
   const createZakatGoal = async () => {
-    if (result.zakat <= 0) {
+    if (result.zakatDue <= 0) {
       showToast(t('cannotCreateGoal'), "error");
       return;
     }
@@ -366,7 +393,7 @@ const ZakatPage = () => {
     
     try {
       const response = await axiosInstance.post("/zakat/create-goal", {
-        zakatAmount: result.zakat,
+        zakatAmount: result.zakatDue,
         description: `Zakat savings for ${new Date().getFullYear()}`,
       });
       
@@ -374,8 +401,8 @@ const ZakatPage = () => {
         Swal.fire({
           title: t('zakatGoalCreated'),
           html: lang === "bn"
-            ? `${t('zakatGoalDesc')}<br/><strong>${t('amount')}: ৳${result.zakat.toLocaleString()}</strong>`
-            : `${t('zakatGoalDesc')}<br/><strong>${t('amount')}: ৳${result.zakat.toLocaleString()}</strong>`,
+            ? `${t('zakatGoalDesc')}<br/><strong>${t('amount')}: ৳${result.zakatDue.toLocaleString()}</strong>`
+            : `${t('zakatGoalDesc')}<br/><strong>${t('amount')}: ৳${result.zakatDue.toLocaleString()}</strong>`,
           icon: "success",
           confirmButtonColor: "#059669",
           confirmButtonText: t('goToDashboard'),
@@ -403,7 +430,7 @@ const ZakatPage = () => {
 
   const shareAction = useCallback(
     (type) => {
-      const amt = Math.round(result.zakat).toLocaleString("en-IN");
+      const amt = Math.round(result.zakatDue).toLocaleString("en-IN");
       const msg =
         lang === "bn"
           ? `আমার যাকাত এই বছর: ৳${amt}\n\nসঞ্চয় বন্ধু দিয়ে আপনার যাকাত গণনা করুন`
@@ -419,9 +446,10 @@ const ZakatPage = () => {
       }
       closeShareModal();
     },
-    [result.zakat, lang, showToast, closeShareModal],
+    [result.zakatDue, lang, showToast, closeShareModal],
   );
 
+  // Auto-calculate on load
   useEffect(() => {
     calculateZakat();
   }, []);
@@ -441,18 +469,6 @@ const ZakatPage = () => {
         <h1 className="text-white text-lg font-bold flex-1 flex items-center gap-2">
           <Calculator size={20} /> {t('zakatCalculator')}
         </h1>
-        <button
-          onClick={toggleTheme}
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition"
-        >
-          {isDark ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-        <button
-          onClick={() => setLang(lang === "bn" ? "en" : "bn")}
-          className="px-3 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold hover:bg-white/30 transition"
-        >
-          {lang === "bn" ? "EN" : "BN"}
-        </button>
       </div>
 
       {/* Hero */}
@@ -480,7 +496,10 @@ const ZakatPage = () => {
                 <input
                   type="number"
                   value={goldRate}
-                  onChange={(e) => setGoldRate(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setGoldRate(isNaN(val) ? 0 : val);
+                  }}
                   className="w-24 p-1.5 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-emerald-500"
                 />
                 <span className="text-sm font-semibold">৳/g</span>
@@ -494,7 +513,10 @@ const ZakatPage = () => {
                 <input
                   type="number"
                   value={silverRate}
-                  onChange={(e) => setSilverRate(parseFloat(e.target.value) || 0)}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value);
+                    setSilverRate(isNaN(val) ? 0 : val);
+                  }}
                   className="w-24 p-1.5 rounded-lg border border-border bg-background text-foreground text-right text-sm font-bold outline-none focus:border-emerald-500"
                 />
                 <span className="text-sm font-semibold">৳/g</span>
@@ -518,6 +540,11 @@ const ZakatPage = () => {
                 </div>
               </div>
             </div>
+            {result.aboveNisab && (
+              <div className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold rounded-full">
+                ✓ Above Nisab
+              </div>
+            )}
           </div>
         </div>
 
@@ -543,7 +570,13 @@ const ZakatPage = () => {
               </div>
               <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
                 <span className="px-2 py-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-r border-border">৳</span>
-                <input type="number" value={item.value} onChange={(e) => updateAsset(item.id, e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" />
+                <input 
+                  type="number" 
+                  value={item.value || 0} 
+                  onChange={(e) => updateAsset(item.id, e.target.value)} 
+                  className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" 
+                  min="0"
+                />
               </div>
             </div>
           ))}
@@ -560,7 +593,14 @@ const ZakatPage = () => {
             </div>
             <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
               <span className="px-2 py-1 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-r border-border">g</span>
-              <input type="number" value={assets.gold_g} onChange={(e) => updateAsset("gold_g", e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" step="0.1" />
+              <input 
+                type="number" 
+                value={assets.gold_g || 0} 
+                onChange={(e) => updateAsset("gold_g", e.target.value)} 
+                className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" 
+                step="0.1" 
+                min="0"
+              />
             </div>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-border last:border-0">
@@ -570,7 +610,14 @@ const ZakatPage = () => {
             </div>
             <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
               <span className="px-2 py-1 text-xs font-bold text-gray-500 border-r border-border">g</span>
-              <input type="number" value={assets.silver_g} onChange={(e) => updateAsset("silver_g", e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" step="0.1" />
+              <input 
+                type="number" 
+                value={assets.silver_g || 0} 
+                onChange={(e) => updateAsset("silver_g", e.target.value)} 
+                className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" 
+                step="0.1" 
+                min="0"
+              />
             </div>
           </div>
         </div>
@@ -590,7 +637,13 @@ const ZakatPage = () => {
               </div>
               <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
                 <span className="px-2 py-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-r border-border">৳</span>
-                <input type="number" value={item.value} onChange={(e) => updateAsset(item.id, e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" />
+                <input 
+                  type="number" 
+                  value={item.value || 0} 
+                  onChange={(e) => updateAsset(item.id, e.target.value)} 
+                  className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" 
+                  min="0"
+                />
               </div>
             </div>
           ))}
@@ -617,7 +670,13 @@ const ZakatPage = () => {
               </div>
               <div className="flex items-center border border-border rounded-lg bg-background overflow-hidden">
                 <span className="px-2 py-1 text-xs font-bold text-red-500 bg-red-50 dark:bg-red-950/30 border-r border-border">৳</span>
-                <input type="number" value={item.value} onChange={(e) => updateLiability(item.id, e.target.value)} className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" />
+                <input 
+                  type="number" 
+                  value={item.value || 0} 
+                  onChange={(e) => updateLiability(item.id, e.target.value)} 
+                  className="w-28 p-1 text-right text-sm font-semibold bg-transparent text-foreground outline-none" 
+                  min="0"
+                />
               </div>
             </div>
           ))}
@@ -633,7 +692,7 @@ const ZakatPage = () => {
             <div className="absolute right-0 top-0 text-8xl opacity-10 pointer-events-none">☪️</div>
             <div className="text-white/85 text-sm mb-1">{t('yourZakatThisYear')}</div>
             <div className="text-4xl font-bold text-white mb-1">
-              ৳ {Math.round(result.zakat).toLocaleString()}
+              ৳ {Math.round(result.zakatDue).toLocaleString()}
             </div>
             <div className="text-white/80 text-xs">{t('zakatRateInfo')}</div>
           </div>
@@ -677,7 +736,7 @@ const ZakatPage = () => {
             </div>
             <div className="flex justify-between text-base pt-2 border-t-2 border-border">
               <span className="font-bold text-foreground">{t('zakatDue')}</span>
-              <span className="font-bold text-emerald-600 text-lg">৳ {Math.round(result.zakat).toLocaleString()}</span>
+              <span className="font-bold text-emerald-600 text-lg">৳ {Math.round(result.zakatDue).toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -690,7 +749,7 @@ const ZakatPage = () => {
           >
             <RefreshCw size={16} /> {t('reset')}
           </button>
-          {result.aboveNisab && (
+          {result.aboveNisab && result.zakatDue > 0 && (
             <button
               onClick={openShareModal}
               className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 transition"
@@ -701,7 +760,7 @@ const ZakatPage = () => {
         </div>
 
         {/* Save to Goal Prompt */}
-        {result.aboveNisab && result.zakat > 0 && (
+        {result.aboveNisab && result.zakatDue > 0 && (
           <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-xl p-4">
             <div className="flex items-center gap-3">
               <Target size={24} className="text-emerald-600" />
@@ -751,7 +810,7 @@ const ZakatPage = () => {
             >
               <div className="w-10 h-1 bg-border rounded-full mx-auto mb-5" />
               <div className="text-4xl font-bold text-emerald-600 mb-1">
-                ৳ {Math.round(result.zakat).toLocaleString()}
+                ৳ {Math.round(result.zakatDue).toLocaleString()}
               </div>
               <div className="text-sm text-foreground/60 mb-5">{t('yourZakatThisYear')}</div>
               <div className="flex justify-center gap-4 mb-5">

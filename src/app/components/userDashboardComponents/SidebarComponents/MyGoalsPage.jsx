@@ -1262,46 +1262,47 @@ const MyGoalsPage = () => {
                 </div>
 
                 {/* Target Amount & Monthly Deposit */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                      <Target size={14} className="inline mr-1" /> {t('targetAmountLabel')}
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">
-                        ৳
-                      </span>
-                      <input
-                        type="number"
-                        name="targetAmount"
-                        value={formData.targetAmount}
-                        onChange={handleInputChange}
-                        disabled={submitting}
-                        placeholder="500000"
-                        className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
-                      <Wallet size={14} className="inline mr-1" /> {t('monthlyDepositLabelForm')}
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">
-                        ৳
-                      </span>
-                      <input
-                        type="number"
-                        name="monthlyDeposit"
-                        value={formData.monthlyDeposit}
-                        onChange={handleInputChange}
-                        disabled={submitting}
-                        placeholder="10000"
-                        className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
-                      />
-                    </div>
-                  </div>
-                </div>
+{/* Target Amount & Monthly Deposit */}
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div>
+    <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
+      <Target size={14} className="inline mr-1" /> {t('targetAmountLabel')}
+    </label>
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">
+        ৳
+      </span>
+      <input
+        type="number"
+        name="targetAmount"
+        value={formData.targetAmount}
+        onChange={handleInputChange}
+        disabled={submitting}
+        placeholder="   20000"  
+        className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+      />
+    </div>
+  </div>
+  <div>
+    <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
+      <Wallet size={14} className="inline mr-1" /> {t('monthlyDepositLabelForm')}
+    </label>
+    <div className="relative">
+      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">
+        ৳
+      </span>
+      <input
+        type="number"
+        name="monthlyDeposit"
+        value={formData.monthlyDeposit}
+        onChange={handleInputChange}
+        disabled={submitting}
+        placeholder="   5000"  
+        className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+      />
+    </div>
+  </div>
+</div>
 
                 {/* Target Date */}
                 <div>

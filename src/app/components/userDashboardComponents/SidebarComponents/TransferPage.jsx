@@ -10,57 +10,39 @@ import Swal from "sweetalert2";
 // Translations
 const translations = {
   en: {
-    // Header
     transfer: "Transfer",
-    
-    // Step Labels
     type: "Type",
     source: "Source",
     destination: "Destination",
     amount: "Amount",
-    
-    // Step 1 - Transfer Type
     whatType: "What type of transfer?",
     goalToGoal: "Goal → Goal",
     anotherUser: "Another User",
     goalToGoalInfo: "Move money between your goals — completely free and instant.",
     userToUserInfo: "Send money directly to another Sanchoy Bondhu user.",
-    
-    // Step 2 - Source
     transferFromGoal: "Transfer from which goal?",
     balance: "Balance",
     current: "Current",
-    
-    // Step 3 - Destination
     transferToGoal: "Transfer to which goal?",
     whoSendingTo: "Who are you sending to?",
     findUser: "Find User",
     userFound: "User found!",
-    enterValidPhone: "Please enter a valid phone number",
-    
-    // Step 4 - Amount
+    enterValidPhone: "Please enter a valid phone number (11 digits)",
     howMuch: "How much to transfer?",
     noteOptional: "Note (Optional)",
     notePlaceholder: "Why are you sending? e.g., For Hajj fund",
     characters: "characters",
     insufficientBalance: "Insufficient balance. Available:",
-    
-    // Summary
     transferSummary: "Transfer Summary",
-    type: "Type",
     from: "From",
     to: "To",
-    amount: "Amount",
     fee: "Fee",
     free: "Free",
-    
-    // Buttons
     confirmTransfer: "Confirm Transfer",
+    proceedToAmount: "Proceed to Amount",
     createGoal: "Create a Goal",
     goToDashboard: "Go to Dashboard",
     makeAnotherTransfer: "Make Another Transfer",
-    
-    // Messages
     noActiveGoals: "No Active Goals",
     noGoalsDesc: "Create a goal first to make transfers",
     cannotTransferSame: "Cannot transfer to the same goal",
@@ -70,63 +52,45 @@ const translations = {
     transferCompleteDesc: "Your transfer has been successfully completed.",
     amountSent: "sent to",
     transactionId: "Transaction ID",
-    
-    // Toast
     transferFailed: "Transfer failed",
     searchUser: "Search user...",
+    selectDestinationGoal: "Please select a destination goal",
+    searchUserFirst: "Please search and select a user first",
   },
   bn: {
-    // Header
     transfer: "ট্রান্সফার",
-    
-    // Step Labels
     type: "ধরন",
     source: "উৎস",
     destination: "গন্তব্য",
     amount: "পরিমাণ",
-    
-    // Step 1 - Transfer Type
     whatType: "কি ধরনের ট্রান্সফার?",
     goalToGoal: "গোল → গোল",
     anotherUser: "অন্য ব্যবহারকারী",
     goalToGoalInfo: "আপনার গোলগুলোর মধ্যে টাকা সরান — সম্পূর্ণ বিনামূল্যে এবং তাৎক্ষণিক।",
     userToUserInfo: "সরাসরি অন্য সঞ্চয় বন্ধু ব্যবহারকারীকে টাকা পাঠান।",
-    
-    // Step 2 - Source
     transferFromGoal: "কোন গোল থেকে ট্রান্সফার করবেন?",
     balance: "ব্যালেন্স",
     current: "বর্তমান",
-    
-    // Step 3 - Destination
     transferToGoal: "কোন গোলে ট্রান্সফার করবেন?",
     whoSendingTo: "আপনি কাকে পাঠাচ্ছেন?",
     findUser: "ব্যবহারকারী খুঁজুন",
     userFound: "ব্যবহারকারী পাওয়া গেছে!",
-    enterValidPhone: "দয়া করে একটি বৈধ ফোন নম্বর দিন",
-    
-    // Step 4 - Amount
+    enterValidPhone: "দয়া করে একটি বৈধ ফোন নম্বর দিন (১১ ডিজিট)",
     howMuch: "কত টাকা ট্রান্সফার করবেন?",
     noteOptional: "নোট (ঐচ্ছিক)",
     notePlaceholder: "কেন পাঠাচ্ছেন? যেমন: হজ ফান্ডের জন্য",
     characters: "অক্ষর",
     insufficientBalance: "পর্যাপ্ত ব্যালেন্স নেই। উপলব্ধ:",
-    
-    // Summary
     transferSummary: "ট্রান্সফার সারাংশ",
-    type: "ধরন",
     from: "থেকে",
     to: "প্রতি",
-    amount: "পরিমাণ",
     fee: "চার্জ",
     free: "বিনামূল্যে",
-    
-    // Buttons
     confirmTransfer: "ট্রান্সফার নিশ্চিত করুন",
+    proceedToAmount: "পরিমাণ নির্ধারণ করুন",
     createGoal: "গোল তৈরি করুন",
     goToDashboard: "ড্যাশবোর্ডে যান",
     makeAnotherTransfer: "আরও ট্রান্সফার করুন",
-    
-    // Messages
     noActiveGoals: "কোন সক্রিয় গোল নেই",
     noGoalsDesc: "ট্রান্সফার করতে প্রথমে একটি গোল তৈরি করুন",
     cannotTransferSame: "একই গোলে ট্রান্সফার করা যাবে না",
@@ -136,10 +100,10 @@ const translations = {
     transferCompleteDesc: "আপনার ট্রান্সফার সফলভাবে সম্পন্ন হয়েছে।",
     amountSent: "পাঠানো হয়েছে",
     transactionId: "লেনদেন আইডি",
-    
-    // Toast
     transferFailed: "ট্রান্সফার ব্যর্থ হয়েছে",
     searchUser: "ব্যবহারকারী খুঁজুন...",
+    selectDestinationGoal: "দয়া করে একটি গন্তব্য গোল নির্বাচন করুন",
+    searchUserFirst: "দয়া করে প্রথমে একজন ব্যবহারকারী খুঁজুন এবং নির্বাচন করুন",
   }
 };
 
@@ -163,16 +127,8 @@ const TransferPage = () => {
   const [submitting, setSubmitting] = useState(false);
   const [transferResult, setTransferResult] = useState(null);
 
-  // Translation function
-  const t = (key, params = {}) => {
-    let text = translations[lang]?.[key] || translations.en[key] || key;
-    Object.keys(params).forEach(param => {
-      text = text.replace(`{${param}}`, params[param]);
-    });
-    return text;
-  };
+  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
-  // Fetch user's goals
   const fetchGoals = async () => {
     try {
       const response = await axiosInstance.get("/goals?status=active");
@@ -200,17 +156,9 @@ const TransferPage = () => {
     const savedTheme = localStorage.getItem("theme");
     setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-
     const savedLang = localStorage.getItem('appLanguage') || 'bn';
     setLang(savedLang);
   }, []);
-
-  const toggleTheme = () => {
-    const newTheme = !isDark;
-    setIsDark(newTheme);
-    localStorage.setItem("theme", newTheme ? "dark" : "light");
-    document.documentElement.classList.toggle("dark", newTheme);
-  };
 
   const showToast = (message, type = "error") => {
     setToast({ show: true, message, type });
@@ -240,20 +188,60 @@ const TransferPage = () => {
     setActiveStep(4);
   };
 
+  const formatPhoneForSearch = (phone) => {
+    let cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('0')) cleaned = cleaned.substring(1);
+    if (cleaned.startsWith('88')) cleaned = cleaned.substring(2);
+    if (cleaned.length === 10) cleaned = '0' + cleaned;
+    if (cleaned.length === 11) return cleaned;
+    return cleaned;
+  };
+
+  const isValidBangladeshPhone = (phone) => {
+    const formatted = formatPhoneForSearch(phone);
+    return /^01[3-9]\d{8}$/.test(formatted) || /^1[3-9]\d{9}$/.test(formatted);
+  };
+
   const searchRecipient = async () => {
-    if (recipientPhone.length < 11) {
+    const formattedPhone = formatPhoneForSearch(recipientPhone);
+
+    if (!isValidBangladeshPhone(formattedPhone) && !isValidBangladeshPhone(recipientPhone)) {
       showToast(t('enterValidPhone'), "error");
       return;
     }
 
+    const searchPhones = [
+      formattedPhone,
+      recipientPhone.replace(/\D/g, ''),
+      formattedPhone.startsWith('0') ? formattedPhone.substring(1) : '0' + formattedPhone,
+    ];
+
+    const uniquePhones = [...new Set(searchPhones)];
     setSubmitting(true);
+    let found = false;
+
     try {
-      const response = await axiosInstance.get(`/transfers/search-user?phone=${recipientPhone}`);
-      if (response.data.success) {
-        setRecipientData(response.data.data);
-        setRecipientFound(true);
-        setActiveStep(4);
-        showToast(t('userFound'), "success");
+      for (const phone of uniquePhones) {
+        if (phone.length < 10 || phone.length > 11) continue;
+        try {
+          const response = await axiosInstance.get(`/transfers/search-user?phone=${phone}`);
+          if (response.data.success) {
+            setRecipientData(response.data.data);
+            setRecipientFound(true);
+            setRecipientPhone(response.data.data.phone);
+            showToast(t('userFound'), "success");
+            found = true;
+            break;
+          }
+        } catch (err) {
+          continue;
+        }
+      }
+
+      if (!found) {
+        showToast(t('userNotFound'), "error");
+        setRecipientFound(false);
+        setRecipientData(null);
       }
     } catch (error) {
       console.error("Search user error:", error);
@@ -265,9 +253,18 @@ const TransferPage = () => {
     }
   };
 
+  // ✅ New: proceed to step 4 after user is found
+  const proceedToAmount = () => {
+    if (!recipientFound) {
+      showToast(t('searchUserFirst'), "error");
+      return;
+    }
+    setActiveStep(4);
+  };
+
   const submitTransfer = async () => {
     const amt = parseFloat(amount) || 0;
-    
+
     if (amt < 10) {
       showToast(t('minTransferError'), "error");
       return;
@@ -301,8 +298,9 @@ const TransferPage = () => {
           note: note || null,
         });
       } else {
+        const phoneToSend = recipientData?.phone || formatPhoneForSearch(recipientPhone);
         response = await axiosInstance.post("/transfers/user-to-user", {
-          toUserPhone: recipientPhone,
+          toUserPhone: phoneToSend,
           amount: amt,
           note: note || null,
           fromGoalId: selFrom,
@@ -344,7 +342,7 @@ const TransferPage = () => {
       const goal = goals.find(g => g._id === selTo);
       return goal?.goalName || "—";
     } else if (trType === "user2user" && recipientFound) {
-      return `${recipientData?.name} (${recipientPhone})`;
+      return `${recipientData?.name || recipientData?.fullName || ''} (${recipientData?.phone || recipientPhone})`;
     }
     return "—";
   };
@@ -354,21 +352,11 @@ const TransferPage = () => {
     return goal?.goalName || "—";
   };
 
-  const getTypeLabel = () => {
-    if (trType === "goal2goal") return t('goalToGoal');
-    return t('anotherUser');
-  };
+  const getTypeLabel = () => trType === "goal2goal" ? t('goalToGoal') : t('anotherUser');
+  const getTypeInfo = () => trType === "goal2goal" ? t('goalToGoalInfo') : t('userToUserInfo');
 
-  const getTypeInfo = () => {
-    if (trType === "goal2goal") return t('goalToGoalInfo');
-    return t('userToUserInfo');
-  };
-
-  const getStepLabels = () => {
-    return [t('type'), t('source'), t('destination'), t('amount')];
-  };
-
-  const stepLabels = getStepLabels();
+  const stepLabels = [t('type'), t('source'), t('destination'), t('amount')];
+  const selectedFromGoal = goals.find(g => g._id === selFrom);
 
   if (loading) {
     return (
@@ -384,12 +372,10 @@ const TransferPage = () => {
         <div className="text-center">
           <Target size={48} className="text-foreground/30 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-foreground mb-2">{t('noActiveGoals')}</h3>
-          <p className="text-foreground/60 mb-4">
-            {t('noGoalsDesc')}
-          </p>
+          <p className="text-foreground/60 mb-4">{t('noGoalsDesc')}</p>
           <button
             onClick={() => router.push("/dashboard/goals")}
-            className="px-6 py-2.5 bg-linear-to-r from-primary to-primary-light text-white rounded-xl font-semibold"
+            className="px-6 py-2.5 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-semibold"
           >
             {t('createGoal')}
           </button>
@@ -397,8 +383,6 @@ const TransferPage = () => {
       </div>
     );
   }
-
-  const selectedFromGoal = goals.find(g => g._id === selFrom);
 
   return (
     <div className="min-h-screen bg-background">
@@ -413,18 +397,6 @@ const TransferPage = () => {
         <h1 className="text-white text-lg font-bold flex-1 flex items-center gap-2">
           <ArrowRightLeft size={20} /> {t('transfer')}
         </h1>
-        <button
-          onClick={toggleTheme}
-          className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition"
-        >
-          {isDark ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-        <button
-          onClick={() => setLang(lang === "bn" ? "en" : "bn")}
-          className="px-2 py-1 rounded-lg bg-white/20 text-white text-xs font-semibold hover:bg-white/30 transition"
-        >
-          {lang === "bn" ? "EN" : "BN"}
-        </button>
       </div>
 
       {/* Step Progress */}
@@ -450,9 +422,7 @@ const TransferPage = () => {
               >
                 {idx + 1}
               </div>
-              <div
-                className={`text-[10px] ${activeStep === idx + 1 ? "text-white font-semibold" : "text-white/80"}`}
-              >
+              <div className={`text-[10px] ${activeStep === idx + 1 ? "text-white font-semibold" : "text-white/80"}`}>
                 {label}
               </div>
             </div>
@@ -519,14 +489,12 @@ const TransferPage = () => {
                     <Target size={20} />
                   </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-sm text-foreground">
-                      {goal.goalName}
-                    </div>
+                    <div className="font-semibold text-sm text-foreground">{goal.goalName}</div>
                     <div className="text-xs text-foreground/50">
                       {t('balance')}: ৳{goal.currentSaved.toLocaleString()} / ৳{goal.targetAmount.toLocaleString()}
                     </div>
                     <div className="h-1.5 bg-border rounded-full mt-2 overflow-hidden">
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-primary to-primary-light rounded-full"
                         style={{ width: `${goal.progress}%` }}
                       />
@@ -548,7 +516,8 @@ const TransferPage = () => {
               {trType === "goal2goal" ? <Target size={18} /> : <User size={18} />}
               {trType === "goal2goal" ? t('transferToGoal') : t('whoSendingTo')}
             </div>
-            
+
+            {/* Goal to Goal destination */}
             {trType === "goal2goal" && (
               <div className="space-y-3">
                 {goals
@@ -567,9 +536,7 @@ const TransferPage = () => {
                         <Target size={20} />
                       </div>
                       <div className="flex-1">
-                        <div className="font-semibold text-sm text-foreground">
-                          {goal.goalName}
-                        </div>
+                        <div className="font-semibold text-sm text-foreground">{goal.goalName}</div>
                         <div className="text-xs text-foreground/50">
                           {t('current')}: ৳{goal.currentSaved.toLocaleString()}
                         </div>
@@ -582,49 +549,89 @@ const TransferPage = () => {
               </div>
             )}
 
+            {/* User to User destination */}
             {trType === "user2user" && (
               <div>
+                {/* Phone input */}
                 <div className="relative">
                   <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-bold text-sm">
-                    +880
+                    +88
                   </span>
                   <input
                     type="tel"
                     value={recipientPhone}
                     onChange={(e) => {
-                      setRecipientPhone(e.target.value.replace(/\D/g, "").slice(0, 11));
-                      setRecipientFound(false);
-                      setRecipientData(null);
+                      const value = e.target.value.replace(/\D/g, "");
+                      if (value.length <= 11) {
+                        setRecipientPhone(value);
+                        setRecipientFound(false);
+                        setRecipientData(null);
+                      }
                     }}
-                    placeholder="1XXXXXXXXXX"
+                    placeholder="01XXXXXXXXX"
                     maxLength="11"
-                    className="w-full py-4 pl-20 pr-4 border-2 border-border rounded-xl text-base font-semibold text-foreground bg-background outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    className="w-full py-4 pl-16 pr-4 border-2 border-border rounded-xl text-base font-semibold text-foreground bg-background outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </div>
+                <div className="text-xs text-foreground/40 mt-1 px-1">
+                  {recipientPhone.length > 0 && (
+                    <span>Entered: +88{recipientPhone}</span>
+                  )}
+                  {recipientPhone.length === 11 && (
+                    <span className="text-green-500 ml-2">✓ Valid format</span>
+                  )}
+                  {recipientPhone.length > 0 && recipientPhone.length !== 11 && (
+                    <span className="text-orange-500 ml-2">Needs 11 digits</span>
+                  )}
+                </div>
+
+                {/* Found user card */}
                 {recipientFound && recipientData && (
-                  <div className="mt-3 p-3 bg-primary/5 border border-primary/20 rounded-xl flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                      <User size={20} />
+                  <div className="mt-3 p-3 bg-green-500/5 border-2 border-green-500/30 rounded-xl flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary overflow-hidden">
+                      {recipientData.profilePicture ? (
+                        <img
+                          src={recipientData.profilePicture}
+                          alt={recipientData.name || recipientData.fullName}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User size={20} />
+                      )}
                     </div>
                     <div className="flex-1">
                       <div className="font-semibold text-sm text-foreground">
-                        {recipientData.name}
+                        {recipientData.name || recipientData.fullName || recipientData.firstName}
                       </div>
-                      <div className="text-xs text-foreground/50">
-                        {recipientData.phone}
-                      </div>
+                      <div className="text-xs text-foreground/50">+88{recipientData.phone}</div>
+                      {recipientData.email && (
+                        <div className="text-xs text-foreground/40">{recipientData.email}</div>
+                      )}
                     </div>
-                    <CheckCircle size={18} className="text-primary shrink-0" />
+                    <CheckCircle size={18} className="text-green-500 shrink-0" />
                   </div>
                 )}
+
+                {/* Search button */}
                 <button
                   onClick={searchRecipient}
-                  disabled={submitting}
-                  className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-light text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                  disabled={submitting || recipientPhone.length < 11}
+                  className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-light text-white font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search size={16} />}
                   {t('findUser')}
                 </button>
+
+                {/* ✅ Proceed to Amount button — only shows after user is found */}
+                {recipientFound && recipientData && (
+                  <button
+                    onClick={proceedToAmount}
+                    className="w-full mt-3 py-3.5 rounded-xl border-2 border-primary bg-primary/5 text-primary font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all"
+                  >
+                    <Wallet size={16} />
+                    {t('proceedToAmount')}
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -697,21 +704,15 @@ const TransferPage = () => {
             </div>
             <div className="flex justify-between text-sm py-2 border-b border-dashed border-border">
               <span className="text-foreground/60">{t('type')}</span>
-              <span className="font-semibold text-foreground">
-                {getTypeLabel()}
-              </span>
+              <span className="font-semibold text-foreground">{getTypeLabel()}</span>
             </div>
             <div className="flex justify-between text-sm py-2 border-b border-dashed border-border">
               <span className="text-foreground/60">{t('from')}</span>
-              <span className="font-semibold text-foreground">
-                {getSummaryFrom()}
-              </span>
+              <span className="font-semibold text-foreground">{getSummaryFrom()}</span>
             </div>
             <div className="flex justify-between text-sm py-2 border-b border-dashed border-border">
               <span className="text-foreground/60">{t('to')}</span>
-              <span className="font-semibold text-foreground">
-                {getSummaryTo()}
-              </span>
+              <span className="font-semibold text-foreground">{getSummaryTo()}</span>
             </div>
             <div className="flex justify-between text-lg py-3">
               <span className="text-foreground/60">{t('amount')}</span>
@@ -719,7 +720,9 @@ const TransferPage = () => {
             </div>
             <div className="flex justify-between text-sm py-2">
               <span className="text-foreground/60">{t('fee')}</span>
-              <span className="font-semibold text-green-500 flex items-center gap-1">{t('free')} <CheckCircle size={12} /></span>
+              <span className="font-semibold text-green-500 flex items-center gap-1">
+                {t('free')} <CheckCircle size={12} />
+              </span>
             </div>
           </div>
         )}
@@ -760,9 +763,9 @@ const TransferPage = () => {
                 {t('transferComplete')}
               </div>
               <div className="text-sm text-foreground/60 mb-4">
-                {trType === "goal2goal" 
+                {trType === "goal2goal"
                   ? t('transferCompleteDesc')
-                  : `${getAmountDisplay()} ${t('amountSent')} ${transferResult.toUser}`}
+                  : `${getAmountDisplay()} ${t('amountSent')} ${transferResult.toUser || transferResult.toUserName || ''}`}
               </div>
               <div className="bg-background border border-border rounded-xl p-3 space-y-2 text-sm mb-5">
                 <div className="flex justify-between">
@@ -779,7 +782,9 @@ const TransferPage = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-foreground/60">{t('transactionId')}</span>
-                  <span className="font-mono text-xs">{transferResult.transactionId?.slice(-8)}</span>
+                  <span className="font-mono text-xs">
+                    {transferResult.transactionId?.slice(-8) || 'N/A'}
+                  </span>
                 </div>
               </div>
               <button

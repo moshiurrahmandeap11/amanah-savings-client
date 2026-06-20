@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowLeft, Moon, Sun, Download, Share2, Camera } from "lucide-react";
+import { ArrowLeft, Moon, Sun, Download, Share2 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import useAuth from "../../../hooks/useAuth";
 
@@ -40,12 +40,12 @@ const translations = {
     // Buttons
     pdfDownload: "PDF Download",
     share: "Share",
-    saveAsImage: "Save as Image",
     
     // Toast Messages
     printing: "🖨️ Printing...",
     sharing: "📤 Sharing...",
-    savingImage: "🖼️ Image is being saved...",
+    noShareSupport: "Your browser does not support sharing",
+    shareError: "Failed to share certificate",
   },
   bn: {
     // Navigation
@@ -78,19 +78,49 @@ const translations = {
     // Buttons
     pdfDownload: "পিডিএফ ডাউনলোড",
     share: "শেয়ার",
-    saveAsImage: "ছবি হিসেবে সেভ করুন",
     
     // Toast Messages
     printing: "🖨️ প্রিন্ট হচ্ছে...",
     sharing: "📤 শেয়ার হচ্ছে...",
-    savingImage: "🖼️ ছবি সংরক্ষণ করা হচ্ছে...",
+    noShareSupport: "আপনার ব্রাউজার শেয়ার সাপোর্ট করে না",
+    shareError: "সার্টিফিকেট শেয়ার করতে ব্যর্থ হয়েছে",
   }
+};
+
+// Get emoji icon based on goal type - defined outside component
+const getGoalIcon = (goalType) => {
+  const icons = {
+    wedding: "💒",
+    education: "📚",
+    travel: "✈️",
+    hajj: "🕌",
+    home: "🏠",
+    house: "🏠",
+    business: "💼",
+    emergency: "🚨",
+    zakat: "☪️",
+    car: "🚗",
+    vacation: "🏖️",
+    other: "🎯",
+  };
+  return icons[goalType?.toLowerCase()] || "🎯";
+};
+
+// Format currency - defined outside component
+const formatBDT = (amount) => {
+  if (!amount || amount === 0) return "৳0";
+  return `৳${amount.toLocaleString("en-IN")}`;
+};
+
+// Convert number to Bangla - defined outside component
+const toBangla = (num) => {
+  return num.toString().replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
 };
 
 const TaxCertificatePage = () => {
   const [isDark, setIsDark] = useState(false);
   const [year, setYear] = useState(2025);
-  const [toast, setToast] = useState({ show: false, message: "" });
+  const [toast, setToast] = useState({ show: false, message: "", type: "info" });
   const [loading, setLoading] = useState(true);
   const [goals, setGoals] = useState([]);
   const [deposits, setDeposits] = useState([]);
@@ -98,9 +128,9 @@ const TaxCertificatePage = () => {
   const [depositCount, setDepositCount] = useState(0);
   const [tier, setTier] = useState("—");
   const [lang, setLang] = useState("bn");
+  const [userName, setUserName] = useState("—");
+  const [userId, setUserId] = useState("UNKNOWN");
   const certificateRef = useRef(null);
-
-  const { user } = useAuth();
 
   // Translation function
   const t = (key, params = {}) => {
@@ -129,23 +159,64 @@ const TaxCertificatePage = () => {
           axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         }
 
-        const [goalsRes, depositsRes, userRes] = await Promise.all([
-          axiosInstance.get("/goals").catch(() => ({ data: { success: false, data: [] } })),
-          axiosInstance.get("/deposits").catch(() => ({ data: { success: false, data: [] } })),
-          axiosInstance.get("/users/me").catch(() => ({ data: { success: false, data: {} } })),
-        ]);
+        // Fetch user data first
+        let userData = {};
+        try {
+          const userRes = await axiosInstance.get("/users/me");
+          if (userRes.data?.success) {
+            userData = userRes.data.data;
+            setUserName(userData.name || userData.fullName || "—");
+            setUserId(userData._id || userData.id || "UNKNOWN");
+            setStreak(userData.streak || userData.streakCount || 0);
+            setTier(userData.tier || userData.membershipTier || "—");
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
 
-        const goalsData = goalsRes.data.success ? goalsRes.data.data : [];
-        const depositsData = depositsRes.data.success ? depositsRes.data.data : [];
-        const userData = userRes.data.success ? userRes.data.data : {};
+        // Fetch goals
+        let goalsData = [];
+        try {
+          const goalsRes = await axiosInstance.get("/goals");
+          if (goalsRes.data?.success) {
+            if (Array.isArray(goalsRes.data.data)) {
+              goalsData = goalsRes.data.data;
+            } else if (Array.isArray(goalsRes.data.data?.goals)) {
+              goalsData = goalsRes.data.data.goals;
+            } else {
+              goalsData = [];
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching goals:", error);
+          goalsData = [];
+        }
+
+        // Fetch deposits
+        let depositsData = [];
+        try {
+          const depositsRes = await axiosInstance.get("/deposits");
+          if (depositsRes.data?.success) {
+            if (Array.isArray(depositsRes.data.data)) {
+              depositsData = depositsRes.data.data;
+            } else if (Array.isArray(depositsRes.data.data?.deposits)) {
+              depositsData = depositsRes.data.data.deposits;
+            } else {
+              depositsData = [];
+            }
+          }
+        } catch (error) {
+          console.error("Error fetching deposits:", error);
+          depositsData = [];
+        }
 
         setGoals(goalsData);
         setDeposits(depositsData);
-        setStreak(userData.streak || 0);
         setDepositCount(depositsData.length || 0);
-        setTier(userData.tier || "—");
       } catch (error) {
         console.error("Error fetching certificate data:", error);
+        setGoals([]);
+        setDeposits([]);
       } finally {
         setLoading(false);
       }
@@ -161,13 +232,9 @@ const TaxCertificatePage = () => {
     document.documentElement.classList.toggle("dark", newTheme);
   };
 
-  const showToast = (message) => {
-    setToast({ show: true, message });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
-  };
-
-  const toBangla = (num) => {
-    return num.toString().replace(/[0-9]/g, (d) => "০১২৩৪৫৬৭৮৯"[d]);
+  const showToast = (message, type = "info") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "info" }), 3000);
   };
 
   const changeYear = (delta) => {
@@ -175,20 +242,104 @@ const TaxCertificatePage = () => {
   };
 
   const printDocument = () => {
-    document.body.setAttribute(
-      "data-print-date",
-      new Date().toLocaleDateString(),
-    );
     window.print();
-    showToast(t('printing'));
+    showToast(t('printing'), "success");
   };
 
-  const shareCertificate = () => {
-    showToast(t('sharing'));
+  // Share certificate using Web Share API
+  const shareCertificate = async () => {
+    try {
+      const currentYear = year;
+      const nextYear = year + 1;
+      const totalSavings = getTotalAnnualSavings();
+      
+      const shareText = lang === 'bn' 
+        ? `🏅 বার্ষিক সঞ্চয় সার্টিফিকেট\n\n${userName}\nমোট বার্ষিক সঞ্চয়: ${formatBDT(totalSavings)}\nআর্থিক বছর: ${toBangla(currentYear)}-${toBangla(nextYear)}\n\n#সঞ্চয়বন্ধু #সঞ্চয় #সার্টিফিকেট`
+        : `🏅 Annual Savings Certificate\n\n${userName}\nTotal Annual Savings: ${formatBDT(totalSavings)}\nFinancial Year: ${currentYear}-${nextYear}\n\n#SanchoyBondhu #Savings #Certificate`;
+
+      const shareData = {
+        title: lang === 'bn' ? 'বার্ষিক সঞ্চয় সার্টিফিকেট' : 'Annual Savings Certificate',
+        text: shareText,
+        url: window.location.href,
+      };
+
+      if (navigator.share) {
+        await navigator.share(shareData);
+        showToast(t('sharing'), "success");
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(shareText);
+        showToast(lang === 'bn' ? '📋 কপি করা হয়েছে!' : '📋 Copied to clipboard!', "success");
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error("Share error:", error);
+        showToast(t('shareError'), "error");
+      }
+    }
   };
 
-  const saveAsImage = () => {
-    showToast(t('savingImage'));
+  // Helper function to get total annual savings
+  const getTotalAnnualSavings = () => {
+    const currentYear = year;
+    const nextYear = year + 1;
+    const startDate = new Date(`${currentYear}-07-01T00:00:00`);
+    const endDate = new Date(`${nextYear}-06-30T23:59:59`);
+    
+    const depositsArray = Array.isArray(deposits) ? deposits : [];
+    const yearDeposits = depositsArray.filter((d) => {
+      const date = new Date(d.createdAt || d.date || d.depositDate);
+      return date >= startDate && date <= endDate && d.status === "approved";
+    });
+    
+    return yearDeposits.reduce(
+      (sum, d) => sum + (parseFloat(d.depositAmount || d.amount || 0) || 0),
+      0
+    );
+  };
+
+  // Helper function to get year deposits
+  const getYearDeposits = () => {
+    const currentYear = year;
+    const nextYear = year + 1;
+    const startDate = new Date(`${currentYear}-07-01T00:00:00`);
+    const endDate = new Date(`${nextYear}-06-30T23:59:59`);
+    
+    const depositsArray = Array.isArray(deposits) ? deposits : [];
+    return depositsArray.filter((d) => {
+      const date = new Date(d.createdAt || d.date || d.depositDate);
+      return date >= startDate && date <= endDate && d.status === "approved";
+    });
+  };
+
+  // Helper function to get goal savings
+  const getGoalSavings = () => {
+    const yearDeposits = getYearDeposits();
+    const goalsArray = Array.isArray(goals) ? goals : [];
+    
+    return goalsArray.map((goal) => {
+      const goalDeposits = yearDeposits.filter((d) => {
+        const matchById = d.goalId === goal._id || d.goalId === goal.id;
+        const matchByName = d.goalName === goal.goalName || d.goal === goal.goalName;
+        const matchByType = d.goalType === goal.goalType;
+        return matchById || matchByName || matchByType;
+      });
+      
+      const amount = goalDeposits.reduce(
+        (sum, d) => sum + (parseFloat(d.depositAmount || d.amount || 0) || 0), 
+        0
+      );
+      
+      return {
+        id: goal._id || goal.id,
+        icon: goal.icon || getGoalIcon(goal.goalType),
+        name: goal.goalName || goal.name || "Goal",
+        amount: amount,
+        deposits: goalDeposits.length,
+        progress: goal.progress || 0,
+        targetAmount: goal.targetAmount || 0,
+      };
+    });
   };
 
   const currentYear = year;
@@ -199,23 +350,10 @@ const TaxCertificatePage = () => {
   const financialYearStart = `July ${currentYear}`;
   const financialYearEnd = `June ${nextYear}`;
 
-  const startDate = new Date(`${currentYear}-07-01T00:00:00`);
-  const endDate = new Date(`${nextYear}-06-30T23:59:59`);
-
-  const yearDeposits = deposits.filter((d) => {
-    const date = new Date(d.createdAt || d.date);
-    return date >= startDate && date <= endDate;
-  });
-
-  const totalAnnualSavings = yearDeposits.reduce(
-    (sum, d) => sum + (parseFloat(d.amount) || 0),
-    0
-  );
-
+  const yearDeposits = getYearDeposits();
+  const totalAnnualSavings = getTotalAnnualSavings();
   const hasData = yearDeposits.length > 0;
 
-  const userName = user?.name || "—";
-  const userId = user?._id || user?.id || "UNKNOWN";
   const certificateNumber = `AMN-CERT-${currentYear}-${userId.toString().slice(-6).toUpperCase()}`;
   const issueDate = new Date().toLocaleDateString("en-GB", {
     day: "numeric",
@@ -223,24 +361,27 @@ const TaxCertificatePage = () => {
     year: "numeric",
   });
 
-  const goalSavings = goals.map((goal) => {
-    const goalDeposits = yearDeposits.filter((d) => d.goalId === goal._id || d.goal === goal._id);
-    const amount = goalDeposits.reduce((sum, d) => sum + (parseFloat(d.amount) || 0), 0);
-    return {
-      icon: goal.icon || "🎯",
-      name: goal.name || "Goal",
-      amount,
-    };
-  });
-
+  // Calculate savings by goal dynamically
+  const goalSavings = getGoalSavings();
+  
+  // Filter goals with savings > 0 and sort by amount (highest first)
   const activeGoals = goalSavings.filter((g) => g.amount > 0);
-  const displayGoals = activeGoals.length > 0 ? activeGoals : goalSavings;
+  const displayGoals = activeGoals.length > 0 
+    ? activeGoals.sort((a, b) => b.amount - a.amount)
+    : goalSavings;
+  
   const maxGoalAmount = Math.max(...displayGoals.map((g) => g.amount), 1);
 
-  const formatBDT = (amount) => {
-    if (!amount || amount === 0) return "৳0";
-    return `৳${amount.toLocaleString("en-IN")}`;
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-foreground/60">Loading certificate...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -258,7 +399,7 @@ const TaxCertificatePage = () => {
       </div>
 
       {/* Header */}
-      <div className="bg-linear-to-r from-primary to-primary-light px-4 py-4 flex items-center gap-3">
+      <div className="bg-gradient-to-r from-primary to-primary-light px-4 py-4 flex items-center gap-3">
         <button
           onClick={() => window.history.back()}
           className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white"
@@ -300,11 +441,11 @@ const TaxCertificatePage = () => {
         </div>
 
         {/* Certificate */}
-        <div className="bg-card rounded-xl border-2 border-primary shadow-lg overflow-hidden relative mb-4">
+        <div className="bg-card rounded-xl border-2 border-primary shadow-lg overflow-hidden relative mb-4" ref={certificateRef}>
           <div className="absolute inset-1 border border-dashed border-primary/30 rounded-lg pointer-events-none" />
 
           {/* Certificate Header */}
-          <div className="bg-linear-to-r from-primary to-primary-light pt-7 pb-6 text-center">
+          <div className="bg-gradient-to-r from-primary to-primary-light pt-7 pb-6 text-center">
             <div className="text-white/80 text-[10px] tracking-wider uppercase mb-1">
               {t('community')}
             </div>
@@ -331,7 +472,7 @@ const TaxCertificatePage = () => {
               {t('recognition')} {banglaYear}-{banglaNextYear}
             </div>
 
-            <div className="bg-linear-to-r from-primary/10 to-primary-light/10 border border-primary/30 rounded-xl p-4 text-center mb-5">
+            <div className="bg-gradient-to-r from-primary/10 to-primary-light/10 border border-primary/30 rounded-xl p-4 text-center mb-5">
               <div className="text-[10px] text-foreground/60 mb-1">
                 {t('totalAnnualSavings')}
               </div>
@@ -380,20 +521,29 @@ const TaxCertificatePage = () => {
                     className="flex items-center gap-2 py-2 border-b border-border last:border-0"
                   >
                     <span className="text-base">{goal.icon}</span>
-                    <div className="flex-1">
-                      <div className="text-xs font-semibold text-foreground">
-                        {goal.name}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold text-foreground truncate">
+                          {goal.name}
+                        </span>
+                        <span className="text-xs font-bold text-primary ml-2 shrink-0">
+                          {formatBDT(goal.amount)}
+                        </span>
                       </div>
                       <div className="h-1 bg-border rounded-full mt-1 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-linear-to-r from-primary to-primary-light"
-                          style={{ width: `${(goal.amount / maxGoalAmount) * 100}%` }}
+                          className="h-full rounded-full bg-gradient-to-r from-primary to-primary-light transition-all duration-500"
+                          style={{ 
+                            width: `${goal.amount > 0 ? Math.min((goal.amount / maxGoalAmount) * 100, 100) : 0}%` 
+                          }}
                         />
                       </div>
+                      {goal.deposits > 0 && (
+                        <div className="text-[8px] text-foreground/40 mt-0.5">
+                          {goal.deposits} deposit{goal.deposits > 1 ? 's' : ''}
+                        </div>
+                      )}
                     </div>
-                    <span className="text-xs font-bold text-primary">
-                      {formatBDT(goal.amount)}
-                    </span>
                   </div>
                 ))
               )}
@@ -428,26 +578,20 @@ const TaxCertificatePage = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="grid grid-cols-2 gap-3 mb-3">
+        <div className="grid grid-cols-2 gap-3">
           <button
             onClick={printDocument}
-            className="py-3.5 rounded-xl bg-linear-to-r from-red-600 to-red-700 text-white text-sm font-bold flex items-center justify-center gap-2"
+            className="py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-bold flex items-center justify-center gap-2 hover:opacity-90 transition"
           >
             <Download size={16} /> {t('pdfDownload')}
           </button>
           <button
             onClick={shareCertificate}
-            className="py-3.5 rounded-xl bg-linear-to-r from-primary to-primary-light text-white text-sm font-bold flex items-center justify-center gap-2"
+            className="py-3.5 rounded-xl bg-gradient-to-r from-primary to-primary-light text-white text-sm font-bold flex items-center justify-center gap-2 hover:opacity-90 transition"
           >
             <Share2 size={16} /> {t('share')}
           </button>
         </div>
-        <button
-          onClick={saveAsImage}
-          className="w-full py-3 rounded-xl border-2 border-border bg-card text-foreground text-sm font-bold flex items-center justify-center gap-2"
-        >
-          <Camera size={16} /> {t('saveAsImage')}
-        </button>
       </div>
 
       {/* Toast */}
@@ -456,7 +600,13 @@ const TaxCertificatePage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gray-800 text-white px-5 py-3 rounded-full text-sm shadow-lg whitespace-nowrap"
+          className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-full text-sm shadow-lg whitespace-nowrap ${
+            toast.type === "error" 
+              ? "bg-red-500 text-white" 
+              : toast.type === "success" 
+              ? "bg-green-500 text-white" 
+              : "bg-gray-800 text-white"
+          }`}
         >
           {toast.message}
         </motion.div>

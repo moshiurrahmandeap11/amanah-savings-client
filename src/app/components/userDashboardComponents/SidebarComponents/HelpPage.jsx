@@ -15,6 +15,14 @@ import {
   Loader2,
   MessageCircle,
   Send,
+  Ticket,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  User,
+  Mail,
+  Phone,
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
@@ -82,6 +90,25 @@ const translations = {
     ticketReply: "We'll reply within 24 hours",
     failedToSubmit: "Failed to submit ticket",
     
+    // Ticket View
+    myTickets: "My Tickets",
+    noTickets: "No tickets found",
+    open: "Open",
+    inProgress: "In Progress",
+    resolved: "Resolved",
+    closed: "Closed",
+    ticketDetails: "Ticket Details",
+    replies: "Replies",
+    noReplies: "No replies yet",
+    viewTicket: "View Ticket",
+    backToTickets: "Back to Tickets",
+    status: "Status",
+    priority: "Priority",
+    high: "High",
+    medium: "Medium",
+    low: "Low",
+    createdAt: "Created At",
+    
     // Chat
     support: "Sanchoy Bondhu Support",
     onlineStatus: "Online",
@@ -104,6 +131,9 @@ const translations = {
     failedToSubmitFeedback: "Failed to submit feedback",
     systemStatus: "System Status",
     allOperational: "All systems operational",
+    failedToLoadTickets: "Failed to load tickets",
+    ticketReplied: "Reply sent successfully!",
+    failedToReply: "Failed to send reply",
     
     // Loading
     loading: "Loading...",
@@ -167,6 +197,25 @@ const translations = {
     ticketReply: "আমরা ২৪ ঘণ্টার মধ্যে রিপ্লাই দেব",
     failedToSubmit: "টিকেট জমা দিতে ব্যর্থ হয়েছে",
     
+    // Ticket View
+    myTickets: "আমার টিকেট",
+    noTickets: "কোন টিকেট পাওয়া যায়নি",
+    open: "খোলা",
+    inProgress: "প্রক্রিয়াধীন",
+    resolved: "সমাধানকৃত",
+    closed: "বন্ধ",
+    ticketDetails: "টিকেট বিস্তারিত",
+    replies: "রিপ্লাই",
+    noReplies: "কোন রিপ্লাই নেই",
+    viewTicket: "টিকেট দেখুন",
+    backToTickets: "টিকেটে ফিরুন",
+    status: "অবস্থা",
+    priority: "গুরুত্ব",
+    high: "উচ্চ",
+    medium: "মাঝারি",
+    low: "নিম্ন",
+    createdAt: "তৈরি হয়েছে",
+    
     // Chat
     support: "সঞ্চয় বন্ধু সাপোর্ট",
     onlineStatus: "অনলাইন",
@@ -189,6 +238,9 @@ const translations = {
     failedToSubmitFeedback: "ফিডব্যাক জমা দিতে ব্যর্থ হয়েছে",
     systemStatus: "সিস্টেম স্ট্যাটাস",
     allOperational: "সব সিস্টেম চালু আছে",
+    failedToLoadTickets: "টিকেট লোড করতে ব্যর্থ হয়েছে",
+    ticketReplied: "রিপ্লাই সফলভাবে পাঠানো হয়েছে!",
+    failedToReply: "রিপ্লাই পাঠাতে ব্যর্থ হয়েছে",
     
     // Loading
     loading: "লোড হচ্ছে...",
@@ -209,6 +261,15 @@ const HelpPage = () => {
   const [popularArticles, setPopularArticles] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searching, setSearching] = useState(false);
+  
+  // Ticket state
+  const [showTickets, setShowTickets] = useState(false);
+  const [tickets, setTickets] = useState([]);
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [selectedTicketReplies, setSelectedTicketReplies] = useState([]);
+  const [ticketReply, setTicketReply] = useState("");
+  const [loadingTickets, setLoadingTickets] = useState(false);
+  const [showTicketDetail, setShowTicketDetail] = useState(false);
   
   // Messaging state
   const [showChat, setShowChat] = useState(false);
@@ -301,6 +362,87 @@ const HelpPage = () => {
       console.error("Fetch categories error:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Fetch user tickets
+  const fetchTickets = async () => {
+    setLoadingTickets(true);
+    try {
+      const response = await axiosInstance.get("/help/tickets");
+      if (response.data.success) {
+        setTickets(response.data.data.tickets || []);
+      }
+    } catch (error) {
+      console.error("Fetch tickets error:", error);
+      Swal.fire({
+        title: t('error'),
+        text: t('failedToLoadTickets'),
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    } finally {
+      setLoadingTickets(false);
+    }
+  };
+
+  // Get single ticket with replies
+  const getTicketWithReplies = async (ticketId) => {
+    try {
+      const response = await axiosInstance.get(`/help/tickets/${ticketId}`);
+      if (response.data.success) {
+        setSelectedTicket(response.data.data.ticket);
+        setSelectedTicketReplies(response.data.data.replies || []);
+        setShowTicketDetail(true);
+      }
+    } catch (error) {
+      console.error("Get ticket error:", error);
+      Swal.fire({
+        title: t('error'),
+        text: "Failed to load ticket details",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    }
+  };
+
+  // Reply to ticket
+  const handleReplyToTicket = async () => {
+    if (!ticketReply.trim()) {
+      Swal.fire({
+        title: t('error'),
+        text: "Please write a reply",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+      return;
+    }
+
+    try {
+      await axiosInstance.post(`/help/tickets/${selectedTicket.ticketId}/reply`, {
+        message: ticketReply.trim(),
+      });
+      
+      Swal.fire({
+        title: t('success'),
+        text: t('ticketReplied'),
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      
+      setTicketReply("");
+      // Refresh ticket data
+      await getTicketWithReplies(selectedTicket.ticketId);
+      await fetchTickets();
+    } catch (error) {
+      console.error("Reply error:", error);
+      Swal.fire({
+        title: t('error'),
+        text: t('failedToReply'),
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
     }
   };
 
@@ -406,14 +548,26 @@ const HelpPage = () => {
     document.body.style.overflow = "auto";
   };
 
+  // Open tickets view
+  const openTicketsView = async () => {
+    await fetchTickets();
+    setShowTickets(true);
+  };
+
+  // Close tickets view
+  const closeTicketsView = () => {
+    setShowTickets(false);
+    setSelectedTicket(null);
+    setShowTicketDetail(false);
+    setTicketReply("");
+  };
+
   // Send chat message
   const handleSendMessage = () => {
     if (!chatInput.trim() || !currentUserId) return;
     
-    // Send to admin (receiverId "admin" - server will route to admin room)
     sendMessage("admin", chatInput.trim(), "user");
     
-    // Add to local chat immediately for UX
     setChatMessages((prev) => [
       ...prev,
       {
@@ -442,6 +596,27 @@ const HelpPage = () => {
 
   const navigateTo = (path) => {
     router.push(path);
+  };
+
+  // Get status badge
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      open: { color: "bg-green-500/15 text-green-500", icon: <AlertCircle size={12} /> },
+      in_progress: { color: "bg-amber-500/15 text-amber-500", icon: <Clock size={12} /> },
+      resolved: { color: "bg-blue-500/15 text-blue-500", icon: <CheckCircle size={12} /> },
+      closed: { color: "bg-gray-500/15 text-gray-500", icon: <CheckCircle size={12} /> },
+    };
+    return statusMap[status] || statusMap.open;
+  };
+
+  // Get priority badge
+  const getPriorityBadge = (priority) => {
+    const priorityMap = {
+      high: { color: "bg-red-500/15 text-red-500", label: t('high') },
+      medium: { color: "bg-amber-500/15 text-amber-500", label: t('medium') },
+      low: { color: "bg-blue-500/15 text-blue-500", label: t('low') },
+    };
+    return priorityMap[priority] || priorityMap.medium;
   };
 
   // Category display with navigation
@@ -739,6 +914,21 @@ const HelpPage = () => {
               {t('replyWithin24')}
             </div>
           </button>
+          
+          {/* My Tickets Button */}
+          <button
+            onClick={openTicketsView}
+            className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary transition"
+          >
+            <div className="text-3xl mb-1">📋</div>
+            <div className="font-bold text-sm text-foreground">
+              {t('myTickets')}
+            </div>
+            <div className="text-xs text-foreground/50">
+              {t('viewTicket')}
+            </div>
+          </button>
+          
           <a
             href="mailto:support@sanchoybondhu.com"
             className="bg-card border border-border rounded-xl p-4 text-center hover:border-primary transition"
@@ -775,6 +965,182 @@ const HelpPage = () => {
           </button>
         </div>
       </div>
+
+      {/* Tickets Modal */}
+      <AnimatePresence>
+        {showTickets && (
+          <div
+            className="fixed inset-0 bg-black/60 z-50 flex items-end md:items-center justify-center"
+            onClick={closeTicketsView}
+          >
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="bg-card rounded-t-2xl md:rounded-2xl w-full max-w-md max-h-[85vh] flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Tickets Header */}
+              <div className="sticky top-0 bg-primary border-b border-primary/20 p-4 flex items-center gap-3 rounded-t-2xl md:rounded-t-2xl">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white text-lg">
+                  📋
+                </div>
+                <div className="flex-1">
+                  <div className="font-bold text-white text-sm">
+                    {t('myTickets')}
+                  </div>
+                  <div className="text-white/70 text-xs">
+                    {tickets.length} tickets
+                  </div>
+                </div>
+                <button
+                  onClick={closeTicketsView}
+                  className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {showTicketDetail && selectedTicket ? (
+                // Ticket Detail View
+                <div className="flex-1 overflow-y-auto p-4">
+                  <button
+                    onClick={() => setShowTicketDetail(false)}
+                    className="text-primary text-sm font-semibold mb-4 flex items-center gap-1"
+                  >
+                    ← {t('backToTickets')}
+                  </button>
+                  
+                  <div className="bg-background rounded-xl p-4 mb-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <h3 className="font-bold text-foreground">{selectedTicket.subject}</h3>
+                      <span className={`text-xs px-2 py-1 rounded-full ${getStatusBadge(selectedTicket.status).color} flex items-center gap-1`}>
+                        {getStatusBadge(selectedTicket.status).icon}
+                        {t(selectedTicket.status)}
+                      </span>
+                    </div>
+                    <div className="text-sm text-foreground/60 mb-2">{selectedTicket.message}</div>
+                    <div className="flex gap-3 text-xs text-foreground/40">
+                      <span className="flex items-center gap-1">
+                        <Ticket size={12} /> {selectedTicket.ticketId}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock size={12} /> {new Date(selectedTicket.createdAt).toLocaleDateString()}
+                      </span>
+                      <span className={`flex items-center gap-1 ${getPriorityBadge(selectedTicket.priority).color}`}>
+                        <AlertCircle size={12} />
+                        {getPriorityBadge(selectedTicket.priority).label}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Replies */}
+                  <div className="mb-4">
+                    <div className="font-semibold text-foreground text-sm mb-3 flex items-center gap-2">
+                      <MessageCircle size={16} /> {t('replies')} ({selectedTicketReplies.length})
+                    </div>
+                    {selectedTicketReplies.length === 0 ? (
+                      <div className="text-center text-foreground/40 text-sm py-4">
+                        {t('noReplies')}
+                      </div>
+                    ) : (
+                      selectedTicketReplies.map((reply, idx) => (
+                        <div
+                          key={idx}
+                          className={`mb-3 p-3 rounded-xl ${
+                            reply.isAdmin
+                              ? "bg-primary/5 border border-primary/20 ml-4"
+                              : "bg-background border border-border mr-4"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-sm font-semibold text-foreground">
+                              {reply.isAdmin ? "🛡️ Admin" : "👤 You"}
+                            </span>
+                            <span className="text-xs text-foreground/40">
+                              {new Date(reply.createdAt).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="text-sm text-foreground/70">
+                            {reply.message}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Reply Input */}
+                  {selectedTicket.status !== "closed" && selectedTicket.status !== "resolved" && (
+                    <div className="sticky bottom-0 bg-card pt-2">
+                      <div className="flex items-center gap-2">
+                        <textarea
+                          value={ticketReply}
+                          onChange={(e) => setTicketReply(e.target.value)}
+                          placeholder="Write your reply..."
+                          rows={2}
+                          className="flex-1 px-3 py-2 rounded-xl bg-background border border-border text-sm outline-none focus:border-primary resize-none"
+                        />
+                        <button
+                          onClick={handleReplyToTicket}
+                          disabled={!ticketReply.trim()}
+                          className="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                        >
+                          <Send size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // Tickets List View
+                <div className="flex-1 overflow-y-auto p-4">
+                  {loadingTickets ? (
+                    <div className="flex items-center justify-center h-32">
+                      <Loader2 className="w-6 h-6 animate-spin text-primary" />
+                    </div>
+                  ) : tickets.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="text-4xl mb-3">🎫</div>
+                      <div className="text-foreground/60">{t('noTickets')}</div>
+                    </div>
+                  ) : (
+                    tickets.map((ticket) => (
+                      <div
+                        key={ticket._id}
+                        onClick={() => getTicketWithReplies(ticket.ticketId)}
+                        className="bg-background rounded-xl p-4 mb-3 cursor-pointer hover:border-primary border border-border transition"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <div className="font-semibold text-foreground text-sm">
+                              {ticket.subject}
+                            </div>
+                            <div className="text-xs text-foreground/40">
+                              {ticket.ticketId} · {new Date(ticket.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded-full ${getStatusBadge(ticket.status).color} flex items-center gap-1`}>
+                            {getStatusBadge(ticket.status).icon}
+                            {t(ticket.status)}
+                          </span>
+                        </div>
+                        <div className="flex gap-2 mt-1">
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${getPriorityBadge(ticket.priority).color}`}>
+                            {getPriorityBadge(ticket.priority).label}
+                          </span>
+                          <span className="text-xs text-foreground/40">
+                            {ticket.category}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Live Chat Modal */}
       <AnimatePresence>

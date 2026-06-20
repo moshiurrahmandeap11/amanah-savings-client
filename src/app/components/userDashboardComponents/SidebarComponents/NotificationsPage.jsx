@@ -1,3 +1,4 @@
+// app/dashboard/notifications/page.jsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -9,6 +10,10 @@ import {
   Bell,
   Loader2,
   Trash2,
+  ArrowRight,
+  Wallet,
+  TrendingUp,
+  Send,
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
@@ -30,8 +35,9 @@ const translations = {
     // Tabs
     all: "All",
     deposit: "Deposit",
+    withdrawal: "Withdrawal",
+    transfer: "Transfer",
     streak: "Streak",
-    reminder: "Reminder",
     bonus: "Bonus",
     achievement: "Achievement",
     
@@ -78,8 +84,9 @@ const translations = {
     // Tabs
     all: "সব",
     deposit: "জমা",
+    withdrawal: "উত্তোলন",
+    transfer: "স্থানান্তর",
     streak: "স্ট্রিক",
-    reminder: "স্মারক",
     bonus: "বোনাস",
     achievement: "অর্জন",
     
@@ -245,11 +252,35 @@ const NotificationsPage = () => {
   const tabs = [
     { id: "all", label: t('all'), count: counts.all || 0 },
     { id: "deposit", label: t('deposit'), count: counts.deposit || 0 },
+    { id: "withdrawal", label: t('withdrawal'), count: counts.withdrawal || 0 },
+    { id: "transfer", label: t('transfer'), count: counts.transfer || 0 },
     { id: "streak", label: t('streak'), count: counts.streak || 0 },
-    { id: "reminder", label: t('reminder'), count: counts.reminder || 0 },
     { id: "bonus", label: t('bonus'), count: counts.bonus || 0 },
     { id: "achievement", label: t('achievement'), count: counts.achievement || 0 },
   ];
+
+  const getActionButton = (notif) => {
+    if (notif.actionType === "deposit") {
+      return (
+        <Link href="/dashboard/deposit" className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white text-xs font-semibold hover:opacity-90 transition">
+          {t('depositNow')}
+        </Link>
+      );
+    } else if (notif.actionType === "transfer") {
+      return (
+        <Link href="/dashboard/transfer" className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-semibold hover:opacity-90 transition">
+          View Transfer
+        </Link>
+      );
+    } else if (notif.actionType === "withdrawal") {
+      return (
+        <Link href="/dashboard/withdraw" className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-semibold hover:opacity-90 transition">
+          View Withdrawal
+        </Link>
+      );
+    }
+    return null;
+  };
 
   if (loading) {
     return (
@@ -347,11 +378,9 @@ const NotificationsPage = () => {
                       className="text-sm text-foreground/60 leading-relaxed"
                       dangerouslySetInnerHTML={{ __html: notif.message }}
                     />
-                    {notif.actionType && (
+                    {getActionButton(notif) && (
                       <div className="mt-2">
-                        <button className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-primary to-primary-light text-white text-xs font-semibold">
-                          {notif.actionType === "deposit" ? t('depositNow') : t('viewDetails')}
-                        </button>
+                        {getActionButton(notif)}
                       </div>
                     )}
                     <div className="flex items-center justify-between mt-2">

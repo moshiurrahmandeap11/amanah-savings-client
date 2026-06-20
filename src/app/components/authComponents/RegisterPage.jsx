@@ -14,12 +14,117 @@ import Step5Plan from "./regi/Step5Plan";
 import Step7Kyc from "./regi/Step7Kyc";
 import Step8Payment from "./regi/Step8Payment";
 import Step6Pin from "./regi/Step6Pin";
+import { Landmark, Moon, Sun, Globe } from "lucide-react";
 
-// Import step components
+// Translations
+const translations = {
+  en: {
+    // Header
+    sanchoyBondhu: "Sanchoy Bondhu",
+    alreadyHaveAccount: "Already have an account?",
+    login: "Login",
+    
+    // Registration Success
+    welcomeToAmanah: "Welcome to Amanah!",
+    accountCreated: "Your account has been successfully created! Our KYC team will verify your documents within 4 hours.",
+    whatsNext: "What's next?",
+    accountCreatedLabel: "Account created",
+    kycUnderReview: "KYC under review (up to 4 hours)",
+    receiveSMS: "You'll receive SMS upon approval",
+    referFriend: "Refer a friend — Get ৳500 bonus!",
+    copy: "Copy",
+    copied: "Copied!",
+    referralCodeCopied: "Referral code copied to clipboard",
+    goToDashboard: "Go to Dashboard",
+    backToHome: "Back to Home",
+    
+    // Step Labels
+    stepAccount: "Account",
+    stepEmail: "Email",
+    stepPersonal: "Personal",
+    stepNominee: "Nominee",
+    stepPlan: "Plan",
+    stepPin: "PIN",
+    stepKyc: "KYC",
+    stepPayment: "Payment",
+    
+    // Alerts
+    registrationSuccessful: "Registration Successful! 🎉",
+    accountCreatedMessage: "{name}, your account has been successfully created!",
+    whatsNextList: "📋 What's next?",
+    referralBonus: "🎁 Referral Bonus: Share your code and earn ৳500!",
+    registrationFailed: "Registration Failed",
+    invalidEmail: "Invalid Email",
+    pleaseEnterEmail: "Please enter your email address",
+    otpSent: "OTP Sent!",
+    checkEmail: "Please check your email for the verification code",
+    failedToSendOTP: "Could not send OTP. Please try again.",
+    invalidOTP: "Invalid OTP",
+    enterAllDigits: "Please enter all 6 digits",
+    verificationFailed: "Verification Failed",
+    invalidExpiredOTP: "Invalid or expired OTP. Please try again.",
+    success: "Success!",
+    emailVerified: "Email verified successfully",
+    failed: "Failed",
+    registrationFailedMessage: "Registration failed. Please try again.",
+  },
+  bn: {
+    // Header
+    sanchoyBondhu: "সঞ্চয় বন্ধু",
+    alreadyHaveAccount: "ইতিমধ্যে অ্যাকাউন্ট আছে?",
+    login: "লগইন",
+    
+    // Registration Success
+    welcomeToAmanah: "সঞ্চয় বন্ধুতে স্বাগতম!",
+    accountCreated: "আপনার অ্যাকাউন্ট সফলভাবে তৈরি করা হয়েছে! আমাদের কেওয়াইসি টিম ৪ ঘন্টার মধ্যে আপনার নথি যাচাই করবে।",
+    whatsNext: "পরবর্তী কী?",
+    accountCreatedLabel: "অ্যাকাউন্ট তৈরি হয়েছে",
+    kycUnderReview: "কেওয়াইসি পর্যালোচনাধীন (৪ ঘন্টা পর্যন্ত)",
+    receiveSMS: "অনুমোদনের পর আপনি এসএমএস পাবেন",
+    referFriend: "বন্ধুকে রেফার করুন — ৳৫০০ বোনাস পান!",
+    copy: "কপি",
+    copied: "কপি করা হয়েছে!",
+    referralCodeCopied: "রেফারেল কোড ক্লিপবোর্ডে কপি করা হয়েছে",
+    goToDashboard: "ড্যাশবোর্ডে যান",
+    backToHome: "হোমে ফিরে যান",
+    
+    // Step Labels
+    stepAccount: "অ্যাকাউন্ট",
+    stepEmail: "ইমেইল",
+    stepPersonal: "ব্যক্তিগত",
+    stepNominee: "উত্তরাধিকারী",
+    stepPlan: "প্ল্যান",
+    stepPin: "পিন",
+    stepKyc: "কেওয়াইসি",
+    stepPayment: "পেমেন্ট",
+    
+    // Alerts
+    registrationSuccessful: "নিবন্ধন সফল! 🎉",
+    accountCreatedMessage: "{name}, আপনার অ্যাকাউন্ট সফলভাবে তৈরি করা হয়েছে!",
+    whatsNextList: "📋 পরবর্তী কী?",
+    referralBonus: "🎁 রেফারেল বোনাস: আপনার কোড শেয়ার করুন এবং ৳৫০০ উপার্জন করুন!",
+    registrationFailed: "নিবন্ধন ব্যর্থ",
+    invalidEmail: "অবৈধ ইমেইল",
+    pleaseEnterEmail: "দয়া করে আপনার ইমেইল ঠিকানা দিন",
+    otpSent: "ওটিপি পাঠানো হয়েছে!",
+    checkEmail: "যাচাইকরণ কোডের জন্য আপনার ইমেইল চেক করুন",
+    failedToSendOTP: "ওটিপি পাঠানো যায়নি। আবার চেষ্টা করুন।",
+    invalidOTP: "অবৈধ ওটিপি",
+    enterAllDigits: "দয়া করে সব ৬টি ডিজিট দিন",
+    verificationFailed: "যাচাইকরণ ব্যর্থ",
+    invalidExpiredOTP: "অবৈধ বা মেয়াদোত্তীর্ণ ওটিপি। আবার চেষ্টা করুন।",
+    success: "সফল!",
+    emailVerified: "ইমেইল সফলভাবে যাচাই করা হয়েছে",
+    failed: "ব্যর্থ",
+    registrationFailedMessage: "নিবন্ধন ব্যর্থ হয়েছে। আবার চেষ্টা করুন।",
+  }
+};
 
 const RegisterPage = () => {
   const { register: registerUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
+  const [lang, setLang] = useState("bn");
+  const [isDark, setIsDark] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -76,6 +181,39 @@ const RegisterPage = () => {
   const [pinStep, setPinStep] = useState(1);
   const [registrationData, setRegistrationData] = useState(null);
   const [touchedFields, setTouchedFields] = useState({});
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
+
+  // Load language and theme preference
+  useEffect(() => {
+    const savedLang = localStorage.getItem("appLanguage") || "bn";
+    setLang(savedLang);
+    
+    const savedTheme = localStorage.getItem("theme");
+    const shouldUseDark = savedTheme === "dark" || (!savedTheme && document.documentElement.classList.contains("dark"));
+    setIsDark(shouldUseDark);
+    document.documentElement.classList.toggle("dark", shouldUseDark);
+  }, []);
+
+  const toggleTheme = () => {
+    const nextIsDark = !isDark;
+    setIsDark(nextIsDark);
+    document.documentElement.classList.toggle("dark", nextIsDark);
+    localStorage.setItem("theme", nextIsDark ? "dark" : "light");
+  };
+
+  const toggleLanguage = () => {
+    const newLang = lang === "bn" ? "en" : "bn";
+    setLang(newLang);
+    localStorage.setItem("appLanguage", newLang);
+  };
 
   const districts = {
     Dhaka: [
@@ -155,6 +293,20 @@ const RegisterPage = () => {
     8: 100,
   };
 
+  // Get step labels with translations
+  const getStepLabels = () => [
+    t('stepAccount'),
+    t('stepEmail'),
+    t('stepPersonal'),
+    t('stepNominee'),
+    t('stepPlan'),
+    t('stepPin'),
+    t('stepKyc'),
+    t('stepPayment'),
+  ];
+
+  const stepLabels = getStepLabels();
+
   const updateField = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -186,7 +338,7 @@ const RegisterPage = () => {
 
   const handleSendEmailOtp = async () => {
     if (!formData.email) {
-      showAlert("Invalid Email", "Please enter your email address", "error");
+      showAlert(t('invalidEmail'), t('pleaseEnterEmail'), "error");
       return;
     }
     try {
@@ -197,23 +349,23 @@ const RegisterPage = () => {
         setEmailOtpTimer(60);
         const receivedOtp = response.data.otp;
         if (receivedOtp)
-          showAlert("OTP Sent!");
+          showAlert(t('otpSent'));
         else
           showAlert(
-            "OTP Sent!",
-            "Please check your email for the verification code",
+            t('otpSent'),
+            t('checkEmail'),
             "success",
           );
       }
     } catch (error) {
-      showAlert("Failed", "Could not send OTP. Please try again.", "error");
+      showAlert(t('failed'), t('failedToSendOTP'), "error");
     }
   };
 
   const handleVerifyEmailOtp = async () => {
     const otp = formData.emailOtp.join("");
     if (otp.length !== 6) {
-      showAlert("Invalid OTP", "Please enter all 6 digits", "error");
+      showAlert(t('invalidOTP'), t('enterAllDigits'), "error");
       return;
     }
     try {
@@ -223,13 +375,13 @@ const RegisterPage = () => {
       });
       if (response.data.success) {
         setEmailVerified(true);
-        showAlert("Success!", "Email verified successfully", "success");
+        showAlert(t('success'), t('emailVerified'), "success");
         handleNext();
       }
     } catch (error) {
       showAlert(
-        "Verification Failed",
-        "Invalid or expired OTP. Please try again.",
+        t('verificationFailed'),
+        t('invalidExpiredOTP'),
         "error",
       );
     }
@@ -291,23 +443,23 @@ const RegisterPage = () => {
       if (result.success) {
         setRegistrationData(result.user);
         Swal.fire({
-          title: "Registration Successful! 🎉",
-          html: `<div style="text-align: left;"><p><strong>${formData.firstName}</strong>, your account has been successfully created!</p><br><p>📋 <strong>What's next?</strong></p><ul><li>✅ Account created</li><li>⏳ KYC under review (up to 4 hours)</li><li>📱 You'll receive SMS upon approval</li></ul><br><p>🎁 <strong>Referral Bonus:</strong> Share your code and earn ৳500!</p><p style="background: #f0fdf4; padding: 8px; border-radius: 8px; font-family: monospace;">${result.user.referralCode}</p></div>`,
+          title: t('registrationSuccessful'),
+          html: `<div style="text-align: left;"><p><strong>${formData.firstName}</strong>, ${t('accountCreatedMessage', { name: formData.firstName })}</p><br><p>${t('whatsNextList')}</p><ul><li>✅ ${t('accountCreatedLabel')}</li><li>⏳ ${t('kycUnderReview')}</li><li>📱 ${t('receiveSMS')}</li></ul><br><p>${t('referralBonus')}</p><p style="background: #f0fdf4; padding: 8px; border-radius: 8px; font-family: monospace;">${result.user.referralCode}</p></div>`,
           icon: "success",
           confirmButtonColor: "#059669",
-          confirmButtonText: "Go to Dashboard",
+          confirmButtonText: t('goToDashboard'),
           allowOutsideClick: false,
         }).then(() => {
           window.location.href = "/dashboard";
         });
         setIsRegistered(true);
-      } else showAlert("Registration Failed", result.message, "error");
+      } else showAlert(t('registrationFailed'), result.message, "error");
     } catch (error) {
       console.error("Registration error:", error);
       showAlert(
-        "Registration Failed",
+        t('registrationFailed'),
         error.response?.data?.message ||
-          "Registration failed. Please try again.",
+          t('registrationFailedMessage'),
         "error",
       );
     } finally {
@@ -325,41 +477,40 @@ const RegisterPage = () => {
         >
           <div className="text-6xl mb-4">🎉</div>
           <h2 className="text-2xl font-bold text-foreground mb-2">
-            Welcome to Amanah!
+            {t('welcomeToAmanah')}
           </h2>
           <p className="text-foreground/60 mb-6">
-            Your account has been successfully created! Our KYC team will verify
-            your documents within 4 hours.
+            {t('accountCreated')}
           </p>
           <div className="bg-secondary/20 rounded-xl p-4 mb-6 text-left">
             <p className="text-sm font-semibold text-foreground mb-3">
-              What&apos;s next?
+              {t('whatsNext')}
             </p>
             <div className="space-y-2 text-sm text-foreground/60">
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                   ✓
                 </div>{" "}
-                Account created
+                {t('accountCreatedLabel')}
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-500">
                   ⏳
                 </div>{" "}
-                KYC under review (up to 4 hours)
+                {t('kycUnderReview')}
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
                   📱
                 </div>{" "}
-                You&apos;ll receive SMS upon approval
+                {t('receiveSMS')}
               </div>
             </div>
           </div>
           {registrationData && (
             <div className="bg-primary/10 border border-primary/20 rounded-xl p-4 mb-6">
               <p className="text-sm font-semibold mb-2">
-                Refer a friend — Get ৳500 bonus!
+                {t('referFriend')}
               </p>
               <div className="flex gap-2">
                 <div className="flex-1 bg-background border border-border rounded-lg px-3 py-2 text-primary font-mono text-sm">
@@ -371,14 +522,14 @@ const RegisterPage = () => {
                       registrationData.referralCode,
                     );
                     showAlert(
-                      "Copied!",
-                      "Referral code copied to clipboard",
+                      t('copied'),
+                      t('referralCodeCopied'),
                       "success",
                     );
                   }}
                   className="px-4 py-2 bg-primary text-white rounded-lg font-semibold"
                 >
-                  Copy
+                  {t('copy')}
                 </button>
               </div>
             </div>
@@ -387,10 +538,10 @@ const RegisterPage = () => {
             href="/dashboard"
             className="block w-full py-3 bg-primary text-white rounded-xl font-semibold mb-3 text-center"
           >
-            Go to Dashboard
+            {t('goToDashboard')}
           </Link>
           <Link href="/" className="block text-sm text-foreground/50">
-            Back to Home
+            {t('backToHome')}
           </Link>
         </motion.div>
       </div>
@@ -399,13 +550,56 @@ const RegisterPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="fixed top-0 left-0 right-0 h-1 bg-primary/20 z-50">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-card/95 backdrop-blur-sm border-b border-border px-4 py-3">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2 text-lg font-bold text-foreground">
+            <Landmark size={24} className="text-primary" />
+            <span>{t('sanchoyBondhu')}</span>
+          </Link>
+
+          {/* Right Side Actions */}
+          <div className="flex items-center gap-3">
+            {/* Language Switcher */}
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-semibold hover:border-primary hover:text-primary transition"
+            >
+              <Globe size={14} />
+              {lang === "bn" ? "EN" : "BN"}
+            </button>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              className="w-9 h-9 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
+              aria-label="Toggle theme"
+            >
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
+            {/* Login Link */}
+            <Link
+              href="/login"
+              className="px-4 py-1.5 rounded-lg bg-primary text-white text-sm font-semibold hover:opacity-90 transition"
+            >
+              {t('login')}
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* Progress Bar */}
+      <div className="fixed top-[60px] left-0 right-0 h-1 bg-primary/20 z-40">
         <div
           className="h-full bg-linear-to-r from-primary to-primary-light transition-all duration-300"
           style={{ width: `${stepProgress[currentStep]}%` }}
         />
       </div>
-      <div className="max-w-2xl mx-auto px-4 py-8">
+
+      {/* Main Content */}
+      <div className="max-w-2xl mx-auto px-4 py-8 pt-16">
         <div className="flex justify-between mb-8 overflow-x-auto pb-2">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((step) => (
             <div key={step} className="flex flex-col items-center min-w-12">
@@ -415,14 +609,7 @@ const RegisterPage = () => {
                 {currentStep > step ? "✓" : step}
               </div>
               <div className="text-[10px] text-foreground/50 mt-1 whitespace-nowrap">
-                {step === 1 && "Account"}
-                {step === 2 && "Email"}
-                {step === 3 && "Personal"}
-                {step === 4 && "Nominee"}
-                {step === 5 && "Plan"}
-                {step === 6 && "PIN"}
-                {step === 7 && "KYC"}
-                {step === 8 && "Payment"}
+                {stepLabels[step - 1]}
               </div>
             </div>
           ))}
@@ -435,6 +622,7 @@ const RegisterPage = () => {
             errors={errors}
             setErrors={setErrors}
             handleNext={handleNext}
+            lang={lang}
           />
         )}
         {currentStep === 2 && (
@@ -446,6 +634,7 @@ const RegisterPage = () => {
             handleSendEmailOtp={handleSendEmailOtp}
             handleVerifyEmailOtp={handleVerifyEmailOtp}
             handleBack={handleBack}
+            lang={lang}
           />
         )}
         {currentStep === 3 && (
@@ -457,6 +646,7 @@ const RegisterPage = () => {
             districts={districts}
             handleNext={handleNext}
             handleBack={handleBack}
+            lang={lang}
           />
         )}
         {currentStep === 4 && (
@@ -466,6 +656,7 @@ const RegisterPage = () => {
             errors={errors}
             handleNext={handleNext}
             handleBack={handleBack}
+            lang={lang}
           />
         )}
         {currentStep === 5 && (
@@ -474,6 +665,7 @@ const RegisterPage = () => {
             updateField={updateField}
             handleNext={handleNext}
             handleBack={handleBack}
+            lang={lang}
           />
         )}
         {currentStep === 6 && (
@@ -486,6 +678,7 @@ const RegisterPage = () => {
             handleNext={handleNext}
             handleBack={handleBack}
             showAlert={showAlert}
+            lang={lang}
           />
         )}
         {currentStep === 7 && (
@@ -495,6 +688,7 @@ const RegisterPage = () => {
             errors={errors}
             handleNext={handleNext}
             handleBack={handleBack}
+            lang={lang}
           />
         )}
         {currentStep === 8 && (
@@ -505,6 +699,7 @@ const RegisterPage = () => {
             isLoading={isLoading}
             handleSubmit={handleSubmit}
             handleBack={handleBack}
+            lang={lang}
           />
         )}
       </div>

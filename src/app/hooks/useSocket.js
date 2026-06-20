@@ -1,147 +1,252 @@
-"use client";
-
-import { useEffect, useRef, useState, useCallback } from "react";
+// hooks/useSocket.js
+import { useEffect, useState, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 
-const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL
+const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:5000";
 
-export const useSocket = (userId, role = "user") => {
-  const socketRef = useRef(null);
+export const useSocket = (userId, userType = "user") => {
+  const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState([]);
+  const [notifications, setNotifications] = useState([]);
   const [typingUser, setTypingUser] = useState(null);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const socketRef = useRef(null);
 
+  // Initialize socket connection
   useEffect(() => {
-    if (!userId) return;
+    if (!userId) {
+      console.log("No userId provided, skipping socket connection");
+      return;
+    }
 
-    const socket = io(SOCKET_URL, {
-      withCredentials: true,
-      transports: ["websocket", "polling"],
+    // Create socket connection
+    const socketInstance = io(SOCKET_URL, {
+      query: { userId, userType },
+      transports: ["websocket"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
     });
 
-    socketRef.current = socket;
+    socketRef.current = socketInstance;
+    setSocket(socketInstance);
 
-    socket.on("connect", () => {
-      console.log("Socket connected:", socket.id);
+    // Connection events
+    socketInstance.on("connect", () => {
+      console.log(`Socket connected as ${userType}:`, socketInstance.id);
       setIsConnected(true);
-      // Join user-specific room
-      socket.emit("join", userId);
-      // Join admin room if admin
-      if (role === "admin") {
-        socket.emit("join_admin");
-      }
+      // Join user room
+      socketInstance.emit("join", userId);
     });
 
-    socket.on("disconnect", () => {
+    socketInstance.on("disconnect", () => {
       console.log("Socket disconnected");
       setIsConnected(false);
     });
 
-    // Listen for notifications
-    socket.on("notification", (notification) => {
-      console.log("New notification:", notification);
-      setNotifications((prev) => [notification, ...prev]);
-      setUnreadCount((prev) => prev + 1);
+    socketInstance.on("connect_error", (error) => {
+      console.error("Socket connection error:", error);
+      setIsConnected(false);
     });
 
-    // Admin notifications
-    socket.on("admin_notification", (notification) => {
-      console.log("Admin notification:", notification);
-      setNotifications((prev) => [notification, ...prev]);
+    // Receive message
+    socketInstance.on("receive_message", (data) => {
+      console.log("Received message:", data);
+      setMessages((prev) => [...prev, data]);
+      
+      // Also add to notifications if it's a ticket message
+      if (data.ticketId) {
+        setNotifications((prev) => [
+          {
+            _id: data._id || Date.now().toString(),
+            type: "ticket_reply",
+            title: "New Reply",
+            message: data.message,
+            ticketId: data.ticketId,
+            userId: data.senderId,
+            read: false,
+            createdAt: data.createdAt || new Date(),
+          },
+          ...prev,
+        ]);
+      }
     });
 
-    // New ticket alert (for admins)
-    socket.on("new_ticket", (ticket) => {
-      console.log("New ticket:", ticket);
+    // New ticket notification
+    socketInstance.on("new_ticket", (data) => {
+      console.log("New ticket:", data);
       setNotifications((prev) => [
         {
-          type: "ticket",
+          _id: data._id || Date.now().toString(),
+          type: "new_ticket",
           title: "New Support Ticket",
-          message: ticket.subject || "A new ticket has been submitted",
-          createdAt: new Date(),
+          message: data.subject || "New ticket created",
+          ticketId: data.ticketId,
+          userId: data.userId,
+          read: false,
+          createdAt: data.createdAt || new Date(),
         },
         ...prev,
       ]);
     });
 
-    // Ticket reply
-    socket.on("ticket_reply", ({ ticketId, reply }) => {
-      console.log("Ticket reply:", ticketId, reply);
+    // User typing
+    socketInstance.on("typing", (data) => {
+      if (data.userId !== userId) {
+        setTypingUser(data);
+        setTimeout(() => setTypingUser(null), 3000);
+      }
+    });
+
+    // Online users update
+    socketInstance.on("online_users", (users) => {
+      setOnlineUsers(users);
+    });
+
+    // Ticket update notification
+    socketInstance.on("ticket_updated", (data) => {
+      console.log("Ticket updated:", data);
       setNotifications((prev) => [
         {
-          type: "ticket_reply",
-          title: "New Reply",
-          message: reply.message,
-          createdAt: new Date(),
+          _id: data._id || Date.now().toString(),
+          type: "ticket_updated",
+          title: "Ticket Updated",
+          message: data.message || `Ticket ${data.ticketId} has been updated`,
+          ticketId: data.ticketId,
+          userId: data.userId,
+          read: false,
+          createdAt: data.createdAt || new Date(),
         },
         ...prev,
       ]);
-    });
-
-    // Messages
-    socket.on("new_message", (message) => {
-      console.log("New message:", message);
-      setMessages((prev) => [...prev, message]);
-    });
-
-    socket.on("message_sent", (message) => {
-      console.log("Message sent:", message);
-      setMessages((prev) => [...prev, message]);
-    });
-
-    socket.on("message_read", ({ messageId }) => {
-      setMessages((prev) =>
-        prev.map((msg) => (msg._id === messageId ? { ...msg, read: true } : msg))
-      );
-    });
-
-    // Typing indicator
-    socket.on("typing", ({ senderName }) => {
-      setTypingUser(senderName);
-      setTimeout(() => setTypingUser(null), 3000);
     });
 
     return () => {
-      socket.disconnect();
+      if (socketInstance) {
+        socketInstance.disconnect();
+        socketInstance.off();
+      }
     };
-  }, [userId, role]);
+  }, [userId, userType]);
 
   // Send message
-  const sendMessage = useCallback((receiverId, message, senderRole = "user") => {
-    if (!socketRef.current?.connected) return;
-    socketRef.current.emit("send_message", {
-      senderId: userId,
-      receiverId,
-      message,
-      senderRole,
-    });
-  }, [userId]);
+  const sendMessage = useCallback(
+    (receiverId, message, senderRole = "user", ticketId = null) => {
+      if (!socketRef.current || !isConnected) {
+        console.warn("Socket not connected, cannot send message");
+        return;
+      }
 
-  // Mark message as read
-  const markMessageRead = useCallback((messageId) => {
-    if (!socketRef.current?.connected) return;
-    socketRef.current.emit("mark_read", { messageId, userId });
-  }, [userId]);
+      const messageData = {
+        senderId: userId,
+        receiverId,
+        message,
+        senderRole,
+        ticketId,
+        timestamp: new Date(),
+      };
+
+      socketRef.current.emit("send_message", messageData);
+      console.log("Message sent:", messageData);
+
+      // Add to local messages
+      setMessages((prev) => [
+        ...prev,
+        {
+          ...messageData,
+          _id: Date.now().toString(),
+          createdAt: new Date(),
+        },
+      ]);
+    },
+    [userId, isConnected]
+  );
 
   // Send typing indicator
-  const sendTyping = useCallback((receiverId, senderName) => {
-    if (!socketRef.current?.connected) return;
-    socketRef.current.emit("typing", { receiverId, senderName });
+  const sendTyping = useCallback(
+    (receiverId) => {
+      if (!socketRef.current || !isConnected) return;
+      socketRef.current.emit("typing", { receiverId, userId, userType });
+    },
+    [userId, isConnected]
+  );
+
+  // Join admin room (for admin users)
+  const joinAdminRoom = useCallback(() => {
+    if (!socketRef.current || !isConnected) {
+      console.warn("Socket not connected, cannot join admin room");
+      return;
+    }
+
+    socketRef.current.emit("join_admin_room", { adminId: userId });
+    console.log("Admin joined admin room:", userId);
+  }, [userId, isConnected]);
+
+  // Join ticket room (for specific ticket chat)
+  const joinTicketRoom = useCallback(
+    (ticketId) => {
+      if (!socketRef.current || !isConnected) {
+        console.warn("Socket not connected, cannot join ticket room");
+        return;
+      }
+
+      socketRef.current.emit("join_ticket_room", { ticketId, userId });
+      console.log("Joined ticket room:", ticketId);
+    },
+    [userId, isConnected]
+  );
+
+  // Leave ticket room
+  const leaveTicketRoom = useCallback(
+    (ticketId) => {
+      if (!socketRef.current || !isConnected) return;
+      socketRef.current.emit("leave_ticket_room", { ticketId, userId });
+    },
+    [userId, isConnected]
+  );
+
+  // Mark messages as read
+  const markAsRead = useCallback(
+    (senderId) => {
+      if (!socketRef.current || !isConnected) return;
+      socketRef.current.emit("mark_read", { senderId, userId });
+    },
+    [userId, isConnected]
+  );
+
+  // Mark notification as read
+  const markNotificationAsRead = useCallback(
+    (notificationId) => {
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n._id === notificationId ? { ...n, read: true } : n
+        )
+      );
+    },
+    []
+  );
+
+  // Clear all notifications
+  const clearNotifications = useCallback(() => {
+    setNotifications([]);
   }, []);
 
   return {
-    socket: socketRef.current,
+    socket,
     isConnected,
-    notifications,
-    unreadCount,
-    setUnreadCount,
     messages,
+    notifications,
     typingUser,
+    onlineUsers,
     sendMessage,
-    markMessageRead,
     sendTyping,
+    joinAdminRoom,
+    joinTicketRoom,
+    leaveTicketRoom,
+    markAsRead,
+    markNotificationAsRead,
+    clearNotifications,
   };
 };
 

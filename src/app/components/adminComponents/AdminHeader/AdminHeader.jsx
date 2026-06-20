@@ -1,3 +1,4 @@
+// src/app/components/adminComponents/AdminHeader/AdminHeader.jsx
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -82,11 +83,44 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
   const [currentDate, setCurrentDate] = useState("");
   const [currentLang, setCurrentLang] = useState("en");
   const [fraudCount, setFraudCount] = useState(0);
+  const [currentAdminId, setCurrentAdminId] = useState(null);
   
+  // Get admin user ID
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsed = JSON.parse(storedUser);
+        setCurrentAdminId(parsed._id || parsed.id);
+      } catch (e) {
+        console.error("Error parsing user:", e);
+      }
+    }
+  }, []);
+
   // Translation function
   const t = (key) => {
     return translations[currentLang]?.[key] || translations.en[key] || key;
   };
+
+  // Socket for real-time alerts
+  const { 
+    notifications: adminNotifications = [], 
+    isConnected 
+  } = useSocket(currentAdminId, "admin");
+  
+  const [alertCount, setAlertCount] = useState(0);
+
+  // Safely handle notifications
+  useEffect(() => {
+    // Ensure adminNotifications is an array before accessing length
+    if (adminNotifications && Array.isArray(adminNotifications)) {
+      const unreadCount = adminNotifications.filter(n => !n.read).length;
+      setAlertCount(unreadCount);
+    } else {
+      setAlertCount(0);
+    }
+  }, [adminNotifications]);
 
   // Fetch real fraud count
   useEffect(() => {
@@ -111,16 +145,6 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
     };
     fetchFraudCount();
   }, []);
-  
-  // Socket for real-time alerts
-  const { notifications: adminNotifications } = useSocket("admin", "admin");
-  const [alertCount, setAlertCount] = useState(0);
-
-  useEffect(() => {
-    if (adminNotifications.length > 0) {
-      setAlertCount(adminNotifications.length);
-    }
-  }, [adminNotifications]);
 
   // Load language preference
   useEffect(() => {
@@ -164,6 +188,14 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 flex-wrap">
+          {/* Socket Status */}
+          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px]">
+            <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? "bg-green-500" : "bg-red-500"}`} />
+            <span className="text-foreground/50">
+              {isConnected ? "Online" : "Offline"}
+            </span>
+          </div>
+
           {/* Fraud Alert Chip */}
           <button
             onClick={() => (window.location.href = "/admin/fraud")}
@@ -201,7 +233,7 @@ const AdminHeader = ({ openSidebar, toggleTheme, isDark }) => {
 
           {/* Admin Avatar */}
           <div 
-            className="w-8 h-8 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm"
+            className="w-8 h-8 rounded-lg bg-gradient-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm"
             title={t('adminDashboard')}
           >
             A

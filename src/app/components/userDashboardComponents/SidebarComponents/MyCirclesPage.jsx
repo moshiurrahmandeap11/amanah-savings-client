@@ -28,6 +28,10 @@ import {
   Plane,
   Gift,
   Search,
+  Link2,
+  Copy,
+  Check,
+  Trash2,
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
@@ -69,8 +73,11 @@ const translations = {
     purpose: "Purpose",
     selectPurpose: "Select purpose",
     targetAmount: "Target Amount",
+    targetPlaceholder: "e.g. 100000",
     maxMembers: "Max Members",
+    custom: "Custom",
     minDeposit: "Minimum Monthly Deposit (৳)",
+    minDepositPlaceholder: "e.g. 2000",
     circleType: "Circle Type",
     private: "Private",
     public: "Public",
@@ -90,6 +97,22 @@ const translations = {
     noPurposeCircles: "No {purpose} circles available right now",
     pool: "Pool",
     minDepositLabel: "Min Deposit",
+    
+    // Invite Modal
+    inviteLink: "Invite Link",
+    shareLink: "Share this link with friends to join:",
+    inviteCode: "Invite Code",
+    expires: "Expires",
+    inviteExpiryWarning: "⚠️ This invite link will expire in 7 days. Only circle admins can generate new links.",
+    done: "Done",
+    generating: "Generating...",
+    
+    // Delete
+    deleteCircle: "Delete Circle?",
+    deleteCircleWarning: "Are you sure you want to delete <strong>{name}</strong>?<br/>This action cannot be undone and will remove all members.",
+    yesDelete: "Yes, delete it",
+    deleted: "Deleted!",
+    circleDeleted: "Circle has been deleted successfully.",
     
     // Validation
     error: "Error",
@@ -122,6 +145,10 @@ const translations = {
     travel: "Travel",
     eid: "Eid",
     general: "General",
+    
+    // Copy
+    copied: "Copied!",
+    inviteLinkCopied: "Invite link copied to clipboard!",
   },
   bn: {
     // Page Title
@@ -158,8 +185,11 @@ const translations = {
     purpose: "উদ্দেশ্য",
     selectPurpose: "উদ্দেশ্য নির্বাচন করুন",
     targetAmount: "লক্ষ্যমাত্রার পরিমাণ",
+    targetPlaceholder: "যেমন: ১০০০০০",
     maxMembers: "সর্বোচ্চ সদস্য",
+    custom: "কাস্টম",
     minDeposit: "ন্যূনতম মাসিক জমা (৳)",
+    minDepositPlaceholder: "যেমন: ২০০০",
     circleType: "সার্কেলের ধরন",
     private: "প্রাইভেট",
     public: "পাবলিক",
@@ -179,6 +209,22 @@ const translations = {
     noPurposeCircles: "এই মুহূর্তে {purpose} সার্কেল উপলব্ধ নেই",
     pool: "পুল",
     minDepositLabel: "ন্যূনতম জমা",
+    
+    // Invite Modal
+    inviteLink: "আমন্ত্রণ লিংক",
+    shareLink: "যোগ দিতে বন্ধুদের সাথে এই লিংক শেয়ার করুন:",
+    inviteCode: "আমন্ত্রণ কোড",
+    expires: "মেয়াদ",
+    inviteExpiryWarning: "⚠️ এই আমন্ত্রণ লিংক ৭ দিনের মধ্যে মেয়াদ শেষ হবে। শুধুমাত্র সার্কেল অ্যাডমিন নতুন লিংক তৈরি করতে পারেন।",
+    done: "সম্পন্ন",
+    generating: "তৈরি হচ্ছে...",
+    
+    // Delete
+    deleteCircle: "সার্কেল ডিলিট করবেন?",
+    deleteCircleWarning: "আপনি কি নিশ্চিত যে <strong>{name}</strong> ডিলিট করতে চান?<br/>এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না এবং সকল সদস্যকে সরিয়ে দেবে।",
+    yesDelete: "হ্যাঁ, ডিলিট করুন",
+    deleted: "ডিলিট করা হয়েছে!",
+    circleDeleted: "সার্কেল সফলভাবে ডিলিট করা হয়েছে।",
     
     // Validation
     error: "ত্রুটি",
@@ -211,12 +257,17 @@ const translations = {
     travel: "ভ্রমণ",
     eid: "ঈদ",
     general: "সাধারণ",
+    
+    // Copy
+    copied: "কপি করা হয়েছে!",
+    inviteLinkCopied: "আমন্ত্রণ লিংক ক্লিপবোর্ডে কপি করা হয়েছে!",
   }
 };
 
 const MyCirclesPage = () => {
   const [showCircleModal, setShowCircleModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
   const [circleType, setCircleType] = useState("private");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -224,6 +275,14 @@ const MyCirclesPage = () => {
   const [publicCircles, setPublicCircles] = useState([]);
   const [selectedPurpose, setSelectedPurpose] = useState("all");
   const [lang, setLang] = useState("en");
+  const [isCustomMembers, setIsCustomMembers] = useState(false);
+  const [customMembers, setCustomMembers] = useState("");
+  const [selectedCircleId, setSelectedCircleId] = useState(null);
+  const [inviteLink, setInviteLink] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [inviteExpiry, setInviteExpiry] = useState("");
+  const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [formData, setFormData] = useState({
     circleName: "",
     purpose: "",
@@ -258,6 +317,14 @@ const MyCirclesPage = () => {
     { icon: <Plane size={18} />, name: t('travel'), value: "travel" },
     { icon: <Star size={18} />, name: t('eid'), value: "eid" },
     { icon: <Users size={18} />, name: t('general'), value: "general" },
+  ];
+
+  const memberOptions = [
+    { value: "5", label: "5" },
+    { value: "10", label: "10" },
+    { value: "20", label: "20" },
+    { value: "50", label: "50" },
+    { value: "custom", label: t('custom') },
   ];
 
   // Fetch user's circles
@@ -337,12 +404,19 @@ const MyCirclesPage = () => {
     setSubmitting(true);
 
     try {
+      let maxMembersValue = formData.maxMembers;
+      if (isCustomMembers && customMembers) {
+        maxMembersValue = customMembers;
+      }
+
       const requestData = {
-        ...formData,
+        circleName: formData.circleName,
+        purpose: formData.purpose,
         targetAmount: parseFloat(formData.targetAmount),
         minDeposit: parseFloat(formData.minDeposit),
-        maxMembers: parseInt(formData.maxMembers),
-        circleType,
+        maxMembers: parseInt(maxMembersValue),
+        description: formData.description || null,
+        circleType: circleType,
       };
 
       const response = await axiosInstance.post("/circles", requestData);
@@ -367,6 +441,8 @@ const MyCirclesPage = () => {
           description: "",
         });
         setCircleType("private");
+        setIsCustomMembers(false);
+        setCustomMembers("");
         
         await fetchUserCircles();
       }
@@ -424,9 +500,98 @@ const MyCirclesPage = () => {
     }
   };
 
+  // Generate invite link
+  const generateInvite = async (circleId) => {
+    setIsGeneratingInvite(true);
+    try {
+      const response = await axiosInstance.post(`/circles/${circleId}/invite`);
+      if (response.data.success) {
+        setInviteLink(response.data.data.inviteLink);
+        setInviteCode(response.data.data.inviteCode);
+        setInviteExpiry(new Date(response.data.data.expiryDate).toLocaleDateString());
+        setSelectedCircleId(circleId);
+        setShowInviteModal(true);
+      }
+    } catch (error) {
+      console.error("Generate invite error:", error);
+      Swal.fire({
+        title: t('error'),
+        text: error.response?.data?.message || "Failed to generate invite link",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    } finally {
+      setIsGeneratingInvite(false);
+    }
+  };
+
+  // Copy invite link
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    Swal.fire({
+      title: t('copied'),
+      text: t('inviteLinkCopied'),
+      icon: "success",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  };
+
+  // Delete circle
+  const deleteCircle = async (circleId, circleName) => {
+    const result = await Swal.fire({
+      title: t('deleteCircle'),
+      html: t('deleteCircleWarning', { name: circleName }),
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#6c757d",
+      confirmButtonText: t('yesDelete'),
+      cancelButtonText: t('cancel'),
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await axiosInstance.delete(`/circles/${circleId}`);
+        if (response.data.success) {
+          Swal.fire({
+            title: t('deleted'),
+            text: t('circleDeleted'),
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+          await fetchUserCircles();
+        }
+      } catch (error) {
+        console.error("Delete circle error:", error);
+        Swal.fire({
+          title: t('error'),
+          text: error.response?.data?.message || "Failed to delete circle",
+          icon: "error",
+          confirmButtonColor: "#059669",
+        });
+      }
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleMemberChange = (e) => {
+    const value = e.target.value;
+    if (value === "custom") {
+      setIsCustomMembers(true);
+      setFormData(prev => ({ ...prev, maxMembers: "" }));
+    } else {
+      setIsCustomMembers(false);
+      setFormData(prev => ({ ...prev, maxMembers: value }));
+      setCustomMembers("");
+    }
   };
 
   useEffect(() => {
@@ -514,18 +679,52 @@ const MyCirclesPage = () => {
               whileHover={{ y: -4 }}
               className="bg-card border border-border rounded-xl sm:rounded-2xl p-4 sm:p-5 hover:border-primary/40 hover:shadow-xl transition-all cursor-pointer group"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div
-                  className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-primary/10 to-primary-light/10 flex items-center justify-center text-primary group-hover:scale-110 transition`}
-                >
-                  <Users size={24} />
+              {/* Circle Header with Actions */}
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={`w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-primary/10 to-primary-light/10 flex items-center justify-center text-primary group-hover:scale-110 transition`}
+                  >
+                    <Users size={24} />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-foreground text-sm sm:text-base">{circle.name}</h3>
+                    <p className="text-[10px] sm:text-xs text-foreground/50">{circle.type}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-foreground text-sm sm:text-base">{circle.name}</h3>
-                  <p className="text-[10px] sm:text-xs text-foreground/50">{circle.type}</p>
+                <div className="flex gap-1">
+                  {/* Show invite button only for private circles */}
+                  {circle.circleType === "private" && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        generateInvite(circle._id);
+                      }}
+                      disabled={isGeneratingInvite}
+                      className="p-1.5 rounded-lg hover:bg-primary/10 transition text-foreground/50 hover:text-primary"
+                      title="Generate Invite Link"
+                    >
+                      {isGeneratingInvite ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : (
+                        <Link2 size={14} />
+                      )}
+                    </button>
+                  )}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteCircle(circle._id, circle.name);
+                    }}
+                    className="p-1.5 rounded-lg hover:bg-red-500/10 transition text-foreground/50 hover:text-red-500"
+                    title="Delete Circle"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
 
+              {/* Circle Stats */}
               <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-4">
                 <div className="text-center p-2 bg-background rounded-lg">
                   <div className="text-lg sm:text-xl font-bold text-primary">{circle.members}</div>
@@ -655,7 +854,7 @@ const MyCirclesPage = () => {
                         value={formData.targetAmount}
                         onChange={handleInputChange}
                         disabled={submitting}
-                        placeholder="100000"
+                        placeholder={t('targetPlaceholder')}
                         className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
                       />
                     </div>
@@ -664,18 +863,31 @@ const MyCirclesPage = () => {
                     <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
                       <Users size={14} className="inline mr-1" /> {t('maxMembers')}
                     </label>
-                    <select
-                      name="maxMembers"
-                      value={formData.maxMembers}
-                      onChange={handleInputChange}
-                      disabled={submitting}
-                      className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
-                    >
-                      <option value="5">5 {t('members')}</option>
-                      <option value="10">10 {t('members')}</option>
-                      <option value="20">20 {t('members')}</option>
-                      <option value="50">50 {t('members')}</option>
-                    </select>
+                    <div className="flex gap-2">
+                      <select
+                        name="maxMembers"
+                        value={isCustomMembers ? "custom" : formData.maxMembers}
+                        onChange={handleMemberChange}
+                        disabled={submitting}
+                        className="flex-1 p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                      >
+                        {memberOptions.map(opt => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                      {isCustomMembers && (
+                        <input
+                          type="number"
+                          value={customMembers}
+                          onChange={(e) => setCustomMembers(e.target.value)}
+                          placeholder="Number"
+                          min="1"
+                          className="w-24 p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -691,7 +903,7 @@ const MyCirclesPage = () => {
                       value={formData.minDeposit}
                       onChange={handleInputChange}
                       disabled={submitting}
-                      placeholder="2000"
+                      placeholder={t('minDepositPlaceholder')}
                       className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
                     />
                   </div>
@@ -865,7 +1077,7 @@ const MyCirclesPage = () => {
                     <p className="text-foreground/60">
                       {selectedPurpose === "all" 
                         ? t('noPublicCircles')
-                        : t('noPurposeCircles').replace('{purpose}', selectedPurpose)}
+                        : t('noPurposeCircles').replace('{purpose}', t(selectedPurpose))}
                     </p>
                   </div>
                 ) : (
@@ -917,6 +1129,84 @@ const MyCirclesPage = () => {
                     ))}
                   </div>
                 )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Invite Modal */}
+      <AnimatePresence>
+        {showInviteModal && (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4"
+            onClick={() => setShowInviteModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-card border border-border rounded-2xl max-w-md w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-foreground flex items-center gap-2">
+                    <Link2 size={20} className="text-primary" />
+                    {t('inviteLink')}
+                  </h3>
+                  <button
+                    onClick={() => setShowInviteModal(false)}
+                    className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 hover:border-primary transition"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="bg-background rounded-xl p-4 border border-border">
+                    <p className="text-xs text-foreground/50 mb-2">{t('shareLink')}</p>
+                    <div className="flex items-center gap-2 bg-card border border-border rounded-lg p-2">
+                      <input
+                        type="text"
+                        value={inviteLink}
+                        readOnly
+                        className="flex-1 bg-transparent text-sm text-foreground outline-none font-mono"
+                      />
+                      <button
+                        onClick={copyToClipboard}
+                        className="p-1.5 rounded-lg hover:bg-primary/10 transition text-primary"
+                      >
+                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-background rounded-lg p-3 text-center border border-border">
+                      <div className="text-xs text-foreground/50">{t('inviteCode')}</div>
+                      <div className="text-sm font-bold text-foreground font-mono mt-1">{inviteCode}</div>
+                    </div>
+                    <div className="bg-background rounded-lg p-3 text-center border border-border">
+                      <div className="text-xs text-foreground/50">{t('expires')}</div>
+                      <div className="text-sm font-bold text-foreground mt-1">{inviteExpiry}</div>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      {t('inviteExpiryWarning')}
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => setShowInviteModal(false)}
+                    className="w-full py-2.5 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition"
+                  >
+                    {t('done')}
+                  </button>
+                </div>
               </div>
             </motion.div>
           </div>

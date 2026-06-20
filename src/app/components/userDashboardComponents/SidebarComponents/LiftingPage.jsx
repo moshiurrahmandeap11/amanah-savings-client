@@ -65,7 +65,7 @@ const translations = {
     minAmountError: "Please withdraw at least ৳100",
     amountExceedsError: "Amount exceeds your saved balance of ৳{amount}",
     selectReasonError: "Please select a reason",
-    validPhoneError: "Please enter a valid {method} number",
+    validPhoneError: "Please enter a valid {method} number (11 digits)",
     selectBankError: "Please select a bank",
     enterAccountError: "Please enter account number",
     enterHolderError: "Please enter account holder name",
@@ -91,7 +91,7 @@ const translations = {
     bank: "Bank",
     
     // Toast
-    phoneHint: "Enter 11-digit number (e.g., 17123456789)",
+    phoneHint: "Enter 11-digit number (e.g., 01712345678 or 1712345678)",
   },
   bn: {
     // Page Title
@@ -150,7 +150,7 @@ const translations = {
     minAmountError: "অনুগ্রহ করে কমপক্ষে ৳১০০ উত্তোলন করুন",
     amountExceedsError: "পরিমাণ আপনার সঞ্চিত ব্যালেন্স ৳{amount} অতিক্রম করেছে",
     selectReasonError: "অনুগ্রহ করে একটি কারণ নির্বাচন করুন",
-    validPhoneError: "অনুগ্রহ করে একটি বৈধ {method} নম্বর লিখুন",
+    validPhoneError: "অনুগ্রহ করে একটি বৈধ {method} নম্বর লিখুন (১১ সংখ্যা)",
     selectBankError: "অনুগ্রহ করে একটি ব্যাংক নির্বাচন করুন",
     enterAccountError: "অনুগ্রহ করে অ্যাকাউন্ট নম্বর লিখুন",
     enterHolderError: "অনুগ্রহ করে অ্যাকাউন্ট ধারকের নাম লিখুন",
@@ -176,7 +176,7 @@ const translations = {
     bank: "ব্যাংক",
     
     // Toast
-    phoneHint: "১১-সংখ্যার নম্বর লিখুন (যেমন: ১৭১২৩৪৫৬৭৮৯)",
+    phoneHint: "১১-সংখ্যার নম্বর লিখুন (যেমন: ০১৭১২৩৪৫৬৭৮ অথবা ১৭১২৩৪৫৬৭৮)",
   }
 };
 
@@ -218,6 +218,53 @@ const LiftingPage = () => {
     { id: "nagad", name: t('nagad'), icon: <Smartphone size={20} />, color: "text-orange-500" },
     { id: "bank", name: t('bank'), icon: <Building size={20} />, color: "text-blue-600" },
   ];
+
+  // Function to validate and format phone number
+  const validatePhoneNumber = (number) => {
+    // Remove all non-digit characters
+    const cleaned = number.replace(/\D/g, '');
+    
+    // Check if it's exactly 11 digits
+    if (cleaned.length !== 10) {
+      return { valid: false, formatted: cleaned };
+    }
+    
+    // Check if it starts with 0 (0XXXXXXXXX) or 1 (1XXXXXXXXX)
+    // For Bangladesh, valid numbers start with 01 or 1
+    const firstDigit = cleaned[0];
+    const secondDigit = cleaned[1];
+    
+    // Valid if starts with 0 and second digit is 1, or starts with 1 directly
+    const isValid = (firstDigit === '0' && secondDigit === '1') || firstDigit === '1';
+    
+    return { valid: isValid, formatted: cleaned };
+  };
+
+  // Function to format phone number for display/storage
+  const formatPhoneNumber = (number) => {
+    const cleaned = number.replace(/\D/g, '');
+    if (cleaned.length === 11) {
+      // If starts with 0, keep as is (0XXXXXXXXX)
+      if (cleaned[0] === '0') {
+        return cleaned;
+      }
+      // If starts with 1, add 0 prefix (1XXXXXXXXX -> 01XXXXXXXXX)
+      if (cleaned[0] === '1') {
+        return '0' + cleaned;
+      }
+    }
+    return cleaned;
+  };
+
+  // Handle phone number input
+  const handlePhoneChange = (e) => {
+    const input = e.target.value;
+    // Allow only digits
+    const digits = input.replace(/\D/g, '');
+    // Limit to 11 digits (max length for BD phone numbers with 0)
+    const limited = digits.slice(0, 11);
+    setPhoneNumber(limited);
+  };
 
   // Fetch user's goals
   const fetchGoals = async () => {
@@ -277,10 +324,19 @@ const LiftingPage = () => {
     }
 
     if (paymentMethod === "bkash" || paymentMethod === "nagad") {
-      if (!phoneNumber || phoneNumber.length !== 11) {
-        showToast(t('validPhoneError').replace('{method}', paymentMethod === "bkash" ? t('bkash') : t('nagad')));
+      // Validate phone number
+      const phoneValidation = validatePhoneNumber(phoneNumber);
+      
+      if (!phoneNumber || !phoneValidation.valid) {
+        const methodName = paymentMethod === "bkash" ? t('bkash') : t('nagad');
+        showToast(t('validPhoneError').replace('{method}', methodName));
         return;
       }
+      
+      // Format the phone number for submission (add 0 prefix if missing)
+      const formattedPhone = formatPhoneNumber(phoneNumber);
+      // Store the formatted number in a variable to use in the request
+      requestData.phoneNumber = formattedPhone;
     }
 
     if (paymentMethod === "bank") {
@@ -309,7 +365,9 @@ const LiftingPage = () => {
       };
 
       if (paymentMethod === "bkash" || paymentMethod === "nagad") {
-        requestData.phoneNumber = phoneNumber;
+        // Format phone number (ensure 0 prefix)
+        const formattedPhone = formatPhoneNumber(phoneNumber);
+        requestData.phoneNumber = formattedPhone;
       }
 
       if (paymentMethod === "bank") {
@@ -348,6 +406,9 @@ const LiftingPage = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Declare requestData outside the try block for access
+  let requestData = {};
 
   const selectedGoalData = goals.find(g => g._id === selectedGoal);
 
@@ -537,9 +598,9 @@ const LiftingPage = () => {
                   +880
                 </span>
                 <input
-                  type="tel"
+                  type="text"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 11))}
+                  onChange={handlePhoneChange}
                   placeholder={t('enterPhone')}
                   className="flex-1 p-3 rounded-r-xl border border-border bg-background text-foreground outline-none focus:border-primary transition"
                 />

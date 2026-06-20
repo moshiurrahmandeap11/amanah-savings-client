@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Wallet, TrendingUp, Clock, ArrowUp, ArrowDown, Banknote, Calendar, CheckCircle, AlertCircle, Target, Smartphone, Building } from "lucide-react";
+import { Loader2, Wallet, TrendingUp, Clock, ArrowUp, ArrowDown, Banknote, Calendar, CheckCircle, AlertCircle, Target, Smartphone, Building, Send, User, ArrowRightLeft } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 // Translations
@@ -17,11 +17,14 @@ const translations = {
     pendingDeposits: "Pending Deposits",
     totalWithdrawn: "Total Withdrawn",
     netSavings: "Net Savings",
+    totalTransferred: "Total Transferred",
+    totalTransfers: "Total Transfers",
     
     // Tabs
     all: "All",
     deposit: "Deposit",
     withdrawal: "Withdrawal",
+    transfer: "Transfer",
     
     // Status
     approved: "Approved",
@@ -29,6 +32,7 @@ const translations = {
     rejected: "Rejected",
     completed: "Completed",
     unknown: "Unknown",
+    inProgress: "In Progress",
     
     // Messages
     noTransactions: "No transactions found",
@@ -48,15 +52,31 @@ const translations = {
     pendingWithdrawals: "Pending Withdrawals:",
     netSaved: "Net Saved:",
     
+    // Transfer Summary
+    transferSummary: "Transfer Summary",
+    totalTransfersCount: "Total Transfers:",
+    totalTransferredAmount: "Total Transferred:",
+    goalToGoalTransfers: "Goal to Goal:",
+    userToUserTransfers: "User to User:",
+    
     // Deposit Summary Section
     reason: "Reason:",
     transactionId: "ID:",
+    from: "From:",
+    to: "To:",
+    note: "Note:",
     
     // Pagination
     previous: "Previous",
     next: "Next",
     page: "Page",
     of: "of",
+
+    // Transfer labels
+    sentTo: "Sent to",
+    receivedFrom: "Received from",
+    you: "You",
+    unknownUser: "Unknown User",
   },
   bn: {
     // Page Title
@@ -68,11 +88,14 @@ const translations = {
     pendingDeposits: "প্রক্রিয়াধীন ডিপোজিট",
     totalWithdrawn: "মোট উত্তোলন",
     netSavings: "নিট সঞ্চয়",
+    totalTransferred: "মোট স্থানান্তর",
+    totalTransfers: "মোট স্থানান্তর",
     
     // Tabs
     all: "সব",
     deposit: "ডিপোজিট",
     withdrawal: "উত্তোলন",
+    transfer: "স্থানান্তর",
     
     // Status
     approved: "অনুমোদিত",
@@ -80,6 +103,7 @@ const translations = {
     rejected: "বাতিল",
     completed: "সম্পন্ন",
     unknown: "অজানা",
+    inProgress: "চলমান",
     
     // Messages
     noTransactions: "কোন লেনদেন পাওয়া যায়নি",
@@ -99,15 +123,31 @@ const translations = {
     pendingWithdrawals: "প্রক্রিয়াধীন উত্তোলন:",
     netSaved: "নিট সঞ্চয়:",
     
+    // Transfer Summary
+    transferSummary: "স্থানান্তর সারাংশ",
+    totalTransfersCount: "মোট স্থানান্তর:",
+    totalTransferredAmount: "মোট স্থানান্তরিত:",
+    goalToGoalTransfers: "গোল টু গোল:",
+    userToUserTransfers: "ইউজার টু ইউজার:",
+    
     // Deposit Summary Section
     reason: "কারণ:",
     transactionId: "আইডি:",
+    from: "থেকে:",
+    to: "প্রতি:",
+    note: "নোট:",
     
     // Pagination
     previous: "পূর্ববর্তী",
     next: "পরবর্তী",
     page: "পৃষ্ঠা",
     of: "এর",
+
+    // Transfer labels
+    sentTo: "পাঠানো হয়েছে",
+    receivedFrom: "প্রাপ্ত হয়েছে",
+    you: "আপনি",
+    unknownUser: "অজানা ব্যবহারকারী",
   }
 };
 
@@ -116,6 +156,7 @@ const TransactionsPage = () => {
   const [loading, setLoading] = useState(true);
   const [deposits, setDeposits] = useState([]);
   const [withdrawals, setWithdrawals] = useState([]);
+  const [transfers, setTransfers] = useState([]);
   const [depositStats, setDepositStats] = useState({
     totalDeposited: 0,
     totalDeposits: 0,
@@ -124,6 +165,11 @@ const TransactionsPage = () => {
     totalWithdrawn: 0,
     totalWithdrawals: 0,
   });
+  const [transferStats, setTransferStats] = useState({
+    totalTransferred: 0,
+    totalTransfers: 0,
+  });
+  console.log("transfer state :", transferStats);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -131,6 +177,9 @@ const TransactionsPage = () => {
     itemsPerPage: 10,
   });
   const [lang, setLang] = useState("bn");
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userCache, setUserCache] = useState({});
+  console.log("user cache :", userCache); // Cache for fetched users
 
   // Translation function
   const t = (key, params = {}) => {
@@ -141,11 +190,61 @@ const TransactionsPage = () => {
     return text;
   };
 
-  // Load language preference
+  // Load language preference and user
   useEffect(() => {
     const savedLang = localStorage.getItem('appLanguage') || 'bn';
     setLang(savedLang);
+    
+    // Get current user from localStorage
+    try {
+      const userData = localStorage.getItem('user');
+      if (userData) {
+        setCurrentUser(JSON.parse(userData));
+      }
+    } catch (error) {
+      console.error("Error loading user data:", error);
+    }
   }, []);
+
+  // Fetch user by ID
+  const fetchUserById = async (userId) => {
+    if (!userId) return null;
+    
+    // Check cache first
+    if (userCache[userId]) {
+      return userCache[userId];
+    }
+
+    try {
+      const response = await axiosInstance.get(`/users/users/${userId}`);
+      if (response.data.success) {
+        const userData = response.data.data;
+        // Cache the user data
+        setUserCache(prev => ({
+          ...prev,
+          [userId]: userData
+        }));
+        return userData;
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      return null;
+    }
+    return null;
+  };
+
+  // Fetch multiple users
+  const fetchUsersForTransfers = async (transfersData) => {
+    const userIds = new Set();
+    transfersData.forEach(transfer => {
+      if (transfer.fromUserId) userIds.add(transfer.fromUserId);
+      if (transfer.toUserId) userIds.add(transfer.toUserId);
+    });
+
+    // Fetch all users in parallel
+    const fetchPromises = Array.from(userIds).map(id => fetchUserById(id));
+    await Promise.all(fetchPromises);
+  };
 
   // Fetch deposits
   const fetchDeposits = async (page = 1) => {
@@ -176,12 +275,38 @@ const TransactionsPage = () => {
     }
   };
 
+  // Fetch transfers
+  const fetchTransfers = async () => {
+    try {
+      const response = await axiosInstance.get("/transfers");
+      if (response.data.success) {
+        const transferData = response.data.data.transfers || [];
+        setTransfers(transferData);
+        
+        // Fetch user details for all transfers
+        await fetchUsersForTransfers(transferData);
+        
+        // Calculate transfer stats
+        const totalTransferred = transferData.reduce((sum, t) => sum + (t.amount || 0), 0);
+        setTransferStats({
+          totalTransferred: totalTransferred,
+          totalTransfers: transferData.length,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching transfers:", error);
+      setTransfers([]);
+      setTransferStats({ totalTransferred: 0, totalTransfers: 0 });
+    }
+  };
+
   useEffect(() => {
     const fetchAllData = async () => {
       setLoading(true);
       await Promise.all([
         fetchDeposits(),
         fetchWithdrawals(),
+        fetchTransfers(),
       ]);
       setLoading(false);
     };
@@ -214,6 +339,8 @@ const TransactionsPage = () => {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   };
 
@@ -251,16 +378,45 @@ const TransactionsPage = () => {
     return icons[goalType?.toLowerCase()] || "🎯";
   };
 
-  const getApprovedDepositsTotal = () => {
-    return deposits
-      .filter(d => d.status === "approved")
-      .reduce((sum, d) => sum + (d.depositAmount || 0), 0);
+  const getTransferIcon = (type) => {
+    if (type === "goal_to_goal") {
+      return <ArrowRightLeft size={16} />;
+    }
+    return <Send size={16} />;
   };
 
-  const getApprovedWithdrawalsTotal = () => {
-    return withdrawals
-      .filter(w => w.status === "completed" || w.status === "approved")
-      .reduce((sum, w) => sum + (w.withdrawalAmount || 0), 0);
+  const getTransferIconColor = (type) => {
+    if (type === "goal_to_goal") {
+      return "text-purple-500";
+    }
+    return "text-blue-500";
+  };
+
+  const getTransferTypeLabel = (type) => {
+    if (type === "goal_to_goal") {
+      return "Goal → Goal";
+    }
+    return "User → User (P2P)";
+  };
+
+  // Get user name from cache or return null
+  const getUserName = (userId) => {
+    if (!userId) return null;
+    const user = userCache[userId];
+    if (user) {
+      return user.name || user.fullName || user.firstName || t('unknownUser');
+    }
+    return null;
+  };
+
+  // Get user phone from cache
+  const getUserPhone = (userId) => {
+    if (!userId) return null;
+    const user = userCache[userId];
+    if (user) {
+      return user.phone;
+    }
+    return null;
   };
 
   const getAllTransactions = () => {
@@ -279,6 +435,7 @@ const TransactionsPage = () => {
       badgeIcon: getStatusBadge(deposit.status).icon,
       transactionId: deposit.transactionReference,
       screenshot: deposit.screenshot?.url,
+      isTransfer: false,
     }));
 
     const withdrawalTransactions = withdrawals.map(withdrawal => ({
@@ -296,9 +453,92 @@ const TransactionsPage = () => {
       badgeIcon: getStatusBadge(withdrawal.status, "withdrawal").icon,
       transactionId: withdrawal.transactionId || withdrawal.transactionReference,
       reason: withdrawal.reason,
+      isTransfer: false,
     }));
 
-    const all = [...depositTransactions, ...withdrawalTransactions];
+    const transferTransactions = transfers.map(transfer => {
+      // Get user details from cache
+      const fromUser = userCache[transfer.fromUserId];
+      const toUser = userCache[transfer.toUserId];
+      
+      // Determine the display name based on transfer type
+      let displayName = "";
+      let fromDisplay = "";
+      let toDisplay = "";
+      let isIncoming = false;
+      
+      if (transfer.type === "goal_to_goal") {
+        // Goal to Goal transfer
+        fromDisplay = transfer.fromGoalName || 'Unknown Goal';
+        toDisplay = transfer.toGoalName || 'Unknown Goal';
+        displayName = `${getGoalIcon('other')} ${fromDisplay} → ${toDisplay}`;
+      } else {
+        // User to User (P2P) transfer
+        const currentUserId = currentUser?._id;
+        
+        // Get user names from cache or use fallbacks
+        const fromName = fromUser?.name || fromUser?.fullName || fromUser?.firstName || transfer.fromUserName || t('unknownUser');
+        const toName = toUser?.name || toUser?.fullName || toUser?.firstName || transfer.toUserName || t('unknownUser');
+        const fromPhone = fromUser?.phone || transfer.fromUserPhone;
+        const toPhone = toUser?.phone || transfer.toUserPhone;
+        
+        // Check if current user is sender or receiver
+        const isSender = transfer.fromUserId === currentUserId;
+        const isReceiver = transfer.toUserId === currentUserId;
+        
+        if (isSender) {
+          // User is the sender
+          fromDisplay = t('you');
+          toDisplay = toName || t('unknownUser');
+          displayName = `${t('sentTo')} ${toDisplay}${toPhone ? ` (${toPhone})` : ''}`;
+          isIncoming = false;
+        } else if (isReceiver) {
+          // User is the receiver
+          fromDisplay = fromName || t('unknownUser');
+          toDisplay = t('you');
+          displayName = `${t('receivedFrom')} ${fromDisplay}${fromPhone ? ` (${fromPhone})` : ''}`;
+          isIncoming = true;
+        } else {
+          // User is neither sender nor receiver (shouldn't happen for user's own transactions)
+          fromDisplay = fromName || t('unknownUser');
+          toDisplay = toName || t('unknownUser');
+          displayName = `${fromDisplay} → ${toDisplay}`;
+          isIncoming = false;
+        }
+      }
+
+      return {
+        id: transfer._id,
+        type: "transfer",
+        icon: getTransferIcon(transfer.type),
+        iconColor: getTransferIconColor(transfer.type),
+        name: displayName,
+        date: transfer.createdAt,
+        amount: transfer.amount,
+        amountFormatted: transfer.type === "goal_to_goal" 
+          ? `-${formatAmount(transfer.amount)}`
+          : (transfer.fromUserId === currentUser?._id || transfer.fromUserId?.toString() === currentUser?._id?.toString()
+              ? `-${formatAmount(transfer.amount)}`
+              : `+${formatAmount(transfer.amount)}`),
+        status: transfer.status,
+        badge: getStatusBadge(transfer.status, "transfer").text,
+        badgeClass: getStatusBadge(transfer.status, "transfer").class,
+        badgeIcon: getStatusBadge(transfer.status, "transfer").icon,
+        transactionId: transfer.referenceNumber || transfer.transactionId,
+        note: transfer.note,
+        from: fromDisplay,
+        to: toDisplay,
+        transferType: getTransferTypeLabel(transfer.type),
+        isTransfer: true,
+        isIncoming: isIncoming,
+        fromUserId: transfer.fromUserId,
+        toUserId: transfer.toUserId,
+        fromUser: fromUser,
+        toUser: toUser,
+      };
+    });
+
+    const all = [...depositTransactions, ...withdrawalTransactions, ...transferTransactions];
     return all.sort((a, b) => new Date(b.date) - new Date(a.date));
   };
 
@@ -307,6 +547,7 @@ const TransactionsPage = () => {
     if (activeTab === "all") return all;
     if (activeTab === "deposit") return all.filter(t => t.type === "deposit");
     if (activeTab === "withdrawal") return all.filter(t => t.type === "withdrawal");
+    if (activeTab === "transfer") return all.filter(t => t.type === "transfer");
     return all;
   };
 
@@ -315,7 +556,13 @@ const TransactionsPage = () => {
   const totalDepositCount = depositStats.totalDeposits;
   const totalWithdrawn = withdrawalStats.totalWithdrawn;
   const totalWithdrawalCount = withdrawalStats.totalWithdrawals;
-  const netSaved = totalDeposited - totalWithdrawn;
+  const totalTransferred = transferStats.totalTransferred;
+  const totalTransferCount = transferStats.totalTransfers;
+  const netSaved = totalDeposited - totalWithdrawn - totalTransferred;
+
+  // Count transfers by type
+  const goalToGoalCount = transfers.filter(t => t.type === "goal_to_goal").length;
+  const userToUserCount = transfers.filter(t => t.type === "user_to_user").length;
 
   const stats = [
     { 
@@ -346,6 +593,13 @@ const TransactionsPage = () => {
       color: "info",
       bg: "bg-red-500/10"
     },
+    { 
+      icon: <Send size={20} />, 
+      value: formatAmount(totalTransferred), 
+      label: t('totalTransferred'), 
+      color: "purple",
+      bg: "bg-purple-500/10"
+    },
   ];
 
   const getStatBorderColor = (color) => {
@@ -354,6 +608,7 @@ const TransactionsPage = () => {
       case "blue": return "border-t-blue-500";
       case "warning": return "border-t-amber-500";
       case "info": return "border-t-red-500";
+      case "purple": return "border-t-purple-500";
       default: return "border-t-primary";
     }
   };
@@ -364,6 +619,7 @@ const TransactionsPage = () => {
       case "blue": return "bg-blue-500/10 text-blue-500";
       case "warning": return "bg-amber-500/10 text-amber-500";
       case "info": return "bg-red-500/10 text-red-500";
+      case "purple": return "bg-purple-500/10 text-purple-500";
       default: return "bg-primary/10 text-primary";
     }
   };
@@ -388,7 +644,7 @@ const TransactionsPage = () => {
       </h2>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         {stats.map((stat, idx) => (
           <motion.div
             key={idx}
@@ -431,6 +687,7 @@ const TransactionsPage = () => {
             { id: "all", label: `${t('all')} (${getAllTransactions().length})`, icon: <Wallet size={14} /> },
             { id: "deposit", label: `${t('deposit')} (${getAllTransactions().filter(t => t.type === "deposit").length})`, icon: <ArrowUp size={14} /> },
             { id: "withdrawal", label: `${t('withdrawal')} (${getAllTransactions().filter(t => t.type === "withdrawal").length})`, icon: <ArrowDown size={14} /> },
+            { id: "transfer", label: `${t('transfer')} (${getAllTransactions().filter(t => t.type === "transfer").length})`, icon: <Send size={14} /> },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -467,18 +724,68 @@ const TransactionsPage = () => {
                   <div className={`w-9 h-9 rounded-lg flex items-center justify-center bg-primary/10 ${txn.iconColor}`}>
                     {txn.icon}
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-sm text-foreground">{txn.name}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm text-foreground truncate" title={txn.name}>
+                      {txn.name}
+                    </div>
                     <div className="text-xs text-foreground/50 flex items-center gap-1">
                       <Calendar size={10} /> {formatDate(txn.date)}
                     </div>
-                    {txn.transactionId && (
-                      <div className="text-[10px] text-foreground/30 font-mono mt-0.5 flex items-center gap-1">
+                    
+                    {/* Transfer specific details */}
+                    {txn.isTransfer && (
+                      <>
+                        {txn.transferType && (
+                          <div className="text-[10px] text-foreground/40 mt-0.5 flex items-center gap-1">
+                            <ArrowRightLeft size={10} /> {txn.transferType}
+                          </div>
+                        )}
+                        {/* Show from/to for goal-to-goal or P2P details */}
+                        {txn.transferType === "Goal → Goal" ? (
+                          <>
+                            <div className="text-[10px] text-foreground/40 mt-0.5 flex items-center gap-1">
+                              <Target size={10} /> {t('from')} {txn.from}
+                            </div>
+                            <div className="text-[10px] text-foreground/40 mt-0.5 flex items-center gap-1">
+                              <Target size={10} /> {t('to')} {txn.to}
+                            </div>
+                          </>
+                        ) : (
+                          // P2P transfer - show recipient/sender info
+                          <>
+                            {txn.from && txn.from !== 'You' && txn.from !== t('you') && (
+                              <div className="text-[10px] text-foreground/40 mt-0.5 flex items-center gap-1">
+                                <User size={10} /> {t('from')} {txn.from}
+                              </div>
+                            )}
+                            {txn.to && txn.to !== 'You' && txn.to !== t('you') && (
+                              <div className="text-[10px] text-foreground/40 mt-0.5 flex items-center gap-1">
+                                <User size={10} /> {t('to')} {txn.to}
+                              </div>
+                            )}
+                            {/* Show if it's incoming or outgoing */}
+                            {txn.isIncoming !== undefined && (
+                              <div className={`text-[10px] mt-0.5 flex items-center gap-1 ${txn.isIncoming ? 'text-green-500' : 'text-red-500'}`}>
+                                {txn.isIncoming ? '⬇️' : '⬆️'} {txn.isIncoming ? 'Received' : 'Sent'}
+                              </div>
+                            )}
+                          </>
+                        )}
+                        {txn.note && (
+                          <div className="text-[10px] text-foreground/40 mt-0.5 truncate">
+                            {t('note')} {txn.note}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {!txn.isTransfer && txn.transactionId && (
+                      <div className="text-[10px] text-foreground/30 font-mono mt-0.5 flex items-center gap-1 truncate">
                         <Banknote size={10} /> {t('transactionId')} {txn.transactionId}
                       </div>
                     )}
-                    {txn.reason && (
-                      <div className="text-[10px] text-foreground/40 mt-0.5">
+                    {!txn.isTransfer && txn.reason && (
+                      <div className="text-[10px] text-foreground/40 mt-0.5 truncate">
                         {t('reason')} {txn.reason}
                       </div>
                     )}
@@ -487,9 +794,11 @@ const TransactionsPage = () => {
                       {txn.badge}
                     </span>
                   </div>
-                  <div className={`font-bold text-sm ${
+                  <div className={`font-bold text-sm shrink-0 ${
                     txn.type === "deposit" 
                       ? "text-primary" 
+                      : txn.type === "transfer"
+                      ? txn.isIncoming ? "text-green-500" : "text-purple-500"
                       : "text-red-500"
                   }`}>
                     {txn.amountFormatted}
@@ -531,7 +840,7 @@ const TransactionsPage = () => {
       </div>
 
       {/* Summary Section */}
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-card border border-border rounded-xl p-4">
           <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
             <ArrowUp size={16} className="text-primary" /> {t('depositSummary')}
@@ -581,9 +890,29 @@ const TransactionsPage = () => {
                 <Clock size={12} /> {withdrawals.filter(w => w.status === "pending").length}
               </span>
             </div>
-            <div className="flex justify-between text-sm border-t border-border pt-2 mt-2">
-              <span className="text-foreground/60 font-semibold">{t('netSaved')}:</span>
-              <span className="font-semibold text-primary text-base">{formatAmount(netSaved)}</span>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-xl p-4">
+          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Send size={16} className="text-purple-500" /> {t('transferSummary')}
+          </h3>
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">{t('totalTransfersCount')}</span>
+              <span className="font-semibold text-purple-500">{totalTransferCount}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">{t('totalTransferredAmount')}</span>
+              <span className="font-semibold text-purple-500">{formatAmount(totalTransferred)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">{t('goalToGoalTransfers')}</span>
+              <span className="font-semibold">{goalToGoalCount}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground/60">{t('userToUserTransfers')}</span>
+              <span className="font-semibold">{userToUserCount}</span>
             </div>
           </div>
         </div>

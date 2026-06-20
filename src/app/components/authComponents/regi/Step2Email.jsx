@@ -3,6 +3,48 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
+// Translations
+const translations = {
+  en: {
+    // Step Header
+    stepLabel: "Step 2 / 8",
+    verifyEmail: "Verify Email",
+    codeSent: "A 6-digit code has been sent to",
+    yourEmail: "your email",
+    
+    // Buttons
+    sendOtp: "Send OTP to {email}",
+    sending: "Sending...",
+    verifyEmailBtn: "Verify Email",
+    emailVerified: "✓ Email Verified",
+    previous: "← Previous",
+    
+    // Messages
+    didntReceive: "Didn't receive code?",
+    resend: "Resend",
+    resendWithTimer: "Resend ({timer}s)",
+  },
+  bn: {
+    // Step Header
+    stepLabel: "ধাপ ২ / ৮",
+    verifyEmail: "ইমেইল যাচাই করুন",
+    codeSent: "একটি ৬-অঙ্কের কোড পাঠানো হয়েছে",
+    yourEmail: "আপনার ইমেইলে",
+    
+    // Buttons
+    sendOtp: "{email} এ ওটিপি পাঠান",
+    sending: "পাঠানো হচ্ছে...",
+    verifyEmailBtn: "ইমেইল যাচাই করুন",
+    emailVerified: "✓ ইমেইল যাচাই করা হয়েছে",
+    previous: "← পূর্ববর্তী",
+    
+    // Messages
+    didntReceive: "কোড পাননি?",
+    resend: "পুনরায় পাঠান",
+    resendWithTimer: "পুনরায় পাঠান ({timer}সে)",
+  }
+};
+
 const Step2Email = ({
   formData,
   updateField,
@@ -11,8 +53,18 @@ const Step2Email = ({
   handleSendEmailOtp,
   handleVerifyEmailOtp,
   handleBack,
+  lang = "bn",
 }) => {
   const [isResending, setIsResending] = useState(false);
+
+  // Translation function
+  const t = (key, params = {}) => {
+    let text = translations[lang]?.[key] || translations.en[key] || key;
+    Object.keys(params).forEach(param => {
+      text = text.replace(`{${param}}`, params[param]);
+    });
+    return text;
+  };
 
   const onResendOtp = async () => {
     if (emailOtpTimer > 0 || emailVerified || !formData.email) return;
@@ -29,12 +81,12 @@ const Step2Email = ({
       className="bg-card border border-border rounded-2xl p-6 text-center"
     >
       <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
-        Step 2 / 8
+        {t('stepLabel')}
       </div>
-      <h2 className="text-2xl font-bold text-foreground mb-2">Verify Email</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-2">{t('verifyEmail')}</h2>
       <p className="text-foreground/60 mb-2">
-        A 6-digit code has been sent to{" "}
-        <strong>{formData.email || "your email"}</strong>
+        {t('codeSent')}{" "}
+        <strong>{formData.email || t('yourEmail')}</strong>
       </p>
 
       {emailOtpTimer === 0 && !emailVerified && formData.email && (
@@ -43,7 +95,7 @@ const Step2Email = ({
           disabled={isResending}
           className="w-full py-2 bg-primary/10 text-primary rounded-xl font-semibold mb-3 text-sm hover:bg-primary/20 transition disabled:opacity-50"
         >
-          {isResending ? "Sending..." : `Send OTP to ${formData.email}`}
+          {isResending ? t('sending') : t('sendOtp', { email: formData.email })}
         </button>
       )}
 
@@ -81,7 +133,7 @@ const Step2Email = ({
       </div>
 
       <p className="text-sm text-foreground/50 mb-4">
-        Didn't receive code?
+        {t('didntReceive')}
         <button
           className="text-primary font-semibold ml-1 hover:underline disabled:opacity-50"
           disabled={
@@ -89,7 +141,10 @@ const Step2Email = ({
           }
           onClick={onResendOtp}
         >
-          Resend {emailOtpTimer > 0 && `(${emailOtpTimer}s)`}
+          {emailOtpTimer > 0 
+            ? t('resendWithTimer', { timer: emailOtpTimer })
+            : t('resend')
+          }
         </button>
       </p>
 
@@ -98,14 +153,14 @@ const Step2Email = ({
         disabled={emailVerified || !formData.email}
         className={`w-full py-3 rounded-xl font-semibold mb-3 transition ${emailVerified ? "bg-green-500 text-white" : "bg-linear-to-r from-primary to-primary-light text-white hover:opacity-90"}`}
       >
-        {emailVerified ? "✓ Email Verified" : "Verify Email"}
+        {emailVerified ? t('emailVerified') : t('verifyEmailBtn')}
       </button>
 
       <button
         onClick={handleBack}
         className="w-full py-3 border border-border rounded-xl font-semibold text-foreground/70 hover:border-primary hover:text-primary transition"
       >
-        ← Previous
+        {t('previous')}
       </button>
     </motion.div>
   );

@@ -13,6 +13,15 @@ import {
   MessageSquare,
   AlertCircle,
   Loader2,
+  Banknote,
+  Building,
+  Smartphone,
+  User,
+  Calendar,
+  Hash,
+  FileText,
+  CreditCard,
+  Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
@@ -47,6 +56,35 @@ const translations = {
     rejectedText: "❌ Rejected",
     deposit: "Deposit",
     withdrawal: "Withdrawal",
+    transactionDetails: "Transaction Details",
+    close: "Close",
+    amount: "Amount",
+    reason: "Reason",
+    paymentMethod: "Payment Method",
+    goal: "Goal",
+    status: "Status",
+    createdAt: "Created At",
+    updatedAt: "Updated At",
+    approvedAt: "Approved At",
+    processedAt: "Processed At",
+    remarks: "Remarks",
+    transactionId: "Transaction ID",
+    approvedBy: "Approved By",
+    bankName: "Bank Name",
+    accountNumber: "Account Number",
+    accountHolderName: "Account Holder Name",
+    phoneNumber: "Phone Number",
+    withdrawalDetails: "Withdrawal Details",
+    depositDetails: "Deposit Details",
+    screenshot: "Screenshot",
+    viewScreenshot: "View Screenshot",
+    noScreenshot: "No Screenshot",
+    completed: "Completed",
+    processing: "Processing",
+    unknown: "Unknown",
+    user: "User",
+    method: "Method",
+    type: "Type",
   },
   bn: {
     transactions: "💳 লেনদেন",
@@ -76,6 +114,35 @@ const translations = {
     rejectedText: "❌ প্রত্যাখ্যাত",
     deposit: "ডিপোজিট",
     withdrawal: "উত্তোলন",
+    transactionDetails: "লেনদেনের বিবরণ",
+    close: "বন্ধ করুন",
+    amount: "পরিমাণ",
+    reason: "কারণ",
+    paymentMethod: "পেমেন্ট পদ্ধতি",
+    goal: "লক্ষ্য",
+    status: "অবস্থা",
+    createdAt: "তৈরির তারিখ",
+    updatedAt: "আপডেটের তারিখ",
+    approvedAt: "অনুমোদনের তারিখ",
+    processedAt: "প্রক্রিয়াকরণের তারিখ",
+    remarks: "মন্তব্য",
+    transactionId: "লেনদেন আইডি",
+    approvedBy: "অনুমোদনকারী",
+    bankName: "ব্যাংকের নাম",
+    accountNumber: "অ্যাকাউন্ট নম্বর",
+    accountHolderName: "অ্যাকাউন্ট ধারকের নাম",
+    phoneNumber: "ফোন নম্বর",
+    withdrawalDetails: "উত্তোলনের বিবরণ",
+    depositDetails: "ডিপোজিটের বিবরণ",
+    screenshot: "স্ক্রিনশট",
+    viewScreenshot: "স্ক্রিনশট দেখুন",
+    noScreenshot: "কোন স্ক্রিনশট নেই",
+    completed: "সম্পন্ন",
+    processing: "প্রক্রিয়াকরণ",
+    unknown: "অজানা",
+    user: "ব্যবহারকারী",
+    method: "পদ্ধতি",
+    type: "ধরন",
   }
 };
 
@@ -90,6 +157,7 @@ const WithDrawalsPage = () => {
   const [activeTab, setActiveTab] = useState("pending");
   const [searchQuery, setSearchQuery] = useState("");
   const [showNoteSheet, setShowNoteSheet] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [noteText, setNoteText] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
@@ -133,7 +201,35 @@ const WithDrawalsPage = () => {
       });
 
       if (res.data.success) {
-        setTransactions(res.data.data.transactions || []);
+        // Transform data to ensure paymentDetails is properly structured
+        const transformedTransactions = (res.data.data.transactions || []).map(tx => {
+          // If paymentDetails exists as a string, parse it
+          let paymentDetails = tx.paymentDetails || {};
+          if (typeof paymentDetails === 'string') {
+            try {
+              paymentDetails = JSON.parse(paymentDetails);
+            } catch (e) {
+              paymentDetails = {};
+            }
+          }
+          
+          // If bank data is directly on the transaction object, move it to paymentDetails
+          if (tx.bankName || tx.accountNumber || tx.accountHolderName) {
+            paymentDetails = {
+              ...paymentDetails,
+              bankName: tx.bankName || paymentDetails.bankName,
+              accountNumber: tx.accountNumber || paymentDetails.accountNumber,
+              accountHolderName: tx.accountHolderName || paymentDetails.accountHolderName,
+            };
+          }
+          
+          return {
+            ...tx,
+            paymentDetails,
+          };
+        });
+        
+        setTransactions(transformedTransactions);
         setStats(res.data.data.stats || stats);
       }
     } catch (err) {
@@ -209,26 +305,75 @@ const WithDrawalsPage = () => {
     showToast(t('noteSent'));
   };
 
+  const openDetailsModal = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowDetailsModal(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setSelectedTransaction(null);
+    document.body.style.overflow = "auto";
+  };
+
   const formatAmount = (amount) => {
     const formatted = Number(amount || 0).toLocaleString();
     return `৳${formatted}`;
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (e) {
+      return "Invalid Date";
+    }
+  };
+
   const getStatusBadge = (status) => {
     if (status === "pending") return "bg-amber-500/15 text-amber-500";
     if (status === "approved") return "bg-green-500/15 text-green-500";
-    return "bg-red-500/15 text-red-500";
+    if (status === "completed") return "bg-blue-500/15 text-blue-500";
+    if (status === "rejected") return "bg-red-500/15 text-red-500";
+    return "bg-gray-500/15 text-gray-500";
   };
 
   const getStatusIcon = (status) => {
     if (status === "pending") return "⏳";
     if (status === "approved") return "✅";
-    return "❌";
+    if (status === "completed") return "✅";
+    if (status === "rejected") return "❌";
+    return "❓";
+  };
+
+  const getPaymentMethodIcon = (method) => {
+    if (method === "bank") return <Building size={14} className="text-blue-500" />;
+    if (method === "bkash") return <Smartphone size={14} className="text-pink-500" />;
+    if (method === "nagad") return <Smartphone size={14} className="text-orange-500" />;
+    if (method === "rocket") return <Smartphone size={14} className="text-purple-500" />;
+    return <Banknote size={14} className="text-gray-500" />;
+  };
+
+  const hasBankDetails = (tx) => {
+    const details = tx.paymentDetails || {};
+    return !!(details.bankName || details.accountNumber || details.accountHolderName);
+  };
+
+  const hasMobileDetails = (tx) => {
+    return !!(tx.phoneNumber || tx.phone);
   };
 
   const filteredTransactions = transactions.filter((t) => {
     if (activeTab === "pending" && t.status !== "pending") return false;
-    if (activeTab === "approved" && t.status !== "approved") return false;
+    if (activeTab === "approved" && t.status !== "approved" && t.status !== "completed") return false;
     if (activeTab === "rejected" && t.status !== "rejected") return false;
     if (activeTab === "withdraw" && t.type !== "withdrawal") return false;
     if (searchQuery) {
@@ -360,14 +505,14 @@ const WithDrawalsPage = () => {
         ) : (
           filteredTransactions.map((tx) => (
             <motion.div
-              key={tx.id}
+              key={tx.id || tx._id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-card border border-border rounded-xl overflow-hidden"
             >
               <div className="p-3 flex items-start gap-2">
                 <div className="w-10 h-10 rounded-lg bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-sm shrink-0">
-                  {tx.name ? tx.name[0] : "?"}
+                  {tx.userName ? tx.userName[0] : "?"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1 flex-wrap">
@@ -379,77 +524,132 @@ const WithDrawalsPage = () => {
                     </span>
                   </div>
                   <div className="text-[10px] text-foreground/50 mt-0.5">
-                    {tx.phone || ""} · {tx.date || new Date(tx.createdAt).toLocaleString()}
+                    {tx.phone || ""} · {tx.date || formatDate(tx.createdAt)}
                   </div>
                 </div>
                 <div className={`text-base font-bold ${tx.type === "deposit" ? "text-green-500" : "text-red-500"}`}>
                   {tx.type === "deposit" ? "+" : "-"}
-                  {formatAmount(tx.amount)}
+                  {formatAmount(tx.amount || tx.withdrawalAmount || tx.depositAmount)}
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-1.5 px-3 pb-2">
                 <div className="bg-background rounded-lg p-2">
-                  <div className="text-[9px] text-foreground/50">Goal</div>
+                  <div className="text-[9px] text-foreground/50">{t('goal')}</div>
                   <div className="text-xs font-semibold text-foreground">
                     {tx.goalName || "N/A"}
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">
-                  <div className="text-[9px] text-foreground/50">Method</div>
-                  <div className="text-xs font-semibold text-foreground">
-                    {tx.method || "N/A"}
+                  <div className="text-[9px] text-foreground/50">{t('method')}</div>
+                  <div className="text-xs font-semibold text-foreground flex items-center gap-1">
+                    {getPaymentMethodIcon(tx.paymentMethod || tx.method)}
+                    {tx.paymentMethod || tx.method || "N/A"}
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">
-                  <div className="text-[9px] text-foreground/50">TxID</div>
-                  <div className="text-[10px] font-mono text-foreground/70">
-                    {tx.txid || tx.id}
+                  <div className="text-[9px] text-foreground/50">{t('transactionId')}</div>
+                  <div className="text-[10px] font-mono text-foreground/70 truncate">
+                    {tx.txid || tx.transactionId || tx.id || "N/A"}
                   </div>
                 </div>
                 <div className="bg-background rounded-lg p-2">
-                  <div className="text-[9px] text-foreground/50">Type</div>
-                  <div className="text-xs font-semibold text-foreground">
-                    {tx.type === "deposit" ? "⬆️ Deposit" : "⬇️ Withdrawal"}
+                  <div className="text-[9px] text-foreground/50">{t('reason')}</div>
+                  <div className="text-xs font-semibold text-foreground truncate">
+                    {tx.reason || t('unknown')}
                   </div>
                 </div>
               </div>
+
+              {/* Withdrawal Details (Bank Info) */}
+              {tx.type === "withdrawal" && tx.paymentMethod === "bank" && hasBankDetails(tx) && (
+                <div className="px-3 pb-2">
+                  <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30 rounded-lg p-2">
+                    <div className="text-[9px] text-foreground/50 mb-1 flex items-center gap-1">
+                      <Building size={12} /> 🏦 Bank Details
+                    </div>
+                    <div className="grid grid-cols-3 gap-1 text-[10px]">
+                      <div>
+                        <span className="text-foreground/50">{t('bankName')}:</span>
+                        <span className="font-semibold text-foreground ml-1">{tx.paymentDetails?.bankName || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground/50">{t('accountNumber')}:</span>
+                        <span className="font-semibold text-foreground ml-1">{tx.paymentDetails?.accountNumber || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground/50">{t('accountHolderName')}:</span>
+                        <span className="font-semibold text-foreground ml-1">{tx.paymentDetails?.accountHolderName || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Withdrawal Details (Mobile Banking) */}
+              {tx.type === "withdrawal" && (tx.paymentMethod === "bkash" || tx.paymentMethod === "nagad") && hasMobileDetails(tx) && (
+                <div className="px-3 pb-2">
+                  <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/30 rounded-lg p-2">
+                    <div className="text-[9px] text-foreground/50 mb-1 flex items-center gap-1">
+                      <Smartphone size={12} /> 📱 Mobile Banking Details
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 text-[10px]">
+                      <div>
+                        <span className="text-foreground/50">{t('phoneNumber')}:</span>
+                        <span className="font-semibold text-foreground ml-1">{tx.phoneNumber || tx.phone || "N/A"}</span>
+                      </div>
+                      <div>
+                        <span className="text-foreground/50">{t('method')}:</span>
+                        <span className="font-semibold text-foreground ml-1">{tx.paymentMethod?.toUpperCase() || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {tx.hasScreenshot && (
                 <div className="px-3 pb-2">
                   <div className="bg-background border border-border rounded-lg p-2 flex items-center gap-2 cursor-pointer" onClick={() => showToast("🖼️ Viewing screenshot...")}>
                     <span className="text-xl">🖼️</span>
                     <div className="flex-1">
-                      <div className="text-xs font-semibold text-foreground">Payment Screenshot</div>
-                      <div className="text-[9px] text-foreground/50">Tap to verify</div>
+                      <div className="text-xs font-semibold text-foreground">{t('screenshot')}</div>
+                      <div className="text-[9px] text-foreground/50">{t('viewScreenshot')}</div>
                     </div>
-                    <span className="text-xs text-primary font-semibold">View →</span>
+                    <span className="text-xs text-primary font-semibold">{t('view')} →</span>
                   </div>
                 </div>
               )}
 
-              {tx.status === "pending" && (
-                <div className="flex gap-2 p-3 pt-0">
-                  <button
-                    onClick={() => approveTransaction(tx.id)}
-                    className="flex-1 py-2 rounded-lg border border-green-500/30 bg-green-500/10 text-green-500 text-xs font-bold hover:bg-green-500/20 transition"
-                  >
-                    ✅ {t('approve')}
-                  </button>
-                  <button
-                    onClick={() => rejectTransaction(tx.id)}
-                    className="flex-1 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition"
-                  >
-                    ❌ {t('reject')}
-                  </button>
-                  <button
-                    onClick={() => openNoteSheet(tx)}
-                    className="px-3 py-2 rounded-lg border border-border text-foreground/60 text-xs font-bold hover:border-primary transition"
-                  >
-                    📝
-                  </button>
-                </div>
-              )}
+              <div className="flex gap-2 p-3 pt-0">
+                {tx.status === "pending" && (
+                  <>
+                    <button
+                      onClick={() => approveTransaction(tx.id || tx._id)}
+                      className="flex-1 py-2 rounded-lg border border-green-500/30 bg-green-500/10 text-green-500 text-xs font-bold hover:bg-green-500/20 transition"
+                    >
+                      ✅ {t('approve')}
+                    </button>
+                    <button
+                      onClick={() => rejectTransaction(tx.id || tx._id)}
+                      className="flex-1 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition"
+                    >
+                      ❌ {t('reject')}
+                    </button>
+                    <button
+                      onClick={() => openNoteSheet(tx)}
+                      className="px-3 py-2 rounded-lg border border-border text-foreground/60 text-xs font-bold hover:border-primary transition"
+                    >
+                      📝
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => openDetailsModal(tx)}
+                  className={`${tx.status === "pending" ? "flex-1" : "w-full"} py-2 rounded-lg border border-primary/30 text-primary text-xs font-bold hover:bg-primary/10 transition`}
+                >
+                  👁️ {t('view')}
+                </button>
+              </div>
             </motion.div>
           ))
         )}
@@ -490,6 +690,185 @@ const WithDrawalsPage = () => {
               </button>
             </motion.div>
           </>
+        )}
+      </AnimatePresence>
+
+      {/* Transaction Details Modal */}
+      <AnimatePresence>
+        {showDetailsModal && selectedTransaction && (
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={closeDetailsModal}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card border border-border rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-card border-b border-border p-4 rounded-t-2xl flex justify-between items-center">
+                <div>
+                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                    <FileText size={20} className="text-primary" />
+                    {t('transactionDetails')}
+                  </h3>
+                  <p className="text-xs text-foreground/50">{selectedTransaction.id || selectedTransaction._id}</p>
+                </div>
+                <button
+                  onClick={closeDetailsModal}
+                  className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-5 space-y-4">
+                {/* User & Status */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-linear-to-r from-primary to-primary-light flex items-center justify-center text-white font-bold text-lg">
+                      {selectedTransaction.userName ? selectedTransaction.userName[0] : "?"}
+                    </div>
+                    <div>
+                      <div className="font-bold text-foreground">{selectedTransaction.userName || "Unknown"}</div>
+                      <div className="text-xs text-foreground/50">{selectedTransaction.phone || "N/A"}</div>
+                    </div>
+                  </div>
+                  <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusBadge(selectedTransaction.status)}`}>
+                    {getStatusIcon(selectedTransaction.status)} {selectedTransaction.status}
+                  </span>
+                </div>
+
+                {/* Transaction Info */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-background rounded-xl p-3">
+                    <div className="text-[10px] text-foreground/50">{t('type')}</div>
+                    <div className="font-semibold text-foreground capitalize">
+                      {selectedTransaction.type === "deposit" ? "⬆️ Deposit" : "⬇️ Withdrawal"}
+                    </div>
+                  </div>
+                  <div className="bg-background rounded-xl p-3">
+                    <div className="text-[10px] text-foreground/50">{t('amount')}</div>
+                    <div className={`font-bold ${selectedTransaction.type === "deposit" ? "text-green-500" : "text-red-500"}`}>
+                      {selectedTransaction.type === "deposit" ? "+" : "-"}
+                      {formatAmount(selectedTransaction.amount || selectedTransaction.withdrawalAmount || selectedTransaction.depositAmount)}
+                    </div>
+                  </div>
+                  <div className="bg-background rounded-xl p-3">
+                    <div className="text-[10px] text-foreground/50">{t('paymentMethod')}</div>
+                    <div className="font-semibold text-foreground flex items-center gap-1">
+                      {getPaymentMethodIcon(selectedTransaction.paymentMethod || selectedTransaction.method)}
+                      {selectedTransaction.paymentMethod || selectedTransaction.method || "N/A"}
+                    </div>
+                  </div>
+                  <div className="bg-background rounded-xl p-3">
+                    <div className="text-[10px] text-foreground/50">{t('reason')}</div>
+                    <div className="font-semibold text-foreground">{selectedTransaction.reason || t('unknown')}</div>
+                  </div>
+                  <div className="bg-background rounded-xl p-3">
+                    <div className="text-[10px] text-foreground/50">{t('goal')}</div>
+                    <div className="font-semibold text-foreground">{selectedTransaction.goalName || "N/A"}</div>
+                  </div>
+                  <div className="bg-background rounded-xl p-3">
+                    <div className="text-[10px] text-foreground/50">{t('transactionId')}</div>
+                    <div className="font-mono text-xs text-foreground">{selectedTransaction.txid || selectedTransaction.transactionId || selectedTransaction.id || "N/A"}</div>
+                  </div>
+                </div>
+
+                {/* Withdrawal Details - Bank */}
+                {selectedTransaction.type === "withdrawal" && selectedTransaction.paymentMethod === "bank" && hasBankDetails(selectedTransaction) && (
+                  <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30 rounded-xl p-4">
+                    <div className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
+                      <Building size={16} className="text-blue-500" />
+                      {t('bankName')} Details
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-foreground/50">{t('bankName')}</span>
+                        <span className="font-semibold text-foreground">{selectedTransaction.paymentDetails?.bankName || "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-foreground/50">{t('accountNumber')}</span>
+                        <span className="font-semibold text-foreground">{selectedTransaction.paymentDetails?.accountNumber || "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-foreground/50">{t('accountHolderName')}</span>
+                        <span className="font-semibold text-foreground">{selectedTransaction.paymentDetails?.accountHolderName || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Withdrawal Details - Mobile Banking */}
+                {selectedTransaction.type === "withdrawal" && (selectedTransaction.paymentMethod === "bkash" || selectedTransaction.paymentMethod === "nagad") && hasMobileDetails(selectedTransaction) && (
+                  <div className="bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/30 rounded-xl p-4">
+                    <div className="font-semibold text-sm text-foreground mb-3 flex items-center gap-2">
+                      <Smartphone size={16} className="text-purple-500" />
+                      Mobile Banking Details
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-foreground/50">{t('phoneNumber')}</span>
+                        <span className="font-semibold text-foreground">{selectedTransaction.phoneNumber || selectedTransaction.phone || "N/A"}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-foreground/50">{t('method')}</span>
+                        <span className="font-semibold text-foreground">{selectedTransaction.paymentMethod?.toUpperCase() || "N/A"}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Timestamps */}
+                <div className="bg-background rounded-xl p-4 space-y-2">
+                  <div className="text-xs font-semibold text-foreground/50 mb-2">📅 Timestamps</div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-foreground/50">{t('createdAt')}:</span>
+                      <span className="text-foreground ml-1">{formatDate(selectedTransaction.createdAt)}</span>
+                    </div>
+                    <div>
+                      <span className="text-foreground/50">{t('updatedAt')}:</span>
+                      <span className="text-foreground ml-1">{formatDate(selectedTransaction.updatedAt)}</span>
+                    </div>
+                    {selectedTransaction.approvedAt && (
+                      <div>
+                        <span className="text-foreground/50">{t('approvedAt')}:</span>
+                        <span className="text-foreground ml-1">{formatDate(selectedTransaction.approvedAt)}</span>
+                      </div>
+                    )}
+                    {selectedTransaction.processedAt && (
+                      <div>
+                        <span className="text-foreground/50">{t('processedAt')}:</span>
+                        <span className="text-foreground ml-1">{formatDate(selectedTransaction.processedAt)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Remarks */}
+                {selectedTransaction.remarks && (
+                  <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 rounded-xl p-4">
+                    <div className="text-xs font-semibold text-foreground/50 mb-1">{t('remarks')}</div>
+                    <div className="text-sm text-foreground">{selectedTransaction.remarks}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="sticky bottom-0 bg-card border-t border-border p-4 rounded-b-2xl">
+                <button
+                  onClick={closeDetailsModal}
+                  className="w-full py-2.5 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition"
+                >
+                  {t('close')}
+                </button>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
