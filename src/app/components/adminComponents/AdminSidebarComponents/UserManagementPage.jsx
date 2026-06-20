@@ -6,10 +6,12 @@ import {
   Search,
   Download,
   Eye,
+  Edit,
   CheckCircle,
   XCircle,
   Ban,
   Loader2,
+  Save,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -105,9 +107,28 @@ const UserManagementPage = () => {
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [selectedUser, setSelectedUser] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editForm, setEditForm] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    dob: "",
+    gender: "",
+    occupation: "",
+    income: "",
+    division: "",
+    district: "",
+    upazila: "",
+    village: "",
+    postOffice: "",
+    postCode: "",
+  });
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -134,6 +155,11 @@ const UserManagementPage = () => {
   const formatCurrency = (amount) => {
     if (amount == null) return "৳0";
     return `৳${Number(amount).toLocaleString("en-BD")}`;
+  };
+
+  const formatDateInput = (date) => {
+    if (!date) return "";
+    return String(date).split("T")[0];
   };
 
   const fetchUsers = useCallback(async (page = 1) => {
@@ -219,6 +245,91 @@ const UserManagementPage = () => {
     setShowUserModal(false);
     setSelectedUser(null);
     document.body.style.overflow = "auto";
+  };
+
+  const openEditModal = (user) => {
+    setEditingUser(user);
+    setEditForm({
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      phone: user.phone || "",
+      email: user.email || "",
+      dob: formatDateInput(user.dob),
+      gender: user.gender || "",
+      occupation: user.occupation || "",
+      income: user.income || "",
+      division: user.division || "",
+      district: user.district || "",
+      upazila: user.upazila || "",
+      village: user.village || "",
+      postOffice: user.postOffice || "",
+      postCode: user.postCode || "",
+    });
+    setShowEditModal(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingUser(null);
+    setSavingEdit(false);
+    document.body.style.overflow = "auto";
+  };
+
+  const handleEditFormChange = (field, value) => {
+    setEditForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const submitEditForm = async (e) => {
+    e.preventDefault();
+    if (!editingUser) return;
+
+    setSavingEdit(true);
+    try {
+      const payload = {
+        firstName: editForm.firstName,
+        lastName: editForm.lastName,
+        phone: editForm.phone,
+        email: editForm.email,
+        dob: editForm.dob,
+        gender: editForm.gender,
+        occupation: editForm.occupation,
+        income: editForm.income,
+        division: editForm.division,
+        district: editForm.district,
+        upazila: editForm.upazila,
+        village: editForm.village,
+        postOffice: editForm.postOffice,
+        postCode: editForm.postCode,
+      };
+
+      const res = await axiosInstance.patch(
+        `/admin/users/${editingUser.id}/personal-info`,
+        payload,
+        { headers: getAuthHeaders() }
+      );
+
+      if (res.data.success) {
+        const updatedUser = res.data.data?.user || {
+          ...editingUser,
+          ...payload,
+          fullName: `${payload.firstName || ""} ${payload.lastName || ""}`.trim(),
+        };
+
+        setUsers((prev) =>
+          prev.map((user) => (user.id === editingUser.id ? { ...user, ...updatedUser } : user))
+        );
+        if (selectedUser?.id === editingUser.id) {
+          setSelectedUser((prev) => ({ ...prev, ...updatedUser }));
+        }
+        showToastMessage(res.data.message || "User updated successfully", "success");
+        closeEditModal();
+      }
+    } catch (err) {
+      showToastMessage(err.response?.data?.message || t('actionFailed'), "error");
+    } finally {
+      setSavingEdit(false);
+    }
   };
 
   const handleAction = (action, user) => {
@@ -341,6 +452,23 @@ const UserManagementPage = () => {
     if (!date) return "N/A";
     return new Date(date).toLocaleDateString("en-US", { month: "short", year: "numeric" });
   };
+
+  const editFields = [
+    { name: "firstName", label: "First Name", required: true },
+    { name: "lastName", label: "Last Name" },
+    { name: "phone", label: "Phone", required: true },
+    { name: "email", label: "Email", type: "email" },
+    { name: "dob", label: "Date of Birth", type: "date" },
+    { name: "gender", label: "Gender" },
+    { name: "occupation", label: "Occupation" },
+    { name: "income", label: "Income" },
+    { name: "division", label: "Division" },
+    { name: "district", label: "District" },
+    { name: "upazila", label: "Upazila" },
+    { name: "village", label: "Village" },
+    { name: "postOffice", label: "Post Office" },
+    { name: "postCode", label: "Post Code" },
+  ];
 
   return (
     <div>
@@ -473,6 +601,9 @@ const UserManagementPage = () => {
                               <button onClick={() => openUserModal(user)} className="p-1.5 rounded-lg border border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">
                                 <Eye size={14} className="text-foreground/70" />
                               </button>
+                              <button onClick={() => openEditModal(user)} className="p-1.5 rounded-lg border border-blue-500/30 text-blue-500 hover:bg-blue-500/10 transition-all duration-300">
+                                <Edit size={14} />
+                              </button>
                               {user.isBanned ? (
                                 <button onClick={() => handleAction("suspend", user)} className="p-1.5 rounded-lg border border-green-500/30 text-green-500 hover:bg-green-500/10 transition-all duration-300">
                                   <CheckCircle size={14} />
@@ -595,6 +726,84 @@ const UserManagementPage = () => {
                 <button onClick={() => { handleAction("suspend", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold hover:shadow-lg hover:shadow-amber-500/25 transition-all duration-300">{t('suspend')}</button>
                 <button onClick={() => { handleAction("ban", selectedUser); closeUserModal(); }} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-rose-500 text-white font-semibold hover:shadow-lg hover:shadow-red-500/25 transition-all duration-300">{t('ban')}</button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit User Modal */}
+      <AnimatePresence>
+        {showEditModal && editingUser && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeEditModal}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card/95 dark:bg-card/90 backdrop-blur-sm rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border border-border/50"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="bg-gradient-to-r from-blue-500 to-indigo-500 p-6 text-white relative">
+                <button onClick={closeEditModal} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-all duration-300">x</button>
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${getAvatarBg(1)} flex items-center justify-center text-white text-xl font-bold shadow-lg`}>
+                    {editingUser.firstName?.[0]?.toUpperCase() || "?"}
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold">Edit User Info</div>
+                    <div className="text-sm text-white/80">
+                      {editingUser.fullName || `${editingUser.firstName || ""} ${editingUser.lastName || ""}`.trim()}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={submitEditForm} className="p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {editFields.map((field) => (
+                    <label key={field.name} className="block">
+                      <span className="block text-xs font-semibold text-foreground/60 mb-1">
+                        {field.label}
+                        {field.required && <span className="text-red-500"> *</span>}
+                      </span>
+                      <input
+                        type={field.type || "text"}
+                        value={editForm[field.name] || ""}
+                        required={field.required}
+                        onChange={(e) => handleEditFormChange(field.name, e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background/80 dark:bg-background/60 text-sm text-foreground outline-none focus:border-blue-500/70 focus:ring-2 focus:ring-blue-500/10 transition-all duration-200"
+                      />
+                    </label>
+                  ))}
+                </div>
+
+                <div className="mt-6 flex flex-col sm:flex-row justify-end gap-3 border-t border-border/50 dark:border-border/30 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    disabled={savingEdit}
+                    className="px-5 py-2.5 rounded-xl border border-border/60 text-sm font-semibold text-foreground/70 hover:border-foreground/30 hover:bg-foreground/5 transition-all duration-300 disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingEdit}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-300 disabled:opacity-50"
+                  >
+                    {savingEdit ? (
+                      <>
+                        <Loader2 size={15} className="animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save size={15} />
+                        Save Changes
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}
