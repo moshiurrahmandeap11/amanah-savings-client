@@ -50,8 +50,9 @@ const translations = {
     nextButton: "Next — Payment Info →",
     skipButton: "Skip KYC →",
     previous: "← Previous",
-    uploadError: "Upload failed",
-    uploadSuccess: "Upload successful",
+    fileTooLarge: "File Too Large",
+    selectValidImage: "Please select a valid image file (JPEG, PNG, WEBP)",
+    imageSizeLimit: "Image size should be less than 5MB",
     cameraError: "Camera access denied",
     takePhoto: "Take Photo",
     uploading: "Uploading...",
@@ -103,6 +104,9 @@ const translations = {
     previous: "← আগের ধাপ",
     uploadError: "আপলোড ব্যর্থ হয়েছে",
     uploadSuccess: "আপলোড সফল হয়েছে",
+    fileTooLarge: "ফাইল খুব বড়",
+    selectValidImage: "দয়া করে একটি বৈধ ইমেজ ফাইল নির্বাচন করুন (JPEG, PNG, WEBP)",
+    imageSizeLimit: "ইমেজের আকার ৫MB এর কম হওয়া উচিত",
     cameraError: "ক্যামেরা অ্যাক্সেস অস্বীকৃত",
     takePhoto: "ছবি তুলুন",
     uploading: "আপলোড হচ্ছে...",
@@ -155,6 +159,26 @@ const Step7Kyc = ({ formData, updateField, errors, handleNext, handleBack, lang 
   }, []);
 
   const uploadFileToServer = async (file, folder) => {
+    // Validate file size (max 5MB for KYC documents)
+    const MAX_KYC_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_KYC_FILE_SIZE) {
+      console.error(`[Client Upload] File too large: ${file.size} bytes (max ${MAX_KYC_FILE_SIZE})`);
+      const errorMessage = t('fileTooLarge') || 'File is too large. Maximum size is 5MB.';
+      setUploadErrors(prev => ({ ...prev, [folder]: errorMessage }));
+      if (showAlert) showAlert(t('uploadError'), errorMessage, "error");
+      return null;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      console.error(`[Client Upload] Invalid file type: ${file.type}`);
+      const errorMessage = t('invalidFile') || 'Invalid file type. Please upload JPEG, PNG, or WEBP.';
+      setUploadErrors(prev => ({ ...prev, [folder]: errorMessage }));
+      if (showAlert) showAlert(t('uploadError'), errorMessage, "error");
+      return null;
+    }
+    
     const formDataUpload = new FormData();
     formDataUpload.append('files', file);
 

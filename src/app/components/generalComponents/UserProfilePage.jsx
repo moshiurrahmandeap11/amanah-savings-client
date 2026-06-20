@@ -542,7 +542,10 @@ const UserProfilePage = () => {
   useEffect(() => {
     const savedTheme = localStorage.getItem("theme");
     const savedLang = localStorage.getItem('appLanguage') || 'bn';
-    setLang(savedLang);
+    // Use requestAnimationFrame to avoid setState in effect body warning
+    requestAnimationFrame(() => {
+      setLang(savedLang);
+    });
     // Theme handling would go here
   }, []);
 
@@ -598,6 +601,22 @@ const UserProfilePage = () => {
 
   // ==================== KYC UPLOAD HELPERS ====================
   const uploadKycFile = async (file, folder) => {
+    // Validate file size (max 5MB for KYC documents)
+    const MAX_KYC_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    if (file.size > MAX_KYC_FILE_SIZE) {
+      console.error(`[Profile KYC Upload] File too large: ${file.size} bytes (max ${MAX_KYC_FILE_SIZE})`);
+      showAlert(t('fileTooLarge'), t('imageSizeLimit'), "error");
+      return null;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      console.error(`[Profile KYC Upload] Invalid file type: ${file.type}`);
+      showAlert(t('invalidFile'), t('selectValidImage'), "error");
+      return null;
+    }
+    
     const formDataUpload = new FormData();
     formDataUpload.append('files', file);
 
