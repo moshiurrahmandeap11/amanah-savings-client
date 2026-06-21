@@ -139,6 +139,7 @@ const RegisterPage = () => {
     nomineeNid: "",
     nomineeShare: "100",
     selectedPlan: "silver",
+    customPlanName: "",
     goalType: "",
     targetAmount: "",
     monthlyDeposit: "",
@@ -359,6 +360,7 @@ const RegisterPage = () => {
 
         // Plan
         selectedPlan: formData.selectedPlan,
+        customPlanName: formData.customPlanName || null,
         goalType: formData.goalType || null,
         targetAmount: formData.targetAmount ? parseInt(formData.targetAmount) : null,
         monthlyDeposit: formData.monthlyDeposit ? parseInt(formData.monthlyDeposit) : null,

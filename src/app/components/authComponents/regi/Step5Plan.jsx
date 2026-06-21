@@ -19,6 +19,7 @@ import {
   Plane,
   Target,
   Calculator,
+  Settings,
 } from "lucide-react";
 
 // Translations
@@ -34,10 +35,15 @@ const translations = {
     silver: "Silver",
     gold: "Gold",
     platinum: "Platinum",
+    custom: "Custom",
+    customPlan: "Custom Plan",
+    enterCustomPlan: "Enter custom plan name",
+    customPlanPlaceholder: "e.g. Family Fund",
     bronzeRange: "৳500–৳2,000/mo",
     silverRange: "৳2,000–৳10,000/mo",
     goldRange: "৳10,000–৳50,000/mo",
     platinumRange: "৳50,000+/mo",
+    customRange: "Your own plan",
     selected: "✓ Selected",
     
     // Goal Section
@@ -84,10 +90,15 @@ const translations = {
     silver: "সিলভার",
     gold: "গোল্ড",
     platinum: "প্লাটিনাম",
+    custom: "কাস্টম",
+    customPlan: "কাস্টম প্ল্যান",
+    enterCustomPlan: "কাস্টম প্ল্যানের নাম লিখুন",
+    customPlanPlaceholder: "যেমন: ফ্যামিলি ফান্ড",
     bronzeRange: "৳৫০০–৳২,০০০/মাস",
     silverRange: "৳২,০০০–৳১০,০০০/মাস",
     goldRange: "৳১০,০০০–৳৫০,০০০/মাস",
     platinumRange: "৳৫০,০০০+/মাস",
+    customRange: "আপনার নিজস্ব প্ল্যান",
     selected: "✓ নির্বাচিত",
     
     // Goal Section
@@ -231,6 +242,7 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
     silver: <Star size={24} className="text-gray-400" />,
     gold: <Gem size={24} className="text-yellow-500" />,
     platinum: <Crown size={24} className="text-purple-500" />,
+    custom: <Settings size={24} className="text-teal-500" />,
   };
 
   // Goal type icons mapping
@@ -254,6 +266,7 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
     { id: "silver", label: t('silver'), range: t('silverRange'), icon: planIcons.silver, color: "border-gray-400/30 hover:border-gray-400", selectedBg: "bg-gray-50 dark:bg-gray-800/20" },
     { id: "gold", label: t('gold'), range: t('goldRange'), icon: planIcons.gold, color: "border-yellow-500/30 hover:border-yellow-500", selectedBg: "bg-yellow-50 dark:bg-yellow-950/20" },
     { id: "platinum", label: t('platinum'), range: t('platinumRange'), icon: planIcons.platinum, color: "border-purple-500/30 hover:border-purple-500", selectedBg: "bg-purple-50 dark:bg-purple-950/20" },
+    { id: "custom", label: t('custom'), range: t('customRange'), icon: planIcons.custom, color: "border-teal-500/30 hover:border-teal-500", selectedBg: "bg-teal-50 dark:bg-teal-950/20" },
   ];
 
   // Get goal options with translations and icons
@@ -284,7 +297,7 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
       <h2 className="text-2xl font-bold text-foreground mb-2">{t('chooseSavingsPlan')}</h2>
       <p className="text-foreground/60 mb-6">{t('selectPlanDesc')}</p>
 
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
         {getPlans().map((plan) => (
           <div 
             key={plan.id} 
@@ -302,6 +315,21 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
           </div>
         ))}
       </div>
+
+      {/* Custom Plan Name Input - only shows when custom plan is selected */}
+      {formData.selectedPlan === "custom" && (
+        <div className="mb-6 p-4 rounded-xl border border-teal-500/30 bg-teal-50/50 dark:bg-teal-950/10">
+          <label className="block text-sm font-semibold text-foreground/70 mb-1">{t('customPlan')}</label>
+          <input 
+            type="text" 
+            value={formData.customPlanName || ""} 
+            onChange={(e) => updateField("customPlanName", e.target.value)} 
+            className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-teal-500 transition" 
+            placeholder={t('customPlanPlaceholder')} 
+          />
+          <p className="text-xs text-foreground/50 mt-1">{t('enterCustomPlan')}</p>
+        </div>
+      )}
 
       <div className="border-t border-border pt-4">
         <h3 className="text-sm font-bold text-foreground/70 mb-3">{t('setFirstGoal')}</h3>
