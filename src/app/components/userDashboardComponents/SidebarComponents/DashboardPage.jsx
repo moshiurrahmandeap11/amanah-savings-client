@@ -311,8 +311,14 @@ const DashboardPage = () => {
       const res = await axiosInstance.get("/goals");
       if (res.data.success) {
         const goals = res.data.data?.goals || res.data.data || [];
+        // Filter out "Referral Bonus" goals - they should not be shown as user goals
+        const filteredGoals = goals.filter((g) => {
+          const name = g.goalName || g.name || "";
+          const type = g.goalType || g.type || "";
+          return name !== "Referral Bonus" && type !== "bonus";
+        });
         setUserGoals(
-          goals.map((g) => ({
+          filteredGoals.map((g) => ({
             id: g._id || g.id || String(Math.random()),
             icon: getGoalIcon(g.goalType || g.type || "other"),
             name: g.goalName || g.name || "Savings Goal",
@@ -697,7 +703,7 @@ const DashboardPage = () => {
         monthsToGoal > 0 
           ? `At your current rate, you'll reach your goal in approximately ${monthsToGoal} months.`
           : `Keep saving to reach your goals faster!`,
-        `You've saved ${formatCurrency(userData?.totalSaved || 0)} so far. That's impressive progress!`,
+        `You've saved ${formatCurrency(totalSaved)} so far. That's impressive progress!`,
       ];
       setAiMessages(prev => [...prev, { text: responses[Math.floor(Math.random() * responses.length)], isBot: true }]);
     }, 800);
@@ -735,8 +741,6 @@ const DashboardPage = () => {
     return { completed, total: 5 };
   };
 
-  const stats = getStats();
-  const userName = getUserDisplayName();
   // Safe number helper
   const safeNumber = (val, fallback = 0) => {
     const num = Number(val);
@@ -746,11 +750,36 @@ const DashboardPage = () => {
     return num;
   };
 
-  const kycProgress = getKycProgress();
-  const totalSaved = Number(userData?.totalSaved || userData?.goal?.currentSaved || 0);
-  const targetAmount = Number(userData?.goal?.targetAmount || userGoals.reduce((sum, g) => sum + safeNumber(parseFloat(String(g.target).replace(/[^0-9]/g, "")), 0), 0));
+  // Calculate totalSaved from user document, or fallback to sum of all goals
+  const calculatedTotalSaved = userGoals.reduce((sum, g) => {
+    const goalSaved = parseFloat(String(g.saved).replace(/[^0-9.]/g, "")) || 0;
+    return sum + goalSaved;
+  }, 0);
+  const totalSaved = Number(userData?.totalSaved) > 0 
+    ? Number(userData?.totalSaved) 
+    : (Number(userData?.goal?.currentSaved) > 0 
+      ? Number(userData?.goal?.currentSaved) 
+      : calculatedTotalSaved);
+  const targetAmount = Number(userData?.goal?.targetAmount || userGoals.reduce((sum, g) => sum + safeNumber(parseFloat(String(g.target).replace(/[^0-9.]/g, "")), 0), 0));
   const progressPercent = targetAmount > 0 ? Math.min(100, Math.round((totalSaved / targetAmount) * 100)) : 0;
   const nextDueDays = 7;
+
+  const getStats = () => {
+    const monthlySaved = Number(userData?.goal?.monthlyDeposit || 0);
+    const streak = Number(userData?.streak || 0);
+    const level = Number(userData?.level || 1);
+    const activeCircles = Number(userData?.activeCircles || userData?.circles?.length || 0);
+
+    return [
+      { icon: <Wallet size={24} />, value: formatCurrency(totalSaved), label: t('totalSavings'), change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} ${t('thisMonth')}` : t('startSavingToday'), color: "green" },
+      { icon: <Users size={24} />, value: String(activeCircles), label: t('activeCircles'), change: activeCircles > 0 ? "↑ Goals on track" : t('joinCircle'), color: "blue" },
+      { icon: <Flame size={24} />, value: String(streak), label: t('dayStreak'), change: streak >= 30 ? t('topSaver') : streak > 0 ? t('keepGoing') : t('startYourStreak'), color: "warning" },
+      { icon: <Trophy size={24} />, value: String(level), label: t('saverLevel'), change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : t('member'), color: "info" },
+    ];
+  };
+
+  const stats = getStats();
+  const userName = getUserDisplayName();
 
   // Get status display text - safe version
   const getStatusText = (status) => {
@@ -1108,11 +1137,11 @@ const DashboardPage = () => {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-white/10 rounded-lg p-2 text-center">
-              <div className="text-xl font-bold">{userData?.referrals?.count || 0}</div>
+              <div className="text-xl font-bold">{userData?.totalReferrals || 0}</div>
               <div className="text-xs opacity-75">{t('friendsReferred')}</div>
             </div>
             <div className="bg-white/10 rounded-lg p-2 text-center">
-              <div className="text-xl font-bold">{formatCurrency((userData?.referrals?.count || 0) * 500)}</div>
+              <div className="text-xl font-bold">{formatCurrency(userData?.totalReferralBonus || 0)}</div>
               <div className="text-xs opacity-75">{t('bonusEarned')}</div>
             </div>
           </div>
