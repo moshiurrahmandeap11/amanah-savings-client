@@ -18,6 +18,7 @@ import {
   DollarSign,
   AlertTriangle
 } from "lucide-react";
+import usePublicCms from "../../components/shared/usePublicCms";
 
 // Translations
 const translations = {
@@ -98,20 +99,20 @@ const translations = {
 };
 
 const Terms = () => {
-  const [language, setLanguage] = useState('en');
-  const [theme, setTheme] = useState('light');
+  const [language, setLanguage] = useState(() => {
+    if (typeof window === "undefined") return "en";
+    return localStorage.getItem("appLanguage") || "en";
+  });
+  const [theme, setTheme] = useState(() => {
+    if (typeof window === "undefined") return "light";
+    return localStorage.getItem("theme") || "light";
+  });
   const [toast, setToast] = useState({ show: false, message: '' });
+  const { announcement } = usePublicCms();
 
   useEffect(() => {
-    // Load language
-    const savedLang = localStorage.getItem('appLanguage') || 'en';
-    setLanguage(savedLang);
-
-    // Load theme
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  }, []);
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   const t = (key) => {
     return translations[language]?.[key] || translations.en[key] || key;
@@ -266,6 +267,30 @@ const Terms = () => {
           animate="visible"
           className="space-y-6"
         >
+          {/* Notice Card */}
+          {announcement && (
+            <motion.div
+              variants={itemVariants}
+              className="bg-primary/10 border border-primary/30 rounded-2xl p-5 sm:p-6 flex items-start gap-3"
+            >
+              <AlertCircle className="text-primary shrink-0 mt-0.5" size={22} />
+              <div>
+                <p className="text-primary text-sm font-bold mb-1">Announcement</p>
+                <p className="text-foreground/80 text-sm font-medium leading-relaxed">
+                  {announcement.text}
+                </p>
+                {announcement.link && (
+                  <a
+                    href={announcement.link}
+                    className="mt-3 inline-flex text-sm font-bold text-primary hover:underline"
+                  >
+                    Learn more
+                  </a>
+                )}
+              </div>
+            </motion.div>
+          )}
+
           {/* Notice Card */}
           <motion.div
             variants={itemVariants}

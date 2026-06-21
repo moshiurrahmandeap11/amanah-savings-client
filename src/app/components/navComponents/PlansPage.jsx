@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -19,6 +19,7 @@ import {
   Wallet,
   X,
 } from "lucide-react";
+import usePublicCms from "../shared/usePublicCms";
 
 // Translations
 const translations = {
@@ -491,6 +492,42 @@ const getPlans = (t) => [
   },
 ];
 
+const planIcons = [Medal, Award, Trophy, Gem];
+const planIconClasses = [
+  "bg-gradient-to-br from-[#fef3c7] to-[#fde68a] text-[#b45309]",
+  "bg-gradient-to-br from-[#f1f5f9] to-[#e2e8f0] text-[#64748b]",
+  "bg-gradient-to-br from-[#fef9c3] to-[#fde047] text-[#a16207]",
+  "bg-gradient-to-br from-[#ede9fe] to-[#ddd6fe] text-[#6d28d9]",
+];
+
+const normalizeCmsPlan = (plan, index, t) => {
+  const id = (plan.id || plan.name || `plan-${index}`).toLowerCase().replace(/\s+/g, "-");
+  const monthly = Number(plan.monthly ?? plan.monthlyFee ?? plan.price ?? plan.fee) || 0;
+  const yearly = Number(plan.yearly ?? plan.yearlyFee) || Math.round(monthly * 0.8);
+  const min = Number(plan.min) || 0;
+  const max = plan.max === null || plan.max === undefined || plan.max === "" ? null : Number(plan.max);
+  const rangeText = max
+    ? `Save ৳${min.toLocaleString("en-BD")} - ৳${max.toLocaleString("en-BD")}`
+    : `Save ৳${min.toLocaleString("en-BD")}+`;
+
+  return {
+    id,
+    tier: plan.name || `Plan ${index + 1}`,
+    name: plan.title || plan.name || `Plan ${index + 1}`,
+    icon: planIcons[index % planIcons.length],
+    monthly,
+    yearly,
+    color: plan.color || "#059669",
+    iconClass: plan.iconClass || planIconClasses[index % planIconClasses.length],
+    popular: Boolean(plan.popular),
+    cta: plan.cta || t('startFree'),
+    desc: plan.description || rangeText,
+    features: (plan.features || []).map((feature) =>
+      Array.isArray(feature) ? feature : [feature, true],
+    ),
+  };
+};
+
 // Comparison groups with translations
 const getComparisonGroups = (t) => [
   {
@@ -599,27 +636,30 @@ const getFaqs = (t) => [
 ];
 
 const PlanPage = () => {
-  const [language, setLanguage] = useState('en');
+  const [language] = useState(() => {
+    if (typeof window === "undefined") return "en";
+    return localStorage.getItem("appLanguage") || "en";
+  });
   const [billingMode, setBillingMode] = useState("monthly");
   const [selectedPlan, setSelectedPlan] = useState("gold");
   const [deposit, setDeposit] = useState(3000);
   const [duration, setDuration] = useState(12);
   const [target, setTarget] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
-
-  // Get language from localStorage
-  useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage') || 'en';
-    setLanguage(savedLang);
-  }, []);
+  const { cms } = usePublicCms();
 
   // Translation function
-  const t = (key) => {
+  const t = useCallback((key) => {
     return translations[language]?.[key] || translations.en[key] || key;
-  };
+  }, [language]);
 
   // Get dynamic data with translations
-  const plans = getPlans(t);
+  const fallbackPlans = getPlans(t);
+  const cmsPlans = useMemo(
+    () => (cms?.plans || []).map((plan, index) => normalizeCmsPlan(plan, index, t)),
+    [cms, t],
+  );
+  const plans = cmsPlans.length ? cmsPlans : fallbackPlans;
   const comparisonGroups = getComparisonGroups(t);
   const testimonials = getTestimonials(t);
   const faqs = getFaqs(t);
@@ -638,7 +678,7 @@ const PlanPage = () => {
       return t('calcReachTarget').replace('{months}', monthsNeeded);
     }
     return t('calcNeedMonths').replace('{months}', monthsNeeded);
-  }, [monthsNeeded, targetAmount, totalSaved, language]);
+  }, [monthsNeeded, targetAmount, totalSaved, t]);
 
   const formatBDT = (value) => `৳${Number(value).toLocaleString("en-US")}`;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Save,
@@ -97,6 +97,7 @@ const translations = {
     // Footer Tab
     footerText: "📄 Footer Text",
     copyrightText: "Copyright Text",
+    footerSocials: "Social Links",
     footerLinks: "🔗 Footer Links",
     labelPlaceholder: "Label",
     urlPlaceholder: "/page",
@@ -189,6 +190,7 @@ const translations = {
     // Footer Tab
     footerText: "📄 Footer Text",
     copyrightText: "Copyright Text",
+    footerSocials: "Social Links",
     footerLinks: "🔗 Footer Links",
     labelPlaceholder: "Label",
     urlPlaceholder: "/page",
@@ -217,7 +219,10 @@ const CmsPage = () => {
   const [cmsData, setCmsData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [lang, setLang] = useState("bn");
+  const [lang] = useState(() => {
+    if (typeof window === "undefined") return "bn";
+    return localStorage.getItem("admin_lang") || "bn";
+  });
 
   // Translation function
   const t = (key, params = {}) => {
@@ -228,34 +233,43 @@ const CmsPage = () => {
     return text;
   };
 
-  // Load language preference
-  useEffect(() => {
-    const savedLang = localStorage.getItem("admin_lang") || "bn";
-    setLang(savedLang);
-  }, []);
-
-  const fetchCms = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await axiosInstance.get("/admin/cms", { headers: getAuthHeaders() });
-      if (res.data.success) {
-        setCmsData(res.data.data);
-      }
-    } catch (err) {
-      showToast(err.response?.data?.message || t('failedToLoad'));
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCms();
-  }, [fetchCms]);
-
   const showToast = (message) => {
     setToast({ show: true, message });
     setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCms = async () => {
+      setLoading(true);
+      try {
+        const res = await axiosInstance.get("/admin/cms", { headers: getAuthHeaders() });
+        if (isMounted && res.data.success) {
+          setCmsData(res.data.data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setToast({
+            show: true,
+            message: err.response?.data?.message || translations[lang]?.failedToLoad || translations.en.failedToLoad,
+          });
+          setTimeout(() => {
+            if (isMounted) setToast({ show: false, message: "" });
+          }, 3000);
+        }
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(fetchCms, 0);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [lang]);
 
   const updateField = (section, key, value) => {
     setCmsData((prev) => ({
@@ -721,6 +735,7 @@ const CmsPage = () => {
     <div className="grid md:grid-cols-2 gap-5">
       <div className="bg-card border border-border rounded-xl p-5">
         <h3 className="font-bold text-foreground mb-4">{t('footerText')}</h3>
+        <div className="space-y-3">
         <div>
           <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('copyrightText')}</label>
           <input
@@ -728,6 +743,32 @@ const CmsPage = () => {
             value={cmsData?.footer?.copyright || ""}
             onChange={(e) => updateField("footer", "copyright", e.target.value)}
           />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-foreground/60 mb-2">{t('footerSocials')}</label>
+          <div className="space-y-2">
+            {["facebook", "twitter", "instagram", "linkedin"].map((platform) => (
+              <input
+                key={platform}
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={cmsData?.footer?.socials?.[platform] || ""}
+                placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
+                onChange={(e) =>
+                  setCmsData((prev) => ({
+                    ...prev,
+                    footer: {
+                      ...prev.footer,
+                      socials: {
+                        ...(prev.footer?.socials || {}),
+                        [platform]: e.target.value,
+                      },
+                    },
+                  }))
+                }
+              />
+            ))}
+          </div>
+        </div>
         </div>
       </div>
 

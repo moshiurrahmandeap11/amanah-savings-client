@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   Shield, 
   Heart, 
@@ -15,6 +15,7 @@ import {
   Lock
 } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
+import usePublicCms from "../usePublicCms";
 
 // Translations
 const translations = {
@@ -115,14 +116,13 @@ const translations = {
 };
 
 const Footer = () => {
-  const [language, setLanguage] = useState('en');
+  const [language] = useState(() => {
+    if (typeof window === "undefined") return "en";
+    return localStorage.getItem("appLanguage") || "en";
+  });
   const pathname = usePathname();
-
-  // Get language from localStorage
-  useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage') || 'en';
-    setLanguage(savedLang);
-  }, []);
+  const router = useRouter();
+  const { cms, announcement } = usePublicCms();
 
   // Translation function
   const t = (key) => {
@@ -150,7 +150,7 @@ const Footer = () => {
       }
     } else {
       // If not on home page, navigate to home page first
-      window.location.href = `/#${targetId}`;
+      router.push(`/#${targetId}`);
     }
   };
 
@@ -204,14 +204,17 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: <FaFacebook size={18} />, href: "#", color: "hover:bg-blue-500" },
-    { icon: <FaTwitter size={18} />, href: "#", color: "hover:bg-sky-500" },
-    { icon: <FaLinkedin size={18} />, href: "#", color: "hover:bg-blue-600" },
-    { icon: <FaInstagram size={18} />, href: "#", color: "hover:bg-pink-500" },
-  ];
+    { icon: <FaFacebook size={18} />, href: cms?.footer?.socials?.facebook, color: "hover:bg-blue-500", label: "Facebook" },
+    { icon: <FaTwitter size={18} />, href: cms?.footer?.socials?.twitter, color: "hover:bg-sky-500", label: "Twitter" },
+    { icon: <FaLinkedin size={18} />, href: cms?.footer?.socials?.linkedin, color: "hover:bg-blue-600", label: "LinkedIn" },
+    { icon: <FaInstagram size={18} />, href: cms?.footer?.socials?.instagram, color: "hover:bg-pink-500", label: "Instagram" },
+  ].filter((social) => social.href);
 
   // Get bottom links with translations
-  const bottomLinks = [
+  const bottomLinks = cms?.footer?.links?.length ? cms.footer.links.map((link) => ({
+    name: link.label,
+    href: link.url || "#",
+  })) : [
     { name: t('bottomPrivacy'), href: "/privacy" },
     { name: t('bottomTerms'), href: "/terms" },
     { name: t('bottomWithdrawal'), href: "/terms" },
@@ -255,13 +258,13 @@ const Footer = () => {
             <motion.div variants={itemVariants}>
               <Link href="/" className="inline-block mb-4">
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  <span className="text-primary">Sanchoy</span>
-                  <span className="text-foreground"> Bondhu</span>
+                  <span className="text-primary">{(cms?.site?.name || t('brandName')).split(" ")[0]}</span>
+                  <span className="text-foreground"> {(cms?.site?.name || t('brandName')).split(" ").slice(1).join(" ")}</span>
                 </h2>
               </Link>
               
               <p className="text-foreground/70 text-sm sm:text-base leading-relaxed mb-6 max-w-md">
-                {t('brandDesc')}
+                {cms?.site?.tagline || t('brandDesc')}
               </p>
 
               {/* Important Announcement */}
@@ -271,7 +274,7 @@ const Footer = () => {
                   <div>
                     <p className="text-xs text-red-400 leading-relaxed">
                       <span className="font-semibold text-red-400">{t('announcementBadge')}</span>{" "}
-                      {t('announcementText')}
+                      {announcement?.text || t('announcementText')}
                     </p>
                   </div>
                 </div>
@@ -338,7 +341,7 @@ const Footer = () => {
               </div>
               <div>
                 <p className="text-xs text-foreground/60">{t('supportLabel')}</p>
-                <p className="text-foreground font-semibold text-sm">+880 1XXX-XXXXXX</p>
+                <p className="text-foreground font-semibold text-sm">{cms?.site?.supportPhone || "+880 1XXX-XXXXXX"}</p>
               </div>
             </div>
             
@@ -348,7 +351,7 @@ const Footer = () => {
               </div>
               <div>
                 <p className="text-xs text-foreground/60">{t('emailLabel')}</p>
-                <p className="text-foreground font-semibold text-sm">{t('emailAddress')}</p>
+                <p className="text-foreground font-semibold text-sm">{cms?.site?.supportEmail || t('emailAddress')}</p>
               </div>
             </div>
           </div>
@@ -359,6 +362,9 @@ const Footer = () => {
               <motion.a
                 key={idx}
                 href={social.href}
+                aria-label={social.label}
+                target="_blank"
+                rel="noopener noreferrer"
                 whileHover={{ scale: 1.1, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 className={`w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center text-foreground/60 transition-all duration-300 ${social.color} hover:text-white hover:border-transparent`}
@@ -378,7 +384,7 @@ const Footer = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <p className="text-xs text-foreground/50">
-              {t('copyright')}
+              {cms?.footer?.copyright || t('copyright')}
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">

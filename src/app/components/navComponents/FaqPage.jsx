@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BadgeHelp,
@@ -15,6 +15,7 @@ import {
   UserRoundCheck,
   Users,
 } from "lucide-react";
+import usePublicCms from "../shared/usePublicCms";
 
 // Translations
 const translations = {
@@ -203,16 +204,14 @@ const translations = {
 };
 
 const FaqPage = () => {
-  const [language, setLanguage] = useState('en');
+  const [language] = useState(() => {
+    if (typeof window === "undefined") return "en";
+    return localStorage.getItem("appLanguage") || "en";
+  });
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
-
-  // Get language from localStorage
-  useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage') || 'en';
-    setLanguage(savedLang);
-  }, []);
+  const { cms } = usePublicCms();
 
   // Translation function
   const t = (key) => {
@@ -231,7 +230,7 @@ const FaqPage = () => {
   ];
 
   // FAQ Data with translations
-  const faqs = [
+  const fallbackFaqs = [
     {
       id: 1,
       category: "account",
@@ -353,6 +352,22 @@ const FaqPage = () => {
     },
   ];
 
+  const cmsFaqs = useMemo(
+    () =>
+      (cms?.faq || [])
+        .filter((item) => item.question && item.answer)
+        .map((item, index) => ({
+          id: item.id || `cms-${index}`,
+          category: item.category || "account",
+          tag: item.tag || translations[language]?.tagAccount || translations.en.tagAccount,
+          question: item.question,
+          answer: item.answer,
+        })),
+    [cms, language],
+  );
+
+  const faqs = cmsFaqs.length ? cmsFaqs : fallbackFaqs;
+
   const tagStyles = {
     account: "bg-[#0891b21f] text-[#0891b2]",
     savings: "bg-[#0596691f] text-[#059669]",
@@ -373,7 +388,7 @@ const FaqPage = () => {
         faq.tag.toLowerCase().includes(query);
       return matchesCategory && matchesSearch;
     });
-  }, [activeCategory, searchQuery, language]);
+  }, [activeCategory, searchQuery, faqs]);
 
   return (
     <div className="min-h-screen bg-[#f8fafc] font-['Segoe_UI',system-ui,sans-serif] text-[#0f172a] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]">
