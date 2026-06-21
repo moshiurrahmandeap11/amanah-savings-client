@@ -291,6 +291,9 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
     return `৳${amount.toLocaleString("en-IN")}`;
   };
 
+  // Check if custom plan is selected
+  const isCustomPlanSelected = formData.selectedPlan === "custom";
+
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-card border border-border rounded-2xl p-6">
       <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">{t('stepLabel')}</div>
@@ -317,17 +320,17 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
       </div>
 
       {/* Custom Plan Name Input - only shows when custom plan is selected */}
-      {formData.selectedPlan === "custom" && (
-        <div className="mb-6 p-4 rounded-xl border border-teal-500/30 bg-teal-50/50 dark:bg-teal-950/10">
-          <label className="block text-sm font-semibold text-foreground/70 mb-1">{t('customPlan')}</label>
+      {isCustomPlanSelected && (
+        <div className="mb-6 p-4 rounded-xl border-2 border-teal-500 bg-teal-50 dark:bg-teal-950/20">
+          <label className="block text-sm font-semibold text-foreground mb-2">{t('customPlan')}</label>
           <input 
             type="text" 
             value={formData.customPlanName || ""} 
             onChange={(e) => updateField("customPlanName", e.target.value)} 
-            className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-teal-500 transition" 
+            className="w-full p-3 rounded-xl border-2 border-border bg-background text-foreground outline-none focus:border-teal-500 transition" 
             placeholder={t('customPlanPlaceholder')} 
           />
-          <p className="text-xs text-foreground/50 mt-1">{t('enterCustomPlan')}</p>
+          <p className="text-xs text-foreground/60 mt-2">{t('enterCustomPlan')}</p>
         </div>
       )}
 
