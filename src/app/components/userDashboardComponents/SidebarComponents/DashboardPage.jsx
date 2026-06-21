@@ -266,11 +266,13 @@ const DashboardPage = () => {
   const [aiMessages, setAiMessages] = useState([]);
   const [chartPeriod, setChartPeriod] = useState("6m");
   const [userGoals, setUserGoals] = useState([]);
+  const [userCircles, setUserCircles] = useState([]);
   const [insights, setInsights] = useState([]);
   const [loadingGoals, setLoadingGoals] = useState(true);
   const [userData, setUserData] = useState(null);
   const [savingsHistory, setSavingsHistory] = useState([]);
   const [recentTransactions, setRecentTransactions] = useState([]);
+  const [approvedDepositDates, setApprovedDepositDates] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [lang, setLang] = useState("en");
   
@@ -308,7 +310,7 @@ const DashboardPage = () => {
     if (!userId) return;
     setLoadingGoals(true);
     try {
-      const res = await axiosInstance.get("/goals");
+      const res = await axiosInstance.get("/goals/my");
       if (res.data.success) {
         const goals = res.data.data?.goals || res.data.data || [];
         // Filter out "Referral Bonus" goals - they should not be shown as user goals
@@ -320,10 +322,13 @@ const DashboardPage = () => {
         setUserGoals(
           filteredGoals.map((g) => ({
             id: g._id || g.id || String(Math.random()),
+            _id: g._id || g.id,
             icon: getGoalIcon(g.goalType || g.type || "other"),
             name: g.goalName || g.name || "Savings Goal",
             status: g.status || "active",
             timeLeft: calculateTimeLeft(g),
+            savedAmount: safeNumber(g.currentSaved || g.currentAmount, 0),
+            targetAmount: safeNumber(g.targetAmount, 0),
             saved: formatCurrency(safeNumber(g.currentSaved || g.currentAmount, 0)),
             target: formatCurrency(safeNumber(g.targetAmount, 0)),
             progress: calculateProgress(g),
@@ -340,17 +345,34 @@ const DashboardPage = () => {
     }
   }, [userId]);
 
+  const fetchCircles = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await axiosInstance.get("/circles?limit=100");
+      if (res.data.success) {
+        const circles = res.data.data?.circles || res.data.data || [];
+        setUserCircles(circles);
+      }
+    } catch (error) {
+      console.error("Failed to fetch circles:", error);
+      setUserCircles([]);
+    }
+  }, [userId]);
+
   // Fetch insights from backend or generate
   const fetchInsights = useCallback(async () => {
     if (!userData) return;
     
     const insightsList = [];
     
-    const totalSaved = Number(userData?.totalSaved || userData?.goal?.currentSaved || 0);
-    const streak = Number(userData?.streak || 0);
-    const activeGoals = Number(userData?.activeGoals || userGoals.length || 0);
-    const monthlyDeposit = Number(userData?.goal?.monthlyDeposit || 0);
-    const targetAmount = Number(userData?.goal?.targetAmount || 0);
+    const totalSaved = userGoals.reduce((sum, goal) => sum + Number(goal.savedAmount || 0), 0);
+    const streak = Math.max(
+      Number(userData?.streak || userData?.dayStreak || userData?.currentStreak || 0),
+      calculateDayStreak(approvedDepositDates),
+    );
+    const activeGoals = userGoals.filter((goal) => goal.status === "active").length;
+    const monthlyDeposit = userGoals.reduce((sum, goal) => goal.status === "active" ? sum + Number(goal.monthlyDeposit || 0) : sum, 0);
+    const targetAmount = userGoals.reduce((sum, goal) => sum + Number(goal.targetAmount || 0), 0);
     
     if (totalSaved > 0) {
       insightsList.push({
@@ -393,7 +415,7 @@ const DashboardPage = () => {
     }
     
     setInsights(insightsList);
-  }, [userData, userGoals]);
+  }, [userData, userGoals, approvedDepositDates]);
 
   // Fetch savings history for chart
   const fetchSavingsHistory = useCallback(async () => {
@@ -412,7 +434,7 @@ const DashboardPage = () => {
   }, [userId]);
 
   const generateDemoHistory = () => {
-    const totalSaved = Number(userData?.totalSaved || 0);
+    const totalSaved = userGoals.reduce((sum, goal) => sum + Number(goal.savedAmount || 0), 0);
     if (totalSaved === 0) {
       setSavingsHistory([]);
       return;
@@ -439,7 +461,7 @@ const DashboardPage = () => {
     setLoadingTransactions(true);
     try {
       const [depositsRes, withdrawalsRes] = await Promise.all([
-        axiosInstance.get("/deposits?limit=5"),
+        axiosInstance.get("/deposits?limit=100"),
         axiosInstance.get("/withdrawals?limit=5"),
       ]);
       
@@ -447,6 +469,12 @@ const DashboardPage = () => {
       
       if (depositsRes.data.success) {
         const deposits = depositsRes.data.data?.deposits || depositsRes.data.data || [];
+        setApprovedDepositDates(
+          deposits
+            .filter((d) => String(d.status || "").toLowerCase() === "approved")
+            .map((d) => d.createdAt)
+            .filter(Boolean),
+        );
         deposits.forEach(d => {
           transactions.push({
             id: d._id || d.id || String(Math.random()),
@@ -457,6 +485,9 @@ const DashboardPage = () => {
             color: d.status === "rejected" ? "text-red-500" : d.status === "approved" ? "text-green-500" : "text-amber-500",
           });
         });
+      }
+      if (!depositsRes.data.success) {
+        setApprovedDepositDates([]);
       }
       
       if (withdrawalsRes.data.success) {
@@ -478,6 +509,7 @@ const DashboardPage = () => {
     } catch (error) {
       console.error("Failed to fetch transactions:", error);
       setRecentTransactions([]);
+      setApprovedDepositDates([]);
     } finally {
       setLoadingTransactions(false);
     }
@@ -495,10 +527,11 @@ const DashboardPage = () => {
     if (userId) {
       fetchUserData();
       fetchGoals();
+      fetchCircles();
       fetchSavingsHistory();
       fetchRecentTransactions();
     }
-  }, [userId, fetchUserData, fetchGoals, fetchSavingsHistory, fetchRecentTransactions]);
+  }, [userId, fetchUserData, fetchGoals, fetchCircles, fetchSavingsHistory, fetchRecentTransactions]);
 
   // Update insights when userData or goals change
   useEffect(() => {
@@ -690,15 +723,12 @@ const DashboardPage = () => {
     setAiMessage("");
     
     setTimeout(() => {
-      const targetAmount = Number(userData?.goal?.targetAmount || 0);
-      const currentSaved = Number(userData?.goal?.currentSaved || 0);
-      const monthlyDeposit = Number(userData?.goal?.monthlyDeposit || 1);
-      const monthsToGoal = targetAmount > 0 && monthlyDeposit > 0 
-        ? Math.ceil((targetAmount - currentSaved) / monthlyDeposit)
+      const monthsToGoal = targetAmount > 0 && monthlySaved > 0
+        ? Math.ceil((targetAmount - totalSaved) / monthlySaved)
         : 0;
       
       const responses = [
-        `Based on your savings pattern, you're doing great! Keep up the ${userData?.streak || 0}-day streak!`,
+        `Based on your savings pattern, you're doing great! Keep up the ${dayStreak}-day streak!`,
         `Your ${userGoals.length} active goals are on track. Consider increasing monthly deposits to reach them faster.`,
         monthsToGoal > 0 
           ? `At your current rate, you'll reach your goal in approximately ${monthsToGoal} months.`
@@ -734,26 +764,64 @@ const DashboardPage = () => {
     return num;
   };
 
+  const calculateDayStreak = (dates = []) => {
+    const uniqueDays = new Set(
+      dates
+        .map((value) => {
+          const date = new Date(value);
+          if (Number.isNaN(date.getTime())) return null;
+          return date.toISOString().slice(0, 10);
+        })
+        .filter(Boolean),
+    );
+
+    if (uniqueDays.size === 0) return 0;
+
+    const cursor = new Date();
+    cursor.setHours(0, 0, 0, 0);
+
+    if (!uniqueDays.has(cursor.toISOString().slice(0, 10))) {
+      cursor.setDate(cursor.getDate() - 1);
+      if (!uniqueDays.has(cursor.toISOString().slice(0, 10))) return 0;
+    }
+
+    let streak = 0;
+    while (uniqueDays.has(cursor.toISOString().slice(0, 10))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    return streak;
+  };
+
   // Calculate totalSaved from user document, or fallback to sum of all goals
   const calculatedTotalSaved = userGoals.reduce((sum, g) => {
-    const goalSaved = parseFloat(String(g.saved).replace(/[^0-9.]/g, "")) || 0;
+    const goalSaved = safeNumber(g.savedAmount, 0);
     return sum + goalSaved;
   }, 0);
-  const totalSaved = Number(userData?.totalSaved) > 0 
-    ? Number(userData?.totalSaved) 
-    : (Number(userData?.goal?.currentSaved) > 0 
-      ? Number(userData?.goal?.currentSaved) 
-      : calculatedTotalSaved);
-  const targetAmount = Number(userData?.goal?.targetAmount || userGoals.reduce((sum, g) => sum + safeNumber(parseFloat(String(g.target).replace(/[^0-9.]/g, "")), 0), 0));
+  const activeGoals = userGoals.filter((goal) => goal.status === "active");
+  const activeCirclesCount = userCircles.filter((circle) => {
+    if (circle.status !== "active") return false;
+    const creatorMember = (circle.membersList || []).find(
+      (member) => String(member.userId) === String(userId) && member.role === "admin",
+    );
+    return Boolean(creatorMember);
+  }).length;
+  const totalSaved = calculatedTotalSaved;
+  const targetAmount = userGoals.reduce((sum, g) => sum + safeNumber(g.targetAmount, 0), 0);
+  const monthlySaved = activeGoals.reduce((sum, goal) => sum + safeNumber(goal.monthlyDeposit, 0), 0);
+  const dayStreak = Math.max(
+    safeNumber(userData?.streak || userData?.dayStreak || userData?.currentStreak, 0),
+    calculateDayStreak(approvedDepositDates),
+  );
+  const activeCircles = activeCirclesCount;
+  const streak = dayStreak;
   const progressPercent = targetAmount > 0 ? Math.min(100, Math.round((totalSaved / targetAmount) * 100)) : 0;
   const nextDueDays = 7;
 
   // Calculate dynamic stats - safe version
   const getStats = () => {
-    const monthlySaved = Number(userData?.goal?.monthlyDeposit || 0);
-    const streak = Number(userData?.streak || 0);
     const level = Number(userData?.level || 1);
-    const activeCircles = Number(userData?.activeCircles || userData?.circles?.length || 0);
 
     return [
       { icon: <Wallet size={24} />, value: formatCurrency(totalSaved), label: t('totalSavings'), change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} ${t('thisMonth')}` : t('startSavingToday'), color: "green" },
@@ -867,7 +935,7 @@ const DashboardPage = () => {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white/15 rounded-lg p-2 text-center">
-                <div className="text-lg font-bold">{formatCurrency(userData?.goal?.monthlyDeposit || 0)}</div>
+                <div className="text-lg font-bold">{formatCurrency(monthlySaved)}</div>
                 <div className="text-xs opacity-75">{t('thisMonthLabel')}</div>
               </div>
               <div className="bg-white/15 rounded-lg p-2 text-center">
@@ -875,7 +943,7 @@ const DashboardPage = () => {
                 <div className="text-xs opacity-75">{t('totalSavedLabel')}</div>
               </div>
               <div className="bg-white/15 rounded-lg p-2 text-center">
-                <div className="text-lg font-bold">{userData?.streak || 0}</div>
+                <div className="text-lg font-bold">{dayStreak}</div>
                 <div className="text-xs opacity-75">{t('dayStreakLabel')}</div>
               </div>
             </div>

@@ -464,9 +464,16 @@ const MyGoalsPage = () => {
   const fetchGoals = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get("/goals");
+      const response = await axiosInstance.get("/goals/my");
       if (response.data.success) {
-        setGoals(response.data.data.goals || []);
+        const myGoals = response.data.data?.goals || [];
+        setGoals(
+          myGoals.filter((goal) => {
+            const name = String(goal.goalName || goal.name || "").toLowerCase();
+            const type = String(goal.goalType || goal.type || "").toLowerCase();
+            return name !== "referral bonus" && type !== "bonus";
+          }),
+        );
       }
     } catch (error) {
       console.error("Fetch goals error:", error);

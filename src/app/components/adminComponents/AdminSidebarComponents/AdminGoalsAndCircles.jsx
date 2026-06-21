@@ -6,6 +6,7 @@ import {
   Check,
   CircleDollarSign,
   Clock,
+  Eye,
   Lock,
   RefreshCw,
   Search,
@@ -51,6 +52,10 @@ const getOwnerName = (owner, fallback = "Unknown owner") => {
 
 const getErrorMessage = (error, fallback) => error.response?.data?.message || error.message || fallback;
 
+const isReferralBonusGoal = (goal) =>
+  String(goal?.goalType || "").toLowerCase() === "bonus" ||
+  String(goal?.goalName || "").toLowerCase() === "referral bonus";
+
 export default function AdminGoalsAndCircles() {
   const [activeTab, setActiveTab] = useState("goals");
   const [search, setSearch] = useState("");
@@ -60,6 +65,7 @@ export default function AdminGoalsAndCircles() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [detailsItem, setDetailsItem] = useState(null);
 
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
@@ -76,7 +82,7 @@ export default function AdminGoalsAndCircles() {
         }),
       ]);
 
-      setGoals(goalsResponse.data?.data?.goals || []);
+      setGoals((goalsResponse.data?.data?.goals || []).filter((goal) => !isReferralBonusGoal(goal)));
       setCircles(circlesResponse.data?.data?.circles || []);
       setRequests(requestsResponse.data?.data?.requests || []);
     } catch (error) {
@@ -90,14 +96,17 @@ export default function AdminGoalsAndCircles() {
   }, []);
 
   useEffect(() => {
-    fetchAdminData();
+    queueMicrotask(() => {
+      fetchAdminData();
+    });
   }, [fetchAdminData]);
 
   const filteredGoals = useMemo(() => {
     const term = search.trim().toLowerCase();
-    if (!term) return goals;
+    const realGoals = goals.filter((goal) => !isReferralBonusGoal(goal));
+    if (!term) return realGoals;
 
-    return goals.filter((goal) => {
+    return realGoals.filter((goal) => {
       const owner = getOwnerName(goal.owner, "");
       return [goal.goalName, goal.goalType, goal.status, owner, goal.owner?.phone, goal.owner?.email]
         .filter(Boolean)
@@ -326,8 +335,22 @@ export default function AdminGoalsAndCircles() {
             </div>
           ) : (
             <>
-              {activeTab === "goals" && <GoalsTable goals={filteredGoals} actionLoading={actionLoading} onDelete={deleteGoal} />}
-              {activeTab === "circles" && <CirclesTable circles={filteredCircles} actionLoading={actionLoading} onDelete={deleteCircle} />}
+              {activeTab === "goals" && (
+                <GoalsTable
+                  goals={filteredGoals}
+                  actionLoading={actionLoading}
+                  onDelete={deleteGoal}
+                  onDetails={(goal) => setDetailsItem({ type: "goal", item: goal })}
+                />
+              )}
+              {activeTab === "circles" && (
+                <CirclesTable
+                  circles={filteredCircles}
+                  actionLoading={actionLoading}
+                  onDelete={deleteCircle}
+                  onDetails={(circle) => setDetailsItem({ type: "circle", item: circle })}
+                />
+              )}
               {activeTab === "requests" && (
                 <RequestsTable requests={filteredRequests} actionLoading={actionLoading} onReview={reviewRequest} />
               )}
@@ -335,11 +358,18 @@ export default function AdminGoalsAndCircles() {
           )}
         </div>
       </div>
+      {detailsItem && (
+        <DetailsModal
+          type={detailsItem.type}
+          item={detailsItem.item}
+          onClose={() => setDetailsItem(null)}
+        />
+      )}
     </div>
   );
 }
 
-function GoalsTable({ goals, actionLoading, onDelete }) {
+function GoalsTable({ goals, actionLoading, onDelete, onDetails }) {
   if (!goals.length) return <EmptyState text="No goals found." />;
 
   return (
@@ -376,7 +406,10 @@ function GoalsTable({ goals, actionLoading, onDelete }) {
               </td>
               <td className="px-4 py-4 text-slate-500">{formatDate(goal.createdAt)}</td>
               <td className="px-4 py-4 text-right">
-                <DeleteButton loading={actionLoading === `goal-${goal._id}`} onClick={() => onDelete(goal)} />
+                <div className="flex justify-end gap-2">
+                  <DetailsButton onClick={() => onDetails(goal)} />
+                  <DeleteButton loading={actionLoading === `goal-${goal._id}`} onClick={() => onDelete(goal)} />
+                </div>
               </td>
             </tr>
           ))}
@@ -386,7 +419,7 @@ function GoalsTable({ goals, actionLoading, onDelete }) {
   );
 }
 
-function CirclesTable({ circles, actionLoading, onDelete }) {
+function CirclesTable({ circles, actionLoading, onDelete, onDetails }) {
   if (!circles.length) return <EmptyState text="No circles found." />;
 
   return (
@@ -427,7 +460,10 @@ function CirclesTable({ circles, actionLoading, onDelete }) {
                 <StatusBadge value={circle.status} />
               </td>
               <td className="px-4 py-4 text-right">
-                <DeleteButton loading={actionLoading === `circle-${circle._id}`} onClick={() => onDelete(circle)} />
+                <div className="flex justify-end gap-2">
+                  <DetailsButton onClick={() => onDetails(circle)} />
+                  <DeleteButton loading={actionLoading === `circle-${circle._id}`} onClick={() => onDelete(circle)} />
+                </div>
               </td>
             </tr>
           ))}
@@ -506,6 +542,19 @@ function OwnerBlock({ owner }) {
   );
 }
 
+function DetailsButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
+    >
+      <Eye className="h-3.5 w-3.5" />
+      Details
+    </button>
+  );
+}
+
 function DeleteButton({ loading, onClick }) {
   return (
     <button
@@ -517,6 +566,112 @@ function DeleteButton({ loading, onClick }) {
       {loading ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
       Delete
     </button>
+  );
+}
+
+function DetailsModal({ type, item, onClose }) {
+  const isGoal = type === "goal";
+  const title = isGoal ? item.goalName || "Untitled goal" : item.circleName || "Untitled circle";
+  const subtitle = isGoal ? item.goalType || "General goal" : `${item.circleType || "public"} circle`;
+  const members = Array.isArray(item.members) ? item.members : [];
+  const detailRows = isGoal
+    ? [
+        ["Owner", getOwnerName(item.owner)],
+        ["Owner Contact", item.owner?.phone || item.owner?.email || "No contact"],
+        ["Target Amount", formatCurrency(item.targetAmount)],
+        ["Current Saved", formatCurrency(item.currentSaved)],
+        ["Monthly Deposit", formatCurrency(item.monthlyDeposit)],
+        ["Progress", `${Number(item.progress) || 0}%`],
+        ["Status", item.status || "unknown"],
+        ["Target Date", formatDate(item.targetDate)],
+        ["Estimated Completion", formatDate(item.estimatedCompletionDate)],
+        ["Created", formatDate(item.createdAt)],
+        ["Updated", formatDate(item.updatedAt)],
+      ]
+    : [
+        ["Owner", getOwnerName(item.owner)],
+        ["Owner Contact", item.owner?.phone || item.owner?.email || "No contact"],
+        ["Purpose", item.purpose || "General"],
+        ["Target Amount", formatCurrency(item.targetAmount)],
+        ["Total Pool", formatCurrency(item.totalPool)],
+        ["Minimum Deposit", formatCurrency(item.minDeposit)],
+        ["Members", `${item.currentMembers || members.length || 0}/${item.maxMembers || 0}`],
+        ["Status", item.status || "unknown"],
+        ["Created", formatDate(item.createdAt)],
+        ["Updated", formatDate(item.updatedAt)],
+      ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+      <div className="max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-lg bg-white shadow-2xl">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-emerald-700">
+              {isGoal ? "Goal Details" : "Circle Details"}
+            </p>
+            <h2 className="mt-1 text-xl font-black text-slate-900">{title}</h2>
+            <p className="mt-1 text-sm text-slate-500">{subtitle}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+            aria-label="Close details"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="max-h-[calc(90vh-88px)] overflow-y-auto p-5">
+          {item.description && (
+            <div className="mb-5 rounded-lg border border-slate-200 bg-slate-50 p-4">
+              <p className="text-xs font-black uppercase tracking-wide text-slate-400">Description</p>
+              <p className="mt-2 text-sm leading-6 text-slate-700">{item.description}</p>
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            {detailRows.map(([label, value]) => (
+              <div key={label} className="rounded-lg border border-slate-200 p-3">
+                <p className="text-xs font-black uppercase tracking-wide text-slate-400">{label}</p>
+                <p className="mt-1 break-words text-sm font-bold text-slate-800">{value}</p>
+              </div>
+            ))}
+          </div>
+
+          {!isGoal && members.length > 0 && (
+            <div className="mt-5">
+              <p className="mb-3 text-xs font-black uppercase tracking-wide text-slate-400">Members</p>
+              <div className="overflow-x-auto rounded-lg border border-slate-200">
+                <table className="min-w-full divide-y divide-slate-200 text-sm">
+                  <thead className="bg-slate-50 text-left text-xs font-black uppercase tracking-wide text-slate-500">
+                    <tr>
+                      <th className="px-3 py-2">User ID</th>
+                      <th className="px-3 py-2">Role</th>
+                      <th className="px-3 py-2">Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {members.slice(0, 12).map((member, index) => (
+                      <tr key={`${member.userId || index}`}>
+                        <td className="px-3 py-2 font-semibold text-slate-700">{String(member.userId || "N/A")}</td>
+                        <td className="px-3 py-2 text-slate-500">{member.role || "member"}</td>
+                        <td className="px-3 py-2 text-slate-500">{formatDate(member.joinedAt || member.createdAt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {members.length > 12 && (
+                <p className="mt-2 text-xs font-semibold text-slate-500">
+                  Showing 12 of {members.length} members.
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
