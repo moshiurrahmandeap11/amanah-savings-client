@@ -91,7 +91,7 @@ const translations = {
     referralBonus: "🎁 রেফারেল বোনাস: আপনার কোড শেয়ার করুন এবং ৳৫০০ উপার্জন করুন!",
     registrationFailed: "নিবন্ধন ব্যর্থ",
     invalidEmail: "অবৈধ ইমেইল",
-    pleaseEnterEmail: "দয়া করে আপনার ইমেইল ঠিকানা দিন",
+    pleaseEnterEmail: " আপনার ইমেইল ঠিকানা দিন",
     otpSent: "ওটিপি পাঠানো হয়েছে!",
     checkEmail: "যাচাইকরণ কোডের জন্য আপনার ইমেইল চেক করুন",
     failedToSendOTP: "ওটিপি পাঠানো যায়নি। আবার চেষ্টা করুন।",

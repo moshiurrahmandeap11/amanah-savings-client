@@ -170,7 +170,7 @@ const ReferralPage = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch referral stats
+  // Fetch referral stats - with safe defaults
   const fetchReferralStats = async () => {
     try {
       const response = await axiosInstance.get("/referrals/stats");
@@ -178,11 +178,18 @@ const ReferralPage = () => {
         const data = response.data.data;
         const referralLink = data.referralCode && typeof window !== "undefined"
           ? `${window.location.origin}/register?ref=${encodeURIComponent(data.referralCode)}`
-          : data.referralLink;
+          : data.referralLink || "";
 
         setReferralData({
-          ...data,
+          referralCode: data.referralCode || "",
           referralLink,
+          stats: {
+            totalReferrals: Number(data.stats?.totalReferrals) || 0,
+            activeReferrals: Number(data.stats?.activeReferrals) || 0,
+            pendingReferrals: Number(data.stats?.pendingReferrals) || 0,
+            totalBonusEarned: Number(data.stats?.totalBonusEarned) || 0,
+            thisMonthBonus: Number(data.stats?.thisMonthBonus) || 0,
+          },
         });
       }
     } catch (error) {
@@ -294,28 +301,28 @@ const ReferralPage = () => {
   const stats = [
     { 
       icon: <UserPlus size={18} />, 
-      value: referralData.stats.totalReferrals, 
+      value: Number(referralData.stats.totalReferrals) || 0, 
       label: t('friendsReferred'),
       color: "primary",
       bg: "bg-primary/10"
     },
     { 
       icon: <Wallet size={18} />, 
-      value: `৳${referralData.stats.totalBonusEarned.toLocaleString()}`, 
+      value: `৳${(Number(referralData.stats.totalBonusEarned) || 0).toLocaleString()}`, 
       label: t('totalBonusEarned'),
       color: "green",
       bg: "bg-green-500/10"
     },
     { 
       icon: <Users size={18} />, 
-      value: referralData.stats.activeReferrals, 
+      value: Number(referralData.stats.activeReferrals) || 0, 
       label: t('activeReferrals'),
       color: "blue",
       bg: "bg-blue-500/10"
     },
     { 
       icon: <Calendar size={18} />, 
-      value: `৳${referralData.stats.thisMonthBonus.toLocaleString()}`, 
+      value: `৳${(Number(referralData.stats.thisMonthBonus) || 0).toLocaleString()}`, 
       label: t('thisMonth'),
       color: "amber",
       bg: "bg-amber-500/10"
@@ -582,7 +589,7 @@ const ReferralPage = () => {
                         </div>
                         <div className="col-span-3 text-right">
                           <span className="text-sm font-semibold text-green-600 dark:text-green-400">
-                            ৳{user.bonusEarned.toLocaleString()}
+                            ৳{(Number(user.bonusEarned) || 0).toLocaleString()}
                           </span>
                         </div>
                       </motion.div>

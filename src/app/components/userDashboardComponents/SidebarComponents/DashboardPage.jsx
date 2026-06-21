@@ -313,16 +313,16 @@ const DashboardPage = () => {
         const goals = res.data.data?.goals || res.data.data || [];
         setUserGoals(
           goals.map((g) => ({
-            id: g._id,
+            id: g._id || g.id || String(Math.random()),
             icon: getGoalIcon(g.goalType || g.type || "other"),
             name: g.goalName || g.name || "Savings Goal",
             status: g.status || "active",
             timeLeft: calculateTimeLeft(g),
-            saved: formatCurrency(g.currentSaved || g.currentAmount || 0),
-            target: formatCurrency(g.targetAmount || 0),
+            saved: formatCurrency(safeNumber(g.currentSaved || g.currentAmount, 0)),
+            target: formatCurrency(safeNumber(g.targetAmount, 0)),
             progress: calculateProgress(g),
             color: getGoalColor(g.goalType || g.type || "other"),
-            monthlyDeposit: g.monthlyDeposit || 0,
+            monthlyDeposit: safeNumber(g.monthlyDeposit, 0),
           }))
         );
       }
@@ -340,11 +340,11 @@ const DashboardPage = () => {
     
     const insightsList = [];
     
-    const totalSaved = userData.totalSaved || userData.goal?.currentSaved || 0;
-    const streak = userData.streak || 0;
-    const activeGoals = userData.activeGoals || userGoals.length;
-    const monthlyDeposit = userData.goal?.monthlyDeposit || 0;
-    const targetAmount = userData.goal?.targetAmount || 0;
+    const totalSaved = Number(userData?.totalSaved || userData?.goal?.currentSaved || 0);
+    const streak = Number(userData?.streak || 0);
+    const activeGoals = Number(userData?.activeGoals || userGoals.length || 0);
+    const monthlyDeposit = Number(userData?.goal?.monthlyDeposit || 0);
+    const targetAmount = Number(userData?.goal?.targetAmount || 0);
     
     if (totalSaved > 0) {
       insightsList.push({
@@ -406,7 +406,7 @@ const DashboardPage = () => {
   }, [userId]);
 
   const generateDemoHistory = () => {
-    const totalSaved = userData?.totalSaved || 0;
+    const totalSaved = Number(userData?.totalSaved || 0);
     if (totalSaved === 0) {
       setSavingsHistory([]);
       return;
@@ -443,11 +443,11 @@ const DashboardPage = () => {
         const deposits = depositsRes.data.data?.deposits || depositsRes.data.data || [];
         deposits.forEach(d => {
           transactions.push({
-            id: d._id,
+            id: d._id || d.id || String(Math.random()),
             type: "deposit",
-            amount: d.depositAmount || d.amount || 0,
-            status: d.status,
-            date: d.createdAt,
+            amount: safeNumber(d.depositAmount || d.amount, 0),
+            status: d.status || "pending",
+            date: d.createdAt || new Date().toISOString(),
             color: d.status === "rejected" ? "text-red-500" : d.status === "approved" ? "text-green-500" : "text-amber-500",
           });
         });
@@ -457,11 +457,11 @@ const DashboardPage = () => {
         const withdrawals = withdrawalsRes.data.data?.withdrawals || withdrawalsRes.data.data || [];
         withdrawals.forEach(w => {
           transactions.push({
-            id: w._id,
+            id: w._id || w.id || String(Math.random()),
             type: "withdrawal",
-            amount: w.withdrawalAmount || w.amount || 0,
-            status: w.status,
-            date: w.createdAt,
+            amount: safeNumber(w.withdrawalAmount || w.amount, 0),
+            status: w.status || "pending",
+            date: w.createdAt || new Date().toISOString(),
             color: w.status === "rejected" ? "text-red-500" : w.status === "approved" ? "text-green-500" : "text-amber-500",
           });
         });
@@ -526,34 +526,49 @@ const DashboardPage = () => {
     updateChart();
   }, [chartPeriod, savingsHistory]);
 
-  // Helper functions
+  // Helper functions - Safe formatCurrency that handles NaN, null, undefined
   const formatCurrency = (amount) => {
-    if (!amount && amount !== 0) return "৳0";
-    if (amount >= 10000000) return `৳${(amount / 10000000).toFixed(1)}Cr`;
-    if (amount >= 100000) return `৳${(amount / 100000).toFixed(1)}L`;
-    if (amount >= 1000) return `৳${(amount / 1000).toFixed(1)}K`;
-    return `৳${amount.toLocaleString()}`;
+    // Handle null, undefined, NaN
+    if (amount === null || amount === undefined || Number.isNaN(Number(amount))) {
+      return "৳0";
+    }
+    const num = Number(amount);
+    if (num === 0) return "৳0";
+    if (num >= 10000000) return `৳${(num / 10000000).toFixed(1)}Cr`;
+    if (num >= 100000) return `৳${(num / 100000).toFixed(1)}L`;
+    if (num >= 1000) return `৳${(num / 1000).toFixed(1)}K`;
+    return `৳${num.toLocaleString()}`;
   };
 
   const calculateTimeLeft = (goal) => {
-    if (goal.duration) {
+    if (!goal) return t('inProgress');
+    if (goal.duration && !Number.isNaN(Number(goal.duration))) {
       return `${goal.duration} months left`;
     }
     if (goal.targetDate) {
-      const monthsLeft = Math.max(0, Math.ceil((new Date(goal.targetDate) - new Date()) / (1000 * 60 * 60 * 24 * 30)));
-      return `${monthsLeft} months left`;
+      try {
+        const targetDate = new Date(goal.targetDate);
+        if (Number.isNaN(targetDate.getTime())) return t('inProgress');
+        const monthsLeft = Math.max(0, Math.ceil((targetDate - new Date()) / (1000 * 60 * 60 * 24 * 30)));
+        return `${monthsLeft} months left`;
+      } catch {
+        return t('inProgress');
+      }
     }
     return t('inProgress');
   };
 
   const calculateProgress = (goal) => {
+    if (!goal) return 0;
     if (goal.progress) return goal.progress;
-    const saved = goal.currentSaved || goal.currentAmount || 0;
-    const target = goal.targetAmount || 1;
+    const saved = Number(goal.currentSaved || goal.currentAmount || 0);
+    const target = Number(goal.targetAmount || 1);
+    if (target === 0 || Number.isNaN(saved) || Number.isNaN(target)) return 0;
     return Math.min(100, Math.round((saved / target) * 100));
   };
 
   const getGoalIcon = (goalType) => {
+    if (!goalType) return <Target size={24} />;
     const map = {
       home: <Target size={24} />,
       wedding: <Heart size={24} />,
@@ -572,6 +587,7 @@ const DashboardPage = () => {
   };
 
   const getGoalColor = (type) => {
+    if (!type) return "from-primary to-primary-light";
     const map = {
       home: "from-primary to-primary-light",
       wedding: "from-pink-500 to-rose-500",
@@ -624,8 +640,8 @@ const DashboardPage = () => {
       ];
     }
 
-    let labels = history.map(h => h.month);
-    let values = history.map(h => h.amount);
+    let labels = history.map(h => h.month || "N/A");
+    let values = history.map(h => safeNumber(h.amount, 0));
 
     if (chartPeriod === "6m") {
       labels = labels.slice(-6);
@@ -668,29 +684,38 @@ const DashboardPage = () => {
     setAiMessage("");
     
     setTimeout(() => {
+      const targetAmount = Number(userData?.goal?.targetAmount || 0);
+      const currentSaved = Number(userData?.goal?.currentSaved || 0);
+      const monthlyDeposit = Number(userData?.goal?.monthlyDeposit || 1);
+      const monthsToGoal = targetAmount > 0 && monthlyDeposit > 0 
+        ? Math.ceil((targetAmount - currentSaved) / monthlyDeposit)
+        : 0;
+      
       const responses = [
         `Based on your savings pattern, you're doing great! Keep up the ${userData?.streak || 0}-day streak!`,
         `Your ${userGoals.length} active goals are on track. Consider increasing monthly deposits to reach them faster.`,
-        `At your current rate, you'll reach your goal in approximately ${Math.ceil((userData?.goal?.targetAmount - userData?.goal?.currentSaved) / (userData?.goal?.monthlyDeposit || 1))} months.`,
+        monthsToGoal > 0 
+          ? `At your current rate, you'll reach your goal in approximately ${monthsToGoal} months.`
+          : `Keep saving to reach your goals faster!`,
         `You've saved ${formatCurrency(userData?.totalSaved || 0)} so far. That's impressive progress!`,
       ];
       setAiMessages(prev => [...prev, { text: responses[Math.floor(Math.random() * responses.length)], isBot: true }]);
     }, 800);
   };
 
-  // Calculate dynamic stats
+  // Calculate dynamic stats - safe version
   const getStats = () => {
-    const totalSaved = userData?.totalSaved || userData?.goal?.currentSaved || 0;
-    const monthlySaved = userData?.goal?.monthlyDeposit || 0;
-    const streak = userData?.streak || 0;
-    const level = userData?.level || 1;
-    const activeCircles = userData?.activeCircles || userData?.circles?.length || 0;
+    const totalSaved = Number(userData?.totalSaved || userData?.goal?.currentSaved || 0);
+    const monthlySaved = Number(userData?.goal?.monthlyDeposit || 0);
+    const streak = Number(userData?.streak || 0);
+    const level = Number(userData?.level || 1);
+    const activeCircles = Number(userData?.activeCircles || userData?.circles?.length || 0);
 
     return [
       { icon: <Wallet size={24} />, value: formatCurrency(totalSaved), label: t('totalSavings'), change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} ${t('thisMonth')}` : t('startSavingToday'), color: "green" },
-      { icon: <Users size={24} />, value: activeCircles.toString(), label: t('activeCircles'), change: activeCircles > 0 ? "↑ Goals on track" : t('joinCircle'), color: "blue" },
-      { icon: <Flame size={24} />, value: streak.toString(), label: t('dayStreak'), change: streak >= 30 ? t('topSaver') : streak > 0 ? t('keepGoing') : t('startYourStreak'), color: "warning" },
-      { icon: <Trophy size={24} />, value: level.toString(), label: t('saverLevel'), change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : t('member'), color: "info" },
+      { icon: <Users size={24} />, value: String(activeCircles), label: t('activeCircles'), change: activeCircles > 0 ? "↑ Goals on track" : t('joinCircle'), color: "blue" },
+      { icon: <Flame size={24} />, value: String(streak), label: t('dayStreak'), change: streak >= 30 ? t('topSaver') : streak > 0 ? t('keepGoing') : t('startYourStreak'), color: "warning" },
+      { icon: <Trophy size={24} />, value: String(level), label: t('saverLevel'), change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : t('member'), color: "info" },
     ];
   };
 
@@ -712,25 +737,36 @@ const DashboardPage = () => {
 
   const stats = getStats();
   const userName = getUserDisplayName();
+  // Safe number helper
+  const safeNumber = (val, fallback = 0) => {
+    const num = Number(val);
+    if (val === null || val === undefined || val === "" || Number.isNaN(num)) {
+      return fallback;
+    }
+    return num;
+  };
+
   const kycProgress = getKycProgress();
-  const totalSaved = userData?.totalSaved || userData?.goal?.currentSaved || 0;
-  const targetAmount = userData?.goal?.targetAmount || userGoals.reduce((sum, g) => sum + parseFloat(g.target.replace(/[^0-9]/g, "")), 0);
+  const totalSaved = Number(userData?.totalSaved || userData?.goal?.currentSaved || 0);
+  const targetAmount = Number(userData?.goal?.targetAmount || userGoals.reduce((sum, g) => sum + safeNumber(parseFloat(String(g.target).replace(/[^0-9]/g, "")), 0), 0));
   const progressPercent = targetAmount > 0 ? Math.min(100, Math.round((totalSaved / targetAmount) * 100)) : 0;
   const nextDueDays = 7;
 
-  // Get status display text
+  // Get status display text - safe version
   const getStatusText = (status) => {
-    switch(status) {
+    if (!status) return t('pending');
+    switch(String(status).toLowerCase()) {
       case "pending": return t('pending');
       case "rejected": return t('rejected');
       case "approved": return t('approved');
-      default: return status;
+      default: return String(status);
     }
   };
 
-  // Get status color class
+  // Get status color class - safe version
   const getStatusColorClass = (status) => {
-    switch(status) {
+    if (!status) return "text-foreground/50";
+    switch(String(status).toLowerCase()) {
       case "pending": return "text-amber-500";
       case "rejected": return "text-red-500";
       case "approved": return "text-green-500";
