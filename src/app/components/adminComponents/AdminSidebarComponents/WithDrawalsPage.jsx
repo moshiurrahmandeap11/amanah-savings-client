@@ -151,10 +151,27 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-const WithDrawalsPage = () => {
-  const [isDark, setIsDark] = useState(false);
-  const [lang, setLang] = useState("bn");
-  const [activeTab, setActiveTab] = useState("pending");
+const defaultStats = {
+  pending: 0,
+  approved: 0,
+  totalDeposits: 0,
+  totalWithdrawals: 0,
+};
+
+const getInitialAdminLang = () => {
+  if (typeof window === "undefined") return "bn";
+  return localStorage.getItem("admin_lang") || "bn";
+};
+
+const getInitialTheme = () => {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem("theme") === "dark";
+};
+
+const WithDrawalsPage = ({ initialTab = "pending" }) => {
+  const [isDark, setIsDark] = useState(getInitialTheme);
+  const [lang] = useState(getInitialAdminLang);
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNoteSheet, setShowNoteSheet] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -162,25 +179,15 @@ const WithDrawalsPage = () => {
   const [noteText, setNoteText] = useState("");
   const [toast, setToast] = useState({ show: false, message: "" });
   const [transactions, setTransactions] = useState([]);
-  const [stats, setStats] = useState({
-    pending: 0,
-    approved: 0,
-    totalDeposits: 0,
-    totalWithdrawals: 0,
-  });
+  const [stats, setStats] = useState(defaultStats);
   const [loading, setLoading] = useState(false);
 
-  // Load theme and language
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
-    if (savedTheme === "dark") document.documentElement.classList.add("dark");
-
-    const savedLang = localStorage.getItem("admin_lang") || "bn";
-    setLang(savedLang);
-  }, []);
-
   const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
+
+  const showToast = useCallback((message) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: "" }), 3000);
+  }, []);
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
@@ -230,29 +237,28 @@ const WithDrawalsPage = () => {
         });
         
         setTransactions(transformedTransactions);
-        setStats(res.data.data.stats || stats);
+        setStats(res.data.data.stats || defaultStats);
       }
     } catch (err) {
-      showToast(err.response?.data?.message || t('failedToLoad'));
+      const fallbackMessage = translations[lang]?.failedToLoad || translations.en.failedToLoad;
+      showToast(err.response?.data?.message || fallbackMessage);
     } finally {
       setLoading(false);
     }
-  }, [activeTab, searchQuery, lang]);
+  }, [activeTab, searchQuery, lang, showToast]);
 
   useEffect(() => {
-    fetchTransactions();
-  }, [fetchTransactions]);
+    document.documentElement.classList.toggle("dark", isDark);
+    queueMicrotask(() => {
+      fetchTransactions();
+    });
+  }, [fetchTransactions, isDark]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
     setIsDark(newTheme);
     localStorage.setItem("theme", newTheme ? "dark" : "light");
     document.documentElement.classList.toggle("dark", newTheme);
-  };
-
-  const showToast = (message) => {
-    setToast({ show: true, message });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
   const approveTransaction = async (id) => {

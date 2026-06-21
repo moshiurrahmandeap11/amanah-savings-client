@@ -20,6 +20,7 @@ import {
   Moon,
   Sun,
   Loader2,
+  Gift,
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
@@ -41,7 +42,14 @@ const translations = {
     paymentGateway: "Payment Gateway",
     notifications: "Notifications",
     security: "Security",
+    referrals: "Referral Bonus",
     maintenance: "Maintenance",
+    referralSettings: "Referral Bonus Settings",
+    referralSettingsDesc: "Control referral reward amount and unlock rule",
+    referralBonusAmount: "Referral Bonus Amount",
+    referralBonusAmountDesc: "Amount credited after a successful referral",
+    referralMinimumDeposit: "Minimum Deposit to Unlock Bonus",
+    referralMinimumDepositDesc: "Referred user must deposit at least this amount",
     
     // General Panel
     siteInformation: "Site Information",
@@ -148,7 +156,14 @@ const translations = {
     paymentGateway: "পেমেন্ট গেটওয়ে",
     notifications: "বিজ্ঞপ্তি",
     security: "নিরাপত্তা",
+    referrals: "রেফারেল বোনাস",
     maintenance: "রক্ষণাবেক্ষণ",
+    referralSettings: "রেফারেল বোনাস সেটিংস",
+    referralSettingsDesc: "রেফারেল পুরস্কার এবং আনলক নিয়ম নিয়ন্ত্রণ করুন",
+    referralBonusAmount: "রেফারেল বোনাসের পরিমাণ",
+    referralBonusAmountDesc: "সফল রেফারেলের পর যে টাকা ক্রেডিট হবে",
+    referralMinimumDeposit: "বোনাস আনলকের ন্যূনতম ডিপোজিট",
+    referralMinimumDepositDesc: "রেফার্ড ইউজারকে কমপক্ষে এই পরিমাণ জমা দিতে হবে",
     
     // General Panel
     siteInformation: "সাইট তথ্য",
@@ -246,9 +261,19 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+const getInitialAdminLang = () => {
+  if (typeof window === "undefined") return "bn";
+  return localStorage.getItem("admin_lang") || "bn";
+};
+
+const getInitialTheme = () => {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem("theme") === "dark";
+};
+
 const AdminSettingsPage = () => {
-  const [isDark, setIsDark] = useState(false);
-  const [lang, setLang] = useState("bn");
+  const [isDark, setIsDark] = useState(getInitialTheme);
+  const [lang, setLang] = useState(getInitialAdminLang);
   const [activePanel, setActivePanel] = useState("general");
   const [toast, setToast] = useState({ show: false, message: "" });
   const [settings, setSettings] = useState({
@@ -257,6 +282,7 @@ const AdminSettingsPage = () => {
     payments: {},
     notifications: {},
     security: {},
+    referrals: {},
     maintenance: {},
   });
   const [loading, setLoading] = useState(false);
@@ -271,10 +297,9 @@ const AdminSettingsPage = () => {
     return text;
   };
 
-  // Load language preference
-  useEffect(() => {
-    const savedLang = localStorage.getItem("admin_lang") || "bn";
-    setLang(savedLang);
+  const showToast = useCallback((message) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: "" }), 3000);
   }, []);
 
   const fetchSettings = useCallback(async () => {
@@ -324,6 +349,10 @@ const AdminSettingsPage = () => {
             maxLoginAttempts: backendData.security?.maxLoginAttempts || 5,
             ipLogging: true,
           },
+          referrals: {
+            bonusAmount: backendData.referrals?.bonusAmount || 500,
+            minimumDeposit: backendData.referrals?.minimumDeposit || 500,
+          },
           maintenance: {
             maintenanceMode: backendData.maintenance?.mode || false,
             maintenanceMessage: backendData.maintenance?.message || "We're currently performing scheduled maintenance. Please check back soon.",
@@ -332,29 +361,25 @@ const AdminSettingsPage = () => {
       }
     } catch (err) {
       console.error("Fetch settings error:", err);
-      showToast(err.response?.data?.message || t('settingsLoadFailed'));
+      const fallbackMessage = translations[lang]?.settingsLoadFailed || translations.en.settingsLoadFailed;
+      showToast(err.response?.data?.message || fallbackMessage);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [lang, showToast]);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
-    if (savedTheme === "dark") document.documentElement.classList.add("dark");
-    fetchSettings();
-  }, [fetchSettings]);
+    document.documentElement.classList.toggle("dark", isDark);
+    queueMicrotask(() => {
+      fetchSettings();
+    });
+  }, [fetchSettings, isDark]);
 
   const toggleTheme = () => {
     const newTheme = !isDark;
     setIsDark(newTheme);
     localStorage.setItem("theme", newTheme ? "dark" : "light");
     document.documentElement.classList.toggle("dark", newTheme);
-  };
-
-  const showToast = (message) => {
-    setToast({ show: true, message });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
   const handleToggle = (section, key) => {
@@ -414,6 +439,10 @@ const AdminSettingsPage = () => {
           sessionTimeout: parseInt(settings.security.sessionTimeout) || 30,
           maxLoginAttempts: parseInt(settings.security.maxLoginAttempts) || 5,
           passwordMinLength: 8,
+        },
+        referrals: {
+          bonusAmount: parseInt(settings.referrals.bonusAmount) || 500,
+          minimumDeposit: parseInt(settings.referrals.minimumDeposit) || 500,
         },
         maintenance: {
           mode: settings.maintenance.maintenanceMode,
@@ -498,6 +527,12 @@ const AdminSettingsPage = () => {
       label: t('security'),
       icon: <Shield size={16} />,
       labelEn: "Security",
+    },
+    {
+      id: "referrals",
+      label: t('referrals'),
+      icon: <Gift size={16} />,
+      labelEn: "Referral Bonus",
     },
     {
       id: "maintenance",
@@ -811,6 +846,46 @@ const AdminSettingsPage = () => {
     </div>
   );
 
+  const renderReferralsPanel = () => (
+    <div className="bg-card border border-border rounded-xl overflow-hidden">
+      <div className="px-5 py-4 border-b border-border">
+        <h3 className="font-semibold text-foreground">{t('referralSettings')}</h3>
+        <p className="text-xs text-foreground/50">{t('referralSettingsDesc')}</p>
+      </div>
+      <div className="p-4 space-y-4">
+        {[
+          {
+            key: "bonusAmount",
+            label: t('referralBonusAmount'),
+            desc: t('referralBonusAmountDesc'),
+          },
+          {
+            key: "minimumDeposit",
+            label: t('referralMinimumDeposit'),
+            desc: t('referralMinimumDepositDesc'),
+          },
+        ].map((field) => (
+          <div key={field.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="font-medium text-sm text-foreground">{field.label}</div>
+              <div className="text-xs text-foreground/50">{field.desc}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-foreground/60">৳</span>
+              <input
+                type="number"
+                min="0"
+                value={settings.referrals?.[field.key] || ""}
+                onChange={(e) => handleInputChange("referrals", field.key, e.target.value)}
+                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-32"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   const renderMaintenancePanel = () => (
     <div className="space-y-5">
       <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 flex gap-3">
@@ -866,6 +941,8 @@ const AdminSettingsPage = () => {
         return renderNotificationsPanel();
       case "security":
         return renderSecurityPanel();
+      case "referrals":
+        return renderReferralsPanel();
       case "maintenance":
         return renderMaintenancePanel();
       default:

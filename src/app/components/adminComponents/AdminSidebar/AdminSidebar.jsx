@@ -47,6 +47,7 @@ const translations = {
     analytics: "Analytics",
     contact: "Contact",
     goalsCircles: "Goals & Circles",
+    allTransaction: "All Transaction",
     
     // Nav Items - Members
     userManagement: "User Management",
@@ -121,11 +122,21 @@ const translations = {
   }
 };
 
+const getInitialAdminLang = () => {
+  if (typeof window === "undefined") return "en";
+  return localStorage.getItem("admin_lang") || "en";
+};
+
+const getInitialTheme = () => {
+  if (typeof window === "undefined") return false;
+  return localStorage.getItem("theme") === "dark";
+};
+
 const AdminSidebar = ({ closeSidebar }) => {
   const pathname = usePathname();
-  const [isDark, setIsDark] = useState(false);
-  const [currentLang, setCurrentLang] = useState("en");
-  const [langLoaded, setLangLoaded] = useState(false);
+  const [isDark, setIsDark] = useState(getInitialTheme);
+  const [currentLang, setCurrentLang] = useState(getInitialAdminLang);
+  const [langLoaded] = useState(true);
 
   // Translation function
   const t = (key, params = {}) => {
@@ -135,14 +146,6 @@ const AdminSidebar = ({ closeSidebar }) => {
     });
     return text;
   };
-
-  useEffect(() => {
-    const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
-    const savedLang = localStorage.getItem("admin_lang") || "en";
-    setCurrentLang(savedLang);
-    setLangLoaded(true);
-  }, []);
 
   // ল্যাঙ্গুয়েজ চেঞ্জ শুনতে localStorage এ event listener
   useEffect(() => {
@@ -194,6 +197,12 @@ const AdminSidebar = ({ closeSidebar }) => {
           icon: <Target size={18} />,
           href: "/admin/goals-and-circles",
           id: "goals-circles",
+        },
+        {
+          name: t('allTransaction'),
+          icon: <Receipt size={18} />,
+          href: "/admin/transactions",
+          id: "transactions",
         }
       ],
     },
