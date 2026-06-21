@@ -709,22 +709,6 @@ const DashboardPage = () => {
     }, 800);
   };
 
-  // Calculate dynamic stats - safe version
-  const getStats = () => {
-    const totalSaved = Number(userData?.totalSaved || userData?.goal?.currentSaved || 0);
-    const monthlySaved = Number(userData?.goal?.monthlyDeposit || 0);
-    const streak = Number(userData?.streak || 0);
-    const level = Number(userData?.level || 1);
-    const activeCircles = Number(userData?.activeCircles || userData?.circles?.length || 0);
-
-    return [
-      { icon: <Wallet size={24} />, value: formatCurrency(totalSaved), label: t('totalSavings'), change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} ${t('thisMonth')}` : t('startSavingToday'), color: "green" },
-      { icon: <Users size={24} />, value: String(activeCircles), label: t('activeCircles'), change: activeCircles > 0 ? "↑ Goals on track" : t('joinCircle'), color: "blue" },
-      { icon: <Flame size={24} />, value: String(streak), label: t('dayStreak'), change: streak >= 30 ? t('topSaver') : streak > 0 ? t('keepGoing') : t('startYourStreak'), color: "warning" },
-      { icon: <Trophy size={24} />, value: String(level), label: t('saverLevel'), change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : t('member'), color: "info" },
-    ];
-  };
-
   const getUserDisplayName = () => {
     if (userData?.firstName) return userData.firstName;
     if (authUser?.firstName) return authUser.firstName;
@@ -764,6 +748,7 @@ const DashboardPage = () => {
   const progressPercent = targetAmount > 0 ? Math.min(100, Math.round((totalSaved / targetAmount) * 100)) : 0;
   const nextDueDays = 7;
 
+  // Calculate dynamic stats - safe version
   const getStats = () => {
     const monthlySaved = Number(userData?.goal?.monthlyDeposit || 0);
     const streak = Number(userData?.streak || 0);
