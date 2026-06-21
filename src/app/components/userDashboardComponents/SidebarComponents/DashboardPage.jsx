@@ -765,6 +765,7 @@ const DashboardPage = () => {
 
   const stats = getStats();
   const userName = getUserDisplayName();
+  const kycProgress = getKycProgress();
 
   // Get status display text - safe version
   const getStatusText = (status) => {
