@@ -271,6 +271,27 @@ const getInitialTheme = () => {
   return localStorage.getItem("theme") === "dark";
 };
 
+const defaultPaymentInstructions = {
+  en: {
+    title: "Payment Instructions",
+    sendMoneyToLabel: "Send money to:",
+    sendMoneyTo: "018XXXXXXXX",
+    amountLabel: "Amount:",
+    amountValue: "৳{amount}",
+    referenceLabel: "Reference:",
+    reference: "DEV-TEST-DEPOSIT",
+  },
+  bn: {
+    title: "পেমেন্ট নির্দেশনা",
+    sendMoneyToLabel: "টাকা পাঠান:",
+    sendMoneyTo: "018XXXXXXXX",
+    amountLabel: "পরিমাণ:",
+    amountValue: "৳{amount}",
+    referenceLabel: "রেফারেন্স:",
+    reference: "DEV-TEST-DEPOSIT",
+  },
+};
+
 const AdminSettingsPage = () => {
   const [isDark, setIsDark] = useState(getInitialTheme);
   const [lang, setLang] = useState(getInitialAdminLang);
@@ -334,6 +355,16 @@ const AdminSettingsPage = () => {
             bankEnabled: backendData.payments?.bankTransferEnabled || false,
             depositFee: 0,
             withdrawalFee: backendData.savings?.earlyWithdrawalFee || 2,
+            instructions: {
+              en: {
+                ...defaultPaymentInstructions.en,
+                ...(backendData.payments?.instructions?.en || {}),
+              },
+              bn: {
+                ...defaultPaymentInstructions.bn,
+                ...(backendData.payments?.instructions?.bn || {}),
+              },
+            },
           },
           notifications: {
             emailNotification: backendData.notifications?.depositConfirmation || false,
@@ -396,6 +427,30 @@ const AdminSettingsPage = () => {
     }));
   };
 
+  const handlePaymentInstructionChange = (instructionLang, key, value) => {
+    setSettings((prev) => ({
+      ...prev,
+      payments: {
+        ...prev.payments,
+        instructions: {
+          en: {
+            ...defaultPaymentInstructions.en,
+            ...(prev.payments?.instructions?.en || {}),
+          },
+          bn: {
+            ...defaultPaymentInstructions.bn,
+            ...(prev.payments?.instructions?.bn || {}),
+          },
+          [instructionLang]: {
+            ...defaultPaymentInstructions[instructionLang],
+            ...(prev.payments?.instructions?.[instructionLang] || {}),
+            [key]: value,
+          },
+        },
+      },
+    }));
+  };
+
   const saveSettings = async () => {
     setSaving(true);
     try {
@@ -424,6 +479,16 @@ const AdminSettingsPage = () => {
           rocketEnabled: settings.payments.rocketEnabled,
           bankTransferEnabled: settings.payments.bankEnabled,
           cardEnabled: false,
+          instructions: {
+            en: {
+              ...defaultPaymentInstructions.en,
+              ...(settings.payments.instructions?.en || {}),
+            },
+            bn: {
+              ...defaultPaymentInstructions.bn,
+              ...(settings.payments.instructions?.bn || {}),
+            },
+          },
         },
         notifications: {
           depositConfirmation: settings.notifications.emailNotification,
@@ -694,6 +759,46 @@ const AdminSettingsPage = () => {
                   />
                 </button>
               </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="bg-card border border-border rounded-xl overflow-hidden">
+        <div className="px-5 py-4 border-b border-border">
+          <h3 className="font-semibold text-foreground">Payment Instructions</h3>
+          <p className="text-xs text-foreground/50">Shown on the user deposit submit page</p>
+        </div>
+        <div className="p-4 grid gap-5 lg:grid-cols-2">
+          {[
+            { code: "en", label: "English" },
+            { code: "bn", label: "Bangla" },
+          ].map((instructionLang) => (
+            <div key={instructionLang.code} className="space-y-3">
+              <div className="text-sm font-semibold text-foreground">{instructionLang.label}</div>
+              {[
+                { key: "title", label: "Title" },
+                { key: "sendMoneyToLabel", label: "Send Money Label" },
+                { key: "sendMoneyTo", label: "Send Money Number" },
+                { key: "amountLabel", label: "Amount Label" },
+                { key: "amountValue", label: "Amount Text", hint: "Use {amount} for the entered deposit amount" },
+                { key: "referenceLabel", label: "Reference Label" },
+                { key: "reference", label: "Reference Text" },
+              ].map((field) => (
+                <label key={field.key} className="block">
+                  <span className="mb-1 block text-xs font-medium text-foreground/60">{field.label}</span>
+                  <input
+                    value={
+                      settings.payments?.instructions?.[instructionLang.code]?.[field.key]
+                      ?? defaultPaymentInstructions[instructionLang.code][field.key]
+                    }
+                    onChange={(e) => handlePaymentInstructionChange(instructionLang.code, field.key, e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
+                  />
+                  {field.hint && (
+                    <span className="mt-1 block text-[11px] text-foreground/40">{field.hint}</span>
+                  )}
+                </label>
+              ))}
             </div>
           ))}
         </div>

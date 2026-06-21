@@ -171,6 +171,27 @@ const translations = {
   }
 };
 
+const defaultPaymentInstructions = {
+  en: {
+    title: "Payment Instructions",
+    sendMoneyToLabel: "Send money to:",
+    sendMoneyTo: "018XXXXXXXX",
+    amountLabel: "Amount:",
+    amountValue: "৳{amount}",
+    referenceLabel: "Reference:",
+    reference: "DEV-TEST-DEPOSIT",
+  },
+  bn: {
+    title: "পেমেন্ট নির্দেশনা",
+    sendMoneyToLabel: "টাকা পাঠান:",
+    sendMoneyTo: "018XXXXXXXX",
+    amountLabel: "পরিমাণ:",
+    amountValue: "৳{amount}",
+    referenceLabel: "রেফারেন্স:",
+    reference: "DEV-TEST-DEPOSIT",
+  },
+};
+
 const SubmitPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -189,6 +210,7 @@ const SubmitPage = () => {
   const [screenshotPreview, setScreenshotPreview] = useState(null);
   const [uploadedScreenshot, setUploadedScreenshot] = useState(null);
   const [lang, setLang] = useState("bn");
+  const [paymentInstructions, setPaymentInstructions] = useState(defaultPaymentInstructions);
   const fileInputRef = useRef(null);
 
   // Translation function
@@ -270,6 +292,26 @@ const SubmitPage = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchPaymentInstructions = async () => {
+    try {
+      const response = await axiosInstance.get("/deposits/payment-instructions");
+      if (response.data?.success) {
+        setPaymentInstructions({
+          en: {
+            ...defaultPaymentInstructions.en,
+            ...(response.data.data?.en || {}),
+          },
+          bn: {
+            ...defaultPaymentInstructions.bn,
+            ...(response.data.data?.bn || {}),
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Fetch payment instructions error:", error);
     }
   };
 
@@ -443,6 +485,7 @@ const SubmitPage = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchDepositTargets();
+      fetchPaymentInstructions();
     }, 0);
 
     return () => clearTimeout(timer);
@@ -489,6 +532,14 @@ const SubmitPage = () => {
   ];
   
   const currentPaymentMethod = currentPaymentMethods.find(m => m.id === paymentMethod);
+  const instruction = {
+    ...defaultPaymentInstructions[lang],
+    ...(paymentInstructions[lang] || {}),
+  };
+  const instructionAmount = instruction.amountValue.replace(
+    "{amount}",
+    depositAmount || "XXXX",
+  );
 
   return (
     <div className="max-w-3xl">
@@ -598,6 +649,26 @@ const SubmitPage = () => {
 
         {/* Payment Instructions */}
         <div className={`rounded-xl p-4 mb-5 ${currentPaymentMethod?.bg} border ${currentPaymentMethod?.border}`}>
+          <div className="font-semibold text-sm mb-3 flex items-center gap-2">
+            <Shield size={16} className="text-primary" />
+            {instruction.title}
+          </div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between gap-3">
+              <span className="text-foreground/60">{instruction.sendMoneyToLabel}</span>
+              <strong className="text-primary text-right">{instruction.sendMoneyTo}</strong>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-foreground/60">{instruction.amountLabel}</span>
+              <strong className="text-primary text-right">{instructionAmount}</strong>
+            </div>
+            <div className="flex justify-between gap-3">
+              <span className="text-foreground/60">{instruction.referenceLabel}</span>
+              <strong className="text-primary text-right">{instruction.reference}</strong>
+            </div>
+          </div>
+        </div>
+        <div className="hidden">
           <div className="font-semibold text-sm mb-3 flex items-center gap-2">
             <Shield size={16} className="text-primary" />
             {t('paymentInstructions')}
