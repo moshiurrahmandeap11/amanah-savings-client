@@ -61,6 +61,9 @@ const translations = {
     childrenFuture: "Children's Future",
     travelFund: "Travel Fund",
     customGoal: "Custom Goal",
+    customGoalName: "Custom Goal Name",
+    enterCustomGoal: "Enter your custom goal name",
+    customGoalPlaceholder: "e.g. My Dream Vacation",
     targetAmount: "Target Amount (BDT)",
     targetPlaceholder: "e.g. 200000",
     monthlyDeposit: "Monthly Deposit",
@@ -116,6 +119,9 @@ const translations = {
     childrenFuture: "সন্তানের ভবিষ্যৎ",
     travelFund: "ভ্রমণ ফান্ড",
     customGoal: "কাস্টম লক্ষ্য",
+    customGoalName: "কাস্টম লক্ষ্যের নাম",
+    enterCustomGoal: "আপনার কাস্টম লক্ষ্যের নাম লিখুন",
+    customGoalPlaceholder: "যেমন: আমার স্বপ্নের ভ্রমণ",
     targetAmount: "লক্ষ্যমাত্রা (বিডিটি)",
     targetPlaceholder: "যেমন: ২০০০০০",
     monthlyDeposit: "মাসিক জমা",
@@ -357,6 +363,21 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
             ))}
           </select>
         </div>
+
+        {/* Custom Goal Name Input - only shows when Custom Goal is selected */}
+        {formData.goalType === "Custom Goal" && (
+          <div className="mb-4 p-4 rounded-xl border-2 border-indigo-500 bg-indigo-50 dark:bg-indigo-950/20">
+            <label className="block text-sm font-semibold text-foreground mb-2">{t('customGoalName')}</label>
+            <input 
+              type="text" 
+              value={formData.customGoalName || ""} 
+              onChange={(e) => updateField("customGoalName", e.target.value)} 
+              className="w-full p-3 rounded-xl border-2 border-border bg-background text-foreground outline-none focus:border-indigo-500 transition" 
+              placeholder={t('customGoalPlaceholder')} 
+            />
+            <p className="text-xs text-foreground/60 mt-2">{t('enterCustomGoal')}</p>
+          </div>
+        )}
         <div className="mb-4">
           <label className="block text-sm font-semibold text-foreground/70 mb-1">{t('targetAmount')}</label>
           <input type="number" value={formData.targetAmount} onChange={(e) => syncGoalCalculation("targetAmount", e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('targetPlaceholder')} />
