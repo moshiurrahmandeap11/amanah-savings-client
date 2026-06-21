@@ -15,7 +15,7 @@ import {
   Smartphone,
   Building,
   CreditCard,
-  Image,
+  Image as ImageIcon,
   Send,
   ArrowRight,
   Banknote,
@@ -30,18 +30,18 @@ const translations = {
   en: {
     // Page Title
     pageTitle: "Make a Deposit",
-    pageSubtitle: "Add funds to your savings goal",
+    pageSubtitle: "Add funds to your savings goal or circle",
     
     // Loading
-    loadingGoals: "Loading your goals...",
+    loadingGoals: "Loading your goals and circles...",
     
     // No Goals
-    noActiveGoals: "No Active Goals",
-    noActiveGoalsDesc: "You don't have any active savings goals. Create a goal first to make a deposit.",
+    noActiveGoals: "No Active Goals or Circles",
+    noActiveGoalsDesc: "You don't have any active savings goals or joined circles. Create a goal or join a circle first to make a deposit.",
     createGoal: "Create a Goal",
     
     // Form Labels
-    selectGoal: "Select Savings Goal",
+    selectGoal: "Select Goal or Circle",
     depositAmount: "Deposit Amount (BDT)",
     paymentMethod: "Payment Method",
     transactionReference: "Transaction Reference (Optional)",
@@ -68,7 +68,7 @@ const translations = {
     
     // Validation
     error: "Error",
-    selectGoalError: "Please select a savings goal",
+    selectGoalError: "Please select a savings goal or circle",
     minDepositError: "Minimum deposit amount is ৳100",
     selectPaymentError: "Please select a payment method",
     uploadScreenshotError: "Please upload transaction screenshot",
@@ -175,12 +175,13 @@ const SubmitPage = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const goalIdFromUrl = searchParams.get("goalId");
+  const circleIdFromUrl = searchParams.get("circleId");
   
-  const [goals, setGoals] = useState([]);
+  const [depositTargets, setDepositTargets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [selectedGoal, setSelectedGoal] = useState(goalIdFromUrl || "");
+  const [selectedTarget, setSelectedTarget] = useState(circleIdFromUrl ? `circle:${circleIdFromUrl}` : goalIdFromUrl ? `goal:${goalIdFromUrl}` : "");
   const [depositAmount, setDepositAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("bkash");
   const [txnReference, setTxnReference] = useState("");
@@ -207,27 +208,63 @@ const SubmitPage = () => {
 
   // Load language preference
   useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage') || 'bn';
-    setLang(savedLang);
+    const timer = setTimeout(() => {
+      const savedLang = localStorage.getItem('appLanguage') || 'bn';
+      setLang(savedLang);
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
-  // Fetch user's goals
-  const fetchGoals = async () => {
+  // Fetch user's active goals and joined circles
+  const fetchDepositTargets = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get("/goals?status=active");
-      if (response.data.success) {
-        const activeGoals = response.data.data.goals.filter(
+      const [goalsResponse, circlesResponse] = await Promise.all([
+        axiosInstance.get("/goals/my?status=active"),
+        axiosInstance.get("/circles"),
+      ]);
+
+      const activeGoals = goalsResponse.data?.success
+        ? goalsResponse.data.data.goals.filter(
           goal => goal.status === "active" && goal.currentSaved < goal.targetAmount
-        );
-        setGoals(activeGoals);
-        
-        if (!goalIdFromUrl && activeGoals.length > 0) {
-          setSelectedGoal(activeGoals[0]._id);
-        }
+        ).map((goal) => ({
+          id: String(goal._id),
+          value: `goal:${goal._id}`,
+          type: "goal",
+          name: goal.goalName,
+          purpose: goal.goalType,
+          targetAmount: Number(goal.targetAmount) || 0,
+          currentSaved: Number(goal.currentSaved) || 0,
+          progress: Number(goal.progress) || 0,
+        }))
+        : [];
+
+      const joinedCircles = circlesResponse.data?.success
+        ? (circlesResponse.data.data.circles || [])
+          .filter((circle) => circle.status === "active")
+          .map((circle) => ({
+            id: String(circle._id),
+            value: `circle:${circle._id}`,
+            type: "circle",
+            name: circle.circleName || circle.name,
+            purpose: circle.purpose,
+            targetAmount: Number(circle.targetAmount) || Number(circle.totalPoolValue) || 0,
+            currentSaved: Number(circle.totalPoolValue ?? circle.totalPool) || 0,
+            progress: circle.maxMembers
+              ? Math.min(Math.round(((Number(circle.currentMembers) || 0) / Number(circle.maxMembers)) * 100), 100)
+              : 0,
+          }))
+        : [];
+
+      const targets = [...activeGoals, ...joinedCircles];
+      setDepositTargets(targets);
+      
+      if (!selectedTarget && targets.length > 0) {
+        setSelectedTarget(targets[0].value);
       }
     } catch (error) {
-      console.error("Fetch goals error:", error);
+      console.error("Fetch deposit targets error:", error);
       if (error.response?.status === 401) {
         window.location.href = "/login";
       }
@@ -310,7 +347,7 @@ const SubmitPage = () => {
 
   const handleSubmit = async () => {
     // Validation
-    if (!selectedGoal) {
+    if (!selectedTarget) {
       Swal.fire({
         title: t('error'),
         text: t('selectGoalError'),
@@ -354,13 +391,20 @@ const SubmitPage = () => {
 
     try {
       const requestData = {
-        goalId: selectedGoal,
+        depositType: selectedTarget.split(":")[0],
         depositAmount: parseFloat(depositAmount),
         paymentMethod,
         transactionReference: txnReference || null,
         screenshotUrl: uploadedScreenshot.url,
         screenshotPublicId: uploadedScreenshot.publicId,
       };
+
+      const [, targetId] = selectedTarget.split(":");
+      if (requestData.depositType === "circle") {
+        requestData.circleId = targetId;
+      } else {
+        requestData.goalId = targetId;
+      }
 
       const response = await axiosInstance.post("/deposits", requestData);
 
@@ -397,7 +441,11 @@ const SubmitPage = () => {
   };
 
   useEffect(() => {
-    fetchGoals();
+    const timer = setTimeout(() => {
+      fetchDepositTargets();
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   if (loading) {
@@ -411,7 +459,7 @@ const SubmitPage = () => {
     );
   }
 
-  if (goals.length === 0) {
+  if (depositTargets.length === 0) {
     return (
       <div className="max-w-3xl">
         <div className="bg-card border border-border rounded-xl p-12 text-center">
@@ -431,7 +479,7 @@ const SubmitPage = () => {
     );
   }
 
-  const selectedGoalData = goals.find(g => g._id === selectedGoal);
+  const selectedTargetData = depositTargets.find(item => item.value === selectedTarget);
   
   // Update payment methods with current language
   const currentPaymentMethods = [
@@ -462,31 +510,31 @@ const SubmitPage = () => {
             <Target size={16} /> {t('selectGoal')}
           </label>
           <select
-            value={selectedGoal}
-            onChange={(e) => setSelectedGoal(e.target.value)}
+            value={selectedTarget}
+            onChange={(e) => setSelectedTarget(e.target.value)}
             className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition"
           >
-            {goals.map((goal) => (
-              <option key={goal._id} value={goal._id}>
-                {goal.goalName} — ৳{goal.targetAmount.toLocaleString()} ({t('saved')} ৳{goal.currentSaved.toLocaleString()})
+            {depositTargets.map((item) => (
+              <option key={item.value} value={item.value}>
+                [{item.type === "circle" ? "Circle" : "Goal"}] {item.name} - Tk {item.targetAmount.toLocaleString()} ({t('saved')} Tk {item.currentSaved.toLocaleString()})
               </option>
             ))}
           </select>
-          {selectedGoalData && (
+          {selectedTargetData && (
             <div className="mt-3">
               <div className="flex justify-between text-xs mb-1">
                 <span className="text-foreground/60">{t('progress')}</span>
-                <span className="text-primary font-semibold">{selectedGoalData.progress}%</span>
+                <span className="text-primary font-semibold">{selectedTargetData.progress}%</span>
               </div>
               <div className="h-2 bg-border rounded-full overflow-hidden">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-primary to-primary-light"
-                  style={{ width: `${selectedGoalData.progress}%` }}
+                  style={{ width: `${selectedTargetData.progress}%` }}
                 />
               </div>
               <div className="flex justify-between text-xs mt-2">
-                <span className="text-foreground/50">{t('saved')} ৳{selectedGoalData.currentSaved?.toLocaleString()}</span>
-                <span className="text-foreground/50">{t('target')} ৳{selectedGoalData.targetAmount?.toLocaleString()}</span>
+                <span className="text-foreground/50">{t('saved')} Tk {selectedTargetData.currentSaved?.toLocaleString()}</span>
+                <span className="text-foreground/50">{t('target')} Tk {selectedTargetData.targetAmount?.toLocaleString()}</span>
               </div>
             </div>
           )}
@@ -565,7 +613,7 @@ const SubmitPage = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-foreground/60">{t('reference')}</span>
-              <strong className="text-primary">{selectedGoalData?.goalName?.toUpperCase().replace(/ /g, "-") || "GOAL"}-DEPOSIT</strong>
+              <strong className="text-primary">{selectedTargetData?.name?.toUpperCase().replace(/ /g, "-") || "SAVINGS"}-DEPOSIT</strong>
             </div>
           </div>
         </div>
@@ -573,7 +621,7 @@ const SubmitPage = () => {
         {/* Screenshot Upload */}
         <div className="mb-5">
           <label className="block text-sm font-semibold text-foreground/70 mb-2 flex items-center gap-2">
-            <Image size={16} /> {t('transactionScreenshot')}
+            <ImageIcon size={16} /> {t('transactionScreenshot')}
           </label>
           {!screenshotPreview ? (
             <div
