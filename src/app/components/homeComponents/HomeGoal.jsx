@@ -13,7 +13,8 @@ import {
   Gem,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import axiosInstance from "../shared/AxiosInstance/AxiosInstance";
 
 // Translations
 const translations = {
@@ -108,13 +109,71 @@ const translations = {
   }
 };
 
-const HomeGoal = () => {
-  const [language, setLanguage] = useState('en');
+const circleIcons = [Gem, Landmark, Shield, GraduationCap, Laptop, Briefcase];
+const circleAccents = ["#f472b6", "#10b981", "#f59e0b", "#8b5cf6", "#3b82f6", "#06b6d4"];
 
-  // Get language from localStorage
+const formatCurrency = (amount) => {
+  const value = Number(amount) || 0;
+  return `৳${value.toLocaleString("en-BD")}`;
+};
+
+const normalizeCircle = (circle, index) => {
+  const members = Number(circle.members ?? circle.currentMembers) || 0;
+  const maxMembers = Number(circle.maxMembers) || members || 1;
+  const minDeposit = Number(circle.minDeposit) || 0;
+  const maxDeposit = Number(circle.maxDeposit ?? circle.targetAmount) || 0;
+  const duration = Number(circle.durationInMonths ?? circle.duration) || 0;
+  const progress = Math.max(0, Math.min(Math.round((members / maxMembers) * 100), 100));
+
+  return {
+    id: circle._id || circle.id || `${circle.circleName || circle.name}-${index}`,
+    Icon: circleIcons[index % circleIcons.length],
+    name: circle.circleName || circle.name || "Public Circle",
+    members: `${members.toLocaleString("en-BD")}/${maxMembers.toLocaleString("en-BD")} members`,
+    amount: maxDeposit && maxDeposit !== minDeposit
+      ? `${formatCurrency(minDeposit)} - ${formatCurrency(maxDeposit)}/mo`
+      : `${formatCurrency(minDeposit)}/mo`,
+    period: duration ? `${duration} months` : circle.purpose || "Public circle",
+    progress,
+    accent: circleAccents[index % circleAccents.length],
+  };
+};
+
+const HomeGoal = () => {
+  const [language] = useState(() => {
+    if (typeof window === "undefined") return "en";
+    return localStorage.getItem("appLanguage") || "en";
+  });
+  const [circles, setCircles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
   useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage') || 'en';
-    setLanguage(savedLang);
+    let isMounted = true;
+
+    const fetchPublicCircles = async () => {
+      setLoading(true);
+      setLoadError("");
+
+      try {
+        const response = await axiosInstance.get("/circles/public", {
+          params: { limit: 6 },
+        });
+        if (isMounted) setCircles(response.data?.data?.circles || []);
+      } catch (error) {
+        console.error("Fetch home circles error:", error);
+        if (isMounted) setLoadError(error.response?.data?.message || "Failed to load public circles");
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    const timer = setTimeout(fetchPublicCircles, 0);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
   }, []);
 
   // Translation function
@@ -122,63 +181,7 @@ const HomeGoal = () => {
     return translations[language]?.[key] || translations.en[key] || key;
   };
 
-  // Get goals with translations
-  const goals = [
-    {
-      Icon: Gem,
-      name: t('goal1Name'),
-      members: t('goal1Members'),
-      amount: t('goal1Amount'),
-      period: t('goal1Period'),
-      progress: 68,
-      accent: "#f472b6",
-    },
-    {
-      Icon: Landmark,
-      name: t('goal2Name'),
-      members: t('goal2Members'),
-      amount: t('goal2Amount'),
-      period: t('goal2Period'),
-      progress: 42,
-      accent: "#10b981",
-    },
-    {
-      Icon: Shield,
-      name: t('goal3Name'),
-      members: t('goal3Members'),
-      amount: t('goal3Amount'),
-      period: t('goal3Period'),
-      progress: 55,
-      accent: "#f59e0b",
-    },
-    {
-      Icon: GraduationCap,
-      name: t('goal4Name'),
-      members: t('goal4Members'),
-      amount: t('goal4Amount'),
-      period: t('goal4Period'),
-      progress: 38,
-      accent: "#8b5cf6",
-    },
-    {
-      Icon: Laptop,
-      name: t('goal5Name'),
-      members: t('goal5Members'),
-      amount: t('goal5Amount'),
-      period: t('goal5Period'),
-      progress: 74,
-      accent: "#3b82f6",
-    },
-    {
-      Icon: Briefcase,
-      name: t('goal6Name'),
-      members: t('goal6Members'),
-      amount: t('goal6Amount'),
-      period: t('goal6Period'),
-      progress: 28,
-      accent: "#06b6d4",
-    },
-  ];
+  const goals = useMemo(() => circles.map(normalizeCircle), [circles]);
 
   return (
     <section
@@ -200,11 +203,25 @@ const HomeGoal = () => {
           {t('sectionDesc')}
         </p>
 
-        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {goals.map((goal, index) => (
-            <GoalCard key={goal.name} goal={goal} index={index} language={language} t={t} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="mt-12 rounded-[20px] border border-[#e2e8f0] bg-white p-8 text-sm font-semibold text-[#475569] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]">
+            Loading public circles...
+          </div>
+        ) : loadError ? (
+          <div className="mt-12 rounded-[20px] border border-red-200 bg-red-50 p-8 text-sm font-semibold text-red-600 dark:border-red-900/50 dark:bg-red-950/30">
+            {loadError}
+          </div>
+        ) : goals.length === 0 ? (
+          <div className="mt-12 rounded-[20px] border border-[#e2e8f0] bg-white p-8 text-sm font-semibold text-[#475569] dark:border-[#1e2d3d] dark:bg-[#1a2235] dark:text-[#94a3b8]">
+            No public circles available right now.
+          </div>
+        ) : (
+          <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {goals.map((goal, index) => (
+              <GoalCard key={goal.id} goal={goal} index={index} t={t} />
+            ))}
+          </div>
+        )}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -226,7 +243,7 @@ const HomeGoal = () => {
   );
 };
 
-const GoalCard = ({ goal, index, language, t }) => {
+const GoalCard = ({ goal, index, t }) => {
   const { Icon } = goal;
 
   return (
@@ -278,7 +295,7 @@ const GoalCard = ({ goal, index, language, t }) => {
 
       <div className="relative mt-3.5">
         <Link
-          href="/register"
+          href="/goals"
           className="inline-flex w-full items-center justify-center gap-1.5 rounded-[10px] border border-[#059669]/20 bg-[#059669]/[0.08] px-4 py-2.5 text-[13px] font-semibold text-[#059669] transition-all duration-200 hover:border-transparent hover:bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] hover:text-white"
         >
           {t('joinCircleBtn')}
