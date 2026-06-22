@@ -7,6 +7,12 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+const getAuthHeaders = () => {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // Translations
 const translations = {
   en: {
@@ -163,8 +169,14 @@ const translations = {
 
 const AutoSavePage = () => {
   const router = useRouter();
-  const [isDark, setIsDark] = useState(false);
-  const [lang, setLang] = useState("bn");
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("theme") === "dark";
+  });
+  const [lang, setLang] = useState(() => {
+    if (typeof window === "undefined") return "bn";
+    return localStorage.getItem("appLanguage") || "bn";
+  });
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selGoal, setSelGoal] = useState("");
@@ -173,7 +185,11 @@ const AutoSavePage = () => {
   const [selDate, setSelDate] = useState(1);
   const [selMethod, setSelMethod] = useState("bkash");
   const [amount, setAmount] = useState("");
-  const [startDate, setStartDate] = useState("");
+  const [startDate, setStartDate] = useState(() => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().slice(0, 10);
+  });
   const [showModal, setShowModal] = useState(false);
   const [goals, setGoals] = useState([]);
   const [activeRules, setActiveRules] = useState([]);
@@ -193,7 +209,9 @@ const AutoSavePage = () => {
   // Fetch user's goals
   const fetchGoals = async () => {
     try {
-      const response = await axiosInstance.get("/goals?status=active");
+      const response = await axiosInstance.get("/goals/my?status=active", {
+        headers: getAuthHeaders(),
+      });
       if (response.data.success) {
         const activeGoals = response.data.data.goals.filter(
           goal => goal.status === "active"
@@ -214,7 +232,9 @@ const AutoSavePage = () => {
   // Fetch auto-save rules
   const fetchAutoSaveRules = async () => {
     try {
-      const response = await axiosInstance.get("/auto-save");
+      const response = await axiosInstance.get("/auto-save", {
+        headers: getAuthHeaders(),
+      });
       if (response.data.success) {
         setActiveRules(response.data.data.rules);
         setStatistics(response.data.data.statistics);
@@ -233,17 +253,9 @@ const AutoSavePage = () => {
     };
     init();
 
-    const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
-    if (savedTheme === "dark") document.documentElement.classList.add("dark");
-
-    const today = new Date();
-    today.setDate(today.getDate() + 1);
-    setStartDate(today.toISOString().slice(0, 10));
-
-    // Get language from localStorage
-    const savedLang = localStorage.getItem('appLanguage') || 'bn';
-    setLang(savedLang);
+    if (localStorage.getItem("theme") === "dark") {
+      document.documentElement.classList.add("dark");
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -268,10 +280,14 @@ const AutoSavePage = () => {
   const toggleRule = async (ruleId, isActive) => {
     try {
       if (isActive) {
-        await axiosInstance.patch(`/auto-save/${ruleId}/resume`);
+        await axiosInstance.patch(`/auto-save/${ruleId}/resume`, null, {
+          headers: getAuthHeaders(),
+        });
         showToast(t('autoSaveEnabledToast'), "success");
       } else {
-        await axiosInstance.patch(`/auto-save/${ruleId}/pause`);
+        await axiosInstance.patch(`/auto-save/${ruleId}/pause`, null, {
+          headers: getAuthHeaders(),
+        });
         showToast(t('autoSavePaused'), "success");
       }
       await fetchAutoSaveRules();
@@ -360,7 +376,9 @@ const AutoSavePage = () => {
         requestData.monthlyDate = selDate;
       }
 
-      const response = await axiosInstance.post("/auto-save", requestData);
+      const response = await axiosInstance.post("/auto-save", requestData, {
+        headers: getAuthHeaders(),
+      });
 
       if (response.data.success) {
         setShowModal(true);
