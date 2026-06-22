@@ -48,7 +48,7 @@ const AdminLayout = ({ children }) => {
             sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
           }`}
         >
-          <AdminSidebar closeSidebar={() => setSidebarOpen(false)} />
+          <AdminSidebar closeSidebar={() => setSidebarOpen(false)} isDark={isDark} />
         </div>
 
         {/* Main Content */}
@@ -58,7 +58,7 @@ const AdminLayout = ({ children }) => {
             toggleTheme={toggleTheme}
             isDark={isDark}
           />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto admin-main-scroll">
             {children}
           </main>
         </div>

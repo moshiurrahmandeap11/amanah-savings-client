@@ -15,7 +15,7 @@ import {
 import Link from "next/link";
 import useSocket from "../../../hooks/useSocket";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
-import LanguageSwitcher from "../../shared/LanguageSwitcher";
+import LanguageSwitcher from "../AdminLanguageSwitcher";
 
 // Translations
 const translations = {

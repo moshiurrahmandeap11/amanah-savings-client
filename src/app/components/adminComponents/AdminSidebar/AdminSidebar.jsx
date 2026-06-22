@@ -132,9 +132,8 @@ const getInitialTheme = () => {
   return localStorage.getItem("theme") === "dark";
 };
 
-const AdminSidebar = ({ closeSidebar }) => {
+const AdminSidebar = ({ closeSidebar, isDark }) => {
   const pathname = usePathname();
-  const [isDark, setIsDark] = useState(getInitialTheme);
   const [currentLang, setCurrentLang] = useState(getInitialAdminLang);
   const [langLoaded] = useState(true);
 
@@ -147,7 +146,7 @@ const AdminSidebar = ({ closeSidebar }) => {
     return text;
   };
 
-  // ল্যাঙ্গুয়েজ চেঞ্জ শুনতে localStorage এ event listener
+  // Language change listener
   useEffect(() => {
     const handleStorageChange = (e) => {
       if (e.key === "admin_lang") {
@@ -155,7 +154,6 @@ const AdminSidebar = ({ closeSidebar }) => {
       }
     };
 
-    // কাস্টম ইভেন্ট শুনুন (যদি অন্য কোনো কম্পোনেন্ট থেকে ল্যাঙ্গুয়েজ চেইঞ্জ হয়)
     const handleLangChange = (e) => {
       setCurrentLang(e.detail || "en");
     };
@@ -391,7 +389,7 @@ const AdminSidebar = ({ closeSidebar }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4">
+      <nav className="flex-1 overflow-y-auto py-4 admin-sidebar-scroll">
         {navItems.map((section, idx) => (
           <div key={idx}>
             <div className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider ${
