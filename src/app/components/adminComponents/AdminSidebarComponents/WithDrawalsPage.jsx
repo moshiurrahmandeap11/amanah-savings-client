@@ -261,10 +261,16 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
     document.documentElement.classList.toggle("dark", newTheme);
   };
 
-  const approveTransaction = async (id) => {
+  const getTransactionActionBasePath = (transaction) => {
+    const id = transaction?.id || transaction?._id;
+    const type = transaction?.type === "withdrawal" ? "withdrawals" : "deposits";
+    return `/${type}/${id}`;
+  };
+
+  const approveTransaction = async (transaction) => {
     try {
       const res = await axiosInstance.patch(
-        `/admin/deposits/${id}/approve`,
+        `${getTransactionActionBasePath(transaction)}/approve`,
         {},
         { headers: getAuthHeaders() }
       );
@@ -277,11 +283,11 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
     }
   };
 
-  const rejectTransaction = async (id) => {
+  const rejectTransaction = async (transaction) => {
     try {
       const res = await axiosInstance.patch(
-        `/admin/deposits/${id}/reject`,
-        {},
+        `${getTransactionActionBasePath(transaction)}/reject`,
+        { remarks: noteText || "Rejected by admin" },
         { headers: getAuthHeaders() }
       );
       if (res.data.success) {
@@ -630,13 +636,13 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
                 {tx.status === "pending" && (
                   <>
                     <button
-                      onClick={() => approveTransaction(tx.id || tx._id)}
+                      onClick={() => approveTransaction(tx)}
                       className="flex-1 py-2 rounded-lg border border-green-500/30 bg-green-500/10 text-green-500 text-xs font-bold hover:bg-green-500/20 transition"
                     >
                       ✅ {t('approve')}
                     </button>
                     <button
-                      onClick={() => rejectTransaction(tx.id || tx._id)}
+                      onClick={() => rejectTransaction(tx)}
                       className="flex-1 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition"
                     >
                       ❌ {t('reject')}
