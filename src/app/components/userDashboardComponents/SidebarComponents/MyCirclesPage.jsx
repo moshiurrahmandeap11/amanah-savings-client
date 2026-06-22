@@ -53,6 +53,8 @@ const translations = {
     creating: "Creating...",
     joined: "Joined!",
     join: "Join",
+    pending: "Pending",
+    joinRequestPending: "Join request pending admin approval",
     
     // Empty State
     noCircles: "No Circles Yet",
@@ -166,6 +168,8 @@ const translations = {
     creating: "তৈরি হচ্ছে...",
     joined: "যোগ দিয়েছেন!",
     join: "যোগ দিন",
+    pending: "পেন্ডিং",
+    joinRequestPending: "যোগদানের অনুরোধ অ্যাডমিন অনুমোদনের অপেক্ষায় আছে",
     
     // Empty State
     noCircles: "কোন সার্কেল নেই",
@@ -267,6 +271,12 @@ const translations = {
   }
 };
 
+const getAuthHeaders = () => {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 const MyCirclesPage = () => {
   const [showCircleModal, setShowCircleModal] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
@@ -366,7 +376,8 @@ const MyCirclesPage = () => {
   const fetchPublicCircles = async () => {
     try {
       const response = await axiosInstance.get("/circles/public", {
-        params: { purpose: selectedPurpose }
+        params: { purpose: selectedPurpose },
+        headers: getAuthHeaders(),
       });
       if (response.data.success) {
         setPublicCircles(response.data.data.circles || []);
@@ -493,14 +504,23 @@ const MyCirclesPage = () => {
         const response = await axiosInstance.post(`/circles/${circleId}/join`);
         
         if (response.data.success) {
+          const isPending = response.data.data?.status === "pending";
           Swal.fire({
-            title: t('joined'),
-            text: t('joinedSuccess'),
-            icon: "success",
+            title: isPending ? t('pending') : t('joined'),
+            text: isPending ? t('joinRequestPending') : t('joinedSuccess'),
+            icon: isPending ? "info" : "success",
             confirmButtonColor: "#059669",
             timer: 1500,
             showConfirmButton: false,
           });
+
+          setPublicCircles((current) =>
+            current.map((circle) =>
+              circle._id === circleId
+                ? { ...circle, isPending: isPending || circle.isPending, isMember: !isPending || circle.isMember }
+                : circle
+            )
+          );
           
           await fetchUserCircles();
           await fetchPublicCircles();
@@ -1209,14 +1229,16 @@ const MyCirclesPage = () => {
                           </div>
                           <button
                             onClick={() => joinCircle(circle._id)}
-                            disabled={circle.isMember}
+                            disabled={circle.isMember || circle.isPending}
                             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
                               circle.isMember
                                 ? "bg-emerald-100 text-emerald-700 cursor-default"
+                                : circle.isPending
+                                ? "bg-amber-100 text-amber-700 cursor-default"
                                 : "bg-primary text-white hover:opacity-90"
                             }`}
                           >
-                            {circle.isMember ? t('joined') : t('join')}
+                            {circle.isMember ? t('joined') : circle.isPending ? t('pending') : t('join')}
                           </button>
                         </div>
                         <div className="grid grid-cols-1 min-[380px]:grid-cols-3 gap-2 text-center text-xs">
@@ -1237,6 +1259,11 @@ const MyCirclesPage = () => {
                           <p className="text-xs text-foreground/60 mt-2 line-clamp-2">
                             {circle.description}
                           </p>
+                        )}
+                        {circle.isPending && (
+                          <div className="mt-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-700">
+                            {t('joinRequestPending')}
+                          </div>
                         )}
                       </motion.div>
                     ))}
