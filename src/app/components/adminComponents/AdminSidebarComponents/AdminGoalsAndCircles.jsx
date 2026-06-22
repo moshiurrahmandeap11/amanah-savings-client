@@ -646,19 +646,27 @@ function DetailsModal({ type, item, onClose }) {
                 <table className="min-w-full divide-y divide-slate-200 text-sm">
                   <thead className="bg-slate-50 text-left text-xs font-black uppercase tracking-wide text-slate-500">
                     <tr>
-                      <th className="px-3 py-2">User ID</th>
+                      <th className="px-3 py-2">Name</th>
+                      <th className="px-3 py-2">Phone</th>
+                      <th className="px-3 py-2">Email</th>
                       <th className="px-3 py-2">Role</th>
                       <th className="px-3 py-2">Joined</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {members.slice(0, 12).map((member, index) => (
-                      <tr key={`${member.userId || index}`}>
-                        <td className="px-3 py-2 font-semibold text-slate-700">{String(member.userId || "N/A")}</td>
-                        <td className="px-3 py-2 text-slate-500">{member.role || "member"}</td>
-                        <td className="px-3 py-2 text-slate-500">{formatDate(member.joinedAt || member.createdAt)}</td>
-                      </tr>
-                    ))}
+                    {members.slice(0, 12).map((member, index) => {
+                      const user = member.user || {};
+                      const name = user.fullName || `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Unknown";
+                      return (
+                        <tr key={`${member.userId || index}`}>
+                          <td className="px-3 py-2 font-semibold text-slate-700">{name}</td>
+                          <td className="px-3 py-2 text-slate-500">{user.phone || "N/A"}</td>
+                          <td className="px-3 py-2 text-slate-500">{user.email || "N/A"}</td>
+                          <td className="px-3 py-2 text-slate-500">{member.role || "member"}</td>
+                          <td className="px-3 py-2 text-slate-500">{formatDate(member.joinedAt || member.createdAt)}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
