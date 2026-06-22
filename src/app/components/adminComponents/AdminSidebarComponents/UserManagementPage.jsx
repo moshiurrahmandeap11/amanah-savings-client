@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -258,6 +258,7 @@ const UserManagementPage = () => {
     itemsPerPage: 20,
   });
   const [lang, setLang] = useState("bn");
+  const initialLoadDone = useRef(false);
 
   // Details modal state
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -266,13 +267,13 @@ const UserManagementPage = () => {
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsTab, setDetailsTab] = useState("overview");
 
-  // Load language preference
+  // Load language preference once
   useEffect(() => {
     const savedLang = localStorage.getItem("admin_lang") || "bn";
-    if (savedLang !== lang) setLang(savedLang);
+    setLang(savedLang);
   }, []);
 
-  const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
+  const t = useCallback((key) => translations[lang]?.[key] || translations.en[key] || key, [lang]);
 
   const filters = ["All", "Active", "Pending KYC", "Flagged", "Suspended"];
 
@@ -312,20 +313,29 @@ const UserManagementPage = () => {
     setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
   }, []);
 
+  const searchQueryRef = useRef(searchQuery);
+  const activeFilterRef = useRef(activeFilter);
+
+  useEffect(() => { searchQueryRef.current = searchQuery; }, [searchQuery]);
+  useEffect(() => { activeFilterRef.current = activeFilter; }, [activeFilter]);
+
   const fetchUsers = useCallback(async (page = 1) => {
     setLoading(true);
     try {
+      const currentFilter = activeFilterRef.current;
+      const currentSearch = searchQueryRef.current;
+
       let status = "";
       let kycStatus = "";
-      if (activeFilter === "Active") status = "active";
-      else if (activeFilter === "Suspended") status = "suspended";
-      else if (activeFilter === "Flagged") status = "banned";
-      else if (activeFilter === "Pending KYC") kycStatus = "pending";
+      if (currentFilter === "Active") status = "active";
+      else if (currentFilter === "Suspended") status = "suspended";
+      else if (currentFilter === "Flagged") status = "banned";
+      else if (currentFilter === "Pending KYC") kycStatus = "pending";
 
       const params = new URLSearchParams();
       params.append("page", page);
       params.append("limit", 20);
-      if (searchQuery) params.append("search", searchQuery);
+      if (currentSearch) params.append("search", currentSearch);
       if (status) params.append("status", status);
       if (kycStatus) params.append("kycStatus", kycStatus);
 
@@ -338,15 +348,17 @@ const UserManagementPage = () => {
         setPagination(res.data.data.pagination);
       }
     } catch (err) {
-      showToastMessage(err.response?.data?.message || t('actionFailed'), "error");
+      showToastMessage(err.response?.data?.message || "Action failed", "error");
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, searchQuery, lang, showToastMessage, t]);
+  }, [showToastMessage]);
 
+  // Initial load only
   useEffect(() => {
     fetchUsers(1);
-  }, [fetchUsers]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateUserStatus = async (userId, updates) => {
     try {
