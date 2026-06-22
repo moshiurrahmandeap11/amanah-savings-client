@@ -6,6 +6,12 @@ import Link from "next/link";
 import { Loader2, Trophy, TrendingUp, Users, Calendar, Award, Medal, Star, Flame, Crown, ChevronUp, ChevronDown } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
+const getAuthHeaders = () => {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // Translations
 const translations = {
   en: {
@@ -130,18 +136,15 @@ const LeaderboardPage = () => {
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear()
   });
-  const [lang, setLang] = useState("en");
+  const [lang, setLang] = useState(() => {
+    if (typeof window === "undefined") return "en";
+    return localStorage.getItem("appLanguage") || "en";
+  });
 
   // Translation function
   const t = (key) => {
     return translations[lang]?.[key] || translations.en[key] || key;
   };
-
-  // Get language from localStorage
-  useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage') || 'en';
-    setLang(savedLang);
-  }, []);
 
   // Fetch leaderboard data
   const fetchLeaderboard = async (type) => {
@@ -149,9 +152,13 @@ const LeaderboardPage = () => {
     try {
       let response;
       if (type === "monthly") {
-        response = await axiosInstance.get("/leaderboard/monthly");
+        response = await axiosInstance.get("/leaderboard/monthly", {
+          headers: getAuthHeaders(),
+        });
       } else {
-        response = await axiosInstance.get("/leaderboard/all-time");
+        response = await axiosInstance.get("/leaderboard/all-time", {
+          headers: getAuthHeaders(),
+        });
       }
       
       if (response.data.success) {
@@ -170,7 +177,11 @@ const LeaderboardPage = () => {
   };
 
   useEffect(() => {
-    fetchLeaderboard(activeTab);
+    const timeoutId = window.setTimeout(() => {
+      fetchLeaderboard(activeTab);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [activeTab]);
 
   const getMonthName = (month) => {
@@ -207,8 +218,12 @@ const LeaderboardPage = () => {
     );
   }
 
-  const topThree = leaderboardData.slice(0, 3);
-  const restLeaderboard = leaderboardData.slice(3);
+  const hasPodium = leaderboardData.length >= 3;
+  const topThree = hasPodium ? leaderboardData.slice(0, 3) : [];
+  const listLeaderboard = hasPodium ? leaderboardData.slice(3) : leaderboardData;
+  const topPercent = userRank && statistics.totalSavers > 0
+    ? (userRank.percentile || ((userRank.position / statistics.totalSavers) * 100).toFixed(1))
+    : "0.0";
 
   return (
     <div className="max-w-full mx-auto">
@@ -279,7 +294,7 @@ const LeaderboardPage = () => {
       </div>
 
       {/* Top 3 Podium */}
-      {topThree.length >= 3 && (
+      {hasPodium && (
         <div className="grid grid-cols-3 gap-4 mb-8">
           {/* 2nd Place */}
           <div className="flex flex-col items-center">
@@ -340,7 +355,7 @@ const LeaderboardPage = () => {
             {activeTab === "monthly" && userRank.tier && ` · ${t('tier')}: ${userRank.tier}`}
           </div>
           <div className="text-xs opacity-75 mt-2">
-            {t('topPercent').replace('{percent}', userRank.percentile || ((userRank.position / statistics.totalSavers) * 100).toFixed(1))}
+            {t('topPercent').replace('{percent}', topPercent)}
           </div>
         </div>
       )}
@@ -357,7 +372,7 @@ const LeaderboardPage = () => {
         </div>
 
         <div className="divide-y divide-border">
-          {restLeaderboard.map((user, idx) => (
+          {listLeaderboard.map((user, idx) => (
             <motion.div
               key={user.userId || idx}
               initial={{ opacity: 0, x: -20 }}
@@ -369,7 +384,7 @@ const LeaderboardPage = () => {
               }`}
             >
               <div className="col-span-1 flex items-center">
-                <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${getRankBadge(user.rank)}`}>
+                <span className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${getRankBadge(user.rankNumber)}`}>
                   {user.rank}
                 </span>
               </div>
