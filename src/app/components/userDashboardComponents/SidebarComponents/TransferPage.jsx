@@ -7,6 +7,12 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
 
+const getAuthHeaders = () => {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // Translations
 const translations = {
   en: {
@@ -120,8 +126,14 @@ const TransferPage = () => {
   const [activeStep, setActiveStep] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
-  const [isDark, setIsDark] = useState(false);
-  const [lang, setLang] = useState("bn");
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("theme") === "dark";
+  });
+  const [lang, setLang] = useState(() => {
+    if (typeof window === "undefined") return "bn";
+    return localStorage.getItem("appLanguage") || "bn";
+  });
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -131,7 +143,9 @@ const TransferPage = () => {
 
   const fetchGoals = async () => {
     try {
-      const response = await axiosInstance.get("/goals?status=active");
+      const response = await axiosInstance.get("/goals/my?status=active", {
+        headers: getAuthHeaders(),
+      });
       if (response.data.success) {
         const activeGoals = response.data.data.goals.filter(
           goal => goal.status === "active"
@@ -152,12 +166,14 @@ const TransferPage = () => {
   };
 
   useEffect(() => {
-    fetchGoals();
     const savedTheme = localStorage.getItem("theme");
-    setIsDark(savedTheme === "dark");
     if (savedTheme === "dark") document.documentElement.classList.add("dark");
-    const savedLang = localStorage.getItem('appLanguage') || 'bn';
-    setLang(savedLang);
+
+    const timeoutId = window.setTimeout(() => {
+      fetchGoals();
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, []);
 
   const showToast = (message, type = "error") => {
@@ -224,7 +240,10 @@ const TransferPage = () => {
       for (const phone of uniquePhones) {
         if (phone.length < 10 || phone.length > 11) continue;
         try {
-          const response = await axiosInstance.get(`/transfers/search-user?phone=${phone}`);
+          const response = await axiosInstance.get(
+            `/transfers/search-user?phone=${encodeURIComponent(phone)}`,
+            { headers: getAuthHeaders() }
+          );
           if (response.data.success) {
             setRecipientData(response.data.data);
             setRecipientFound(true);
@@ -296,6 +315,8 @@ const TransferPage = () => {
           toGoalId: selTo,
           amount: amt,
           note: note || null,
+        }, {
+          headers: getAuthHeaders(),
         });
       } else {
         const phoneToSend = recipientData?.phone || formatPhoneForSearch(recipientPhone);
@@ -304,6 +325,8 @@ const TransferPage = () => {
           amount: amt,
           note: note || null,
           fromGoalId: selFrom,
+        }, {
+          headers: getAuthHeaders(),
         });
       }
 
