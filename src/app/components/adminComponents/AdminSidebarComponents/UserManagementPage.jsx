@@ -324,7 +324,7 @@ const UserManagementPage = () => {
 
       const params = new URLSearchParams();
       params.append("page", page);
-      params.append("limit", pagination.itemsPerPage);
+      params.append("limit", 20);
       if (searchQuery) params.append("search", searchQuery);
       if (status) params.append("status", status);
       if (kycStatus) params.append("kycStatus", kycStatus);
@@ -342,7 +342,7 @@ const UserManagementPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, searchQuery, pagination.itemsPerPage, lang, showToastMessage, t]);
+  }, [activeFilter, searchQuery, lang, showToastMessage, t]);
 
   useEffect(() => {
     fetchUsers(1);
