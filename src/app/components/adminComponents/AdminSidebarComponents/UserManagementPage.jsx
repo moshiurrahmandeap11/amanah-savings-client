@@ -319,11 +319,11 @@ const UserManagementPage = () => {
   useEffect(() => { searchQueryRef.current = searchQuery; }, [searchQuery]);
   useEffect(() => { activeFilterRef.current = activeFilter; }, [activeFilter]);
 
-  const fetchUsers = useCallback(async (page = 1) => {
+  const fetchUsers = useCallback(async (page = 1, filterOverride, searchOverride) => {
     setLoading(true);
     try {
-      const currentFilter = activeFilterRef.current;
-      const currentSearch = searchQueryRef.current;
+      const currentFilter = filterOverride !== undefined ? filterOverride : activeFilterRef.current;
+      const currentSearch = searchOverride !== undefined ? searchOverride : searchQueryRef.current;
 
       let status = "";
       let kycStatus = "";
@@ -512,14 +512,25 @@ const UserManagementPage = () => {
     document.body.style.overflow = "hidden";
 
     try {
-      const res = await axiosInstance.get(`/admin/users/${user.id}`, {
+      const userId = user?.id || user?._id;
+      if (!userId) {
+        showToastMessage("Invalid user ID", "error");
+        setDetailsLoading(false);
+        return;
+      }
+      
+      const res = await axiosInstance.get(`/admin/users/${userId}`, {
         headers: getAuthHeaders(),
       });
       if (res.data.success) {
         setDetailsData(res.data.data);
+      } else {
+        showToastMessage(res.data.message || "Failed to load user details", "error");
       }
     } catch (err) {
-      showToastMessage(err.response?.data?.message || t('actionFailed'), "error");
+      const status = err.response?.status;
+      const message = err.response?.data?.message || "Failed to load user details";
+      showToastMessage(`Error ${status ? `(${status})` : ""}: ${message}`, "error");
     } finally {
       setDetailsLoading(false);
     }
@@ -693,7 +704,7 @@ const UserManagementPage = () => {
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && fetchUsers(1)}
+            onKeyDown={(e) => e.key === "Enter" && fetchUsers(1, undefined, searchQuery)}
             className="flex-1 bg-transparent outline-none text-sm text-foreground"
           />
         </div>
@@ -702,7 +713,7 @@ const UserManagementPage = () => {
           {["All", "Active", "Pending KYC", "Flagged", "Suspended"].map((filter) => (
             <button
               key={filter}
-              onClick={() => { setActiveFilter(filter); fetchUsers(1); }}
+              onClick={() => { setActiveFilter(filter); fetchUsers(1, filter); }}
               className={`px-4 py-1.5 rounded-lg text-xs font-semibold border transition-all duration-300 ${
                 activeFilter === filter
                   ? "bg-gradient-to-r from-primary to-primary-light text-white border-primary shadow-lg shadow-primary/20"
