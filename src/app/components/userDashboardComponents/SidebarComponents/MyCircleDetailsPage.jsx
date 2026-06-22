@@ -77,6 +77,7 @@ const translations = {
     copied: "Copied!",
     leaveCircle: "Leave Circle",
     joinCircle: "Join Circle",
+    joinedBadge: "Joined",
     makeDeposit: "Make a Deposit",
     
     // Modals
@@ -156,6 +157,7 @@ const translations = {
     copied: "কপি করা হয়েছে!",
     leaveCircle: "সার্কেল ছেড়ে দিন",
     joinCircle: "সার্কেলে যোগ দিন",
+    joinedBadge: "যোগ দিয়েছেন",
     makeDeposit: "জমা দিন",
     
     // Modals
@@ -497,6 +499,12 @@ const MyCircleDetailsPage = () => {
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-primary/5 text-foreground/70 capitalize">
                   {circlePurpose}
                 </span>
+                {isMember && (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
+                    <Check size={14} />
+                    {t('joinedBadge')}
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -713,7 +721,10 @@ const MyCircleDetailsPage = () => {
                   memberRole = member.role || "member";
                   memberDeposited = member.totalDeposited || 0;
                   
-                  if (member.userId) {
+                  if (member.user) {
+                    memberName = member.user.fullName || `${member.user.firstName || ""} ${member.user.lastName || ""}`.trim() || `Member ${idx + 1}`;
+                    memberEmail = member.user.email || "";
+                  } else if (member.userId) {
                     if (typeof member.userId === 'object' && member.userId !== null) {
                       memberName = member.userId.name || member.userId.fullName || member.userId.username || `Member ${idx + 1}`;
                       memberEmail = member.userId.email || "";

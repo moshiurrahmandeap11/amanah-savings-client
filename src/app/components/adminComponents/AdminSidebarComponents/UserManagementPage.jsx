@@ -12,6 +12,28 @@ import {
   Ban,
   Loader2,
   Save,
+  Activity,
+  Target,
+  Wallet,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Repeat,
+  Users,
+  LogIn,
+  X,
+  ChevronRight,
+  TrendingUp,
+  CircleDollarSign,
+  ShieldCheck,
+  Clock,
+  AlertCircle,
+  MapPin,
+  Phone,
+  Mail,
+  Calendar,
+  Award,
+  Crown,
+  User,
 } from "lucide-react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
@@ -58,6 +80,56 @@ const translations = {
     banConfirm: "Ban user permanently?",
     kycApproved: "KYC approved successfully",
     actionFailed: "Action failed",
+    details: "Details",
+    userDetails: "User Details",
+    close: "Close",
+    goals: "Goals",
+    deposits: "Deposits",
+    withdrawals: "Withdrawals",
+    transactions: "Transactions",
+    circles: "Circles",
+    loginHistory: "Login History",
+    overview: "Overview",
+    noData: "No data found",
+    amount: "Amount",
+    method: "Method",
+    date: "Date",
+    goalName: "Goal Name",
+    targetAmount: "Target",
+    currentAmount: "Saved",
+    progress: "Progress",
+    goalType: "Type",
+    circleName: "Circle Name",
+    purpose: "Purpose",
+    circleType: "Type",
+    members: "Members",
+    role: "Role",
+    ip: "IP",
+    device: "Device",
+    location: "Location",
+    success: "Success",
+    failed: "Failed",
+    transferType: "Type",
+    from: "From",
+    to: "To",
+    note: "Note",
+    admin: "Admin",
+    memberRole: "Member",
+    loadingDetails: "Loading details...",
+    personalInfo: "Personal Info",
+    fullName: "Full Name",
+    email: "Email",
+    dob: "Date of Birth",
+    gender: "Gender",
+    occupation: "Occupation",
+    income: "Income",
+    address: "Address",
+    district: "District",
+    upazila: "Upazila",
+    village: "Village",
+    postOffice: "Post Office",
+    postCode: "Post Code",
+    recentActivity: "Recent Activity",
   },
   bn: {
     userManagement: "👥 ইউজার ম্যানেজমেন্ট",
@@ -98,6 +170,56 @@ const translations = {
     banConfirm: "ইউজারকে স্থায়ীভাবে ব্যান করবেন?",
     kycApproved: "কেওয়াইসি অনুমোদিত হয়েছে",
     actionFailed: "অ্যাকশন ব্যর্থ হয়েছে",
+    details: "বিস্তারিত",
+    userDetails: "ইউজার বিবরণ",
+    close: "বন্ধ",
+    goals: "গোলস",
+    deposits: "ডিপোজিটস",
+    withdrawals: "উত্তোলন",
+    transactions: "লেনদেন",
+    circles: "সার্কেলস",
+    loginHistory: "লগইন ইতিহাস",
+    overview: "ওভারভিউ",
+    noData: "কোনো ডেটা পাওয়া যায়নি",
+    amount: "পরিমাণ",
+    method: "পদ্ধতি",
+    date: "তারিখ",
+    goalName: "গোলের নাম",
+    targetAmount: "লক্ষ্য",
+    currentAmount: "সঞ্চিত",
+    progress: "অগ্রগতি",
+    goalType: "ধরন",
+    circleName: "সার্কেলের নাম",
+    purpose: "উদ্দেশ্য",
+    circleType: "ধরন",
+    members: "সদস্য",
+    role: "ভূমিকা",
+    ip: "আইপি",
+    device: "ডিভাইস",
+    location: "অবস্থান",
+    success: "সফল",
+    failed: "ব্যর্থ",
+    transferType: "ধরন",
+    from: "থেকে",
+    to: "প্রতি",
+    note: "নোট",
+    admin: "অ্যাডমিন",
+    memberRole: "সদস্য",
+    loadingDetails: "বিস্তারিত লোড হচ্ছে...",
+    personalInfo: "ব্যক্তিগত তথ্য",
+    fullName: "পূর্ণ নাম",
+    email: "ইমেইল",
+    dob: "জন্ম তারিখ",
+    gender: "লিঙ্গ",
+    occupation: "পেশা",
+    income: "আয়",
+    address: "ঠিকানা",
+    district: "জেলা",
+    upazila: "উপজেলা",
+    village: "গ্রাম",
+    postOffice: "পোস্ট অফিস",
+    postCode: "পোস্ট কোড",
+    recentActivity: "সাম্প্রতিক কার্যক্রম",
   }
 };
 
@@ -137,10 +259,17 @@ const UserManagementPage = () => {
   });
   const [lang, setLang] = useState("bn");
 
+  // Details modal state
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailsUser, setDetailsUser] = useState(null);
+  const [detailsData, setDetailsData] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsTab, setDetailsTab] = useState("overview");
+
   // Load language preference
   useEffect(() => {
     const savedLang = localStorage.getItem("admin_lang") || "bn";
-    setLang(savedLang);
+    if (savedLang !== lang) setLang(savedLang);
   }, []);
 
   const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
@@ -161,6 +290,27 @@ const UserManagementPage = () => {
     if (!date) return "";
     return String(date).split("T")[0];
   };
+
+  const formatDate = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  };
+
+  const formatDateTime = (date) => {
+    if (!date) return "N/A";
+    return new Date(date).toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const showToastMessage = useCallback((message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
+  }, []);
 
   const fetchUsers = useCallback(async (page = 1) => {
     setLoading(true);
@@ -192,7 +342,7 @@ const UserManagementPage = () => {
     } finally {
       setLoading(false);
     }
-  }, [activeFilter, searchQuery, pagination.itemsPerPage, lang]);
+  }, [activeFilter, searchQuery, pagination.itemsPerPage, lang, showToastMessage, t]);
 
   useEffect(() => {
     fetchUsers(1);
@@ -228,11 +378,6 @@ const UserManagementPage = () => {
     } catch (err) {
       showToastMessage(err.response?.data?.message || t('actionFailed'), "error");
     }
-  };
-
-  const showToastMessage = (message, type = "success") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
   };
 
   const openUserModal = (user) => {
@@ -346,6 +491,36 @@ const UserManagementPage = () => {
     }
   };
 
+  // ==================== DETAILS MODAL FUNCTIONS ====================
+  const openDetailsModal = async (user) => {
+    setDetailsUser(user);
+    setShowDetailsModal(true);
+    setDetailsLoading(true);
+    setDetailsTab("overview");
+    document.body.style.overflow = "hidden";
+
+    try {
+      const res = await axiosInstance.get(`/admin/users/${user.id}`, {
+        headers: getAuthHeaders(),
+      });
+      if (res.data.success) {
+        setDetailsData(res.data.data);
+      }
+    } catch (err) {
+      showToastMessage(err.response?.data?.message || t('actionFailed'), "error");
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  const closeDetailsModal = () => {
+    setShowDetailsModal(false);
+    setDetailsUser(null);
+    setDetailsData(null);
+    setDetailsTab("overview");
+    document.body.style.overflow = "auto";
+  };
+
   const exportToExcel = async () => {
     setExporting(true);
     try {
@@ -448,9 +623,18 @@ const UserManagementPage = () => {
     return colors[index % colors.length];
   };
 
-  const formatDate = (date) => {
-    if (!date) return "N/A";
-    return new Date(date).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+  const getStatusBadge = (status) => {
+    const map = {
+      active: "bg-emerald-100 text-emerald-700",
+      completed: "bg-blue-100 text-blue-700",
+      paused: "bg-amber-100 text-amber-700",
+      pending: "bg-amber-100 text-amber-700",
+      approved: "bg-emerald-100 text-emerald-700",
+      rejected: "bg-red-100 text-red-700",
+      success: "bg-emerald-100 text-emerald-700",
+      failed: "bg-red-100 text-red-700",
+    };
+    return map[status?.toLowerCase()] || "bg-gray-100 text-gray-700";
   };
 
   const editFields = [
@@ -468,6 +652,17 @@ const UserManagementPage = () => {
     { name: "village", label: "Village" },
     { name: "postOffice", label: "Post Office" },
     { name: "postCode", label: "Post Code" },
+  ];
+
+  // Details modal tabs
+  const detailTabs = [
+    { id: "overview", label: t('overview'), icon: Activity },
+    { id: "goals", label: t('goals'), icon: Target },
+    { id: "deposits", label: t('deposits'), icon: ArrowDownLeft },
+    { id: "withdrawals", label: t('withdrawals'), icon: ArrowUpRight },
+    { id: "transactions", label: t('transactions'), icon: Repeat },
+    { id: "circles", label: t('circles'), icon: Users },
+    { id: "loginHistory", label: t('loginHistory'), icon: LogIn },
   ];
 
   return (
@@ -601,6 +796,9 @@ const UserManagementPage = () => {
                               <button onClick={() => openUserModal(user)} className="p-1.5 rounded-lg border border-border/60 hover:border-primary/50 hover:bg-primary/5 transition-all duration-300">
                                 <Eye size={14} className="text-foreground/70" />
                               </button>
+                              <button onClick={() => openDetailsModal(user)} className="p-1.5 rounded-lg border border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10 transition-all duration-300">
+                                <Activity size={14} />
+                              </button>
                               <button onClick={() => openEditModal(user)} className="p-1.5 rounded-lg border border-blue-500/30 text-blue-500 hover:bg-blue-500/10 transition-all duration-300">
                                 <Edit size={14} />
                               </button>
@@ -674,7 +872,302 @@ const UserManagementPage = () => {
         )}
       </div>
 
-      {/* User Modal */}
+      {/* ==================== USER DETAILS MODAL ==================== */}
+      <AnimatePresence>
+        {showDetailsModal && detailsUser && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4" onClick={closeDetailsModal}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-card/95 dark:bg-card/90 backdrop-blur-sm rounded-2xl max-w-5xl w-full max-h-[92vh] overflow-hidden border border-border/50 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-primary to-primary-light p-5 text-white relative shrink-0">
+                <button onClick={closeDetailsModal} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-all duration-300">
+                  <X size={16} />
+                </button>
+                <div className="flex items-center gap-4">
+                  <div className={`w-14 h-14 rounded-full bg-gradient-to-r ${getAvatarBg(0)} flex items-center justify-center text-white text-xl font-bold shadow-lg shrink-0`}>
+                    {detailsUser.firstName?.[0]?.toUpperCase() || "?"}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xl font-bold truncate">
+                      {detailsUser.fullName || `${detailsUser.firstName} ${detailsUser.lastName || ""}`.trim()}
+                    </div>
+                    <div className="text-sm text-white/80 flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="flex items-center gap-1"><Phone size={12} /> {detailsUser.phone}</span>
+                      {detailsUser.email && <span className="flex items-center gap-1"><Mail size={12} /> {detailsUser.email}</span>}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="border-b border-border/50 dark:border-border/30 shrink-0 overflow-x-auto">
+                <div className="flex gap-1 p-2 min-w-max">
+                  {detailTabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setDetailsTab(tab.id)}
+                        className={`px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all duration-200 ${
+                          detailsTab === tab.id
+                            ? "bg-primary text-white shadow-sm"
+                            : "text-foreground/60 hover:bg-primary/10 hover:text-primary"
+                        }`}
+                      >
+                        <Icon size={14} />
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-5">
+                {detailsLoading ? (
+                  <div className="flex items-center justify-center py-20">
+                    <Loader2 size={32} className="animate-spin text-primary" />
+                    <span className="ml-2 text-sm text-foreground/60">{t('loadingDetails')}</span>
+                  </div>
+                ) : !detailsData ? (
+                  <div className="text-center py-20 text-foreground/50 text-sm">{t('noData')}</div>
+                ) : (
+                  <>
+                    {/* OVERVIEW TAB */}
+                    {detailsTab === "overview" && (
+                      <div className="space-y-5">
+                        {/* Stats Cards */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                          <div className="bg-background/90 dark:bg-background/80 rounded-xl p-4 border border-border/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Wallet size={16} className="text-primary" />
+                              <span className="text-[10px] text-foreground/50 uppercase font-bold">{t('totalSavings')}</span>
+                            </div>
+                            <div className="text-lg font-bold text-primary">{formatCurrency(detailsData.user?.totalSaved)}</div>
+                          </div>
+                          <div className="bg-background/90 dark:bg-background/80 rounded-xl p-4 border border-border/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <ArrowDownLeft size={16} className="text-emerald-500" />
+                              <span className="text-[10px] text-foreground/50 uppercase font-bold">{t('totalDeposits')}</span>
+                            </div>
+                            <div className="text-lg font-bold text-emerald-600">{detailsData.deposits?.length || 0}</div>
+                          </div>
+                          <div className="bg-background/90 dark:bg-background/80 rounded-xl p-4 border border-border/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <ArrowUpRight size={16} className="text-amber-500" />
+                              <span className="text-[10px] text-foreground/50 uppercase font-bold">{t('totalWithdrawals')}</span>
+                            </div>
+                            <div className="text-lg font-bold text-amber-600">{detailsData.withdrawals?.length || 0}</div>
+                          </div>
+                          <div className="bg-background/90 dark:bg-background/80 rounded-xl p-4 border border-border/50">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users size={16} className="text-blue-500" />
+                              <span className="text-[10px] text-foreground/50 uppercase font-bold">{t('circles')}</span>
+                            </div>
+                            <div className="text-lg font-bold text-blue-600">{detailsData.circles?.length || 0}</div>
+                          </div>
+                        </div>
+
+                        {/* Personal Info */}
+                        <div className="bg-background/90 dark:bg-background/80 rounded-xl p-4 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <User size={16} className="text-primary" />
+                            <h3 className="text-sm font-bold text-foreground">{t('personalInfo')}</h3>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <InfoRow label={t('fullName')} value={detailsData.user?.fullName || `${detailsData.user?.firstName || ""} ${detailsData.user?.lastName || ""}`.trim()} />
+                            <InfoRow label={t('phone')} value={detailsData.user?.phone} />
+                            <InfoRow label={t('email')} value={detailsData.user?.email || "N/A"} />
+                            <InfoRow label={t('dob')} value={detailsData.user?.dob ? formatDate(detailsData.user.dob) : "N/A"} />
+                            <InfoRow label={t('gender')} value={detailsData.user?.gender || "N/A"} />
+                            <InfoRow label={t('occupation')} value={detailsData.user?.occupation || "N/A"} />
+                            <InfoRow label={t('income')} value={detailsData.user?.income ? formatCurrency(detailsData.user.income) : "N/A"} />
+                            <InfoRow label={t('division')} value={detailsData.user?.division || "N/A"} />
+                            <InfoRow label={t('district')} value={detailsData.user?.district || "N/A"} />
+                            <InfoRow label={t('upazila')} value={detailsData.user?.upazila || "N/A"} />
+                            <InfoRow label={t('village')} value={detailsData.user?.village || "N/A"} />
+                            <InfoRow label={t('referralCode')} value={detailsData.user?.referralCode || "N/A"} />
+                          </div>
+                        </div>
+
+                        {/* Recent Activity Summary */}
+                        <div className="bg-background/90 dark:bg-background/80 rounded-xl p-4 border border-border/50">
+                          <div className="flex items-center gap-2 mb-4">
+                            <TrendingUp size={16} className="text-primary" />
+                            <h3 className="text-sm font-bold text-foreground">{t('recentActivity')}</h3>
+                          </div>
+                          <div className="space-y-2">
+                            {(detailsData.deposits?.slice(0, 3) || []).map((d) => (
+                              <div key={d.id} className="flex items-center justify-between p-2.5 rounded-lg bg-card/50 border border-border/30">
+                                <div className="flex items-center gap-2">
+                                  <ArrowDownLeft size={14} className="text-emerald-500" />
+                                  <span className="text-sm text-foreground">Deposit to {d.goalName || "Goal"}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm font-bold text-emerald-600">{formatCurrency(d.amount)}</span>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${getStatusBadge(d.status)}`}>{d.status}</span>
+                                </div>
+                              </div>
+                            ))}
+                            {(detailsData.withdrawals?.slice(0, 3) || []).map((w) => (
+                              <div key={w.id} className="flex items-center justify-between p-2.5 rounded-lg bg-card/50 border border-border/30">
+                                <div className="flex items-center gap-2">
+                                  <ArrowUpRight size={14} className="text-amber-500" />
+                                  <span className="text-sm text-foreground">Withdrawal from {w.goalName || "Goal"}</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-sm font-bold text-amber-600">{formatCurrency(w.amount)}</span>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${getStatusBadge(w.status)}`}>{w.status}</span>
+                                </div>
+                              </div>
+                            ))}
+                            {(!detailsData.deposits?.length && !detailsData.withdrawals?.length) && (
+                              <p className="text-sm text-foreground/50 text-center py-4">{t('noData')}</p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* GOALS TAB */}
+                    {detailsTab === "goals" && (
+                      <div>
+                        {detailsData.goals?.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {detailsData.goals.map((goal) => {
+                              const progress = goal.targetAmount > 0 ? Math.round((goal.currentAmount / goal.targetAmount) * 100) : 0;
+                              return (
+                                <div key={goal.id} className="bg-background/90 dark:bg-background/80 rounded-xl p-4 border border-border/50">
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <Target size={16} className="text-primary" />
+                                      <h4 className="text-sm font-bold text-foreground">{goal.title || "Untitled Goal"}</h4>
+                                    </div>
+                                    <span className={`text-[10px] px-2 py-0.5 rounded-full ${getStatusBadge(goal.status)}`}>{goal.status}</span>
+                                  </div>
+                                  <div className="space-y-1 text-xs text-foreground/60 mb-3">
+                                    <div className="flex justify-between"><span>{t('goalType')}</span><span className="text-foreground font-medium">{goal.goalType || "General"}</span></div>
+                                    <div className="flex justify-between"><span>{t('targetAmount')}</span><span className="text-foreground font-medium">{formatCurrency(goal.targetAmount)}</span></div>
+                                    <div className="flex justify-between"><span>{t('currentAmount')}</span><span className="text-foreground font-medium">{formatCurrency(goal.currentAmount)}</span></div>
+                                  </div>
+                                  <div className="h-2 bg-border rounded-full overflow-hidden">
+                                    <div className="h-full rounded-full bg-gradient-to-r from-primary to-primary-light transition-all" style={{ width: `${Math.min(progress, 100)}%` }} />
+                                  </div>
+                                  <div className="text-right text-[10px] text-foreground/50 mt-1">{progress}% {t('progress')}</div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        ) : (
+                          <EmptyState text={t('noData')} />
+                        )}
+                      </div>
+                    )}
+
+                    {/* DEPOSITS TAB */}
+                    {detailsTab === "deposits" && (
+                      <DataTable
+                        columns={[
+                          { key: "goalName", label: t('goalName') },
+                          { key: "amount", label: t('amount'), format: (v) => formatCurrency(v) },
+                          { key: "method", label: t('method') },
+                          { key: "status", label: t('status'), badge: true },
+                          { key: "createdAt", label: t('date'), format: (v) => formatDateTime(v) },
+                        ]}
+                        data={detailsData.deposits || []}
+                        emptyText={t('noData')}
+                      />
+                    )}
+
+                    {/* WITHDRAWALS TAB */}
+                    {detailsTab === "withdrawals" && (
+                      <DataTable
+                        columns={[
+                          { key: "goalName", label: t('goalName') },
+                          { key: "amount", label: t('amount'), format: (v) => formatCurrency(v) },
+                          { key: "method", label: t('method') },
+                          { key: "status", label: t('status'), badge: true },
+                          { key: "createdAt", label: t('date'), format: (v) => formatDateTime(v) },
+                        ]}
+                        data={detailsData.withdrawals || []}
+                        emptyText={t('noData')}
+                      />
+                    )}
+
+                    {/* TRANSACTIONS (TRANSFERS) TAB */}
+                    {detailsTab === "transactions" && (
+                      <DataTable
+                        columns={[
+                          { key: "type", label: t('transferType') },
+                          { key: "amount", label: t('amount'), format: (v) => formatCurrency(v) },
+                          { key: "fromGoalName", label: t('from') },
+                          { key: "toGoalName", label: t('to') },
+                          { key: "status", label: t('status'), badge: true },
+                          { key: "createdAt", label: t('date'), format: (v) => formatDateTime(v) },
+                        ]}
+                        data={detailsData.transfers || []}
+                        emptyText={t('noData')}
+                      />
+                    )}
+
+                    {/* CIRCLES TAB */}
+                    {detailsTab === "circles" && (
+                      <div>
+                        {detailsData.circles?.length > 0 ? (
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {detailsData.circles.map((circle) => (
+                              <div key={circle.id} className="bg-background/90 dark:bg-background/80 rounded-xl p-4 border border-border/50">
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className="flex items-center gap-2">
+                                    <Users size={16} className="text-primary" />
+                                    <h4 className="text-sm font-bold text-foreground">{circle.name || "Untitled Circle"}</h4>
+                                  </div>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded-full ${getStatusBadge(circle.status)}`}>{circle.status}</span>
+                                </div>
+                                <div className="space-y-1 text-xs text-foreground/60">
+                                  <div className="flex justify-between"><span>{t('purpose')}</span><span className="text-foreground font-medium capitalize">{circle.purpose || "General"}</span></div>
+                                  <div className="flex justify-between"><span>{t('circleType')}</span><span className="text-foreground font-medium capitalize">{circle.circleType || "public"}</span></div>
+                                  <div className="flex justify-between"><span>{t('targetAmount')}</span><span className="text-foreground font-medium">{formatCurrency(circle.targetAmount)}</span></div>
+                                  <div className="flex justify-between"><span>{t('members')}</span><span className="text-foreground font-medium">{circle.currentMembers}/{circle.maxMembers}</span></div>
+                                  <div className="flex justify-between"><span>{t('role')}</span><span className={`font-medium ${circle.role === "admin" ? "text-amber-600" : "text-foreground"}`}>{circle.role === "admin" ? t('admin') : t('memberRole')}</span></div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <EmptyState text={t('noData')} />
+                        )}
+                      </div>
+                    )}
+
+                    {/* LOGIN HISTORY TAB */}
+                    {detailsTab === "loginHistory" && (
+                      <DataTable
+                        columns={[
+                          { key: "loginTime", label: t('date'), format: (v) => formatDateTime(v) },
+                          { key: "ip", label: t('ip') },
+                          { key: "device", label: t('device') },
+                          { key: "location", label: t('location') },
+                          { key: "success", label: t('status'), format: (v) => v ? t('success') : t('failed'), badge: true, badgeColor: (v) => v ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700" },
+                        ]}
+                        data={detailsData.loginHistory || []}
+                        emptyText={t('noData')}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* User Modal (Quick View) */}
       <AnimatePresence>
         {showUserModal && selectedUser && (
           <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={closeUserModal}>
@@ -685,7 +1178,6 @@ const UserManagementPage = () => {
               className="bg-card/95 dark:bg-card/90 backdrop-blur-sm rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto border border-border/50"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Modal Content - Same as before */}
               <div className="bg-gradient-to-r from-primary to-primary-light p-6 text-white relative">
                 <button onClick={closeUserModal} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-all duration-300">✕</button>
                 <div className="flex flex-col items-center">
@@ -827,5 +1319,68 @@ const UserManagementPage = () => {
     </div>
   );
 };
+
+// ==================== HELPER COMPONENTS ====================
+
+function InfoRow({ label, value }) {
+  return (
+    <div className="flex flex-col">
+      <span className="text-[10px] text-foreground/40 uppercase font-semibold">{label}</span>
+      <span className="text-sm text-foreground font-medium">{value || "N/A"}</span>
+    </div>
+  );
+}
+
+function EmptyState({ text }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-16 text-foreground/40">
+      <AlertCircle size={40} className="mb-3" />
+      <p className="text-sm">{text}</p>
+    </div>
+  );
+}
+
+function DataTable({ columns, data, emptyText }) {
+  if (!data || data.length === 0) return <EmptyState text={emptyText} />;
+
+  return (
+    <div className="overflow-x-auto rounded-xl border border-border/50">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-background/80 dark:bg-background/60 border-b border-border/50">
+            {columns.map((col) => (
+              <th key={col.key} className="px-4 py-3 text-left text-xs font-semibold text-foreground/60 whitespace-nowrap">
+                {col.label}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border/30">
+          {data.map((row, idx) => (
+            <tr key={row.id || idx} className="hover:bg-primary/5 transition-colors">
+              {columns.map((col) => {
+                const rawValue = row[col.key];
+                const displayValue = col.format ? col.format(rawValue) : rawValue || "N/A";
+                const badgeColor = col.badgeColor ? col.badgeColor(rawValue) : getStatusBadge(rawValue);
+
+                return (
+                  <td key={col.key} className="px-4 py-3 whitespace-nowrap">
+                    {col.badge ? (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${badgeColor}`}>
+                        {displayValue}
+                      </span>
+                    ) : (
+                      <span className="text-foreground/80">{displayValue}</span>
+                    )}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export default UserManagementPage;

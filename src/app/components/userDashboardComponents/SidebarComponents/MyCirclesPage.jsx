@@ -32,6 +32,7 @@ import {
   Copy,
   Check,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
@@ -50,6 +51,7 @@ const translations = {
     cancel: "Cancel",
     create: "Create Circle",
     creating: "Creating...",
+    joined: "Joined!",
     join: "Join",
     
     // Empty State
@@ -162,6 +164,7 @@ const translations = {
     cancel: "বাতিল",
     create: "সার্কেল তৈরি করুন",
     creating: "তৈরি হচ্ছে...",
+    joined: "যোগ দিয়েছেন!",
     join: "যোগ দিন",
     
     // Empty State
@@ -291,6 +294,20 @@ const MyCirclesPage = () => {
     minDeposit: "",
     description: "",
   });
+
+  // Edit circle state
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingCircle, setEditingCircle] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    circleName: "",
+    purpose: "",
+    targetAmount: "",
+    maxMembers: "",
+    minDeposit: "",
+    description: "",
+    circleType: "private",
+  });
+  const [editSubmitting, setEditSubmitting] = useState(false);
 
   // Translation function
   const t = (key, params = {}) => {
@@ -500,6 +517,82 @@ const MyCirclesPage = () => {
     }
   };
 
+  // Edit circle functions
+  const openEditModal = (circle) => {
+    setEditingCircle(circle);
+    setEditFormData({
+      circleName: circle.name || circle.circleName || "",
+      purpose: circle.purpose || "",
+      targetAmount: String(circle.targetAmount || ""),
+      maxMembers: String(circle.maxMembers || ""),
+      minDeposit: String(circle.minDeposit || ""),
+      description: circle.description || "",
+      circleType: circle.circleType || "private",
+    });
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingCircle(null);
+    setEditSubmitting(false);
+  };
+
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const updateCircle = async () => {
+    if (!editFormData.circleName.trim()) {
+      Swal.fire({
+        title: t('error'),
+        text: t('enterCircleName'),
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+      return;
+    }
+
+    setEditSubmitting(true);
+    try {
+      const payload = {
+        circleName: editFormData.circleName,
+        purpose: editFormData.purpose,
+        targetAmount: parseFloat(editFormData.targetAmount),
+        maxMembers: parseInt(editFormData.maxMembers),
+        minDeposit: parseFloat(editFormData.minDeposit),
+        description: editFormData.description || null,
+        circleType: editFormData.circleType,
+      };
+
+      const response = await axiosInstance.patch(`/circles/${editingCircle._id}`, payload);
+
+      if (response.data.success) {
+        Swal.fire({
+          title: t('success'),
+          text: "Circle updated successfully",
+          icon: "success",
+          confirmButtonColor: "#059669",
+          timer: 2000,
+          showConfirmButton: false,
+        });
+        closeEditModal();
+        await fetchUserCircles();
+      }
+    } catch (error) {
+      console.error("Update circle error:", error);
+      Swal.fire({
+        title: t('error'),
+        text: error.response?.data?.message || "Failed to update circle",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
   // Generate invite link
   const generateInvite = async (circleId) => {
     setIsGeneratingInvite(true);
@@ -693,6 +786,19 @@ const MyCirclesPage = () => {
                   </div>
                 </div>
                 <div className="flex gap-1 justify-end shrink-0">
+                  {/* Show edit button for circle admin */}
+                  {circle.membersList?.some(m => m.user && m.role === "admin") && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditModal(circle);
+                      }}
+                      className="w-8 h-8 rounded-lg hover:bg-blue-500/10 transition text-foreground/50 hover:text-blue-500 flex items-center justify-center"
+                      title="Edit Circle"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  )}
                   {/* Show invite button only for private circles */}
                   {circle.circleType === "private" && (
                     <button
@@ -1103,9 +1209,14 @@ const MyCirclesPage = () => {
                           </div>
                           <button
                             onClick={() => joinCircle(circle._id)}
-                            className="px-3 py-1.5 rounded-lg bg-primary text-white text-xs font-semibold hover:opacity-90 transition shrink-0"
+                            disabled={circle.isMember}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition shrink-0 ${
+                              circle.isMember
+                                ? "bg-emerald-100 text-emerald-700 cursor-default"
+                                : "bg-primary text-white hover:opacity-90"
+                            }`}
                           >
-                            {t('join')}
+                            {circle.isMember ? t('joined') : t('join')}
                           </button>
                         </div>
                         <div className="grid grid-cols-1 min-[380px]:grid-cols-3 gap-2 text-center text-xs">
@@ -1207,6 +1318,219 @@ const MyCirclesPage = () => {
                     className="w-full py-2.5 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition"
                   >
                     {t('done')}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Circle Modal */}
+      <AnimatePresence>
+        {showEditModal && editingCircle && (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+            onClick={closeEditModal}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              transition={{ type: "spring", damping: 25 }}
+              className="bg-card border border-border rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="sticky top-0 bg-card border-b border-border p-4 sm:p-6 rounded-t-2xl z-10">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-8 h-8 rounded-xl bg-blue-500/10 flex items-center justify-center">
+                        <Pencil size={16} className="text-blue-500" />
+                      </div>
+                      <h3 className="text-lg sm:text-xl font-bold text-foreground">Edit Circle</h3>
+                    </div>
+                    <p className="text-xs sm:text-sm text-foreground/60">
+                      Update your circle settings
+                    </p>
+                  </div>
+                  <button
+                    onClick={closeEditModal}
+                    disabled={editSubmitting}
+                    className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 hover:border-primary transition shrink-0 disabled:opacity-50"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+                <div>
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
+                    Circle Name
+                  </label>
+                  <input
+                    type="text"
+                    name="circleName"
+                    value={editFormData.circleName}
+                    onChange={handleEditInputChange}
+                    disabled={editSubmitting}
+                    placeholder="e.g., Family Savings Circle"
+                    className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/40 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
+                    Purpose
+                  </label>
+                  <select
+                    name="purpose"
+                    value={editFormData.purpose}
+                    onChange={handleEditInputChange}
+                    disabled={editSubmitting}
+                    className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                  >
+                    <option value="">Select purpose</option>
+                    {purposes.map(p => (
+                      <option key={p.value} value={p.value}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
+                      <Target size={14} className="inline mr-1" /> Target Amount
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">৳</span>
+                      <input
+                        type="number"
+                        name="targetAmount"
+                        value={editFormData.targetAmount}
+                        onChange={handleEditInputChange}
+                        disabled={editSubmitting}
+                        placeholder="e.g. 100000"
+                        className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
+                      <Users size={14} className="inline mr-1" /> Max Members
+                    </label>
+                    <input
+                      type="number"
+                      name="maxMembers"
+                      value={editFormData.maxMembers}
+                      onChange={handleEditInputChange}
+                      disabled={editSubmitting}
+                      placeholder="Number"
+                      min="1"
+                      className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
+                    <Wallet size={14} className="inline mr-1" /> Minimum Monthly Deposit (৳)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground/50">৳</span>
+                    <input
+                      type="number"
+                      name="minDeposit"
+                      value={editFormData.minDeposit}
+                      onChange={handleEditInputChange}
+                      disabled={editSubmitting}
+                      placeholder="e.g. 2000"
+                      className="w-full p-2.5 sm:p-3 pl-8 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground/70 mb-2">
+                    Circle Type
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => !editSubmitting && setEditFormData(prev => ({ ...prev, circleType: "private" }))}
+                      disabled={editSubmitting}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                        editFormData.circleType === "private"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50 hover:bg-primary/5"
+                      } disabled:opacity-50`}
+                    >
+                      <Lock size={16} className={editFormData.circleType === "private" ? "text-primary" : "text-foreground/50"} />
+                      <span className="text-sm font-semibold">{t('private')}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => !editSubmitting && setEditFormData(prev => ({ ...prev, circleType: "public" }))}
+                      disabled={editSubmitting}
+                      className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${
+                        editFormData.circleType === "public"
+                          ? "border-primary bg-primary/5 shadow-md"
+                          : "border-border hover:border-primary/50 hover:bg-primary/5"
+                      } disabled:opacity-50`}
+                    >
+                      <Globe size={16} className={editFormData.circleType === "public" ? "text-primary" : "text-foreground/50"} />
+                      <span className="text-sm font-semibold">{t('public')}</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-foreground/70 mb-1.5">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    name="description"
+                    value={editFormData.description}
+                    onChange={handleEditInputChange}
+                    disabled={editSubmitting}
+                    rows={3}
+                    placeholder="Write about your circle's purpose and rules..."
+                    className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground placeholder:text-foreground/40 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition resize-none text-sm sm:text-base disabled:opacity-50"
+                  />
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="sticky bottom-0 bg-card border-t border-border p-4 sm:p-6 rounded-b-2xl z-10">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={closeEditModal}
+                    disabled={editSubmitting}
+                    className="flex-1 py-2.5 sm:py-3 rounded-xl border border-border text-foreground font-semibold hover:border-red-500 hover:text-red-500 transition text-sm sm:text-base order-2 sm:order-1 disabled:opacity-50"
+                  >
+                    {t('cancel')}
+                  </button>
+                  <button
+                    onClick={updateCircle}
+                    disabled={editSubmitting}
+                    className="flex-1 py-2.5 sm:py-3 rounded-xl bg-linear-to-r from-primary to-primary-light text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2 disabled:opacity-50"
+                  >
+                    {editSubmitting ? (
+                      <>
+                        <Loader2 size={16} className="animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Pencil size={16} />
+                        Save Changes
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

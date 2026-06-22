@@ -8,6 +8,7 @@ import {
   Clock,
   Eye,
   Lock,
+  Pencil,
   RefreshCw,
   Search,
   ShieldCheck,
@@ -66,6 +67,18 @@ export default function AdminGoalsAndCircles() {
   const [actionLoading, setActionLoading] = useState("");
   const [message, setMessage] = useState({ type: "", text: "" });
   const [detailsItem, setDetailsItem] = useState(null);
+  const [editCircleItem, setEditCircleItem] = useState(null);
+  const [editCircleForm, setEditCircleForm] = useState({
+    circleName: "",
+    purpose: "",
+    targetAmount: "",
+    maxMembers: "",
+    minDeposit: "",
+    description: "",
+    circleType: "private",
+    status: "active",
+  });
+  const [editCircleLoading, setEditCircleLoading] = useState(false);
 
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
@@ -195,6 +208,52 @@ export default function AdminGoalsAndCircles() {
       setMessage({ type: "error", text: getErrorMessage(error, "Failed to delete circle") });
     } finally {
       setActionLoading("");
+    }
+  };
+
+  const openEditCircle = (circle) => {
+    setEditCircleItem(circle);
+    setEditCircleForm({
+      circleName: circle.circleName || "",
+      purpose: circle.purpose || "",
+      targetAmount: String(circle.targetAmount || ""),
+      maxMembers: String(circle.maxMembers || ""),
+      minDeposit: String(circle.minDeposit || ""),
+      description: circle.description || "",
+      circleType: circle.circleType || "private",
+      status: circle.status || "active",
+    });
+  };
+
+  const closeEditCircle = () => {
+    setEditCircleItem(null);
+    setEditCircleLoading(false);
+  };
+
+  const submitEditCircle = async (e) => {
+    e.preventDefault();
+    if (!editCircleItem) return;
+
+    setEditCircleLoading(true);
+    try {
+      const payload = {};
+      if (editCircleForm.circleName) payload.circleName = editCircleForm.circleName;
+      if (editCircleForm.purpose) payload.purpose = editCircleForm.purpose;
+      if (editCircleForm.targetAmount) payload.targetAmount = parseFloat(editCircleForm.targetAmount);
+      if (editCircleForm.maxMembers) payload.maxMembers = parseInt(editCircleForm.maxMembers);
+      if (editCircleForm.minDeposit) payload.minDeposit = parseFloat(editCircleForm.minDeposit);
+      if (editCircleForm.description !== undefined) payload.description = editCircleForm.description;
+      if (editCircleForm.circleType) payload.circleType = editCircleForm.circleType;
+      if (editCircleForm.status) payload.status = editCircleForm.status;
+
+      await axiosInstance.patch(`/circles/${editCircleItem._id}`, payload, { headers: getTokenHeaders() });
+      setMessage({ type: "success", text: "Circle updated successfully" });
+      closeEditCircle();
+      fetchAdminData();
+    } catch (error) {
+      setMessage({ type: "error", text: getErrorMessage(error, "Failed to update circle") });
+    } finally {
+      setEditCircleLoading(false);
     }
   };
 
@@ -349,6 +408,7 @@ export default function AdminGoalsAndCircles() {
                   actionLoading={actionLoading}
                   onDelete={deleteCircle}
                   onDetails={(circle) => setDetailsItem({ type: "circle", item: circle })}
+                  onEdit={openEditCircle}
                 />
               )}
               {activeTab === "requests" && (
@@ -364,6 +424,139 @@ export default function AdminGoalsAndCircles() {
           item={detailsItem.item}
           onClose={() => setDetailsItem(null)}
         />
+      )}
+
+      {/* Edit Circle Modal */}
+      {editCircleItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-hidden rounded-lg bg-white shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+              <div>
+                <p className="text-xs font-black uppercase tracking-wide text-blue-700">Edit Circle</p>
+                <h2 className="mt-1 text-xl font-black text-slate-900">{editCircleItem.circleName || "Untitled circle"}</h2>
+              </div>
+              <button
+                type="button"
+                onClick={closeEditCircle}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+                aria-label="Close"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={submitEditCircle} className="max-h-[calc(90vh-88px)] overflow-y-auto p-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-400">Circle Name</label>
+                  <input
+                    type="text"
+                    value={editCircleForm.circleName}
+                    onChange={(e) => setEditCircleForm((p) => ({ ...p, circleName: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-400">Purpose</label>
+                  <input
+                    type="text"
+                    value={editCircleForm.purpose}
+                    onChange={(e) => setEditCircleForm((p) => ({ ...p, purpose: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-400">Target Amount</label>
+                  <input
+                    type="number"
+                    value={editCircleForm.targetAmount}
+                    onChange={(e) => setEditCircleForm((p) => ({ ...p, targetAmount: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    min="1"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-400">Max Members</label>
+                  <input
+                    type="number"
+                    value={editCircleForm.maxMembers}
+                    onChange={(e) => setEditCircleForm((p) => ({ ...p, maxMembers: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    min="1"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-400">Min Deposit</label>
+                  <input
+                    type="number"
+                    value={editCircleForm.minDeposit}
+                    onChange={(e) => setEditCircleForm((p) => ({ ...p, minDeposit: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                    min="1"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-400">Status</label>
+                  <select
+                    value={editCircleForm.status}
+                    onChange={(e) => setEditCircleForm((p) => ({ ...p, status: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="active">Active</option>
+                    <option value="paused">Paused</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-400">Circle Type</label>
+                  <select
+                    value={editCircleForm.circleType}
+                    onChange={(e) => setEditCircleForm((p) => ({ ...p, circleType: e.target.value }))}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  >
+                    <option value="private">Private</option>
+                    <option value="public">Public</option>
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="mb-1 block text-xs font-black uppercase tracking-wide text-slate-400">Description</label>
+                  <textarea
+                    value={editCircleForm.description}
+                    onChange={(e) => setEditCircleForm((p) => ({ ...p, description: e.target.value }))}
+                    rows={3}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-bold text-slate-800 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-5 flex gap-3">
+                <button
+                  type="button"
+                  onClick={closeEditCircle}
+                  disabled={editCircleLoading}
+                  className="flex-1 rounded-lg border border-slate-200 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editCircleLoading}
+                  className="flex-1 rounded-lg bg-blue-600 py-2.5 text-sm font-bold text-white transition hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {editCircleLoading ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -419,7 +612,7 @@ function GoalsTable({ goals, actionLoading, onDelete, onDetails }) {
   );
 }
 
-function CirclesTable({ circles, actionLoading, onDelete, onDetails }) {
+function CirclesTable({ circles, actionLoading, onDelete, onDetails, onEdit }) {
   if (!circles.length) return <EmptyState text="No circles found." />;
 
   return (
@@ -462,6 +655,7 @@ function CirclesTable({ circles, actionLoading, onDelete, onDetails }) {
               <td className="px-4 py-4 text-right">
                 <div className="flex justify-end gap-2">
                   <DetailsButton onClick={() => onDetails(circle)} />
+                  <EditButton onClick={() => onEdit(circle)} />
                   <DeleteButton loading={actionLoading === `circle-${circle._id}`} onClick={() => onDelete(circle)} />
                 </div>
               </td>
@@ -551,6 +745,19 @@ function DetailsButton({ onClick }) {
     >
       <Eye className="h-3.5 w-3.5" />
       Details
+    </button>
+  );
+}
+
+function EditButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-bold text-blue-700 transition hover:bg-blue-100"
+    >
+      <Pencil className="h-3.5 w-3.5" />
+      Edit
     </button>
   );
 }
