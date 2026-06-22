@@ -389,7 +389,7 @@ const AdminSidebar = ({ closeSidebar, isDark }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 admin-sidebar-scroll">
+      <nav className="flex-1 overflow-y-auto py-4 admin-scroll">
         {navItems.map((section, idx) => (
           <div key={idx}>
             <div className={`px-4 py-2 text-[10px] font-bold uppercase tracking-wider ${

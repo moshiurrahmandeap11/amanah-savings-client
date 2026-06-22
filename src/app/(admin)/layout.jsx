@@ -33,7 +33,7 @@ const AdminLayout = ({ children }) => {
 
   return (
     <ProtectedRoute allowedRoles={['admin']}>
-      <div className="flex min-h-screen bg-background">
+      <div className="flex h-screen overflow-hidden bg-background">
         {/* Sidebar Overlay */}
         {sidebarOpen && (
           <div
@@ -52,13 +52,13 @@ const AdminLayout = ({ children }) => {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <AdminHeader
             openSidebar={() => setSidebarOpen(true)}
             toggleTheme={toggleTheme}
             isDark={isDark}
           />
-          <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto admin-main-scroll">
+          <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 admin-scroll">
             {children}
           </main>
         </div>
