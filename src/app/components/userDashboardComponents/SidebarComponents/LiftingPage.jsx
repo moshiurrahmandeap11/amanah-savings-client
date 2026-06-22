@@ -270,7 +270,7 @@ const LiftingPage = () => {
   const fetchGoals = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get("/goals?status=active");
+      const response = await axiosInstance.get("/goals/my?status=active");
       if (response.data.success) {
         const activeGoals = response.data.data.goals.filter(
           goal => goal.status === "active" && goal.currentSaved > 0
