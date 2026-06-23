@@ -61,6 +61,7 @@ const translations = {
     
     // Deposit Summary Section
     reason: "Reason:",
+    rejectionReason: "Rejection Reason",
     transactionId: "ID:",
     from: "From:",
     to: "To:",
@@ -132,6 +133,7 @@ const translations = {
     
     // Deposit Summary Section
     reason: "কারণ:",
+    rejectionReason: "বাতিলের কারণ",
     transactionId: "আইডি:",
     from: "থেকে:",
     to: "প্রতি:",
@@ -477,6 +479,7 @@ const TransactionsPage = () => {
       badgeIcon: getStatusBadge(withdrawal.status, "withdrawal").icon,
       transactionId: withdrawal.transactionId || withdrawal.transactionReference,
       reason: withdrawal.reason,
+      remarks: withdrawal.remarks,
       isTransfer: false,
     }));
 
@@ -811,6 +814,12 @@ const TransactionsPage = () => {
                     {!txn.isTransfer && txn.reason && (
                       <div className="text-[10px] text-foreground/40 mt-0.5 truncate">
                         {t('reason')} {txn.reason}
+                      </div>
+                    )}
+                    {/* Show rejection reason for rejected withdrawals */}
+                    {txn.type === "withdrawal" && txn.status === "rejected" && txn.remarks && (
+                      <div className="text-[10px] text-red-500/80 mt-0.5 truncate bg-red-500/5 rounded px-1.5 py-0.5 inline-block">
+                        ❌ {t('rejectionReason') || "Rejection Reason"}: {txn.remarks}
                       </div>
                     )}
                     <span className={`text-xs px-2 py-0.5 rounded-full inline-flex items-center gap-1 mt-1 ${txn.badgeClass}`}>

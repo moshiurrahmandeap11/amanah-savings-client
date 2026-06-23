@@ -69,7 +69,10 @@ const translations = {
     processedAt: "Processed At",
     remarks: "Remarks",
     transactionId: "Transaction ID",
-    approvedBy: "Approved By",
+    rejectReason: "Rejection Reason",
+    enterRejectionReason: "Enter rejection reason...",
+    rejectionRequired: "Please provide a rejection reason",
+    rejectedBy: "Rejected By",
     bankName: "Bank Name",
     accountNumber: "Account Number",
     accountHolderName: "Account Holder Name",
@@ -127,7 +130,10 @@ const translations = {
     processedAt: "প্রক্রিয়াকরণের তারিখ",
     remarks: "মন্তব্য",
     transactionId: "লেনদেন আইডি",
-    approvedBy: "অনুমোদনকারী",
+    rejectedBy: "বাতিলকারী",
+    rejectReason: "বাতিলের কারণ",
+    enterRejectionReason: "বাতিলের কারণ লিখুন...",
+    rejectionRequired: "বাতিলের কারণ দিন",
     bankName: "ব্যাংকের নাম",
     accountNumber: "অ্যাকাউন্ট নম্বর",
     accountHolderName: "অ্যাকাউন্ট ধারকের নাম",
@@ -173,7 +179,8 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
   const [lang, setLang] = useState(getInitialAdminLang);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
-  const [showNoteSheet, setShowNoteSheet] = useState(false);
+  const [showRejectSheet, setShowRejectSheet] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [noteText, setNoteText] = useState("");
@@ -291,15 +298,21 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
     }
   };
 
-  const rejectTransaction = async (transaction) => {
+  const rejectTransaction = async () => {
+    if (!selectedTransaction) return;
+    if (!rejectReason.trim()) {
+      showToast(t('rejectionRequired'));
+      return;
+    }
     try {
       const res = await axiosInstance.patch(
-        `${getTransactionActionBasePath(transaction)}/reject`,
-        { remarks: noteText || "Rejected by admin" },
+        `${getTransactionActionBasePath(selectedTransaction)}/reject`,
+        { remarks: rejectReason.trim() },
         { headers: getAuthHeaders() }
       );
       if (res.data.success) {
         showToast(t('transactionRejected'));
+        closeRejectSheet();
         fetchTransactions();
       }
     } catch (err) {
@@ -307,16 +320,17 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
     }
   };
 
-  const openNoteSheet = (transaction) => {
+  const openRejectSheet = (transaction) => {
     setSelectedTransaction(transaction);
-    setShowNoteSheet(true);
+    setRejectReason("");
+    setShowRejectSheet(true);
     document.body.style.overflow = "hidden";
   };
 
-  const closeNoteSheet = () => {
-    setShowNoteSheet(false);
+  const closeRejectSheet = () => {
+    setShowRejectSheet(false);
     setSelectedTransaction(null);
-    setNoteText("");
+    setRejectReason("");
     document.body.style.overflow = "auto";
   };
 
@@ -651,7 +665,7 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
                       ✅ {t('approve')}
                     </button>
                     <button
-                      onClick={() => rejectTransaction(tx)}
+                      onClick={() => openRejectSheet(tx)}
                       className="flex-1 py-2 rounded-lg border border-red-500/30 bg-red-500/10 text-red-500 text-xs font-bold hover:bg-red-500/20 transition"
                     >
                       ❌ {t('reject')}
@@ -705,6 +719,47 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
               </button>
               <button
                 onClick={closeNoteSheet}
+                className="w-full py-2 mt-2 rounded-xl border-2 border-border text-foreground/60 text-sm font-semibold"
+              >
+                {t('cancel')}
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Reject Reason Sheet */}
+      <AnimatePresence>
+        {showRejectSheet && (
+          <>
+            <div className="fixed inset-0 bg-black/60 z-50" onClick={closeRejectSheet} />
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 25 }}
+              className="fixed bottom-0 left-0 right-0 bg-card rounded-t-2xl z-50 p-5"
+            >
+              <div className="w-10 h-1 bg-border rounded-full mx-auto mb-4" />
+              <div className="font-bold text-foreground mb-3">❌ {t('rejectReason')}</div>
+              <div className="text-sm text-foreground/70 mb-3">
+                {selectedTransaction?.userName || "Unknown"} — ৳{formatAmount(selectedTransaction?.amount || selectedTransaction?.withdrawalAmount || 0)}
+              </div>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                rows={3}
+                placeholder={t('enterRejectionReason')}
+                className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary transition resize-none"
+              />
+              <button
+                onClick={rejectTransaction}
+                className="w-full py-3 mt-3 rounded-xl bg-red-500 text-white font-bold text-sm hover:bg-red-600 transition"
+              >
+                ❌ {t('reject')}
+              </button>
+              <button
+                onClick={closeRejectSheet}
                 className="w-full py-2 mt-2 rounded-xl border-2 border-border text-foreground/60 text-sm font-semibold"
               >
                 {t('cancel')}
