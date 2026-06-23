@@ -528,8 +528,11 @@ const WithdrawalApprovalsPage = () => {
                         {withdrawal.user?.name?.charAt(0)?.toUpperCase() || "U"}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm text-foreground">
+                        <div className="font-semibold text-sm text-foreground flex items-center gap-2">
                           {withdrawal.user?.fullName || "Unknown User"}
+                          {withdrawal.isReferralBonus && (
+                            <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold">REFERRAL</span>
+                          )}
                         </div>
                         <div className="text-xs text-foreground/50">
                           {withdrawal.user?.phone || "No phone"} · {getPaymentIcon(withdrawal.paymentMethod)} {withdrawal.paymentMethod?.toUpperCase()} · Ref: {withdrawal._id.slice(-6)} · {formatDate(withdrawal.createdAt)}
@@ -550,7 +553,11 @@ const WithdrawalApprovalsPage = () => {
                       <div className="bg-background rounded-lg p-2">
                         <div className="text-[9px] text-foreground/50">{t('goal')}</div>
                         <div className="text-xs font-semibold">
-                          {getGoalIcon(withdrawal.goalType)} {withdrawal.goalName}
+                          {withdrawal.isReferralBonus ? (
+                            <span className="text-amber-500">🎁 Referral Bonus</span>
+                          ) : (
+                            <>{getGoalIcon(withdrawal.goalType)} {withdrawal.goalName}</>
+                          )}
                         </div>
                       </div>
                       <div className="bg-background rounded-lg p-2">

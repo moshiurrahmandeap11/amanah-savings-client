@@ -61,6 +61,19 @@ const translations = {
     transfer: "Transfer",
     autoSave: "Auto-Save",
     
+    // Balance Cards
+    totalBalance: "Total Balance",
+    totalWithdrawal: "Total Withdrawal",
+    referralBonus: "Referral Bonus",
+    available: "Available",
+    earned: "Earned",
+    withdrawn: "Withdrawn",
+    withdrawReferral: "Withdraw Referral Bonus",
+    noReferralBonus: "No referral bonus available",
+    referralBonusDesc: "Bonus earned from referring friends",
+    totalBalanceDesc: "Your total savings balance",
+    totalWithdrawalDesc: "Total amount withdrawn",
+    
     // Stats
     totalSavings: "Total Savings",
     activeCircles: "Active Circles",
@@ -165,6 +178,19 @@ const translations = {
     withdraw: "তোলার অনুরোধ",
     transfer: "ট্রান্সফার",
     autoSave: "অটো-সেভ",
+    
+    // Balance Cards
+    totalBalance: "মোট ব্যালেন্স",
+    totalWithdrawal: "মোট উত্তোলন",
+    referralBonus: "রেফারেল বোনাস",
+    available: "উপলব্ধ",
+    earned: "অর্জিত",
+    withdrawn: "উত্তোলিত",
+    withdrawReferral: "রেফারেল বোনাস উত্তোলন করুন",
+    noReferralBonus: "কোন রেফারেল বোনাস উপলব্ধ নেই",
+    referralBonusDesc: "বন্ধুদের রেফার করার মাধ্যমে অর্জিত বোনাস",
+    totalBalanceDesc: "আপনার মোট সঞ্চয় ব্যালেন্স",
+    totalWithdrawalDesc: "মোট উত্তোলিত পরিমাণ",
     
     // Stats
     totalSavings: "মোট সঞ্চয়",
@@ -275,6 +301,8 @@ const DashboardPage = () => {
   const [approvedDepositDates, setApprovedDepositDates] = useState([]);
   const [loadingTransactions, setLoadingTransactions] = useState(false);
   const [lang, setLang] = useState("en");
+  const [balanceSummary, setBalanceSummary] = useState(null);
+  const [loadingBalance, setLoadingBalance] = useState(true);
   
   const chartRef = useRef(null);
   let savingsChart = useRef(null);
@@ -522,6 +550,22 @@ const DashboardPage = () => {
     }
   }, [authUser, authLoading, router]);
 
+  // Fetch balance summary
+  const fetchBalanceSummary = useCallback(async () => {
+    if (!userId) return;
+    setLoadingBalance(true);
+    try {
+      const res = await axiosInstance.get("/balance/summary");
+      if (res.data.success) {
+        setBalanceSummary(res.data.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch balance summary:", error);
+    } finally {
+      setLoadingBalance(false);
+    }
+  }, [userId]);
+
   // Fetch all data when user is available
   useEffect(() => {
     if (userId) {
@@ -530,8 +574,9 @@ const DashboardPage = () => {
       fetchCircles();
       fetchSavingsHistory();
       fetchRecentTransactions();
+      fetchBalanceSummary();
     }
-  }, [userId, fetchUserData, fetchGoals, fetchCircles, fetchSavingsHistory, fetchRecentTransactions]);
+  }, [userId, fetchUserData, fetchGoals, fetchCircles, fetchSavingsHistory, fetchRecentTransactions, fetchBalanceSummary]);
 
   // Update insights when userData or goals change
   useEffect(() => {
@@ -896,6 +941,76 @@ const DashboardPage = () => {
             <div className="text-xs font-bold">{action.label}</div>
           </Link>
         ))}
+      </div>
+
+      {/* Balance Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        {/* Total Balance Card */}
+        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-lg transition relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-8 -mt-8"></div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+              <Wallet size={20} />
+            </div>
+            <div>
+              <div className="text-xs text-foreground/50">{t('totalBalance')}</div>
+              <div className="text-xl font-bold text-foreground">
+                {loadingBalance ? "..." : formatCurrency(balanceSummary?.totalBalance?.amount || 0)}
+              </div>
+            </div>
+          </div>
+          <div className="text-xs text-foreground/40 mt-2">{t('totalBalanceDesc')}</div>
+          <div className="flex justify-between mt-3 text-xs">
+            <span className="text-foreground/50">{t('deposit')}: <span className="text-primary font-semibold">{loadingBalance ? "..." : formatCurrency(balanceSummary?.totalBalance?.totalDeposits || 0)}</span></span>
+            <span className="text-foreground/50">{t('withdraw')}: <span className="text-red-500 font-semibold">{loadingBalance ? "..." : formatCurrency(balanceSummary?.totalBalance?.totalWithdrawn || 0)}</span></span>
+          </div>
+        </div>
+
+        {/* Total Withdrawal Card */}
+        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-lg transition relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-red-500/5 rounded-full -mr-8 -mt-8"></div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500">
+              <Send size={20} />
+            </div>
+            <div>
+              <div className="text-xs text-foreground/50">{t('totalWithdrawal')}</div>
+              <div className="text-xl font-bold text-foreground">
+                {loadingBalance ? "..." : formatCurrency(balanceSummary?.totalWithdrawal?.amount || 0)}
+              </div>
+            </div>
+          </div>
+          <div className="text-xs text-foreground/40 mt-2">{t('totalWithdrawalDesc')}</div>
+          <div className="mt-3 text-xs text-foreground/50">
+            {t('totalWithdrawal')}: <span className="text-red-500 font-semibold">{loadingBalance ? "..." : balanceSummary?.totalWithdrawal?.count || 0}</span> {lang === 'bn' ? 'টি লেনদেন' : 'transactions'}
+          </div>
+        </div>
+
+        {/* Referral Bonus Card */}
+        <div className="bg-card border border-border rounded-xl p-5 hover:shadow-lg transition relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full -mr-8 -mt-8"></div>
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-500">
+              <Gift size={20} />
+            </div>
+            <div>
+              <div className="text-xs text-foreground/50">{t('referralBonus')}</div>
+              <div className="text-xl font-bold text-foreground">
+                {loadingBalance ? "..." : formatCurrency(balanceSummary?.referralBonus?.available || 0)}
+              </div>
+            </div>
+          </div>
+          <div className="text-xs text-foreground/40 mt-2">{t('referralBonusDesc')}</div>
+          <div className="flex justify-between mt-3 text-xs">
+            <span className="text-foreground/50">{t('earned')}: <span className="text-amber-500 font-semibold">{loadingBalance ? "..." : formatCurrency(balanceSummary?.referralBonus?.earned || 0)}</span></span>
+            <span className="text-foreground/50">{t('withdrawn')}: <span className="text-red-500 font-semibold">{loadingBalance ? "..." : formatCurrency(balanceSummary?.referralBonus?.withdrawn || 0)}</span></span>
+          </div>
+          {balanceSummary?.referralBonus?.available > 0 && (
+            <Link href="/dashboard/referral-withdrawal" className="mt-3 block w-full py-2 bg-amber-500/10 text-amber-600 rounded-lg text-xs font-semibold text-center hover:bg-amber-500/20 transition">
+              {t('withdrawReferral')}
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Stats Grid */}
