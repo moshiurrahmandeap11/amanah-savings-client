@@ -683,13 +683,15 @@ const NotificationsPage = () => {
                     )}
 
                     {/* Rejection Reason / Remarks */}
-                    {selectedWithdrawal.remarks && (
+                    {(selectedWithdrawal.remarks || selectedWithdrawal.message) && (
                       <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/30 rounded-xl p-4">
                         <div className="text-xs font-semibold text-red-500 mb-1 flex items-center gap-1">
                           <AlertCircle size={14} />
                           {t('rejectionReason')}
                         </div>
-                        <div className="text-sm text-foreground">{selectedWithdrawal.remarks}</div>
+                        <div className="text-sm text-foreground">
+                          {selectedWithdrawal.remarks || (typeof selectedWithdrawal.message === 'string' ? selectedWithdrawal.message.replace(/<[^>]*>/g, '') : '')}
+                        </div>
                       </div>
                     )}
 
