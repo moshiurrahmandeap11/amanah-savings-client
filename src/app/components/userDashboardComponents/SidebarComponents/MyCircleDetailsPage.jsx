@@ -22,10 +22,12 @@ import {
   Check,
   TrendingUp,
   AlertCircle,
+  Banknote,
 } from "lucide-react";
 
 import Swal from "sweetalert2";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
+import useAuth from "../../../hooks/useAuth";
 
 // Translations
 const translations = {
@@ -79,6 +81,17 @@ const translations = {
     joinCircle: "Join Circle",
     joinedBadge: "Joined",
     makeDeposit: "Make a Deposit",
+    withdrawFunds: "Withdraw Funds",
+    withdrawFromCircle: "Withdraw from Circle Pool",
+    minWithdrawError: "Minimum withdrawal is ৳100",
+    insufficientPool: "Insufficient pool balance",
+    
+    // Withdraw Modal
+    withdrawAmount: "Withdrawal Amount",
+    availablePool: "Available Pool",
+    enterAmount: "Enter amount",
+    submitWithdrawal: "Submit Withdrawal",
+    withdrawalSubmitted: "Withdrawal request submitted successfully",
     
     // Modals
     joinCircleTitle: "Join Circle?",
@@ -159,6 +172,17 @@ const translations = {
     joinCircle: "সার্কেলে যোগ দিন",
     joinedBadge: "যোগ দিয়েছেন",
     makeDeposit: "জমা দিন",
+    withdrawFunds: "তহবিল উত্তোলন",
+    withdrawFromCircle: "সার্কেল পুল থেকে উত্তোলন",
+    minWithdrawError: "ন্যূনতম উত্তোলন ৳১০০",
+    insufficientPool: "অপর্যাপ্ত পুল ব্যালেন্স",
+    
+    // Withdraw Modal
+    withdrawAmount: "উত্তোলনের পরিমাণ",
+    availablePool: "উপলব্ধ পুল",
+    enterAmount: "পরিমাণ লিখুন",
+    submitWithdrawal: "উত্তোলন জমা দিন",
+    withdrawalSubmitted: "উত্তোলন অনুরোধ সফলভাবে জমা দেওয়া হয়েছে",
     
     // Modals
     joinCircleTitle: "সার্কেলে যোগ দিবেন?",
@@ -194,6 +218,7 @@ const translations = {
 const MyCircleDetailsPage = () => {
   const { id } = useParams();
   const router = useRouter();
+  const { user: authUser } = useAuth();
   const [circle, setCircle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
@@ -330,6 +355,14 @@ const MyCircleDetailsPage = () => {
   const [inviteLink, setInviteLink] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [generatingInvite, setGeneratingInvite] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawPaymentMethod, setWithdrawPaymentMethod] = useState("bkash");
+  const [withdrawPhone, setWithdrawPhone] = useState("");
+  const [withdrawBankName, setWithdrawBankName] = useState("");
+  const [withdrawAccountNumber, setWithdrawAccountNumber] = useState("");
+  const [withdrawAccountHolder, setWithdrawAccountHolder] = useState("");
+  const [withdrawing, setWithdrawing] = useState(false);
 
   const generateInviteLink = async () => {
     setGeneratingInvite(true);
@@ -352,6 +385,74 @@ const MyCircleDetailsPage = () => {
       setGeneratingInvite(false);
     }
     return null;
+  };
+
+  const handleWithdraw = async () => {
+    const amount = parseFloat(withdrawAmount);
+    if (!amount || amount < 100) {
+      Swal.fire({
+        title: t('errorTitle'),
+        text: t('minWithdrawError'),
+        icon: "error",
+        confirmButtonColor: "#dc2626",
+      });
+      return;
+    }
+
+    const availablePool = circleTotalPoolValue;
+    if (amount > availablePool) {
+      Swal.fire({
+        title: t('errorTitle'),
+        text: `${t('insufficientPool')}. Available: ৳${availablePool.toLocaleString()}`,
+        icon: "error",
+        confirmButtonColor: "#dc2626",
+      });
+      return;
+    }
+
+    setWithdrawing(true);
+    try {
+      const requestData = {
+        withdrawalAmount: amount,
+        paymentMethod: withdrawPaymentMethod,
+      };
+
+      if (withdrawPaymentMethod === "bkash" || withdrawPaymentMethod === "nagad") {
+        requestData.phoneNumber = withdrawPhone;
+      }
+      if (withdrawPaymentMethod === "bank") {
+        requestData.bankName = withdrawBankName;
+        requestData.accountNumber = withdrawAccountNumber;
+        requestData.accountHolderName = withdrawAccountHolder;
+      }
+
+      const response = await axiosInstance.post(`/circles/${id}/withdraw`, requestData);
+      if (response.data.success) {
+        Swal.fire({
+          title: t('success'),
+          text: t('withdrawalSubmitted'),
+          icon: "success",
+          confirmButtonColor: "#059669",
+        });
+        setShowWithdrawModal(false);
+        setWithdrawAmount("");
+        setWithdrawPhone("");
+        setWithdrawBankName("");
+        setWithdrawAccountNumber("");
+        setWithdrawAccountHolder("");
+        fetchCircleDetails();
+      }
+    } catch (error) {
+      console.error("Withdraw error:", error);
+      Swal.fire({
+        title: t('errorTitle'),
+        text: error.response?.data?.message || "Failed to submit withdrawal",
+        icon: "error",
+        confirmButtonColor: "#dc2626",
+      });
+    } finally {
+      setWithdrawing(false);
+    }
   };
 
   const copyInviteLink = async () => {
@@ -449,6 +550,12 @@ const MyCircleDetailsPage = () => {
   const circleNextPayout = circle.nextPayout || "Not scheduled";
   const circleCreatedAt = circle.createdAt || new Date().toISOString();
   const isMember = circle.isMember || false;
+  const currentUserId = authUser?._id || authUser?.id;
+  // Check if current user is admin using membersList (userId is already string from backend)
+  const isAdmin = circle.membersList?.some(m => 
+    m.role === "admin" && 
+    String(m.userId) === String(currentUserId)
+  ) || false;
   
   const progressPercentage = circleTargetAmount > 0 
     ? Math.round((circleTotalPoolValue / circleTargetAmount) * 100) 
@@ -817,6 +924,15 @@ const MyCircleDetailsPage = () => {
             <Send size={18} />
             {t('makeDeposit')}
           </button>
+          {isAdmin && (
+            <button
+              onClick={() => setShowWithdrawModal(true)}
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"
+            >
+              <Banknote size={18} />
+              {t('withdrawFunds')}
+            </button>
+          )}
         </div>
       )}
 
@@ -829,6 +945,144 @@ const MyCircleDetailsPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Withdraw Modal */}
+      {showWithdrawModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-card border border-border rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto"
+          >
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold text-foreground">{t('withdrawFromCircle')}</h3>
+              <button
+                onClick={() => setShowWithdrawModal(false)}
+                className="w-8 h-8 rounded-lg border border-border flex items-center justify-center hover:bg-primary/10 transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="mb-4 p-3 bg-primary/5 rounded-lg">
+              <div className="text-sm text-foreground/60">{t('availablePool')}</div>
+              <div className="text-xl font-bold text-primary">৳{circleTotalPoolValue.toLocaleString()}</div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-foreground mb-2">{t('withdrawAmount')}</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 font-semibold">৳</span>
+                <input
+                  type="number"
+                  value={withdrawAmount}
+                  onChange={(e) => setWithdrawAmount(e.target.value)}
+                  placeholder={t('enterAmount')}
+                  min="100"
+                  max={circleTotalPoolValue}
+                  className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-foreground mb-2">{t('paymentMethod')}</label>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { id: "bkash", name: "bKash", icon: <Smartphone size={20} />, color: "text-pink-600" },
+                  { id: "nagad", name: "Nagad", icon: <Smartphone size={20} />, color: "text-orange-500" },
+                  { id: "bank", name: "Bank", icon: <Building size={20} />, color: "text-blue-600" },
+                ].map((method) => (
+                  <button
+                    key={method.id}
+                    onClick={() => setWithdrawPaymentMethod(method.id)}
+                    className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+                      withdrawPaymentMethod === method.id
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/30"
+                    }`}
+                  >
+                    <span className={method.color}>{method.icon}</span>
+                    <span className="text-sm font-medium text-foreground">{method.name}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {(withdrawPaymentMethod === "bkash" || withdrawPaymentMethod === "nagad") && (
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-foreground mb-2">Phone Number</label>
+                <input
+                  type="text"
+                  value={withdrawPhone}
+                  onChange={(e) => setWithdrawPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                  placeholder="01XXXXXXXXX"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                />
+              </div>
+            )}
+
+            {withdrawPaymentMethod === "bank" && (
+              <div className="space-y-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Bank Name</label>
+                  <select
+                    value={withdrawBankName}
+                    onChange={(e) => setWithdrawBankName(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  >
+                    <option value="">Select Bank</option>
+                    <option value="DBBL">Dutch-Bangla Bank (DBBL)</option>
+                    <option value="BRAC">BRAC Bank</option>
+                    <option value="Islami">Islami Bank Bangladesh</option>
+                    <option value="Sonali">Sonali Bank</option>
+                    <option value="Janata">Janata Bank</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Account Number</label>
+                  <input
+                    type="text"
+                    value={withdrawAccountNumber}
+                    onChange={(e) => setWithdrawAccountNumber(e.target.value)}
+                    placeholder="Enter account number"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">Account Holder Name</label>
+                  <input
+                    type="text"
+                    value={withdrawAccountHolder}
+                    onChange={(e) => setWithdrawAccountHolder(e.target.value)}
+                    placeholder="Enter account holder name"
+                    className="w-full px-4 py-3 bg-background border border-border rounded-xl text-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                  />
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleWithdraw}
+              disabled={withdrawing || !withdrawAmount}
+              className="w-full py-3.5 bg-red-500 text-white rounded-xl font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {withdrawing ? (
+                <>
+                  <Loader2 size={18} className="animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Banknote size={18} />
+                  {t('submitWithdrawal')}
+                </>
+              )}
+            </button>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

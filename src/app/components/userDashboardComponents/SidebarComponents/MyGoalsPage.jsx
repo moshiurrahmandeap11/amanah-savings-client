@@ -155,7 +155,12 @@ const translations = {
     proTip: "Pro Tip:",
     proTipText: "Setting up auto-save for your goals helps you stay consistent and reach your targets faster. You can pause any goal anytime from settings.",
     
-    // Loading
+    // Auto Calculation
+    calculation: "Calculation",
+    monthlyDepositNeeded: "Monthly deposit needed:",
+    timeNeeded: "Time needed:",
+    completionMonth: "Completion month:",
+    months: "months",
     loadingGoals: "Loading your goals...",
     
     // Dates
@@ -286,7 +291,12 @@ const translations = {
     proTip: "প্রো টিপ:",
     proTipText: "আপনার লক্ষ্যের জন্য অটো-সেভ সেটআপ করা আপনাকে ধারাবাহিক থাকতে এবং দ্রুত লক্ষ্যে পৌঁছাতে সাহায্য করে। আপনি যেকোনো সময় সেটিংস থেকে যেকোনো লক্ষ্য বিরতি দিতে পারেন।",
     
-    // Loading
+    // Auto Calculation
+    calculation: "গণনা",
+    monthlyDepositNeeded: "প্রতি মাসে জমা করতে হবে:",
+    timeNeeded: "সময় লাগবে:",
+    completionMonth: "সমাপ্তির মাস:",
+    months: "মাস",
     loadingGoals: "আপনার লক্ষ্য লোড হচ্ছে...",
     
     // Dates
@@ -323,6 +333,12 @@ const MyGoalsPage = () => {
     targetDate: "",
     description: "",
     islamicMode: true,
+  });
+  const [calculations, setCalculations] = useState({
+    monthsNeeded: null,
+    monthlyNeeded: null,
+    completionMonthName: null,
+    completionYear: null,
   });
 
   // Translation function
@@ -385,6 +401,46 @@ const MyGoalsPage = () => {
   const formatCurrency = (amount) => {
     if (!amount && amount !== 0) return "৳0";
     return `৳${amount.toLocaleString()}`;
+  };
+
+  // Auto-calculate goal timeline based on target, monthly deposit, and target date
+  const calculateGoalTimeline = (target, monthly, targetDateStr) => {
+    const targetNum = parseFloat(target) || 0;
+    const monthlyNum = parseFloat(monthly) || 0;
+
+    if (targetNum <= 0) return { monthsNeeded: null, monthlyNeeded: null, completionMonthName: null, completionYear: null };
+
+    // If target date is provided, calculate monthly deposit needed
+    if (targetDateStr) {
+      const today = new Date();
+      const targetDate = new Date(targetDateStr);
+      const diffTime = targetDate - today;
+      const diffMonths = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24 * 30.44)));
+      const neededPerMonth = Math.ceil(targetNum / diffMonths);
+
+      return {
+        monthsNeeded: diffMonths,
+        monthlyNeeded: neededPerMonth,
+        completionMonthName: targetDate.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { month: 'long' }),
+        completionYear: targetDate.getFullYear(),
+      };
+    }
+
+    // If monthly deposit is provided, calculate months needed
+    if (monthlyNum > 0) {
+      const months = Math.ceil(targetNum / monthlyNum);
+      const completionDate = new Date();
+      completionDate.setMonth(completionDate.getMonth() + months);
+
+      return {
+        monthsNeeded: months,
+        monthlyNeeded: monthlyNum,
+        completionMonthName: completionDate.toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-US', { month: 'long' }),
+        completionYear: completionDate.getFullYear(),
+      };
+    }
+
+    return { monthsNeeded: null, monthlyNeeded: null, completionMonthName: null, completionYear: null };
   };
 
   const formatDate = (dateString) => {
@@ -708,7 +764,15 @@ const MyGoalsPage = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      // Auto-calculate when target, monthly deposit, or target date changes
+      if (name === 'targetAmount' || name === 'monthlyDeposit' || name === 'targetDate') {
+        const calc = calculateGoalTimeline(updated.targetAmount, updated.monthlyDeposit, updated.targetDate);
+        setCalculations(calc);
+      }
+      return updated;
+    });
   };
 
   const handleViewDetails = (goal) => {
@@ -1335,6 +1399,50 @@ const MyGoalsPage = () => {
                     className="w-full p-2.5 sm:p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary focus:ring-1 focus:ring-primary transition text-sm sm:text-base disabled:opacity-50"
                   />
                 </div>
+
+                {/* Auto Calculation Display */}
+                {(calculations.monthsNeeded || calculations.monthlyNeeded) && (
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp size={16} className="text-primary" />
+                      <span className="text-sm font-semibold text-foreground">
+                        {t('calculation')}
+                      </span>
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      {calculations.monthlyNeeded > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-foreground/60">
+                            {t('monthlyDepositNeeded')}
+                          </span>
+                          <span className="font-semibold text-primary">
+                            ৳{calculations.monthlyNeeded.toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                      {calculations.monthsNeeded > 0 && (
+                        <div className="flex justify-between">
+                          <span className="text-foreground/60">
+                            {t('timeNeeded')}
+                          </span>
+                          <span className="font-semibold text-primary">
+                            {calculations.monthsNeeded} {t('months')}
+                          </span>
+                        </div>
+                      )}
+                      {calculations.completionMonthName && (
+                        <div className="flex justify-between">
+                          <span className="text-foreground/60">
+                            {t('completionMonth')}
+                          </span>
+                          <span className="font-semibold text-primary">
+                            {calculations.completionMonthName} {calculations.completionYear}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Description */}
                 <div>
