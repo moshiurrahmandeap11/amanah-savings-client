@@ -170,7 +170,7 @@ const getInitialTheme = () => {
 
 const WithDrawalsPage = ({ initialTab = "pending" }) => {
   const [isDark, setIsDark] = useState(getInitialTheme);
-  const [lang] = useState(getInitialAdminLang);
+  const [lang, setLang] = useState(getInitialAdminLang);
   const [activeTab, setActiveTab] = useState(initialTab);
   const [searchQuery, setSearchQuery] = useState("");
   const [showNoteSheet, setShowNoteSheet] = useState(false);
@@ -227,6 +227,14 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
               bankName: tx.bankName || paymentDetails.bankName,
               accountNumber: tx.accountNumber || paymentDetails.accountNumber,
               accountHolderName: tx.accountHolderName || paymentDetails.accountHolderName,
+            };
+          }
+          
+          // If mobile banking phone is directly on the transaction object, move it to paymentDetails
+          if (tx.phoneNumber || tx.phone) {
+            paymentDetails = {
+              ...paymentDetails,
+              phoneNumber: tx.phoneNumber || tx.phone || paymentDetails.phoneNumber,
             };
           }
           
