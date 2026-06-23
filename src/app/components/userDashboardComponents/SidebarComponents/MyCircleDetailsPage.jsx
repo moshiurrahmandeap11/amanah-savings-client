@@ -327,20 +327,52 @@ const MyCircleDetailsPage = () => {
     }
   };
 
-  const copyInviteLink = () => {
-    const inviteLink = `${window.location.origin}/dashboard/circles/join/${id}`;
-    navigator.clipboard.writeText(inviteLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    
-    Swal.fire({
-      title: t('copied'),
-      text: t('inviteLinkCopied'),
-      icon: "success",
-      confirmButtonColor: "#059669",
-      timer: 1500,
-      showConfirmButton: false,
-    });
+  const [inviteLink, setInviteLink] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
+  const [generatingInvite, setGeneratingInvite] = useState(false);
+
+  const generateInviteLink = async () => {
+    setGeneratingInvite(true);
+    try {
+      const response = await axiosInstance.post(`/circles/${id}/invite`);
+      if (response.data.success) {
+        setInviteLink(response.data.data.inviteLink);
+        setInviteCode(response.data.data.inviteCode);
+        return response.data.data.inviteLink;
+      }
+    } catch (error) {
+      console.error("Generate invite error:", error);
+      Swal.fire({
+        title: t('errorTitle'),
+        text: error.response?.data?.message || "Failed to generate invite link",
+        icon: "error",
+        confirmButtonColor: "#059669",
+      });
+    } finally {
+      setGeneratingInvite(false);
+    }
+    return null;
+  };
+
+  const copyInviteLink = async () => {
+    let link = inviteLink;
+    if (!link) {
+      link = await generateInviteLink();
+    }
+    if (link) {
+      navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      
+      Swal.fire({
+        title: t('copied'),
+        text: t('inviteLinkCopied'),
+        icon: "success",
+        confirmButtonColor: "#059669",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    }
   };
 
   const getStatusColor = (status) => {
