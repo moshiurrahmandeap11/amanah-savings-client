@@ -181,6 +181,7 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showRejectSheet, setShowRejectSheet] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
+  const [showNoteSheet, setShowNoteSheet] = useState(false);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [noteText, setNoteText] = useState("");
@@ -331,6 +332,19 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
     setShowRejectSheet(false);
     setSelectedTransaction(null);
     setRejectReason("");
+    document.body.style.overflow = "auto";
+  };
+
+  const openNoteSheet = (transaction) => {
+    setSelectedTransaction(transaction);
+    setShowNoteSheet(true);
+    document.body.style.overflow = "hidden";
+  };
+
+  const closeNoteSheet = () => {
+    setShowNoteSheet(false);
+    setSelectedTransaction(null);
+    setNoteText("");
     document.body.style.overflow = "auto";
   };
 
