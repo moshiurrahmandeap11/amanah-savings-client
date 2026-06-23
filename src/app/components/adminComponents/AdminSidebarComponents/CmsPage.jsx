@@ -79,6 +79,21 @@ const translations = {
     features: "Features",
     newFeature: "New feature",
     
+    // Comparison Table Tab
+    comparisonTable: "📊 Comparison Table",
+    comparisonGroups: "Feature Comparison Groups",
+    groupLabel: "Group Label",
+    groupIcon: "Icon (Wallet, CreditCard, Users, Bot, Trophy, ShieldCheck, Moon)",
+    addRow: "Add Row",
+    addGroup: "Add Group",
+    deleteGroup: "Delete Group",
+    featureName: "Feature Name",
+    bronzeValue: "Bronze",
+    silverValue: "Silver",
+    goldValue: "Gold",
+    platinumValue: "Platinum",
+    deleteRow: "Delete Row",
+    
     // FAQ Tab
     faqItems: "❓ FAQ Items",
     newFAQ: "New FAQ",
@@ -173,6 +188,21 @@ const translations = {
     color: "Color",
     features: "Features",
     newFeature: "New feature",
+    
+    // Comparison Table Tab
+    comparisonTable: "📊 তুলনা টেবিল",
+    comparisonGroups: "ফিচার তুলনা গ্রুপ",
+    groupLabel: "গ্রুপ লেবেল",
+    groupIcon: "আইকন (Wallet, CreditCard, Users, Bot, Trophy, ShieldCheck, Moon)",
+    addRow: "রো যোগ করুন",
+    addGroup: "গ্রুপ যোগ করুন",
+    deleteGroup: "গ্রুপ মুছুন",
+    featureName: "ফিচার নাম",
+    bronzeValue: "ব্রোঞ্জ",
+    silverValue: "সিলভার",
+    goldValue: "গোল্ড",
+    platinumValue: "প্লাটিনাম",
+    deleteRow: "রো মুছুন",
     
     // FAQ Tab
     faqItems: "❓ FAQ Items",
@@ -328,6 +358,7 @@ const CmsPage = () => {
     { id: "homepage",      label: t('homepage'),         icon: <Home size={16} /> },
     { id: "nav",           label: t('navigation'),       icon: <Navigation size={16} /> },
     { id: "plans",         label: t('plans'),         icon: <CreditCard size={16} /> },
+    { id: "comparison",    label: t('comparisonTable'),  icon: <CreditCard size={16} /> },
     { id: "faq",           label: t('faq'),              icon: <HelpCircle size={16} /> },
     { id: "announcements", label: t('announcements'),           icon: <Megaphone size={16} /> },
     { id: "footer",        label: t('footer'),           icon: <LinkIcon size={16} /> },
@@ -632,6 +663,121 @@ const CmsPage = () => {
     </div>
   );
 
+  const renderComparisonTab = () => (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-bold text-foreground">{t('comparisonGroups')}</h3>
+        <button
+          onClick={() =>
+            setCmsData((prev) => ({
+              ...prev,
+              comparisonGroups: [
+                ...(prev.comparisonGroups || []),
+                { label: "New Group", icon: "Wallet", rows: [["Feature", "", "", "", ""]] },
+              ],
+            }))
+          }
+          className="text-xs text-primary flex items-center gap-1 hover:underline"
+        >
+          <Plus size={12} /> {t('addGroup')}
+        </button>
+      </div>
+
+      {(cmsData?.comparisonGroups || []).map((group, gIdx) => (
+        <div key={gIdx} className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 flex-1">
+              <div className="text-xs font-semibold text-foreground/50">#{gIdx + 1}</div>
+              <input
+                className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm font-bold"
+                value={group.label || ""}
+                onChange={(e) => updateArrayItem("comparisonGroups", gIdx, "label", e.target.value)}
+                placeholder={t('groupLabel')}
+              />
+              <input
+                className="w-32 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={group.icon || ""}
+                onChange={(e) => updateArrayItem("comparisonGroups", gIdx, "icon", e.target.value)}
+                placeholder={t('groupIcon')}
+              />
+            </div>
+            <button
+              onClick={() =>
+                setCmsData((prev) => ({
+                  ...prev,
+                  comparisonGroups: (prev.comparisonGroups || []).filter((_, i) => i !== gIdx),
+                }))
+              }
+              className="text-red-400 hover:text-red-500 p-1 ml-2"
+            >
+              <Trash2 size={14} />
+            </button>
+          </div>
+
+          <div className="space-y-2">
+            <div className="grid grid-cols-6 gap-2 text-xs font-semibold text-foreground/50 px-1">
+              <span>{t('featureName')}</span>
+              <span>{t('bronzeValue')}</span>
+              <span>{t('silverValue')}</span>
+              <span>{t('goldValue')}</span>
+              <span>{t('platinumValue')}</span>
+              <span></span>
+            </div>
+            {(group.rows || []).map((row, rIdx) => (
+              <div key={rIdx} className="grid grid-cols-6 gap-2 items-center">
+                {Array.isArray(row) && row.map((cell, cIdx) => (
+                  <input
+                    key={cIdx}
+                    className="p-1.5 rounded border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                    value={String(cell ?? "")}
+                    onChange={(e) => {
+                      setCmsData((prev) => {
+                        const groups = [...(prev.comparisonGroups || [])];
+                        const rows = [...(groups[gIdx].rows || [])];
+                        const newRow = [...(rows[rIdx] || [])];
+                        newRow[cIdx] = e.target.value;
+                        rows[rIdx] = newRow;
+                        groups[gIdx] = { ...groups[gIdx], rows };
+                        return { ...prev, comparisonGroups: groups };
+                      });
+                    }}
+                    placeholder={cIdx === 0 ? t('featureName') : ""}
+                  />
+                ))}
+                <button
+                  onClick={() => {
+                    setCmsData((prev) => {
+                      const groups = [...(prev.comparisonGroups || [])];
+                      const rows = (groups[gIdx].rows || []).filter((_, i) => i !== rIdx);
+                      groups[gIdx] = { ...groups[gIdx], rows };
+                      return { ...prev, comparisonGroups: groups };
+                    });
+                  }}
+                  className="text-red-400 hover:text-red-500 p-1"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+            <button
+              onClick={() => {
+                setCmsData((prev) => {
+                  const groups = [...(prev.comparisonGroups || [])];
+                  const rows = [...(groups[gIdx].rows || []), ["", "", "", "", ""]];
+                  groups[gIdx] = { ...groups[gIdx], rows };
+                  return { ...prev, comparisonGroups: groups };
+                });
+              }}
+              className="text-xs text-primary flex items-center gap-1 mt-1 hover:underline"
+            >
+              <Plus size={12} /> {t('addRow')}
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   const renderFaqTab = () => (
     <div className="bg-card border border-border rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
@@ -868,6 +1014,7 @@ const CmsPage = () => {
       case "homepage":      return renderHomepageTab();
       case "nav":           return renderNavTab();
       case "plans":         return renderPlansTab();
+      case "comparison":    return renderComparisonTab();
       case "faq":           return renderFaqTab();
       case "announcements": return renderAnnouncementTab();
       case "footer":        return renderFooterTab();

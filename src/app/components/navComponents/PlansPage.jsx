@@ -660,7 +660,33 @@ const PlanPage = () => {
     [cms, t],
   );
   const plans = cmsPlans.length ? cmsPlans : fallbackPlans;
-  const comparisonGroups = getComparisonGroups(t);
+  
+  // Get comparison groups from CMS or fallback to hardcoded
+  const fallbackComparisonGroups = getComparisonGroups(t);
+  const cmsComparisonGroups = useMemo(() => {
+    if (!cms?.comparisonGroups || !Array.isArray(cms.comparisonGroups)) return null;
+    
+    // Map CMS comparison groups to the format expected by the table
+    const iconMap = {
+      Wallet, CreditCard, Users, Bot, Trophy, ShieldCheck, Moon,
+    };
+    
+    return cms.comparisonGroups.map((group) => ({
+      label: group.label || "Feature",
+      icon: iconMap[group.icon] || Wallet,
+      rows: (group.rows || []).map((row) => {
+        if (!Array.isArray(row)) return ["", "", "", "", ""];
+        return row.map((cell) => {
+          // Convert string booleans back to actual booleans for checkmark rendering
+          if (cell === true || cell === "true" || cell === "yes") return true;
+          if (cell === false || cell === "false" || cell === "no") return false;
+          return cell;
+        });
+      }),
+    }));
+  }, [cms]);
+  
+  const comparisonGroups = cmsComparisonGroups || fallbackComparisonGroups;
   const testimonials = getTestimonials(t);
   const faqs = getFaqs(t);
 
