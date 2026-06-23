@@ -380,7 +380,8 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
   };
 
   const hasMobileDetails = (tx) => {
-    return !!(tx.phoneNumber || tx.phone);
+    const details = tx.paymentDetails || {};
+    return !!(details.phoneNumber || tx.phoneNumber || tx.phone);
   };
 
   const filteredTransactions = transactions.filter((t) => {
@@ -608,7 +609,7 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
                     <div className="grid grid-cols-2 gap-1 text-[10px]">
                       <div>
                         <span className="text-foreground/50">{t('phoneNumber')}:</span>
-                        <span className="font-semibold text-foreground ml-1">{tx.phoneNumber || tx.phone || "N/A"}</span>
+                        <span className="font-semibold text-foreground ml-1">{tx.paymentDetails?.phoneNumber || tx.phoneNumber || tx.phone || "N/A"}</span>
                       </div>
                       <div>
                         <span className="text-foreground/50">{t('method')}:</span>
@@ -824,7 +825,7 @@ const WithDrawalsPage = ({ initialTab = "pending" }) => {
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-foreground/50">{t('phoneNumber')}</span>
-                        <span className="font-semibold text-foreground">{selectedTransaction.phoneNumber || selectedTransaction.phone || "N/A"}</span>
+                        <span className="font-semibold text-foreground">{selectedTransaction.paymentDetails?.phoneNumber || selectedTransaction.phoneNumber || selectedTransaction.phone || "N/A"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-foreground/50">{t('method')}</span>
