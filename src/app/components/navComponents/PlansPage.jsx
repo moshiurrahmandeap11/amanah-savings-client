@@ -502,8 +502,8 @@ const planIconClasses = [
 
 const normalizeCmsPlan = (plan, index, t) => {
   const id = (plan.id || plan.name || `plan-${index}`).toLowerCase().replace(/\s+/g, "-");
-  const monthly = Number(plan.monthly ?? plan.monthlyFee ?? plan.price ?? plan.fee) || 0;
-  const yearly = Number(plan.yearly ?? plan.yearlyFee) || Math.round(monthly * 0.8);
+  const monthlyFee = Number(plan.monthlyFee ?? plan.monthly ?? plan.price ?? plan.fee) || 0;
+  const yearlyFee = Number(plan.yearlyFee ?? plan.yearly ?? Math.round(monthlyFee * 0.8)) || 0;
   const min = Number(plan.min) || 0;
   const max = plan.max === null || plan.max === undefined || plan.max === "" ? null : Number(plan.max);
   const rangeText = max
@@ -515,8 +515,8 @@ const normalizeCmsPlan = (plan, index, t) => {
     tier: plan.name || `Plan ${index + 1}`,
     name: plan.title || plan.name || `Plan ${index + 1}`,
     icon: planIcons[index % planIcons.length],
-    monthly,
-    yearly,
+    monthly: monthlyFee,
+    yearly: yearlyFee,
     color: plan.color || "#059669",
     iconClass: plan.iconClass || planIconClasses[index % planIconClasses.length],
     popular: Boolean(plan.popular),
@@ -883,11 +883,11 @@ const PlanPage = () => {
                     {t('compareFeature')}
                   </th>
                   {[
-                    [t('bronze'), t('compareFree'), "bg-[#fef3c7] text-[#b45309]"],
-                    [t('silver'), t('comparePrice').replace('{price}', '199'), "bg-[#f1f5f9] text-[#64748b]"],
-                    [t('gold'), t('comparePrice').replace('{price}', '499'), "bg-[#fef9c3] text-[#a16207]"],
-                    [t('platinum'), t('comparePrice').replace('{price}', '999'), "bg-[#ede9fe] text-[#6d28d9]"],
-                  ].map(([name, price, className], index) => (
+                    [t('bronze'), t('compareFree'), "bg-[#fef3c7] text-[#b45309]", plans.find(p => p.id === 'bronze')?.monthly ?? 0],
+                    [t('silver'), t('comparePrice').replace('{price}', String(plans.find(p => p.id === 'silver')?.monthly ?? 199)), "bg-[#f1f5f9] text-[#64748b]", plans.find(p => p.id === 'silver')?.monthly ?? 199],
+                    [t('gold'), t('comparePrice').replace('{price}', String(plans.find(p => p.id === 'gold')?.monthly ?? 499)), "bg-[#fef9c3] text-[#a16207]", plans.find(p => p.id === 'gold')?.monthly ?? 499],
+                    [t('platinum'), t('comparePrice').replace('{price}', String(plans.find(p => p.id === 'platinum')?.monthly ?? 999)), "bg-[#ede9fe] text-[#6d28d9]", plans.find(p => p.id === 'platinum')?.monthly ?? 999],
+                  ].map(([name, price, className, planPrice], index) => (
                     <th
                       key={name}
                       className={`border-b-2 border-[#e2e8f0] px-6 py-5 text-center text-[13px] font-bold text-[#475569] dark:border-[#1e2d3d] dark:text-[#94a3b8] ${

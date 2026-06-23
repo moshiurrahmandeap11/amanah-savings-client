@@ -46,6 +46,14 @@ const translations = {
     customRange: "Your own plan",
     selected: "✓ Selected",
     
+    // Billing Cycle
+    billingCycle: "Billing Cycle",
+    monthly: "Monthly",
+    yearly: "Yearly (Save 20%)",
+    planFee: "Plan Fee",
+    perMonth: "/month",
+    perYear: "/year",
+    
     // Goal Section
     setFirstGoal: "Set Your First Savings Goal",
     goalType: "Goal Type",
@@ -104,6 +112,14 @@ const translations = {
     customRange: "আপনার নিজস্ব প্ল্যান",
     selected: "✓ নির্বাচিত",
     
+    // Billing Cycle
+    billingCycle: "বিলিং সাইকেল",
+    monthly: "মাসিক",
+    yearly: "বার্ষিক (২০% সাশ্রয়)",
+    planFee: "প্ল্যান ফি",
+    perMonth: "/মাস",
+    perYear: "/বছর",
+    
     // Goal Section
     setFirstGoal: "আপনার প্রথম সঞ্চয় লক্ষ্য নির্ধারণ করুন",
     goalType: "লক্ষ্যের ধরন",
@@ -140,6 +156,15 @@ const translations = {
     nextButton: "পরবর্তী — পিন সেট করুন →",
     previous: "← পূর্ববর্তী",
   }
+};
+
+// Plan fee mapping (monthly, yearly)
+const PLAN_FEES = {
+  bronze: { monthly: 0, yearly: 0 },
+  silver: { monthly: 199, yearly: 159 },
+  gold: { monthly: 499, yearly: 399 },
+  platinum: { monthly: 999, yearly: 799 },
+  custom: { monthly: 0, yearly: 0 },
 };
 
 const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" }) => {
@@ -300,6 +325,21 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
   // Check if custom plan is selected
   const isCustomPlanSelected = formData.selectedPlan === "custom";
 
+  // Get current plan fee based on selected plan and billing cycle
+  const currentPlanFee = useMemo(() => {
+    const plan = formData.selectedPlan || "bronze";
+    const cycle = formData.billingCycle || "monthly";
+    return PLAN_FEES[plan]?.[cycle] || 0;
+  }, [formData.selectedPlan, formData.billingCycle]);
+
+  // Update planFee when plan or billing cycle changes
+  React.useEffect(() => {
+    const fee = currentPlanFee;
+    if (fee !== (formData.planFee || 0)) {
+      updateField("planFee", fee);
+    }
+  }, [currentPlanFee]);
+
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-card border border-border rounded-2xl p-6">
       <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">{t('stepLabel')}</div>
@@ -323,6 +363,36 @@ const Step5Plan = ({ formData, updateField, handleNext, handleBack, lang = "bn" 
             {formData.selectedPlan === plan.id && <div className="text-primary text-xs mt-1 font-semibold">{t('selected')}</div>}
           </div>
         ))}
+      </div>
+
+      {/* Billing Cycle Toggle */}
+      <div className="mb-6 p-4 rounded-xl border-2 border-primary/30 bg-primary/5 dark:bg-primary/10">
+        <label className="block text-sm font-semibold text-foreground mb-3">{t('billingCycle')}</label>
+        <div className="flex gap-2">
+          {["monthly", "yearly"].map((cycle) => (
+            <button
+              key={cycle}
+              type="button"
+              onClick={() => updateField("billingCycle", cycle)}
+              className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all ${
+                formData.billingCycle === cycle
+                  ? "bg-primary text-white shadow-md"
+                  : "bg-background border border-border text-foreground hover:border-primary/50"
+              }`}
+            >
+              {t(cycle)}
+            </button>
+          ))}
+        </div>
+        <div className="mt-3 text-center">
+          <span className="text-sm text-foreground/70">{t('planFee')}: </span>
+          <span className="text-lg font-bold text-primary">
+            {formatCurrency(currentPlanFee)}
+            <span className="text-sm font-normal text-foreground/50">
+              {formData.billingCycle === "yearly" ? t('perYear') : t('perMonth')}
+            </span>
+          </span>
+        </div>
       </div>
 
       {/* Custom Plan Name Input - only shows when custom plan is selected */}

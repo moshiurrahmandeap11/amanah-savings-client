@@ -139,6 +139,8 @@ const RegisterPage = () => {
     nomineeNid: "",
     nomineeShare: "100",
     selectedPlan: "silver",
+    billingCycle: "monthly",
+    planFee: 499,
     customPlanName: "",
     goalType: "",
     customGoalName: "",
@@ -361,6 +363,8 @@ const RegisterPage = () => {
 
         // Plan
         selectedPlan: formData.selectedPlan,
+        billingCycle: formData.billingCycle || "monthly",
+        planFee: formData.planFee || 0,
         customPlanName: formData.customPlanName || null,
         goalType: formData.goalType || null,
         customGoalName: formData.customGoalName || null,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 // Translations
@@ -56,6 +56,15 @@ const Step2Email = ({
   lang = "bn",
 }) => {
   const [isResending, setIsResending] = useState(false);
+  const [autoSent, setAutoSent] = useState(false);
+
+  // Auto-send OTP when component mounts (first time only)
+  useEffect(() => {
+    if (!autoSent && formData.email && !emailVerified && emailOtpTimer === 0) {
+      setAutoSent(true);
+      handleSendEmailOtp();
+    }
+  }, [autoSent, formData.email, emailVerified, emailOtpTimer]);
 
   // Translation function
   const t = (key, params = {}) => {
@@ -89,7 +98,7 @@ const Step2Email = ({
         <strong>{formData.email || t('yourEmail')}</strong>
       </p>
 
-      {emailOtpTimer === 0 && !emailVerified && formData.email && (
+      {emailOtpTimer === 0 && !emailVerified && formData.email && !autoSent && (
         <button
           onClick={onResendOtp}
           disabled={isResending}
@@ -97,6 +106,12 @@ const Step2Email = ({
         >
           {isResending ? t('sending') : t('sendOtp', { email: formData.email })}
         </button>
+      )}
+
+      {emailOtpTimer > 0 && !emailVerified && (
+        <p className="text-sm text-primary font-semibold mb-3">
+          {t('codeSent')} <strong>{formData.email}</strong>
+        </p>
       )}
 
       <div className="flex justify-center gap-2 mb-4">

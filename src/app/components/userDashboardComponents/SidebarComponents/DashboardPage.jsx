@@ -827,7 +827,7 @@ const DashboardPage = () => {
       { icon: <Wallet size={24} />, value: formatCurrency(totalSaved), label: t('totalSavings'), change: monthlySaved > 0 ? `+${formatCurrency(monthlySaved)} ${t('thisMonth')}` : t('startSavingToday'), color: "green" },
       { icon: <Users size={24} />, value: String(activeCircles), label: t('activeCircles'), change: activeCircles > 0 ? "↑ Goals on track" : t('joinCircle'), color: "blue" },
       { icon: <Flame size={24} />, value: String(streak), label: t('dayStreak'), change: streak >= 30 ? t('topSaver') : streak > 0 ? t('keepGoing') : t('startYourStreak'), color: "warning" },
-      { icon: <Trophy size={24} />, value: String(level), label: t('saverLevel'), change: userData?.selectedPlan ? `${userData.selectedPlan} Saver` : t('member'), color: "info" },
+      { icon: <Trophy size={24} />, value: String(level), label: t('saverLevel'), change: userData?.selectedPlan ? `${userData.selectedPlan} ${userData?.billingCycle === 'yearly' ? '(Yearly)' : '(Monthly)'} — ৳${userData?.planFee || 0}` : t('member'), color: "info" },
     ];
   };
 

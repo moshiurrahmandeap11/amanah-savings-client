@@ -329,7 +329,7 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
     return user?.profilePicture || null;
   };
 
-  // Get plan display name with translation
+  // Get plan display name with translation and billing cycle
   const getPlanDisplay = () => {
     if (!user?.selectedPlan) return t('member');
     const plan = user.selectedPlan.toLowerCase();
@@ -339,7 +339,9 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
       gold: "Gold",
       platinum: "Platinum",
     };
-    return `${planMap[plan] || plan} ${t('member')}`;
+    const cycle = user?.billingCycle === "yearly" ? " (Yearly)" : " (Monthly)";
+    const fee = user?.planFee ? ` — ৳${user.planFee}` : "";
+    return `${planMap[plan] || plan}${cycle}${fee}`;
   };
 
   return (

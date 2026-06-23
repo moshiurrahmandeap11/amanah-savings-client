@@ -73,6 +73,8 @@ const translations = {
     planName: "Plan Name",
     minAmount: "Min (৳)",
     maxAmount: "Max (৳, blank=unlimited)",
+    monthlyFee: "Monthly Fee (৳)",
+    yearlyFee: "Yearly Fee (৳)",
     color: "Color",
     features: "Features",
     newFeature: "New feature",
@@ -166,6 +168,8 @@ const translations = {
     planName: "Plan নাম",
     minAmount: "Min (৳)",
     maxAmount: "Max (৳, blank=unlimited)",
+    monthlyFee: "মাসিক ফি (৳)",
+    yearlyFee: "বার্ষিক ফি (৳)",
     color: "Color",
     features: "Features",
     newFeature: "New feature",
@@ -543,6 +547,26 @@ const CmsPage = () => {
                   onChange={(e) =>
                     updateArrayItem("plans", idx, "max", e.target.value === "" ? null : Number(e.target.value))
                   }
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('monthlyFee')}</label>
+                <input
+                  type="number"
+                  className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                  value={plan.monthlyFee ?? ""}
+                  onChange={(e) => updateArrayItem("plans", idx, "monthlyFee", e.target.value === "" ? 0 : Number(e.target.value))}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('yearlyFee')}</label>
+                <input
+                  type="number"
+                  className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                  value={plan.yearlyFee ?? ""}
+                  onChange={(e) => updateArrayItem("plans", idx, "yearlyFee", e.target.value === "" ? 0 : Number(e.target.value))}
                 />
               </div>
             </div>
