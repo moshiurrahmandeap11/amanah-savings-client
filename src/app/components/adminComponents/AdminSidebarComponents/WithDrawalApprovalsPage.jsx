@@ -62,6 +62,16 @@ const translations = {
     previous: "Previous",
     next: "Next",
     page: "Page",
+    paymentDetails: "Payment Details",
+    phoneNumber: "Phone Number",
+    bankName: "Bank Name",
+    accountNumber: "Account Number",
+    accountHolder: "Account Holder",
+    viewDetails: "View Details",
+    withdrawalType: "Type",
+    goalWithdrawal: "Goal Withdrawal",
+    referralBonus: "Referral Bonus",
+    circleWithdrawal: "Circle Withdrawal",
   },
   bn: {
     withdrawalApprovals: "🏧 উত্তোলন অনুমোদন",
@@ -106,6 +116,16 @@ const translations = {
     previous: "পূর্ববর্তী",
     next: "পরবর্তী",
     page: "পৃষ্ঠা",
+    paymentDetails: "পেমেন্ট বিবরণ",
+    phoneNumber: "ফোন নম্বর",
+    bankName: "ব্যাংকের নাম",
+    accountNumber: "অ্যাকাউন্ট নম্বর",
+    accountHolder: "অ্যাকাউন্ট ধারক",
+    viewDetails: "বিবরণ দেখুন",
+    withdrawalType: "ধরন",
+    goalWithdrawal: "গোল উত্তোলন",
+    referralBonus: "রেফারেল বোনাস",
+    circleWithdrawal: "সার্কেল উত্তোলন",
   }
 };
 
@@ -336,19 +356,51 @@ const WithdrawalApprovalsPage = () => {
     }
   };
 
-  const viewUser = (withdrawal) => {
+  const viewDetails = (withdrawal) => {
+    const pd = withdrawal.paymentDetails || {};
+    let paymentInfo = "";
+    
+    if (withdrawal.paymentMethod === "bkash" || withdrawal.paymentMethod === "nagad") {
+      paymentInfo = `
+        <p><strong>${t('phoneNumber')}:</strong> ${pd.phoneNumber || "N/A"}</p>
+      `;
+    } else if (withdrawal.paymentMethod === "bank") {
+      paymentInfo = `
+        <p><strong>${t('bankName')}:</strong> ${pd.bankName || "N/A"}</p>
+        <p><strong>${t('accountNumber')}:</strong> ${pd.accountNumber || "N/A"}</p>
+        <p><strong>${t('accountHolder')}:</strong> ${pd.accountHolderName || "N/A"}</p>
+      `;
+    }
+
+    const typeLabel = withdrawal.isReferralBonus 
+      ? t('referralBonus') 
+      : withdrawal.isCircleWithdrawal 
+        ? t('circleWithdrawal') 
+        : t('goalWithdrawal');
+    
     Swal.fire({
-      title: t('viewUserDetails'),
+      title: t('viewDetails'),
       html: `
-        <div class="text-left">
+        <div class="text-left text-sm space-y-2">
           <p><strong>${t('user')}:</strong> ${withdrawal.user?.fullName || "N/A"}</p>
           <p><strong>Email:</strong> ${withdrawal.user?.email || "N/A"}</p>
           <p><strong>Phone:</strong> ${withdrawal.user?.phone || "N/A"}</p>
-          <p><strong>Joined:</strong> ${withdrawal.user?.createdAt ? new Date(withdrawal.user.createdAt).toLocaleDateString() : "N/A"}</p>
+          <p><strong>${t('amount')}:</strong> ৳${withdrawal.withdrawalAmount?.toLocaleString() || 0}</p>
+          <p><strong>${t('withdrawalType')}:</strong> ${typeLabel}</p>
+          <p><strong>${t('goal')}:</strong> ${withdrawal.goalName || "—"}</p>
+          <p><strong>${t('method')}:</strong> ${getPaymentIcon(withdrawal.paymentMethod)} ${withdrawal.paymentMethod?.toUpperCase() || "N/A"}</p>
+          ${paymentInfo}
+          <p><strong>${t('reason')}:</strong> ${withdrawal.reason || "—"}</p>
+          <p><strong>${t('status')}:</strong> ${withdrawal.status?.toUpperCase() || "N/A"}</p>
+          <p><strong>Ref ID:</strong> ${withdrawal._id}</p>
+          <p><strong>Date:</strong> ${new Date(withdrawal.createdAt).toLocaleString()}</p>
+          ${withdrawal.remarks ? `<p><strong>${t('remarks')}:</strong> ${withdrawal.remarks}</p>` : ""}
         </div>
       `,
       icon: "info",
       confirmButtonColor: "#059669",
+      confirmButtonText: "OK",
+      width: "28rem",
     });
   };
 
@@ -583,6 +635,22 @@ const WithdrawalApprovalsPage = () => {
                       </div>
                     )}
 
+                    {/* Payment Details Inline */}
+                    {withdrawal.paymentDetails && (
+                      <div className="mt-2 p-2 bg-blue-500/5 rounded-lg border border-blue-500/10">
+                        <div className="text-xs text-foreground/70">
+                          <strong className="text-foreground/90">{t('paymentDetails')}:</strong>{" "}
+                          {withdrawal.paymentMethod === "bkash" || withdrawal.paymentMethod === "nagad" ? (
+                            <span>{t('phoneNumber')}: {withdrawal.paymentDetails.phoneNumber || "N/A"}</span>
+                          ) : withdrawal.paymentMethod === "bank" ? (
+                            <span>{t('bankName')}: {withdrawal.paymentDetails.bankName || "N/A"} | {t('accountNumber')}: {withdrawal.paymentDetails.accountNumber || "N/A"} | {t('accountHolder')}: {withdrawal.paymentDetails.accountHolderName || "N/A"}</span>
+                          ) : (
+                            <span>—</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {withdrawal.status === "pending" && (
                       <div className="grid grid-cols-2 gap-2 mt-3">
                         <button onClick={() => approveWithdrawal(withdrawal)} disabled={processing} className="py-2 rounded-lg bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50">
@@ -590,6 +658,9 @@ const WithdrawalApprovalsPage = () => {
                         </button>
                         <button onClick={() => rejectWithdrawal(withdrawal)} disabled={processing} className="py-2 rounded-lg bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-semibold hover:opacity-90 transition disabled:opacity-50">
                           <XCircle size={12} className="inline mr-1" /> {t('reject')}
+                        </button>
+                        <button onClick={() => viewDetails(withdrawal)} disabled={processing} className="col-span-2 py-2 rounded-lg border border-border text-foreground/60 text-xs font-semibold hover:border-primary transition">
+                          <User size={12} className="inline mr-1" /> {t('viewDetails')}
                         </button>
                       </div>
                     )}
@@ -601,8 +672,8 @@ const WithdrawalApprovalsPage = () => {
                     )}
 
                     {(withdrawal.status === "rejected" || withdrawal.status === "completed") && (
-                      <button onClick={() => viewUser(withdrawal)} className="w-full mt-3 py-2 rounded-lg border border-border text-foreground/60 text-xs font-semibold hover:border-primary transition">
-                        <User size={12} className="inline mr-1" /> {t('viewUserDetails')}
+                      <button onClick={() => viewDetails(withdrawal)} className="w-full mt-3 py-2 rounded-lg border border-border text-foreground/60 text-xs font-semibold hover:border-primary transition">
+                        <User size={12} className="inline mr-1" /> {t('viewDetails')}
                       </button>
                     )}
                   </div>
