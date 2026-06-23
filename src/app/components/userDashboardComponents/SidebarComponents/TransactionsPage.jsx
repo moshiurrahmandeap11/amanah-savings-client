@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Loader2, Wallet, TrendingUp, Clock, ArrowUp, ArrowDown, Banknote, Calendar, CheckCircle, AlertCircle, Target, Smartphone, Building, Send, User, ArrowRightLeft } from "lucide-react";
+import { Loader2, Wallet, TrendingUp, Clock, ArrowUp, ArrowDown, Banknote, Calendar, CheckCircle, AlertCircle, Target, Smartphone, Building, Send, User, ArrowRightLeft, Gift } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 // Translations
@@ -420,23 +420,47 @@ const TransactionsPage = () => {
   };
 
   const getAllTransactions = () => {
-    const depositTransactions = deposits.map(deposit => ({
-      id: deposit._id,
-      type: "deposit",
-      icon: getPaymentIcon(deposit.paymentMethod),
-      iconColor: getPaymentIconColor(deposit.paymentMethod),
-      name: `${getGoalIcon(deposit.goalType)} ${deposit.goalName} — ${deposit.paymentMethod?.toUpperCase() || "N/A"}`,
-      date: deposit.createdAt,
-      amount: deposit.depositAmount,
-      amountFormatted: `+${formatAmount(deposit.depositAmount)}`,
-      status: deposit.status,
-      badge: getStatusBadge(deposit.status).text,
-      badgeClass: getStatusBadge(deposit.status).class,
-      badgeIcon: getStatusBadge(deposit.status).icon,
-      transactionId: deposit.transactionReference,
-      screenshot: deposit.screenshot?.url,
-      isTransfer: false,
-    }));
+    const depositTransactions = deposits.map(deposit => {
+      const isReferralBonus = deposit.isBonus === true || deposit.bonusType === "referral" || deposit.paymentMethod === "referral";
+      let displayName = "";
+      let icon = getPaymentIcon(deposit.paymentMethod);
+      let iconColor = getPaymentIconColor(deposit.paymentMethod);
+      
+      if (isReferralBonus) {
+        // Referral bonus deposit
+        const referrerName = deposit.remarks?.match(/inviting (.+)$/)?.[1];
+        const referredBy = deposit.remarks?.match(/joining via (.+)$/)?.[1];
+        if (referrerName) {
+          displayName = `${lang === 'bn' ? 'রেফারেল বোনাস' : 'Referral Bonus'} — ${lang === 'bn' ? 'বন্ধু: ' : 'Friend: '}${referrerName}`;
+        } else if (referredBy) {
+          displayName = `${lang === 'bn' ? 'রেফারেল বোনাস' : 'Referral Bonus'} — ${lang === 'bn' ? 'রেফারার: ' : 'Referrer: '}${referredBy}`;
+        } else {
+          displayName = lang === 'bn' ? 'রেফারেল বোনাস' : 'Referral Bonus';
+        }
+        icon = <Gift size={16} />;
+        iconColor = "text-amber-500";
+      } else {
+        displayName = `${getGoalIcon(deposit.goalType)} ${deposit.goalName || (lang === 'bn' ? 'জমা' : 'Deposit')} — ${deposit.paymentMethod?.toUpperCase() || "N/A"}`;
+      }
+      
+      return {
+        id: deposit._id,
+        type: isReferralBonus ? "referral_bonus" : "deposit",
+        icon,
+        iconColor,
+        name: displayName,
+        date: deposit.createdAt,
+        amount: deposit.depositAmount,
+        amountFormatted: `+${formatAmount(deposit.depositAmount)}`,
+        status: deposit.status,
+        badge: getStatusBadge(deposit.status).text,
+        badgeClass: getStatusBadge(deposit.status).class,
+        badgeIcon: getStatusBadge(deposit.status).icon,
+        transactionId: deposit.transactionReference,
+        screenshot: deposit.screenshot?.url,
+        isTransfer: false,
+      };
+    });
 
     const withdrawalTransactions = withdrawals.map(withdrawal => ({
       id: withdrawal._id,
@@ -545,7 +569,7 @@ const TransactionsPage = () => {
   const filteredTransactions = () => {
     const all = getAllTransactions();
     if (activeTab === "all") return all;
-    if (activeTab === "deposit") return all.filter(t => t.type === "deposit");
+    if (activeTab === "deposit") return all.filter(t => t.type === "deposit" || t.type === "referral_bonus");
     if (activeTab === "withdrawal") return all.filter(t => t.type === "withdrawal");
     if (activeTab === "transfer") return all.filter(t => t.type === "transfer");
     return all;

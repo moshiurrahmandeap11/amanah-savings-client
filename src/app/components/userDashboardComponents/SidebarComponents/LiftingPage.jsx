@@ -266,18 +266,18 @@ const LiftingPage = () => {
     setPhoneNumber(limited);
   };
 
-  // Fetch user's goals
+  // Fetch user's goals (active + completed with funds)
   const fetchGoals = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get("/goals/my?status=active");
+      const response = await axiosInstance.get("/goals/my");
       if (response.data.success) {
-        const activeGoals = response.data.data.goals.filter(
-          goal => goal.status === "active" && goal.currentSaved > 0
+        const eligibleGoals = response.data.data.goals.filter(
+          goal => (goal.status === "active" || goal.status === "completed") && goal.currentSaved > 0
         );
-        setGoals(activeGoals);
-        if (activeGoals.length > 0) {
-          setSelectedGoal(activeGoals[0]._id);
+        setGoals(eligibleGoals);
+        if (eligibleGoals.length > 0) {
+          setSelectedGoal(eligibleGoals[0]._id);
         }
       }
     } catch (error) {
@@ -467,12 +467,19 @@ const LiftingPage = () => {
             <Target size={18} /> {t('yourGoals')}
           </div>
           <div className="space-y-3">
-            {goals.map((goal) => (
+            {goals.map((goal) => {
+              const isCompleted = goal.status === "completed" || (goal.currentSaved >= goal.targetAmount);
+              return (
               <div
                 key={goal._id}
-                className="p-3 bg-background rounded-lg border border-border flex items-center gap-3"
+                onClick={() => setSelectedGoal(goal._id)}
+                className={`p-3 rounded-lg border flex items-center gap-3 cursor-pointer transition ${
+                  selectedGoal === goal._id
+                    ? "border-primary bg-primary/5"
+                    : "border-border bg-background hover:border-primary/30"
+                }`}
               >
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isCompleted ? 'bg-green-500/10 text-green-500' : 'bg-primary/10 text-primary'}`}>
                   <Target size={18} />
                 </div>
                 <div className="flex-1">
@@ -481,11 +488,19 @@ const LiftingPage = () => {
                     {t('saved')} ৳{goal.currentSaved.toLocaleString()} · {t('target')} ৳{goal.targetAmount.toLocaleString()}
                   </div>
                 </div>
-                <span className="text-xs px-2 py-1 bg-amber-500/10 text-amber-500 rounded-md font-semibold flex items-center gap-1">
-                  <AlertTriangle size={10} /> {t('locked')}
+                <span className={`text-xs px-2 py-1 rounded-md font-semibold flex items-center gap-1 ${
+                  isCompleted 
+                    ? 'bg-green-500/10 text-green-500' 
+                    : 'bg-amber-500/10 text-amber-500'
+                }`}>
+                  {isCompleted 
+                    ? <><CheckCircle size={10} /> {lang === 'bn' ? 'সম্পন্ন' : 'Completed'}</>
+                    : <><AlertTriangle size={10} /> {t('locked')}</>
+                  }
                 </span>
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

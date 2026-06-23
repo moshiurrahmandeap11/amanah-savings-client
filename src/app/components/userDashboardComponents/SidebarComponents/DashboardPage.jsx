@@ -504,13 +504,24 @@ const DashboardPage = () => {
             .filter(Boolean),
         );
         deposits.forEach(d => {
+          const isReferralBonus = d.isBonus === true || d.bonusType === "referral" || d.paymentMethod === "referral";
           transactions.push({
             id: d._id || d.id || String(Math.random()),
-            type: "deposit",
+            type: isReferralBonus ? "referral_bonus" : "deposit",
             amount: safeNumber(d.depositAmount || d.amount, 0),
             status: d.status || "pending",
             date: d.createdAt || new Date().toISOString(),
             color: d.status === "rejected" ? "text-red-500" : d.status === "approved" ? "text-green-500" : "text-amber-500",
+            name: isReferralBonus 
+              ? (d.remarks || (lang === 'bn' ? 'রেফারেল বোনাস' : 'Referral Bonus'))
+              : (d.goalName || d.name || (lang === 'bn' ? 'জমা' : 'Deposit')),
+            isReferralBonus,
+            referrerName: d.remarks?.includes('inviting') 
+              ? d.remarks.match(/inviting (.+)$/)?.[1] 
+              : null,
+            referredBy: d.remarks?.includes('joining via') 
+              ? d.remarks.match(/joining via (.+)$/)?.[1] 
+              : null,
           });
         });
       }
@@ -1107,27 +1118,49 @@ const DashboardPage = () => {
               </div>
             ) : (
               <div className="grid sm:grid-cols-2 gap-4">
-                {userGoals.slice(0, 4).map((goal, idx) => (
+                {userGoals.slice(0, 4).map((goal, idx) => {
+                  const isGoalCompleted = goal.progress >= 100 || goal.status === "completed";
+                  return (
                   <div key={idx} className="bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-primary transition">
                     <div className="flex justify-between items-start mb-2">
                       <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                         {goal.icon}
                       </div>
-                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${goal.status === "active" ? "bg-primary/10 text-primary" : "bg-amber-500/10 text-amber-500"}`}>
-                        {goal.status === "active" ? t('active') : t('paused')}
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                        isGoalCompleted 
+                          ? "bg-green-500/10 text-green-500" 
+                          : goal.status === "active" 
+                            ? "bg-primary/10 text-primary" 
+                            : "bg-amber-500/10 text-amber-500"
+                      }`}>
+                        {isGoalCompleted 
+                          ? (lang === 'bn' ? 'সম্পন্ন' : 'Completed') 
+                          : goal.status === "active" 
+                            ? t('active') 
+                            : t('paused')
+                        }
                       </span>
                     </div>
                     <div className="font-bold text-foreground">{goal.name}</div>
                     <div className="text-xs text-foreground/50 mb-2">{formatCurrency(goal.monthlyDeposit)} · {goal.timeLeft}</div>
                     <div className="h-1.5 bg-border rounded-full mb-2 overflow-hidden">
-                      <div className={`h-full rounded-full bg-linear-to-r ${goal.color}`} style={{ width: `${goal.progress}%` }} />
+                      <div className={`h-full rounded-full bg-linear-to-r ${goal.color}`} style={{ width: `${Math.min(goal.progress, 100)}%` }} />
                     </div>
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm mb-3">
                       <span className="text-primary font-semibold">{goal.saved}</span>
                       <span className="text-foreground/50">/ {goal.target}</span>
                     </div>
+                    {isGoalCompleted && (
+                      <Link 
+                        href={`/dashboard/lifting?goalId=${goal._id}`} 
+                        className="block w-full py-2 bg-red-500/10 text-red-500 rounded-lg text-xs font-semibold text-center hover:bg-red-500/20 transition"
+                      >
+                        {lang === 'bn' ? 'তোলার অনুরোধ' : 'Withdraw Funds'}
+                      </Link>
+                    )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -1153,6 +1186,8 @@ const DashboardPage = () => {
               <div className="space-y-3">
                 {recentTransactions.map((tx, idx) => {
                   const isDeposit = tx.type === "deposit";
+                  const isReferralBonus = tx.type === "referral_bonus";
+                  const isWithdrawal = tx.type === "withdrawal";
                   const isRejected = tx.status === "rejected";
                   const isPending = tx.status === "pending";
                   const isApproved = tx.status === "approved";
@@ -1161,38 +1196,64 @@ const DashboardPage = () => {
                   let iconColor = "text-green-500";
                   let amountColor = "text-green-500";
                   let amountPrefix = "+";
+                  let icon = <Banknote size={14} className={iconColor} />;
+                  let txLabel = tx.type;
+                  let txSubLabel = new Date(tx.date).toLocaleDateString();
                   
-                  if (isRejected) {
+                  if (isReferralBonus) {
+                    bgColor = "bg-amber-500/10";
+                    iconColor = "text-amber-500";
+                    amountColor = "text-amber-500";
+                    amountPrefix = "+";
+                    icon = <Gift size={14} className={iconColor} />;
+                    txLabel = lang === 'bn' ? 'রেফারেল বোনাস' : 'Referral Bonus';
+                    // Show who referred or who was referred
+                    if (tx.referrerName) {
+                      txSubLabel = (lang === 'bn' ? 'বন্ধু: ' : 'Friend: ') + tx.referrerName;
+                    } else if (tx.referredBy) {
+                      txSubLabel = (lang === 'bn' ? 'রেফারার: ' : 'Referrer: ') + tx.referredBy;
+                    }
+                  } else if (isWithdrawal) {
+                    bgColor = isRejected ? "bg-red-500/10" : isPending ? "bg-amber-500/10" : "bg-red-500/10";
+                    iconColor = isRejected ? "text-red-500" : isPending ? "text-amber-500" : "text-red-500";
+                    amountColor = isRejected ? "text-red-500" : isPending ? "text-amber-500" : "text-red-500";
+                    amountPrefix = "-";
+                    icon = <Send size={14} className={iconColor} />;
+                    txLabel = lang === 'bn' ? 'উত্তোলন' : 'Withdrawal';
+                  } else if (isDeposit) {
+                    bgColor = isRejected ? "bg-red-500/10" : isPending ? "bg-amber-500/10" : "bg-green-500/10";
+                    iconColor = isRejected ? "text-red-500" : isPending ? "text-amber-500" : "text-green-500";
+                    amountColor = isRejected ? "text-red-500" : isPending ? "text-amber-500" : "text-green-500";
+                    amountPrefix = isRejected ? "✕ " : "+";
+                    icon = <Banknote size={14} className={iconColor} />;
+                    txLabel = tx.name || (lang === 'bn' ? 'জমা' : 'Deposit');
+                  }
+                  
+                  if (isRejected && !isReferralBonus) {
                     bgColor = "bg-red-500/10";
                     iconColor = "text-red-500";
                     amountColor = "text-red-500";
                     amountPrefix = "✕ ";
-                  } else if (isPending) {
+                  } else if (isPending && !isReferralBonus) {
                     bgColor = "bg-amber-500/10";
                     iconColor = "text-amber-500";
                     amountColor = "text-amber-500";
-                    amountPrefix = isDeposit ? "+" : "-";
-                  } else if (isApproved) {
-                    bgColor = isDeposit ? "bg-green-500/10" : "bg-red-500/10";
-                    iconColor = isDeposit ? "text-green-500" : "text-red-500";
-                    amountColor = isDeposit ? "text-green-500" : "text-red-500";
-                    amountPrefix = isDeposit ? "+" : "-";
                   }
                   
                   return (
                     <div key={idx} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-lg ${bgColor} flex items-center justify-center`}>
-                          {isDeposit ? <Banknote size={14} className={iconColor} /> : <Send size={14} className={iconColor} />}
+                          {icon}
                         </div>
                         <div>
-                          <div className="text-sm font-semibold text-foreground capitalize">{tx.type}</div>
-                          <div className="text-xs text-foreground/50">{new Date(tx.date).toLocaleDateString()}</div>
+                          <div className="text-sm font-semibold text-foreground capitalize">{txLabel}</div>
+                          <div className="text-xs text-foreground/50">{txSubLabel}</div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className={`text-sm font-bold ${amountColor}`}>
-                          {isRejected ? "✕ " : amountPrefix}{formatCurrency(tx.amount)}
+                          {isRejected && !isReferralBonus ? "✕ " : amountPrefix}{formatCurrency(tx.amount)}
                         </div>
                         <div className={`text-xs ${getStatusColorClass(tx.status)}`}>
                           {getStatusText(tx.status)}
