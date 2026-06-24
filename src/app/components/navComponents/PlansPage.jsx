@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -51,6 +51,8 @@ const translations = {
     chooseSilver: "Choose Silver",
     chooseGold: "Choose Gold",
     choosePlatinum: "Choose Platinum",
+    currentPlan: "Current Plan",
+    upgradePlan: "Upgrade Plan",
 
     // Plan Names
     bronze: "Bronze",
@@ -238,6 +240,8 @@ const translations = {
     chooseSilver: "সিলভার বেছে নিন",
     chooseGold: "গোল্ড বেছে নিন",
     choosePlatinum: "প্লাটিনাম বেছে নিন",
+    currentPlan: "বর্তমান প্ল্যান",
+    upgradePlan: "প্ল্যান আপগ্রেড করুন",
 
     // Plan Names
     bronze: "ব্রোঞ্জ",
@@ -646,6 +650,21 @@ const PlanPage = () => {
   const [duration, setDuration] = useState(12);
   const [target, setTarget] = useState("");
   const [openFaq, setOpenFaq] = useState(null);
+  const [authState] = useState(() => {
+    if (typeof window === "undefined") return { isLoggedIn: false, userPlan: null };
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    if (token && user) {
+      try {
+        const userData = JSON.parse(user);
+        return { isLoggedIn: true, userPlan: userData.selectedPlan || null };
+      } catch {
+        return { isLoggedIn: true, userPlan: null };
+      }
+    }
+    return { isLoggedIn: false, userPlan: null };
+  });
+  const { isLoggedIn, userPlan } = authState;
   const { cms } = usePublicCms();
 
   // Translation function
@@ -688,7 +707,17 @@ const PlanPage = () => {
   
   const comparisonGroups = cmsComparisonGroups || fallbackComparisonGroups;
   const testimonials = getTestimonials(t);
-  const faqs = getFaqs(t);
+  // Get FAQ data from CMS or fallback to hardcoded translations
+  const faqs = useMemo(() => {
+    const cmsFaq = cms?.faq || [];
+    if (cmsFaq.length > 0) {
+      return cmsFaq.map((item) => [
+        item.question?.[language] || item.question?.en || item.question || "",
+        item.answer?.[language] || item.answer?.en || item.answer || "",
+      ]);
+    }
+    return getFaqs(t);
+  }, [cms, language, t]);
 
   const selectedPlanData = {
     label: t(selectedPlan),
@@ -831,17 +860,29 @@ const PlanPage = () => {
                   </div>
                   <p className="mb-6 text-[13px] leading-normal text-[#475569] dark:text-[#94a3b8]">{plan.desc}</p>
                   <Link
-                    href="/register"
+                    href={isLoggedIn ? (userPlan === plan.id ? "#" : "/dashboard/plan") : "/register"}
+                    onClick={(e) => {
+                      if (isLoggedIn && userPlan === plan.id) {
+                        e.preventDefault();
+                      }
+                    }}
                     className={`block w-full rounded-xl px-3 py-3 text-center text-sm font-bold transition ${
-                      plan.id === "gold"
-                        ? "bg-gradient-to-br from-[#059669] to-[#0891b2] text-white hover:opacity-90"
-                        : plan.id === "platinum"
-                          ? "bg-gradient-to-br from-[#7c3aed] to-[#5b21b6] text-white hover:opacity-90"
-                          : "border-2 border-[#e2e8f0] bg-[#f8fafc] text-[#0f172a] hover:border-current dark:border-[#1e2d3d] dark:bg-[#111827]"
+                      isLoggedIn && userPlan === plan.id
+                        ? "cursor-not-allowed border-2 border-[#059669] bg-[#d1fae5] text-[#059669]"
+                        : plan.id === "gold"
+                          ? "bg-gradient-to-br from-[#059669] to-[#0891b2] text-white hover:opacity-90"
+                          : plan.id === "platinum"
+                            ? "bg-gradient-to-br from-[#7c3aed] to-[#5b21b6] text-white hover:opacity-90"
+                            : "border-2 border-[#e2e8f0] bg-[#f8fafc] text-[#0f172a] hover:border-current dark:border-[#1e2d3d] dark:bg-[#111827]"
                     }`}
-                    style={plan.id === "bronze" || plan.id === "silver" ? { color: plan.color } : undefined}
+                    style={!isLoggedIn && (plan.id === "bronze" || plan.id === "silver") ? { color: plan.color } : undefined}
+                    aria-disabled={isLoggedIn && userPlan === plan.id}
                   >
-                    {plan.cta}
+                    {isLoggedIn
+                      ? userPlan === plan.id
+                        ? t('currentPlan')
+                        : t('upgradePlan')
+                      : plan.cta}
                   </Link>
                   <hr className="my-5 border-[#e2e8f0] dark:border-[#1e2d3d]" />
                   <ul className="flex flex-col gap-2.5">
@@ -877,7 +918,7 @@ const PlanPage = () => {
               </p>
             </div>
             <Link
-              href="/register"
+              href={isLoggedIn ? "/dashboard/plan" : "/register"}
               className="shrink-0 rounded-xl bg-white px-6 py-3 text-sm font-bold text-[#065f46] transition hover:bg-[#d1fae5] md:ml-auto"
             >
               {t('islamicBannerButton')}
@@ -1061,7 +1102,7 @@ const PlanPage = () => {
                 </div>
                 {goalMessage && <p className="mt-4 text-[13px] leading-relaxed text-white/85">{goalMessage}</p>}
                 <Link
-                  href="/register"
+                  href={isLoggedIn ? "/dashboard/plan" : "/register"}
                   className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-white p-3.5 text-center text-[15px] font-bold text-[#059669] transition hover:bg-[#d1fae5]"
                 >
                   {t('calcStartSaving')} <ArrowRight className="h-4 w-4" />
@@ -1166,7 +1207,7 @@ const PlanPage = () => {
             </div>
             <div className="flex shrink-0 flex-col gap-3 sm:flex-row">
               <Link
-                href="/register"
+                href={isLoggedIn ? "/dashboard/plan" : "/register"}
                 className="flex items-center justify-center gap-2 rounded-xl bg-white px-7 py-3.5 text-[15px] font-bold text-[#059669] transition hover:bg-[#d1fae5]"
               >
                 {t('ctaButton')} <ArrowRight className="h-4 w-4" />

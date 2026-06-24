@@ -161,6 +161,14 @@ const brandStats = (t) => [
 const LoginPage = () => {
   const router = useRouter();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+  
+  // Redirect logged-in users away from login page to home
+  useEffect(() => {
+    if (isAuthenticated && !authLoading) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, authLoading, router]);
+  
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

@@ -98,12 +98,26 @@ const translations = {
 };
 
 const Banner = () => {
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState(() => {
+    if (typeof window === 'undefined') return 'en';
+    return localStorage.getItem('appLanguage') || 'en';
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    return !!(token && user);
+  });
 
-  // Get language from localStorage
+  // Listen for storage changes (login/logout in other tabs)
   useEffect(() => {
-    const savedLang = localStorage.getItem('appLanguage') || 'en';
-    setLanguage(savedLang);
+    const handleStorageChange = () => {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      setIsLoggedIn(!!(token && user));
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Translation function
@@ -230,7 +244,7 @@ const Banner = () => {
 
             <div className="mb-12 flex flex-wrap justify-center gap-3.5 md:justify-start">
               <Link
-                href="/register"
+                href={isLoggedIn ? "/dashboard/goals" : "/dashboard"}
                 className="inline-flex items-center gap-2 rounded-[14px] bg-[linear-gradient(135deg,#059669_0%,#0891b2_100%)] px-8 py-4 text-base font-semibold text-white shadow-[0_4px_15px_rgba(5,150,105,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_8px_25px_rgba(5,150,105,0.45)]"
               >
                 <Rocket size={18} aria-hidden="true" />

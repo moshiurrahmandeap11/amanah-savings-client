@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
 import axiosInstance from "../shared/AxiosInstance/AxiosInstance";
 import useAuth from "../../hooks/useAuth";
@@ -107,7 +108,16 @@ const translations = {
 };
 
 const RegisterPage = () => {
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, isAuthenticated } = useAuth();
+  const router = useRouter();
+  
+  // Redirect logged-in users away from register page to home
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, router]);
+  
   const [currentStep, setCurrentStep] = useState(1);
   const [lang, setLang] = useState("bn");
   const [isDark, setIsDark] = useState(false);

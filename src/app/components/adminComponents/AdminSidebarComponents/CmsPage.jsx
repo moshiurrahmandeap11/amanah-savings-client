@@ -830,14 +830,14 @@ const CmsPage = () => {
   );
 
   const renderFaqTab = () => (
-    <div className="bg-card border border-border rounded-xl p-5">
-      <div className="flex items-center justify-between mb-4">
+    <div className="space-y-5">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="font-bold text-foreground">{t('faqItems')}</h3>
         <button
           onClick={() =>
             setCmsData((prev) => ({
               ...prev,
-              faq: [...(prev.faq || []), { question: "", answer: "" }],
+              faq: [...(prev.faq || []), { question: { en: "", bn: "" }, answer: { en: "", bn: "" } }],
             }))
           }
           className="text-xs text-primary flex items-center gap-1 hover:underline"
@@ -862,23 +862,88 @@ const CmsPage = () => {
                 <Trash2 size={14} />
               </button>
             </div>
-            <div className="space-y-2">
-              <div>
-                <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('question')}</label>
-                <input
-                  className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
-                  value={item.question || ""}
-                  onChange={(e) => updateArrayItem("faq", i, "question", e.target.value)}
-                />
+            <div className="space-y-3">
+              {/* English */}
+              <div className="border border-border/50 rounded-lg p-3 bg-background/50">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-2">English</div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('question')}</label>
+                    <input
+                      className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                      value={item.question?.en || ""}
+                      onChange={(e) => {
+                        setCmsData((prev) => {
+                          const faq = [...(prev.faq || [])];
+                          faq[i] = {
+                            ...faq[i],
+                            question: { ...(faq[i].question || {}), en: e.target.value },
+                          };
+                          return { ...prev, faq };
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('answer')}</label>
+                    <textarea
+                      rows={2}
+                      className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+                      value={item.answer?.en || ""}
+                      onChange={(e) => {
+                        setCmsData((prev) => {
+                          const faq = [...(prev.faq || [])];
+                          faq[i] = {
+                            ...faq[i],
+                            answer: { ...(faq[i].answer || {}), en: e.target.value },
+                          };
+                          return { ...prev, faq };
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('answer')}</label>
-                <textarea
-                  rows={3}
-                  className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
-                  value={item.answer || ""}
-                  onChange={(e) => updateArrayItem("faq", i, "answer", e.target.value)}
-                />
+              {/* Bengali */}
+              <div className="border border-border/50 rounded-lg p-3 bg-background/50">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-2">বাংলা</div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('question')}</label>
+                    <input
+                      className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                      value={item.question?.bn || ""}
+                      onChange={(e) => {
+                        setCmsData((prev) => {
+                          const faq = [...(prev.faq || [])];
+                          faq[i] = {
+                            ...faq[i],
+                            question: { ...(faq[i].question || {}), bn: e.target.value },
+                          };
+                          return { ...prev, faq };
+                        });
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('answer')}</label>
+                    <textarea
+                      rows={2}
+                      className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+                      value={item.answer?.bn || ""}
+                      onChange={(e) => {
+                        setCmsData((prev) => {
+                          const faq = [...(prev.faq || [])];
+                          faq[i] = {
+                            ...faq[i],
+                            answer: { ...(faq[i].answer || {}), bn: e.target.value },
+                          };
+                          return { ...prev, faq };
+                        });
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
