@@ -292,6 +292,41 @@ const defaultPaymentInstructions = {
   },
 };
 
+const defaultPaymentMethods = {
+  bkash: {
+    enabled: true,
+    number: "018XXXXXXXX",
+    accountName: "Sanchoy Bondhu",
+    type: "personal",
+    instructions: {
+      en: "Send money via bKash to this number. Use your email as reference.",
+      bn: "বিকাশ-এর মাধ্যমে এই নম্বরে টাকা পাঠান। রেফারেন্স হিসেবে আপনার ইমেইল ব্যবহার করুন।",
+    },
+  },
+  nagad: {
+    enabled: true,
+    number: "018XXXXXXXX",
+    accountName: "Sanchoy Bondhu",
+    type: "personal",
+    instructions: {
+      en: "Send money via Nagad to this number. Use your email as reference.",
+      bn: "নগদ-এর মাধ্যমে এই নম্বরে টাকা পাঠান। রেফারেন্স হিসেবে আপনার ইমেইল ব্যবহার করুন।",
+    },
+  },
+  bank: {
+    enabled: true,
+    bankName: "Dutch-Bangla Bank Limited",
+    accountNumber: "1234567890123",
+    accountHolderName: "Sanchoy Bondhu",
+    branch: "Main Branch",
+    routingNumber: "090110000",
+    instructions: {
+      en: "Transfer to the bank account below. Use your email as reference.",
+      bn: "নিচের ব্যাংক অ্যাকাউন্টে ট্রান্সফার করুন। রেফারেন্স হিসেবে আপনার ইমেইল ব্যবহার করুন।",
+    },
+  },
+};
+
 const AdminSettingsPage = () => {
   const [isDark, setIsDark] = useState(getInitialTheme);
   const [lang, setLang] = useState(getInitialAdminLang);
@@ -427,6 +462,38 @@ const AdminSettingsPage = () => {
     }));
   };
 
+  const handlePaymentMethodChange = (method, key, value) => {
+    setSettings((prev) => ({
+      ...prev,
+      payments: {
+        ...prev.payments,
+        methods: {
+          ...prev.payments?.methods,
+          [method]: {
+            ...prev.payments?.methods?.[method],
+            [key]: value,
+          },
+        },
+      },
+    }));
+  };
+
+  const handlePaymentMethodToggle = (method) => {
+    setSettings((prev) => ({
+      ...prev,
+      payments: {
+        ...prev.payments,
+        methods: {
+          ...prev.payments?.methods,
+          [method]: {
+            ...prev.payments?.methods?.[method],
+            enabled: !prev.payments?.methods?.[method]?.enabled,
+          },
+        },
+      },
+    }));
+  };
+
   const handlePaymentInstructionChange = (instructionLang, key, value) => {
     setSettings((prev) => ({
       ...prev,
@@ -488,6 +555,11 @@ const AdminSettingsPage = () => {
               ...defaultPaymentInstructions.bn,
               ...(settings.payments.instructions?.bn || {}),
             },
+          },
+          methods: {
+            bkash: settings.payments.methods?.bkash || defaultPaymentMethods.bkash,
+            nagad: settings.payments.methods?.nagad || defaultPaymentMethods.nagad,
+            bank: settings.payments.methods?.bank || defaultPaymentMethods.bank,
           },
         },
         notifications: {
@@ -730,118 +802,213 @@ const AdminSettingsPage = () => {
     </div>
   );
 
-  const renderPaymentPanel = () => (
-    <div className="space-y-5">
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">{t('paymentGatewayTitle')}</h3>
-          <p className="text-xs text-foreground/50">{t('manageActiveMethods')}</p>
-        </div>
-        <div className="p-4 space-y-4">
-          {[
-            { key: "bkashEnabled", label: "bKash", desc: "বিকাশ মোবাইল ব্যাংকিং" },
-            { key: "nagadEnabled", label: "Nagad", desc: "নগদ মোবাইল ফিনান্সিয়াল" },
-            { key: "rocketEnabled", label: "Rocket", desc: "ডাচ বাংলা রকেট" },
-            { key: "bankEnabled", label: "ব্যাংক ট্রান্সফার", desc: "সরাসরি ব্যাংক অ্যাকাউন্ট ট্রান্সফার" },
-          ].map((gateway) => (
-            <div key={gateway.key} className="flex items-center justify-between">
-              <div>
-                <div className="font-medium text-sm text-foreground">{gateway.label}</div>
-                <div className="text-xs text-foreground/50">{gateway.desc}</div>
-              </div>
-              <div className="flex items-center gap-3">
+  const renderPaymentPanel = () => {
+    const methodConfig = {
+      bkash: {
+        label: "bKash",
+        labelBn: "বিকাশ",
+        icon: "📱",
+        fields: [
+          { key: "number", label: "bKash Number", labelBn: "বিকাশ নম্বর", type: "text" },
+          { key: "accountName", label: "Account Name", labelBn: "অ্যাকাউন্টের নাম", type: "text" },
+          { key: "type", label: "Account Type", labelBn: "অ্যাকাউন্টের ধরন", type: "select", options: ["personal", "agent"] },
+        ],
+      },
+      nagad: {
+        label: "Nagad",
+        labelBn: "নগদ",
+        icon: "💰",
+        fields: [
+          { key: "number", label: "Nagad Number", labelBn: "নগদ নম্বর", type: "text" },
+          { key: "accountName", label: "Account Name", labelBn: "অ্যাকাউন্টের নাম", type: "text" },
+          { key: "type", label: "Account Type", labelBn: "অ্যাকাউন্টের ধরন", type: "select", options: ["personal", "agent"] },
+        ],
+      },
+      bank: {
+        label: "Bank Transfer",
+        labelBn: "ব্যাংক ট্রান্সফার",
+        icon: "🏦",
+        fields: [
+          { key: "bankName", label: "Bank Name", labelBn: "ব্যাংকের নাম", type: "text" },
+          { key: "accountNumber", label: "Account Number", labelBn: "অ্যাকাউন্ট নম্বর", type: "text" },
+          { key: "accountHolderName", label: "Account Holder Name", labelBn: "অ্যাকাউন্ট ধারকের নাম", type: "text" },
+          { key: "branch", label: "Branch", labelBn: "শাখা", type: "text" },
+          { key: "routingNumber", label: "Routing Number", labelBn: "রাউটিং নম্বর", type: "text" },
+        ],
+      },
+    };
+
+    return (
+      <div className="space-y-5">
+        {/* Payment Methods */}
+        {Object.entries(methodConfig).map(([methodKey, config]) => {
+          const methodData = settings.payments?.methods?.[methodKey] || defaultPaymentMethods[methodKey];
+          const isEnabled = methodData?.enabled;
+
+          return (
+            <div key={methodKey} className="bg-card border border-border rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-border flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-xl">{config.icon}</span>
+                  <div>
+                    <h3 className="font-semibold text-foreground">{lang === "bn" ? config.labelBn : config.label}</h3>
+                    <p className="text-xs text-foreground/50">
+                      {isEnabled ? (lang === "bn" ? "সক্রিয়" : "Active") : (lang === "bn" ? "নিষ্ক্রিয়" : "Inactive")}
+                    </p>
+                  </div>
+                </div>
                 <button
-                  onClick={() => handleToggle("payments", gateway.key)}
-                  className={`relative w-12 h-6 rounded-full transition ${settings.payments?.[gateway.key] ? "bg-primary" : "bg-border"}`}
+                  onClick={() => handlePaymentMethodToggle(methodKey)}
+                  className={`relative w-12 h-6 rounded-full transition ${isEnabled ? "bg-primary" : "bg-border"}`}
                 >
-                  <div
-                    className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${settings.payments?.[gateway.key] ? "right-0.5" : "left-0.5"}`}
-                  />
+                  <div className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${isEnabled ? "right-0.5" : "left-0.5"}`} />
                 </button>
               </div>
+
+              {isEnabled && (
+                <div className="p-4 space-y-4">
+                  {/* Method Fields */}
+                  {config.fields.map((field) => (
+                    <div key={field.key} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="font-medium text-sm text-foreground">
+                          {lang === "bn" ? field.labelBn : field.label}
+                        </div>
+                      </div>
+                      {field.type === "select" ? (
+                        <select
+                          value={methodData?.[field.key] || ""}
+                          onChange={(e) => handlePaymentMethodChange(methodKey, field.key, e.target.value)}
+                          className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-full sm:w-64"
+                        >
+                          {field.options.map((opt) => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type}
+                          value={methodData?.[field.key] || ""}
+                          onChange={(e) => handlePaymentMethodChange(methodKey, field.key, e.target.value)}
+                          className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-full sm:w-64"
+                        />
+                      )}
+                    </div>
+                  ))}
+
+                  {/* Instructions */}
+                  <div className="grid gap-3 lg:grid-cols-2 pt-2 border-t border-border">
+                    {[
+                      { code: "en", label: "English Instructions" },
+                      { code: "bn", label: "বাংলা নির্দেশনা" },
+                    ].map((inst) => (
+                      <div key={inst.code}>
+                        <label className="block text-xs font-medium text-foreground/60 mb-1">{inst.label}</label>
+                        <textarea
+                          value={methodData?.instructions?.[inst.code] || ""}
+                          onChange={(e) => {
+                            const newInstructions = {
+                              ...(methodData?.instructions || {}),
+                              [inst.code]: e.target.value,
+                            };
+                            handlePaymentMethodChange(methodKey, "instructions", newInstructions);
+                          }}
+                          rows={2}
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary resize-none"
+                          placeholder={inst.code === "en" ? "Enter instructions for users..." : "ব্যবহারকারীদের জন্য নির্দেশনা লিখুন..."}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
+          );
+        })}
+
+        {/* Generic Payment Instructions (backward compatibility) */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <h3 className="font-semibold text-foreground">Generic Payment Instructions</h3>
+            <p className="text-xs text-foreground/50">Fallback instructions for older pages</p>
+          </div>
+          <div className="p-4 grid gap-5 lg:grid-cols-2">
+            {[
+              { code: "en", label: "English" },
+              { code: "bn", label: "Bangla" },
+            ].map((instructionLang) => (
+              <div key={instructionLang.code} className="space-y-3">
+                <div className="text-sm font-semibold text-foreground">{instructionLang.label}</div>
+                {[
+                  { key: "title", label: "Title" },
+                  { key: "sendMoneyToLabel", label: "Send Money Label" },
+                  { key: "sendMoneyTo", label: "Send Money Number" },
+                  { key: "amountLabel", label: "Amount Label" },
+                  { key: "amountValue", label: "Amount Text", hint: "Use {amount} for the entered deposit amount" },
+                  { key: "referenceLabel", label: "Reference Label" },
+                  { key: "reference", label: "Reference Text" },
+                ].map((field) => (
+                  <label key={field.key} className="block">
+                    <span className="mb-1 block text-xs font-medium text-foreground/60">{field.label}</span>
+                    <input
+                      value={
+                        settings.payments?.instructions?.[instructionLang.code]?.[field.key]
+                        ?? defaultPaymentInstructions[instructionLang.code][field.key]
+                      }
+                      onChange={(e) => handlePaymentInstructionChange(instructionLang.code, field.key, e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
+                    />
+                    {field.hint && (
+                      <span className="mt-1 block text-[11px] text-foreground/40">{field.hint}</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">Payment Instructions</h3>
-          <p className="text-xs text-foreground/50">Shown on the user deposit submit page</p>
-        </div>
-        <div className="p-4 grid gap-5 lg:grid-cols-2">
-          {[
-            { code: "en", label: "English" },
-            { code: "bn", label: "Bangla" },
-          ].map((instructionLang) => (
-            <div key={instructionLang.code} className="space-y-3">
-              <div className="text-sm font-semibold text-foreground">{instructionLang.label}</div>
-              {[
-                { key: "title", label: "Title" },
-                { key: "sendMoneyToLabel", label: "Send Money Label" },
-                { key: "sendMoneyTo", label: "Send Money Number" },
-                { key: "amountLabel", label: "Amount Label" },
-                { key: "amountValue", label: "Amount Text", hint: "Use {amount} for the entered deposit amount" },
-                { key: "referenceLabel", label: "Reference Label" },
-                { key: "reference", label: "Reference Text" },
-              ].map((field) => (
-                <label key={field.key} className="block">
-                  <span className="mb-1 block text-xs font-medium text-foreground/60">{field.label}</span>
-                  <input
-                    value={
-                      settings.payments?.instructions?.[instructionLang.code]?.[field.key]
-                      ?? defaultPaymentInstructions[instructionLang.code][field.key]
-                    }
-                    onChange={(e) => handlePaymentInstructionChange(instructionLang.code, field.key, e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
-                  />
-                  {field.hint && (
-                    <span className="mt-1 block text-[11px] text-foreground/40">{field.hint}</span>
-                  )}
-                </label>
-              ))}
+
+        {/* Fee Structure */}
+        <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <h3 className="font-semibold text-foreground">{t('feeStructure')}</h3>
+          </div>
+          <div className="p-4 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="font-medium text-sm text-foreground">{t('depositFee')}</div>
+                <div className="text-xs text-foreground/50">{t('depositFeeDesc')}</div>
+              </div>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  value={settings.payments?.depositFee || "0"}
+                  onChange={(e) => handleInputChange("payments", "depositFee", e.target.value)}
+                  className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
+                />{" "}
+                %
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
-      <div className="bg-card border border-border rounded-xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-border">
-          <h3 className="font-semibold text-foreground">{t('feeStructure')}</h3>
-        </div>
-        <div className="p-4 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="font-medium text-sm text-foreground">{t('depositFee')}</div>
-              <div className="text-xs text-foreground/50">{t('depositFeeDesc')}</div>
-            </div>
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                value={settings.payments?.depositFee || "0"}
-                onChange={(e) => handleInputChange("payments", "depositFee", e.target.value)}
-                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
-              />{" "}
-              %
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <div className="font-medium text-sm text-foreground">{t('withdrawalFee')}</div>
+                <div className="text-xs text-foreground/50">{t('withdrawalFeeDesc')}</div>
+              </div>
+              <div className="flex items-center gap-1">
+                <input
+                  type="number"
+                  value={settings.payments?.withdrawalFee || "2"}
+                  onChange={(e) => handleInputChange("payments", "withdrawalFee", e.target.value)}
+                  className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
+                />{" "}
+                %
+              </div>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <div className="font-medium text-sm text-foreground">{t('withdrawalFee')}</div>
-              <div className="text-xs text-foreground/50">{t('withdrawalFeeDesc')}</div>
-            </div>
-            <div className="flex items-center gap-1">
-              <input
-                type="number"
-                value={settings.payments?.withdrawalFee || "2"}
-                onChange={(e) => handleInputChange("payments", "withdrawalFee", e.target.value)}
-                className="px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm outline-none focus:border-primary w-28"
-              />{" "}
-              %
-            </div>
-          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderNotificationsPanel = () => (
     <div className="bg-card border border-border rounded-xl overflow-hidden">

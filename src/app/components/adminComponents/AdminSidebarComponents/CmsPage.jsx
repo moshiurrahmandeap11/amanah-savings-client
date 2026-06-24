@@ -118,6 +118,57 @@ const translations = {
     footerLinks: "🔗 Footer Links",
     labelPlaceholder: "Label",
     urlPlaceholder: "/page",
+    footerBrand: "🏢 Brand Info",
+    brandName: "Brand Name",
+    brandDesc: "Brand Description",
+    footerAnnouncement: "📢 Announcement",
+    announcementBadge: "Announcement Badge",
+    announcementText: "Announcement Text",
+    footerContact: "📞 Contact Labels",
+    supportLabel: "Support Label",
+    emailLabel: "Email Label",
+    emailAddress: "Email Address",
+    footerSections: "📑 Footer Sections",
+    addSection: "Add Section",
+    sectionTitle: "Section Title",
+    linkLabel: "Link Label",
+    linkUrl: "URL",
+    isScroll: "Scroll?",
+    targetId: "Target ID",
+    footerBrand: "🏢 Brand Info",
+    brandName: "Brand Name",
+    brandDesc: "Brand Description",
+    footerAnnouncement: "📢 Announcement",
+    announcementBadge: "Announcement Badge",
+    announcementText: "Announcement Text",
+    footerContact: "📞 Contact Labels",
+    supportLabel: "Support Label",
+    emailLabel: "Email Label",
+    emailAddress: "Email Address",
+    footerSections: "📑 Footer Sections",
+    addSection: "Add Section",
+    sectionTitle: "Section Title",
+    linkLabel: "Link Label",
+    linkUrl: "URL",
+    isScroll: "Scroll?",
+    targetId: "Target ID",
+    footerBrand: "🏢 Brand Info",
+    brandName: "Brand Name",
+    brandDesc: "Brand Description",
+    footerAnnouncement: "📢 Announcement",
+    announcementBadge: "Announcement Badge",
+    announcementText: "Announcement Text",
+    footerContact: "📞 Contact Labels",
+    supportLabel: "Support Label",
+    emailLabel: "Email Label",
+    emailAddress: "Email Address",
+    footerSections: "📑 Footer Sections",
+    addSection: "Add Section",
+    sectionTitle: "Section Title",
+    linkLabel: "Link Label",
+    linkUrl: "URL",
+    isScroll: "Scroll?",
+    targetId: "Target ID",
     
     // Toast Messages
     savedSuccessfully: "✅ Saved! Changes will apply to all pages.",
@@ -902,107 +953,343 @@ const CmsPage = () => {
   );
 
   const renderFooterTab = () => (
-    <div className="grid md:grid-cols-2 gap-5">
+    <div className="space-y-5">
+      {/* Brand Info */}
       <div className="bg-card border border-border rounded-xl p-5">
-        <h3 className="font-bold text-foreground mb-4">{t('footerText')}</h3>
+        <h3 className="font-bold text-foreground mb-4">{t('footerBrand')}</h3>
         <div className="space-y-3">
-        <div>
-          <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('copyrightText')}</label>
-          <input
-            className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
-            value={cmsData?.footer?.copyright || ""}
-            onChange={(e) => updateField("footer", "copyright", e.target.value)}
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-foreground/60 mb-2">{t('footerSocials')}</label>
-          <div className="space-y-2">
-            {["facebook", "twitter", "instagram", "linkedin"].map((platform) => (
-              <input
-                key={platform}
-                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
-                value={cmsData?.footer?.socials?.[platform] || ""}
-                placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
-                onChange={(e) =>
-                  setCmsData((prev) => ({
-                    ...prev,
-                    footer: {
-                      ...prev.footer,
-                      socials: {
-                        ...(prev.footer?.socials || {}),
-                        [platform]: e.target.value,
-                      },
-                    },
-                  }))
-                }
-              />
-            ))}
+          <div>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('brandName')}</label>
+            <input
+              className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+              value={cmsData?.footer?.brandName || ""}
+              onChange={(e) => updateField("footer", "brandName", e.target.value)}
+            />
           </div>
-        </div>
+          <div>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('brandDesc')}</label>
+            <textarea
+              rows={3}
+              className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+              value={cmsData?.footer?.brandDesc || ""}
+              onChange={(e) => updateField("footer", "brandDesc", e.target.value)}
+            />
+          </div>
         </div>
       </div>
 
+      {/* Announcement */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <h3 className="font-bold text-foreground mb-4">{t('footerAnnouncement')}</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('announcementBadge')}</label>
+            <input
+              className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+              value={cmsData?.footer?.announcementBadge || ""}
+              onChange={(e) => updateField("footer", "announcementBadge", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('announcementText')}</label>
+            <textarea
+              rows={3}
+              className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+              value={cmsData?.footer?.announcementText || ""}
+              onChange={(e) => updateField("footer", "announcementText", e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Contact Labels */}
+      <div className="bg-card border border-border rounded-xl p-5">
+        <h3 className="font-bold text-foreground mb-4">{t('footerContact')}</h3>
+        <div className="grid md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('supportLabel')}</label>
+            <input
+              className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+              value={cmsData?.footer?.supportLabel || ""}
+              onChange={(e) => updateField("footer", "supportLabel", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('emailLabel')}</label>
+            <input
+              className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+              value={cmsData?.footer?.emailLabel || ""}
+              onChange={(e) => updateField("footer", "emailLabel", e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('emailAddress')}</label>
+            <input
+              className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+              value={cmsData?.footer?.emailAddress || ""}
+              onChange={(e) => updateField("footer", "emailAddress", e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Sections */}
       <div className="bg-card border border-border rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold text-foreground">{t('footerLinks')}</h3>
+          <h3 className="font-bold text-foreground">{t('footerSections')}</h3>
           <button
             onClick={() =>
               setCmsData((prev) => ({
                 ...prev,
                 footer: {
                   ...prev.footer,
-                  links: [...(prev.footer?.links || []), { label: "", url: "" }],
+                  sections: [...(prev.footer?.sections || []), { title: "New Section", links: [{ label: "Link", url: "/" }] }],
                 },
               }))
             }
             className="text-xs text-primary flex items-center gap-1 hover:underline"
           >
-            <Plus size={12} /> {t('addLink')}
+            <Plus size={12} /> {t('addSection')}
           </button>
         </div>
-        <div className="space-y-2">
-          {(cmsData?.footer?.links || []).map((link, i) => (
-            <div key={i} className="flex gap-2 items-center">
-              <input
-                className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
-                value={link.label || ""}
-                placeholder={t('labelPlaceholder')}
-                onChange={(e) => {
-                  setCmsData((prev) => {
-                    const links = [...(prev.footer?.links || [])];
-                    links[i] = { ...links[i], label: e.target.value };
-                    return { ...prev, footer: { ...prev.footer, links } };
-                  });
-                }}
-              />
-              <input
-                className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
-                value={link.url || ""}
-                placeholder={t('urlPlaceholder')}
-                onChange={(e) => {
-                  setCmsData((prev) => {
-                    const links = [...(prev.footer?.links || [])];
-                    links[i] = { ...links[i], url: e.target.value };
-                    return { ...prev, footer: { ...prev.footer, links } };
-                  });
-                }}
-              />
-              <button
-                onClick={() =>
-                  setCmsData((prev) => ({
-                    ...prev,
-                    footer: {
-                      ...prev.footer,
-                      links: prev.footer.links.filter((_, li) => li !== i),
-                    },
-                  }))
-                }
-                className="text-red-400 hover:text-red-500 p-1"
-              >
-                <Trash2 size={13} />
-              </button>
+        <div className="space-y-4">
+          {(cmsData?.footer?.sections || []).map((section, sIdx) => (
+            <div key={sIdx} className="border border-border rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2 flex-1">
+                  <span className="text-xs font-semibold text-foreground/50">#{sIdx + 1}</span>
+                  <input
+                    className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm font-bold"
+                    value={section.title || ""}
+                    placeholder={t('sectionTitle')}
+                    onChange={(e) => {
+                      setCmsData((prev) => {
+                        const sections = [...(prev.footer?.sections || [])];
+                        sections[sIdx] = { ...sections[sIdx], title: e.target.value };
+                        return { ...prev, footer: { ...prev.footer, sections } };
+                      });
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={() =>
+                    setCmsData((prev) => ({
+                      ...prev,
+                      footer: {
+                        ...prev.footer,
+                        sections: (prev.footer?.sections || []).filter((_, i) => i !== sIdx),
+                      },
+                    }))
+                  }
+                  className="text-red-400 hover:text-red-500 p-1 ml-2"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+              <div className="space-y-2">
+                <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-foreground/50 px-1">
+                  <span className="col-span-4">{t('linkLabel')}</span>
+                  <span className="col-span-4">{t('linkUrl')}</span>
+                  <span className="col-span-2">{t('isScroll')}</span>
+                  <span className="col-span-1">{t('targetId')}</span>
+                  <span className="col-span-1"></span>
+                </div>
+                {(section.links || []).map((link, lIdx) => (
+                  <div key={lIdx} className="grid grid-cols-12 gap-2 items-center">
+                    <input
+                      className="col-span-4 p-1.5 rounded border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                      value={link.label || ""}
+                      placeholder={t('linkLabel')}
+                      onChange={(e) => {
+                        setCmsData((prev) => {
+                          const sections = [...(prev.footer?.sections || [])];
+                          const links = [...(sections[sIdx].links || [])];
+                          links[lIdx] = { ...links[lIdx], label: e.target.value };
+                          sections[sIdx] = { ...sections[sIdx], links };
+                          return { ...prev, footer: { ...prev.footer, sections } };
+                        });
+                      }}
+                    />
+                    <input
+                      className="col-span-4 p-1.5 rounded border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                      value={link.url || ""}
+                      placeholder={t('urlPlaceholder')}
+                      onChange={(e) => {
+                        setCmsData((prev) => {
+                          const sections = [...(prev.footer?.sections || [])];
+                          const links = [...(sections[sIdx].links || [])];
+                          links[lIdx] = { ...links[lIdx], url: e.target.value };
+                          sections[sIdx] = { ...sections[sIdx], links };
+                          return { ...prev, footer: { ...prev.footer, sections } };
+                        });
+                      }}
+                    />
+                    <select
+                      className="col-span-2 p-1.5 rounded border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                      value={link.isScroll ? "true" : "false"}
+                      onChange={(e) => {
+                        setCmsData((prev) => {
+                          const sections = [...(prev.footer?.sections || [])];
+                          const links = [...(sections[sIdx].links || [])];
+                          links[lIdx] = { ...links[lIdx], isScroll: e.target.value === "true" };
+                          sections[sIdx] = { ...sections[sIdx], links };
+                          return { ...prev, footer: { ...prev.footer, sections } };
+                        });
+                      }}
+                    >
+                      <option value="false">No</option>
+                      <option value="true">Yes</option>
+                    </select>
+                    <input
+                      className="col-span-1 p-1.5 rounded border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                      value={link.targetId || ""}
+                      placeholder="ID"
+                      onChange={(e) => {
+                        setCmsData((prev) => {
+                          const sections = [...(prev.footer?.sections || [])];
+                          const links = [...(sections[sIdx].links || [])];
+                          links[lIdx] = { ...links[lIdx], targetId: e.target.value };
+                          sections[sIdx] = { ...sections[sIdx], links };
+                          return { ...prev, footer: { ...prev.footer, sections } };
+                        });
+                      }}
+                    />
+                    <button
+                      onClick={() => {
+                        setCmsData((prev) => {
+                          const sections = [...(prev.footer?.sections || [])];
+                          const links = (sections[sIdx].links || []).filter((_, i) => i !== lIdx);
+                          sections[sIdx] = { ...sections[sIdx], links };
+                          return { ...prev, footer: { ...prev.footer, sections } };
+                        });
+                      }}
+                      className="col-span-1 text-red-400 hover:text-red-500 p-1"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={() => {
+                    setCmsData((prev) => {
+                      const sections = [...(prev.footer?.sections || [])];
+                      const links = [...(sections[sIdx].links || []), { label: "", url: "/" }];
+                      sections[sIdx] = { ...sections[sIdx], links };
+                      return { ...prev, footer: { ...prev.footer, sections } };
+                    });
+                  }}
+                  className="text-xs text-primary flex items-center gap-1 mt-1 hover:underline"
+                >
+                  <Plus size={12} /> {t('addLink')}
+                </button>
+              </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-5">
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('footerText')}</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs font-semibold text-foreground/60 mb-1">{t('copyrightText')}</label>
+              <input
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={cmsData?.footer?.copyright || ""}
+                onChange={(e) => updateField("footer", "copyright", e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-foreground/60 mb-2">{t('footerSocials')}</label>
+              <div className="space-y-2">
+                {["facebook", "twitter", "instagram", "linkedin"].map((platform) => (
+                  <input
+                    key={platform}
+                    className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                    value={cmsData?.footer?.socials?.[platform] || ""}
+                    placeholder={`${platform.charAt(0).toUpperCase() + platform.slice(1)} URL`}
+                    onChange={(e) =>
+                      setCmsData((prev) => ({
+                        ...prev,
+                        footer: {
+                          ...prev.footer,
+                          socials: {
+                            ...(prev.footer?.socials || {}),
+                            [platform]: e.target.value,
+                          },
+                        },
+                      }))
+                    }
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-foreground">{t('footerLinks')}</h3>
+            <button
+              onClick={() =>
+                setCmsData((prev) => ({
+                  ...prev,
+                  footer: {
+                    ...prev.footer,
+                    links: [...(prev.footer?.links || []), { label: "", url: "" }],
+                  },
+                }))
+              }
+              className="text-xs text-primary flex items-center gap-1 hover:underline"
+            >
+              <Plus size={12} /> {t('addLink')}
+            </button>
+          </div>
+          <div className="space-y-2">
+            {(cmsData?.footer?.links || []).map((link, i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <input
+                  className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                  value={link.label || ""}
+                  placeholder={t('labelPlaceholder')}
+                  onChange={(e) => {
+                    setCmsData((prev) => {
+                      const links = [...(prev.footer?.links || [])];
+                      links[i] = { ...links[i], label: e.target.value };
+                      return { ...prev, footer: { ...prev.footer, links } };
+                    });
+                  }}
+                />
+                <input
+                  className="flex-1 p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                  value={link.url || ""}
+                  placeholder={t('urlPlaceholder')}
+                  onChange={(e) => {
+                    setCmsData((prev) => {
+                      const links = [...(prev.footer?.links || [])];
+                      links[i] = { ...links[i], url: e.target.value };
+                      return { ...prev, footer: { ...prev.footer, links } };
+                    });
+                  }}
+                />
+                <button
+                  onClick={() =>
+                    setCmsData((prev) => ({
+                      ...prev,
+                      footer: {
+                        ...prev.footer,
+                        links: prev.footer.links.filter((_, li) => li !== i),
+                      },
+                    }))
+                  }
+                  className="text-red-400 hover:text-red-500 p-1"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -442,9 +442,9 @@ const Navbar = () => {
                     </Link>
 
                     <Link
-                      href="/settings"
+                      href="/dashboard/settings"
                       className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm transition hover:bg-background hover:text-primary ${
-                        isActivePath("/settings")
+                        isActivePath("/dashboard/settings")
                           ? "text-primary bg-background"
                           : "text-foreground/80"
                       }`}

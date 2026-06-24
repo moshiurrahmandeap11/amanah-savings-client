@@ -64,7 +64,7 @@ const Step2Email = ({
       setAutoSent(true);
       handleSendEmailOtp();
     }
-  }, [autoSent, formData.email, emailVerified, emailOtpTimer]);
+  }, [autoSent, formData.email, emailVerified, emailOtpTimer, handleSendEmailOtp]);
 
   // Translation function
   const t = (key, params = {}) => {

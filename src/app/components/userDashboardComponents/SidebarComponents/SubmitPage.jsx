@@ -213,6 +213,7 @@ const SubmitPage = () => {
   const [uploadedScreenshot, setUploadedScreenshot] = useState(null);
   const [lang, setLang] = useState("bn");
   const [paymentInstructions, setPaymentInstructions] = useState(defaultPaymentInstructions);
+  const [paymentMethodsConfig, setPaymentMethodsConfig] = useState(null);
   const fileInputRef = useRef(null);
 
   // Translation function
@@ -299,18 +300,19 @@ const SubmitPage = () => {
 
   const fetchPaymentInstructions = async () => {
     try {
-      const response = await axiosInstance.get("/deposits/payment-instructions");
+      const response = await axiosInstance.get("/payment-instructions");
       if (response.data?.success) {
         setPaymentInstructions({
           en: {
             ...defaultPaymentInstructions.en,
-            ...(response.data.data?.en || {}),
+            ...(response.data.data?.instructions?.en || {}),
           },
           bn: {
             ...defaultPaymentInstructions.bn,
-            ...(response.data.data?.bn || {}),
+            ...(response.data.data?.instructions?.bn || {}),
           },
         });
+        setPaymentMethods(response.data.data?.methods || null);
       }
     } catch (error) {
       console.error("Fetch payment instructions error:", error);
@@ -670,47 +672,89 @@ const SubmitPage = () => {
           </div>
         </div>
 
-        {/* Payment Instructions */}
-        <div className={`rounded-xl p-4 mb-5 ${currentPaymentMethod?.bg} border ${currentPaymentMethod?.border}`}>
-          <div className="font-semibold text-sm mb-3 flex items-center gap-2">
-            <Shield size={16} className="text-primary" />
-            {instruction.title}
-          </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between gap-3">
-              <span className="text-foreground/60">{instruction.sendMoneyToLabel}</span>
-              <strong className="text-primary text-right">{instruction.sendMoneyTo}</strong>
+        {/* Payment Instructions - Per Method */}
+        {(() => {
+          const methodData = paymentMethodsConfig?.[paymentMethod];
+          if (!methodData?.enabled) {
+            return (
+              <div className="rounded-xl p-4 mb-5 bg-amber-500/10 border border-amber-500/30">
+                <div className="text-sm text-amber-600">{lang === "bn" ? "এই পেমেন্ট পদ্ধতি বর্তমানে অনুপলব্ধ।" : "This payment method is currently unavailable."}</div>
+              </div>
+            );
+          }
+
+          return (
+            <div className={`rounded-xl p-4 mb-5 ${currentPaymentMethod?.bg} border ${currentPaymentMethod?.border}`}>
+              <div className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <Shield size={16} className="text-primary" />
+                {instruction.title}
+              </div>
+              
+              {/* Method-specific instructions */}
+              {methodData?.instructions?.[lang] && (
+                <div className="text-sm text-foreground/70 mb-3 p-2 bg-background/50 rounded-lg">
+                  {methodData.instructions[lang]}
+                </div>
+              )}
+
+              <div className="space-y-2 text-sm">
+                {/* bKash / Nagad */}
+                {(paymentMethod === "bkash" || paymentMethod === "nagad") && (
+                  <>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/60">{lang === "bn" ? "নম্বর:" : "Number:"}</span>
+                      <strong className="text-primary text-right font-mono">{methodData.number || "N/A"}</strong>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/60">{lang === "bn" ? "অ্যাকাউন্টের নাম:" : "Account Name:"}</span>
+                      <strong className="text-primary text-right">{methodData.accountName || "N/A"}</strong>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/60">{lang === "bn" ? "টাইপ:" : "Type:"}</span>
+                      <strong className="text-primary text-right capitalize">{methodData.type || "N/A"}</strong>
+                    </div>
+                  </>
+                )}
+
+                {/* Bank */}
+                {paymentMethod === "bank" && (
+                  <>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/60">{lang === "bn" ? "ব্যাংকের নাম:" : "Bank Name:"}</span>
+                      <strong className="text-primary text-right">{methodData.bankName || "N/A"}</strong>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/60">{lang === "bn" ? "অ্যাকাউন্ট নম্বর:" : "Account Number:"}</span>
+                      <strong className="text-primary text-right font-mono">{methodData.accountNumber || "N/A"}</strong>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/60">{lang === "bn" ? "অ্যাকাউন্ট ধারক:" : "Account Holder:"}</span>
+                      <strong className="text-primary text-right">{methodData.accountHolderName || "N/A"}</strong>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/60">{lang === "bn" ? "শাখা:" : "Branch:"}</span>
+                      <strong className="text-primary text-right">{methodData.branch || "N/A"}</strong>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <span className="text-foreground/60">{lang === "bn" ? "রাউটিং নম্বর:" : "Routing Number:"}</span>
+                      <strong className="text-primary text-right font-mono">{methodData.routingNumber || "N/A"}</strong>
+                    </div>
+                  </>
+                )}
+
+                {/* Generic amount + reference */}
+                <div className="flex justify-between gap-3 pt-2 border-t border-border/50">
+                  <span className="text-foreground/60">{instruction.amountLabel}</span>
+                  <strong className="text-primary text-right">{instructionAmount}</strong>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span className="text-foreground/60">{instruction.referenceLabel}</span>
+                  <strong className="text-primary text-right">{instruction.reference}</strong>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between gap-3">
-              <span className="text-foreground/60">{instruction.amountLabel}</span>
-              <strong className="text-primary text-right">{instructionAmount}</strong>
-            </div>
-            <div className="flex justify-between gap-3">
-              <span className="text-foreground/60">{instruction.referenceLabel}</span>
-              <strong className="text-primary text-right">{instruction.reference}</strong>
-            </div>
-          </div>
-        </div>
-        <div className="hidden">
-          <div className="font-semibold text-sm mb-3 flex items-center gap-2">
-            <Shield size={16} className="text-primary" />
-            {t('paymentInstructions')}
-          </div>
-          <div className="space-y-2 text-sm">
-            <div className="flex justify-between">
-              <span className="text-foreground/60">{t('sendMoneyTo')}</span>
-              <strong className="text-primary">018XXXXXXXX</strong>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-foreground/60">{t('amount')}</span>
-              <strong className="text-primary">৳{depositAmount || "XXXX"}</strong>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-foreground/60">{t('reference')}</span>
-              <strong className="text-primary">{selectedTargetData?.name?.toUpperCase().replace(/ /g, "-") || "SAVINGS"}-DEPOSIT</strong>
-            </div>
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Screenshot Upload */}
         <div className="mb-5">

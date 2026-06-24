@@ -309,6 +309,16 @@ const RegisterPage = () => {
     }
   };
 
+  // Timer countdown effect for email OTP resend
+  useEffect(() => {
+    if (emailOtpTimer > 0) {
+      const timer = setInterval(() => {
+        setEmailOtpTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [emailOtpTimer]);
+
   const handleVerifyEmailOtp = async () => {
     const otp = formData.emailOtp.join("");
     if (otp.length !== 6) {

@@ -70,6 +70,7 @@ const translations = {
     supportTickets: "Support Tickets",
     blogManagement: "Blog Management",
     withdrawalApprovals: "Withdrawal Approvals",
+    planUpgradeApprovals: "Plan Upgrade Approvals",
     settings: "Settings",
     
     // Footer
@@ -115,6 +116,7 @@ const translations = {
     supportTickets: "সাপোর্ট টিকেট",
     blogManagement: "ব্লগ ব্যবস্থাপনা",
     withdrawalApprovals: "উত্তোলন অনুমোদন",
+    planUpgradeApprovals: "প্ল্যান আপগ্রেড অনুমোদন",
     settings: "সেটিংস",
     
     // Footer
@@ -317,6 +319,14 @@ const AdminSidebar = ({ closeSidebar, isDark }) => {
           icon: <Receipt size={18} />,
           href: "/admin/withdrawal-approvals",
           id: "withdrawal-approvals",
+          badge: "",
+          badgeColor: "yellow",
+        },
+        {
+          name: t('planUpgradeApprovals'),
+          icon: <CreditCard size={18} />,
+          href: "/admin/plan-upgrade-approvals",
+          id: "plan-upgrade-approvals",
           badge: "",
           badgeColor: "yellow",
         },

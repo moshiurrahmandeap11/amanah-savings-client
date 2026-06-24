@@ -253,26 +253,8 @@ const PlanUpgradePage = () => {
     });
 
     if (result.isConfirmed) {
-      setLoading(true);
-      const res = await updatePlan({
-        selectedPlan: planKey,
-        billingCycle,
-      });
-      setLoading(false);
-
-      if (res.success) {
-        Swal.fire({
-          title: t("successTitle"),
-          text: t("successText", {
-            plan: lang === "bn" ? plan.nameBn : plan.name,
-            cycle: t(billingCycle),
-          }),
-          icon: "success",
-          confirmButtonColor: "#059669",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      }
+      // Navigate to payment page instead of instant upgrade
+      router.push(`/dashboard/plan-payment?plan=${planKey}&cycle=${billingCycle}`);
     }
   };
 

@@ -62,6 +62,10 @@ const translations = {
     searchUser: "Search user...",
     selectDestinationGoal: "Please select a destination goal",
     searchUserFirst: "Please search and select a user first",
+    recipientGoals: "Select Recipient's Goal",
+    recipientGoalsDesc: "Choose which goal to send money to",
+    noActiveGoalsRecipient: "Recipient has no active goals",
+    generalSavings: "General Savings (Auto-created)",
   },
   bn: {
     transfer: "ট্রান্সফার",
@@ -110,6 +114,10 @@ const translations = {
     searchUser: "ব্যবহারকারী খুঁজুন...",
     selectDestinationGoal: "দয়া করে একটি গন্তব্য গোল নির্বাচন করুন",
     searchUserFirst: "দয়া করে প্রথমে একজন ব্যবহারকারী খুঁজুন এবং নির্বাচন করুন",
+    recipientGoals: "প্রাপকের গোল নির্বাচন করুন",
+    recipientGoalsDesc: "কোন গোলে টাকা পাঠাবেন তা নির্বাচন করুন",
+    noActiveGoalsRecipient: "প্রাপকের কোনো সক্রিয় গোল নেই",
+    generalSavings: "জেনারেল সেভিংস (অটো-তৈরি)",
   }
 };
 
@@ -137,7 +145,9 @@ const TransferPage = () => {
   const [goals, setGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [transferResult, setTransferResult] = useState(null);
+  const [recipientGoals, setRecipientGoals] = useState([]);
+  const [selRecipientGoal, setSelRecipientGoal] = useState(null);
+  const [loadingRecipientGoals, setLoadingRecipientGoals] = useState(false);
 
   const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
@@ -188,6 +198,8 @@ const TransferPage = () => {
     setRecipientFound(false);
     setRecipientData(null);
     setRecipientPhone("");
+    setRecipientGoals([]);
+    setSelRecipientGoal(null);
   };
 
   const selectFrom = (id) => {
@@ -272,8 +284,46 @@ const TransferPage = () => {
     }
   };
 
-  // ✅ New: proceed to step 4 after user is found
+  // ✅ New: proceed to recipient goal selection after user is found
+  const proceedToRecipientGoals = async () => {
+    if (!recipientFound || !recipientData) {
+      showToast(t('searchUserFirst'), "error");
+      return;
+    }
+
+    setLoadingRecipientGoals(true);
+    try {
+      const response = await axiosInstance.get(
+        `/transfers/recipient-goals/${recipientData.id}`,
+        { headers: getAuthHeaders() }
+      );
+      if (response.data.success) {
+        const goals = response.data.data.goals || [];
+        setRecipientGoals(goals);
+        if (goals.length > 0) {
+          setSelRecipientGoal(goals[0]._id);
+        }
+        setActiveStep(3);
+      }
+    } catch (error) {
+      console.error("Fetch recipient goals error:", error);
+      showToast("Failed to fetch recipient goals", "error");
+    } finally {
+      setLoadingRecipientGoals(false);
+    }
+  };
+
+  const selectRecipientGoal = (goalId) => {
+    setSelRecipientGoal(goalId);
+    setActiveStep(4);
+  };
+
+  // ✅ New: proceed to step 4 (amount) after recipient goal is selected
   const proceedToAmount = () => {
+    if (trType === "user2user" && !selRecipientGoal) {
+      showToast(t('selectDestinationGoal'), "error");
+      return;
+    }
     if (!recipientFound) {
       showToast(t('searchUserFirst'), "error");
       return;
@@ -325,6 +375,7 @@ const TransferPage = () => {
           amount: amt,
           note: note || null,
           fromGoalId: selFrom,
+          toGoalId: selRecipientGoal,
         }, {
           headers: getAuthHeaders(),
         });
@@ -351,6 +402,8 @@ const TransferPage = () => {
     setRecipientFound(false);
     setRecipientData(null);
     setSelTo(null);
+    setRecipientGoals([]);
+    setSelRecipientGoal(null);
     setActiveStep(1);
     setTransferResult(null);
   };
@@ -364,6 +417,9 @@ const TransferPage = () => {
     if (trType === "goal2goal" && selTo) {
       const goal = goals.find(g => g._id === selTo);
       return goal?.goalName || "—";
+    } else if (trType === "user2user" && selRecipientGoal) {
+      const goal = recipientGoals.find(g => g._id === selRecipientGoal);
+      return `${goal?.goalName || "General Savings"} — ${recipientData?.name || recipientData?.fullName || ''}`;
     } else if (trType === "user2user" && recipientFound) {
       return `${recipientData?.name || recipientData?.fullName || ''} (${recipientData?.phone || recipientPhone})`;
     }
@@ -645,18 +701,94 @@ const TransferPage = () => {
                   {t('findUser')}
                 </button>
 
-                {/* ✅ Proceed to Amount button — only shows after user is found */}
+                {/* ✅ Proceed to Recipient Goals button — only shows after user is found */}
                 {recipientFound && recipientData && (
                   <button
-                    onClick={proceedToAmount}
+                    onClick={proceedToRecipientGoals}
+                    disabled={loadingRecipientGoals}
                     className="w-full mt-3 py-3.5 rounded-xl border-2 border-primary bg-primary/5 text-primary font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all"
                   >
-                    <Wallet size={16} />
-                    {t('proceedToAmount')}
+                    {loadingRecipientGoals ? <Loader2 className="w-4 h-4 animate-spin" /> : <Target size={16} />}
+                    {t('recipientGoals')}
                   </button>
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Step 3.5: Recipient Goal Selection (for user-to-user) */}
+        {activeStep === 3 && trType === "user2user" && recipientFound && recipientGoals.length > 0 && (
+          <div className="bg-card border border-border rounded-xl p-5 mb-4">
+            <div className="font-bold text-foreground mb-2 flex items-center gap-2">
+              <Target size={18} className="text-primary" /> {t('recipientGoals')}
+            </div>
+            <div className="text-xs text-foreground/50 mb-4">{t('recipientGoalsDesc')}</div>
+            <div className="space-y-3">
+              {recipientGoals.map((goal) => (
+                <div
+                  key={goal._id}
+                  onClick={() => selectRecipientGoal(goal._id)}
+                  className={`p-3 rounded-xl border-2 cursor-pointer transition flex items-center gap-3 ${
+                    selRecipientGoal === goal._id
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/50"
+                  }`}
+                >
+                  <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                    <Target size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <div className="font-semibold text-sm text-foreground">{goal.goalName}</div>
+                    <div className="text-xs text-foreground/50">
+                      {t('current')}: ৳{goal.currentSaved.toLocaleString()} / ৳{goal.targetAmount.toLocaleString()}
+                    </div>
+                    <div className="h-1.5 bg-border rounded-full mt-2 overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-primary to-primary-light rounded-full"
+                        style={{ width: `${goal.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                  {selRecipientGoal === goal._id && (
+                    <CheckCircle size={18} className="text-primary shrink-0" />
+                  )}
+                </div>
+              ))}
+            </div>
+            
+            {/* Proceed to Amount button */}
+            {selRecipientGoal && (
+              <button
+                onClick={proceedToAmount}
+                className="w-full mt-4 py-3.5 rounded-xl border-2 border-primary bg-primary/5 text-primary font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary hover:text-white transition-all"
+              >
+                <Wallet size={16} />
+                {t('proceedToAmount')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Step 3 fallback: if recipient has no goals */}
+        {activeStep === 3 && trType === "user2user" && recipientFound && recipientGoals.length === 0 && !loadingRecipientGoals && (
+          <div className="bg-card border border-border rounded-xl p-5 mb-4">
+            <div className="text-center py-8">
+              <AlertCircle size={48} className="text-amber-500 mx-auto mb-3" />
+              <div className="font-bold text-foreground mb-2">{t('noActiveGoalsRecipient')}</div>
+              <div className="text-sm text-foreground/60 mb-4">
+                {recipientData?.name || recipientData?.fullName} has no active goals. Money will be sent to a &quot;General Savings&quot; goal.
+              </div>
+              <button
+                onClick={() => {
+                  setSelRecipientGoal("general");
+                  setActiveStep(4);
+                }}
+                className="px-6 py-3 bg-gradient-to-r from-primary to-primary-light text-white rounded-xl font-semibold"
+              >
+                {t('proceedToAmount')}
+              </button>
+            </div>
           </div>
         )}
 

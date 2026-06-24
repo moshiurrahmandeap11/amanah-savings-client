@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import axiosInstance from "../shared/AxiosInstance/AxiosInstance";
 
 // Translations
 const translations = {
@@ -49,6 +50,13 @@ const translations = {
     passwordsDoNotMatch: "Passwords do not match",
     agreeTerms: "You must agree to the terms",
     agreeWithdrawal: "You must agree to the withdrawal policy",
+    
+    // Real-time validation
+    phoneAlreadyRegistered: "This phone number is already registered",
+    emailAlreadyRegistered: "This email is already registered",
+    checking: "Checking...",
+    phoneAvailable: "Phone number is available",
+    emailAvailable: "Email is available",
   },
   bn: {
     // Step Header
@@ -92,12 +100,25 @@ const translations = {
     passwordsDoNotMatch: "পাসওয়ার্ড মিলছে না",
     agreeTerms: "আপনাকে শর্তাবলীতে সম্মত হতে হবে",
     agreeWithdrawal: "আপনাকে উত্তোলন নীতিতে সম্মত হতে হবে",
+    
+    // Real-time validation
+    phoneAlreadyRegistered: "এই ফোন নম্বরটি ইতিমধ্যে নিবন্ধিত",
+    emailAlreadyRegistered: "এই ইমেইলটি ইতিমধ্যে নিবন্ধিত",
+    checking: "যাচাই করা হচ্ছে...",
+    phoneAvailable: "ফোন নম্বরটি ব্যবহারযোগ্য",
+    emailAvailable: "ইমেইলটি ব্যবহারযোগ্য",
   }
 };
 
 const Step1Account = ({ formData, updateField, errors, setErrors, handleNext, lang = "bn" }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // Real-time validation states
+  const [phoneStatus, setPhoneStatus] = useState("idle"); // idle | checking | exists | available
+  const [emailStatus, setEmailStatus] = useState("idle"); // idle | checking | exists | available
+  const phoneTimerRef = useRef(null);
+  const emailTimerRef = useRef(null);
 
   // Translation function
   const t = (key, params = {}) => {
@@ -108,10 +129,98 @@ const Step1Account = ({ formData, updateField, errors, setErrors, handleNext, la
     return text;
   };
 
+  // Check phone availability (debounced)
+  const checkPhone = useCallback(async (phone) => {
+    if (!phone || phone.length < 10) {
+      setPhoneStatus("idle");
+      return;
+    }
+    
+    setPhoneStatus("checking");
+    try {
+      const response = await axiosInstance.get(`/users/check-exists?phone=${encodeURIComponent(phone)}`);
+      if (response.data.success) {
+        if (response.data.data.phoneExists) {
+          setPhoneStatus("exists");
+          setErrors((prev) => ({ ...prev, phone: t("phoneAlreadyRegistered") }));
+        } else {
+          setPhoneStatus("available");
+          setErrors((prev) => { const { phone, ...rest } = prev; return rest; });
+        }
+      }
+    } catch (error) {
+      console.error("Phone check error:", error);
+      setPhoneStatus("idle");
+    }
+  }, [t, setErrors]);
+
+  // Check email availability (debounced)
+  const checkEmail = useCallback(async (email) => {
+    if (!email || !email.includes("@")) {
+      setEmailStatus("idle");
+      return;
+    }
+    
+    setEmailStatus("checking");
+    try {
+      const response = await axiosInstance.get(`/users/check-exists?email=${encodeURIComponent(email)}`);
+      if (response.data.success) {
+        if (response.data.data.emailExists) {
+          setEmailStatus("exists");
+          setErrors((prev) => ({ ...prev, email: t("emailAlreadyRegistered") }));
+        } else {
+          setEmailStatus("available");
+          setErrors((prev) => { const { email, ...rest } = prev; return rest; });
+        }
+      }
+    } catch (error) {
+      console.error("Email check error:", error);
+      setEmailStatus("idle");
+    }
+  }, [t, setErrors]);
+
+  // Debounced phone change handler
+  const handlePhoneChange = (value) => {
+    updateField("phone", value);
+    setPhoneStatus("idle");
+    
+    // Clear previous timer
+    if (phoneTimerRef.current) clearTimeout(phoneTimerRef.current);
+    
+    // Set new timer (1 second debounce)
+    phoneTimerRef.current = setTimeout(() => {
+      checkPhone(value);
+    }, 800);
+  };
+
+  // Debounced email change handler
+  const handleEmailChange = (value) => {
+    updateField("email", value);
+    setEmailStatus("idle");
+    
+    // Clear previous timer
+    if (emailTimerRef.current) clearTimeout(emailTimerRef.current);
+    
+    // Set new timer (1 second debounce)
+    emailTimerRef.current = setTimeout(() => {
+      checkEmail(value);
+    }, 800);
+  };
+
+  // Cleanup timers on unmount
+  useEffect(() => {
+    return () => {
+      if (phoneTimerRef.current) clearTimeout(phoneTimerRef.current);
+      if (emailTimerRef.current) clearTimeout(emailTimerRef.current);
+    };
+  }, []);
+
   const validateStep = () => {
     const newErrors = {};
     if (!formData.firstName) newErrors.firstName = t('firstNameRequired');
     if (!formData.phone || formData.phone.length < 10) newErrors.phone = t('validPhoneRequired');
+    if (phoneStatus === "exists") newErrors.phone = t('phoneAlreadyRegistered');
+    if (emailStatus === "exists") newErrors.email = t('emailAlreadyRegistered');
     if (!formData.password) newErrors.password = t('passwordRequired');
     if (formData.password.length < 8) newErrors.password = t('passwordMinLength');
     if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = t('passwordsDoNotMatch');
@@ -149,6 +258,64 @@ const Step1Account = ({ formData, updateField, errors, setErrors, handleNext, la
     return colors[index];
   };
 
+  // Status indicator component
+  const StatusIndicator = ({ status }) => {
+    if (status === "checking") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-foreground/50 mt-1">
+          <Loader2 size={12} className="animate-spin" />
+          {t("checking")}
+        </span>
+      );
+    }
+    if (status === "exists") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-red-500 mt-1">
+          <AlertCircle size={12} />
+          {t("phoneAlreadyRegistered")}
+        </span>
+      );
+    }
+    if (status === "available") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-green-500 mt-1">
+          <CheckCircle size={12} />
+          {t("phoneAvailable")}
+        </span>
+      );
+    }
+    return null;
+  };
+
+  // Email status indicator
+  const EmailStatusIndicator = ({ status }) => {
+    if (status === "checking") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-foreground/50 mt-1">
+          <Loader2 size={12} className="animate-spin" />
+          {t("checking")}
+        </span>
+      );
+    }
+    if (status === "exists") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-red-500 mt-1">
+          <AlertCircle size={12} />
+          {t("emailAlreadyRegistered")}
+        </span>
+      );
+    }
+    if (status === "available") {
+      return (
+        <span className="inline-flex items-center gap-1 text-xs text-green-500 mt-1">
+          <CheckCircle size={12} />
+          {t("emailAvailable")}
+        </span>
+      );
+    }
+    return null;
+  };
+
   return (
     <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="bg-card border border-border rounded-2xl p-6">
       <div className="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">{t('stepLabel')}</div>
@@ -171,14 +338,33 @@ const Step1Account = ({ formData, updateField, errors, setErrors, handleNext, la
         <label className="block text-sm font-semibold text-foreground/70 mb-1">{t('mobileNumber')}</label>
         <div className="flex">
           <span className="inline-flex items-center px-3 rounded-l-xl border border-r-0 border-border bg-background text-foreground/60">+880</span>
-          <input type="tel" value={formData.phone} onChange={(e) => updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 11))} className="flex-1 p-3 rounded-r-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('mobilePlaceholder')} />
+          <input 
+            type="tel" 
+            value={formData.phone} 
+            onChange={(e) => handlePhoneChange(e.target.value.replace(/\D/g, "").slice(0, 11))} 
+            className={`flex-1 p-3 rounded-r-xl border bg-background text-foreground outline-none focus:border-primary ${
+              phoneStatus === "exists" ? "border-red-500" : phoneStatus === "available" ? "border-green-500" : "border-border"
+            }`} 
+            placeholder={t('mobilePlaceholder')} 
+          />
         </div>
         {errors.phone && <p className="text-xs text-red-500 mt-1">{errors.phone}</p>}
+        {!errors.phone && <StatusIndicator status={phoneStatus} />}
       </div>
 
       <div className="mb-4">
         <label className="block text-sm font-semibold text-foreground/70 mb-1">{t('email')}</label>
-        <input type="email" value={formData.email} onChange={(e) => updateField("email", e.target.value)} className="w-full p-3 rounded-xl border border-border bg-background text-foreground outline-none focus:border-primary" placeholder={t('emailPlaceholder')} />
+        <input 
+          type="email" 
+          value={formData.email} 
+          onChange={(e) => handleEmailChange(e.target.value)} 
+          className={`w-full p-3 rounded-xl border bg-background text-foreground outline-none focus:border-primary ${
+            emailStatus === "exists" ? "border-red-500" : emailStatus === "available" ? "border-green-500" : "border-border"
+          }`} 
+          placeholder={t('emailPlaceholder')} 
+        />
+        {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
+        {!errors.email && <EmailStatusIndicator status={emailStatus} />}
       </div>
 
       <div className="mb-4">

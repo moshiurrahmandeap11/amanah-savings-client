@@ -536,8 +536,8 @@ const MyCircleDetailsPage = () => {
     );
   }
 
-  // Safe data extraction based on your JSON structure
-  const circleName = circle.name || "Unnamed Circle";
+  // Safe data extraction based on backend response structure
+  const circleName = circle.name || circle.circleName || "Unnamed Circle";
   const circlePurpose = circle.purpose || "general";
   const circleStatus = circle.status || "active";
   const circleType = circle.circleType || "public";
@@ -545,7 +545,9 @@ const MyCircleDetailsPage = () => {
   const circleMaxMembers = circle.maxMembers || 0;
   const circleMinDeposit = circle.minDeposit || 0;
   const circleTargetAmount = circle.targetAmount || 0;
-  const circleTotalPoolValue = circle.totalPoolValue || 0;
+  // Backend returns totalPool as raw number via ...circle spread, and totalPool as formatted string
+  // Use the raw number for calculations
+  const circleTotalPoolValue = circle.totalPool || 0;
   const circleDescription = circle.description || "";
   const circleNextPayout = circle.nextPayout || "Not scheduled";
   const circleCreatedAt = circle.createdAt || new Date().toISOString();
@@ -556,6 +558,13 @@ const MyCircleDetailsPage = () => {
     m.role === "admin" && 
     String(m.userId) === String(currentUserId)
   ) || false;
+  
+  // Also check raw members array if membersList is not populated
+  const isAdminFromMembers = !isAdmin && circle.members?.some(m =>
+    m.role === "admin" &&
+    String(m.userId) === String(currentUserId)
+  ) || false;
+  const finalIsAdmin = isAdmin || isAdminFromMembers;
   
   const progressPercentage = circleTargetAmount > 0 
     ? Math.round((circleTotalPoolValue / circleTargetAmount) * 100) 
@@ -924,7 +933,7 @@ const MyCircleDetailsPage = () => {
             <Send size={18} />
             {t('makeDeposit')}
           </button>
-          {isAdmin && (
+          {finalIsAdmin && (
             <button
               onClick={() => setShowWithdrawModal(true)}
               className="flex-1 py-3 rounded-xl bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold hover:opacity-90 transition flex items-center justify-center gap-2"

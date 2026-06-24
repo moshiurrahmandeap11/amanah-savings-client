@@ -6,114 +6,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { 
   Shield, 
-  Heart, 
   Mail, 
   Phone, 
   ChevronRight,
-  Award,
-  Clock,
-  Lock
 } from "lucide-react";
 import { FaFacebook, FaInstagram, FaLinkedin, FaTwitter } from "react-icons/fa";
 import usePublicCms from "../usePublicCms";
-
-// Translations
-const translations = {
-  en: {
-    // Brand
-    brandName: "Sanchoy Bondhu",
-    brandDesc: "Bangladesh's trusted digital savings community platform. Save together, achieve goals, build your future — in a halal and disciplined way.",
-    
-    // Announcement
-    announcementBadge: "Important Announcement:",
-    announcementText: "Sonchoy Bondhu Community is a savings circle management platform. We are not a bank, investment company or financial institution. We do not guarantee any returns or profits. Savings are locked in according to the member's own and circle terms.",
-    
-    // Sections
-    sectionPlatform: "Platform",
-    sectionCompany: "Company",
-    sectionSupport: "Support",
-    
-    // Platform Links
-    linkHowItWorks: "How it works",
-    linkSavingsPlan: "Savings plan",
-    linkSavingsGoal: "Savings goal",
-    linkCommunityCircle: "Community Circle",
-    linkSecurity: "Security and trust",
-    
-    // Company Links
-    linkAbout: "About us",
-    linkContact: "Contact",
-    linkBlog: "Blog",
-    linkCareer: "Career",
-    linkPress: "Press",
-    
-    // Support Links
-    linkFAQ: "Q&A",
-    linkHelpCenter: "Help Center",
-    linkPrivacy: "Privacy Policy",
-    linkTerms: "Terms of Use",
-    linkWithdrawal: "Withdrawal policy",
-    
-    // Contact
-    supportLabel: "Support",
-    emailLabel: "Email",
-    emailAddress: "sanchoybondhu@gmail.com",
-    
-    // Bottom
-    copyright: "© 2025 Sonchoy Bondhu Community. All rights reserved. Bangladesh.",
-    bottomPrivacy: "Privacy",
-    bottomTerms: "Terms and conditions",
-    bottomWithdrawal: "Withdrawal policy",
-    bottomAnnouncement: "Announcement",
-  },
-  bn: {
-    // Brand
-    brandName: "সঞ্চয় বন্ধু",
-    brandDesc: "বাংলাদেশের বিশ্বস্ত ডিজিটাল সঞ্চয় সম্প্রদায় প্ল্যাটফর্ম। একসাথে সঞ্চয় করুন, লক্ষ্য অর্জন করুন, আপনার ভবিষ্যত গড়ুন — একটি হালাল ও সুশৃঙ্খল উপায়ে।",
-    
-    // Announcement
-    announcementBadge: "গুরুত্বপূর্ণ ঘোষণা:",
-    announcementText: "সঞ্চয় বন্ধু সম্প্রদায় একটি সঞ্চয় সার্কেল ব্যবস্থাপনা প্ল্যাটফর্ম। আমরা ব্যাংক, বিনিয়োগ কোম্পানি বা আর্থিক প্রতিষ্ঠান নই। আমরা কোনো রিটার্ন বা মুনাফার গ্যারান্টি দিই না। সঞ্চয় সদস্যের নিজস্ব এবং সার্কেল শর্তাবলী অনুযায়ী লক করা থাকে।",
-    
-    // Sections
-    sectionPlatform: "প্ল্যাটফর্ম",
-    sectionCompany: "কোম্পানি",
-    sectionSupport: "সাপোর্ট",
-    
-    // Platform Links
-    linkHowItWorks: "কীভাবে কাজ করে",
-    linkSavingsPlan: "সঞ্চয় প্ল্যান",
-    linkSavingsGoal: "সঞ্চয় লক্ষ্য",
-    linkCommunityCircle: "কমিউনিটি সার্কেল",
-    linkSecurity: "নিরাপত্তা ও বিশ্বাস",
-    
-    // Company Links
-    linkAbout: "আমাদের সম্পর্কে",
-    linkContact: "যোগাযোগ",
-    linkBlog: "ব্লগ",
-    linkCareer: "ক্যারিয়ার",
-    linkPress: "প্রেস",
-    
-    // Support Links
-    linkFAQ: "প্রশ্নোত্তর",
-    linkHelpCenter: "সাহায্য কেন্দ্র",
-    linkPrivacy: "গোপনীয়তা নীতি",
-    linkTerms: "ব্যবহারের শর্তাবলী",
-    linkWithdrawal: "উত্তোলন নীতি",
-    
-    // Contact
-    supportLabel: "সাপোর্ট",
-    emailLabel: "ইমেইল",
-    emailAddress: "sanchoybondhu@gmail.com",
-    
-    // Bottom
-    copyright: "© ২০২৫ সঞ্চয় বন্ধু সম্প্রদায়। সর্বস্বত্ব সংরক্ষিত। বাংলাদেশ।",
-    bottomPrivacy: "গোপনীয়তা",
-    bottomTerms: "শর্তাবলী",
-    bottomWithdrawal: "উত্তোলন নীতি",
-    bottomAnnouncement: "ঘোষণা",
-  }
-};
 
 const Footer = () => {
   const [language] = useState(() => {
@@ -124,21 +22,16 @@ const Footer = () => {
   const router = useRouter();
   const { cms, announcement } = usePublicCms();
 
-  // Translation function
-  const t = (key) => {
-    return translations[language]?.[key] || translations.en[key] || key;
-  };
+  // Get footer data from CMS with fallbacks
+  const footer = cms?.footer || {};
 
   // Handle scroll to section
   const handleScrollToSection = (e, targetId) => {
     e.preventDefault();
     
-    // Check if we're on the home page
     if (pathname === '/') {
-      // If on home page, scroll directly
       const element = document.getElementById(targetId);
       if (element) {
-        // Add offset for fixed header if needed
         const headerOffset = 80;
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
@@ -149,77 +42,65 @@ const Footer = () => {
         });
       }
     } else {
-      // If not on home page, navigate to home page first
       router.push(`/#${targetId}`);
     }
   };
 
-  // Get footer sections with translations
-  const footerSections = [
-    {
-      title: t('sectionPlatform'),
-      links: [
-        { name: t('linkHowItWorks'), href: "/how-it-works" },
-        { 
-          name: t('linkSavingsPlan'), 
-          href: "/#savings-plan",
-          isScroll: true,
-          targetId: "savings-plan"
+  // Build footer sections from CMS, fallback to defaults if not present
+  const footerSections = footer.sections?.length
+    ? footer.sections
+    : [
+        {
+          title: language === "bn" ? "প্ল্যাটফর্ম" : "Platform",
+          links: [
+            { label: language === "bn" ? "কীভাবে কাজ করে" : "How it works", url: "/how-it-works" },
+            { label: language === "bn" ? "সঞ্চয় প্ল্যান" : "Savings plan", url: "/#savings-plan", isScroll: true, targetId: "savings-plan" },
+            { label: language === "bn" ? "সঞ্চয় লক্ষ্য" : "Savings goal", url: "/#savings-goal", isScroll: true, targetId: "savings-goal" },
+            { label: language === "bn" ? "কমিউনিটি সার্কেল" : "Community Circle", url: "/goals" },
+            { label: language === "bn" ? "নিরাপত্তা ও বিশ্বাস" : "Security and trust", url: "/#security-trust", isScroll: true, targetId: "security-trust" },
+          ],
         },
-              { 
-        name: t('linkSavingsGoal'), 
-        href: "/#savings-goal",
-        isScroll: true,
-        targetId: "savings-goal" 
-      },
-        { name: t('linkCommunityCircle'), href: "/goals" },
-              { 
-        name: t('linkSecurity'), 
-        href: "/#security-trust",  
-        isScroll: true,
-        targetId: "security-trust"  
-      },
-      ],
-    },
-    {
-      title: t('sectionCompany'),
-      links: [
-        { name: t('linkAbout'), href: "/about-us" },
-        { name: t('linkContact'), href: "/contact" },
-        { name: t('linkBlog'), href: "/blogs" },
-        { name: t('linkCareer'), href: "/about-us" },
-        { name: t('linkPress'), href: "/press" },
-      ],
-    },
-    {
-      title: t('sectionSupport'),
-      links: [
-        { name: t('linkFAQ'), href: "/faq" },
-        { name: t('linkHelpCenter'), href: "/faq" },
-        { name: t('linkPrivacy'), href: "/privacy" },
-        { name: t('linkTerms'), href: "/terms" },
-        { name: t('linkWithdrawal'), href: "/terms" },
-      ],
-    },
-  ];
+        {
+          title: language === "bn" ? "কোম্পানি" : "Company",
+          links: [
+            { label: language === "bn" ? "আমাদের সম্পর্কে" : "About us", url: "/about-us" },
+            { label: language === "bn" ? "যোগাযোগ" : "Contact", url: "/contact" },
+            { label: language === "bn" ? "ব্লগ" : "Blog", url: "/blogs" },
+            { label: language === "bn" ? "ক্যারিয়ার" : "Career", url: "/about-us" },
+            { label: language === "bn" ? "প্রেস" : "Press", url: "/press" },
+          ],
+        },
+        {
+          title: language === "bn" ? "সাপোর্ট" : "Support",
+          links: [
+            { label: language === "bn" ? "প্রশ্নোত্তর" : "Q&A", url: "/faq" },
+            { label: language === "bn" ? "সাহায্য কেন্দ্র" : "Help Center", url: "/faq" },
+            { label: language === "bn" ? "গোপনীয়তা নীতি" : "Privacy Policy", url: "/privacy" },
+            { label: language === "bn" ? "ব্যবহারের শর্তাবলী" : "Terms of Use", url: "/terms" },
+            { label: language === "bn" ? "উত্তোলন নীতি" : "Withdrawal policy", url: "/terms" },
+          ],
+        },
+      ];
 
   const socialLinks = [
-    { icon: <FaFacebook size={18} />, href: cms?.footer?.socials?.facebook, color: "hover:bg-blue-500", label: "Facebook" },
-    { icon: <FaTwitter size={18} />, href: cms?.footer?.socials?.twitter, color: "hover:bg-sky-500", label: "Twitter" },
-    { icon: <FaLinkedin size={18} />, href: cms?.footer?.socials?.linkedin, color: "hover:bg-blue-600", label: "LinkedIn" },
-    { icon: <FaInstagram size={18} />, href: cms?.footer?.socials?.instagram, color: "hover:bg-pink-500", label: "Instagram" },
+    { icon: <FaFacebook size={18} />, href: footer?.socials?.facebook, color: "hover:bg-blue-500", label: "Facebook" },
+    { icon: <FaTwitter size={18} />, href: footer?.socials?.twitter, color: "hover:bg-sky-500", label: "Twitter" },
+    { icon: <FaLinkedin size={18} />, href: footer?.socials?.linkedin, color: "hover:bg-blue-600", label: "LinkedIn" },
+    { icon: <FaInstagram size={18} />, href: footer?.socials?.instagram, color: "hover:bg-pink-500", label: "Instagram" },
   ].filter((social) => social.href);
 
-  // Get bottom links with translations
-  const bottomLinks = cms?.footer?.links?.length ? cms.footer.links.map((link) => ({
-    name: link.label,
-    href: link.url || "#",
-  })) : [
-    { name: t('bottomPrivacy'), href: "/privacy" },
-    { name: t('bottomTerms'), href: "/terms" },
-    { name: t('bottomWithdrawal'), href: "/terms" },
-    { name: t('bottomAnnouncement'), href: "/terms" },
-  ];
+  // Bottom links from CMS
+  const bottomLinks = footer?.links?.length
+    ? footer.links.map((link) => ({
+        name: link.label,
+        href: link.url || "#",
+      }))
+    : [
+        { name: language === "bn" ? "গোপনীয়তা" : "Privacy", href: "/privacy" },
+        { name: language === "bn" ? "শর্তাবলী" : "Terms and conditions", href: "/terms" },
+        { name: language === "bn" ? "উত্তোলন নীতি" : "Withdrawal policy", href: "/terms" },
+        { name: language === "bn" ? "ঘোষণা" : "Announcement", href: "/terms" },
+      ];
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -235,6 +116,22 @@ const Footer = () => {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0 },
   };
+
+  // Get brand info from CMS or fallback
+  const brandName = footer?.brandName || cms?.site?.name || (language === "bn" ? "সঞ্চয় বন্ধু" : "Sanchoy Bondhu");
+  const brandDesc = footer?.brandDesc || cms?.site?.tagline || (language === "bn" 
+    ? "বাংলাদেশের বিশ্বস্ত ডিজিটাল সঞ্চয় সম্প্রদায় প্ল্যাটফর্ম। একসাথে সঞ্চয় করুন, লক্ষ্য অর্জন করুন, আপনার ভবিষ্যত গড়ুন — একটি হালাল ও সুশৃঙ্খল উপায়ে।"
+    : "Bangladesh's trusted digital savings community platform. Save together, achieve goals, build your future — in a halal and disciplined way."
+  );
+  const announcementBadge = footer?.announcementBadge || (language === "bn" ? "গুরুত্বপূর্ণ ঘোষণা:" : "Important Announcement:");
+  const announcementText = footer?.announcementText || (language === "bn" 
+    ? "সঞ্চয় বন্ধু সম্প্রদায় একটি সঞ্চয় সার্কেল ব্যবস্থাপনা প্ল্যাটফর্ম। আমরা ব্যাংক, বিনিয়োগ কোম্পানি বা আর্থিক প্রতিষ্ঠান নই। আমরা কোনো রিটার্ন বা মুনাফার গ্যারান্টি দিই না। সঞ্চয় সদস্যের নিজস্ব এবং সার্কেল শর্তাবলী অনুযায়ী লক করা থাকে।"
+    : "Sonchoy Bondhu Community is a savings circle management platform. We are not a bank, investment company or financial institution. We do not guarantee any returns or profits. Savings are locked in according to the member's own and circle terms."
+  );
+  const supportLabel = footer?.supportLabel || (language === "bn" ? "সাপোর্ট" : "Support");
+  const emailLabel = footer?.emailLabel || (language === "bn" ? "ইমেইল" : "Email");
+  const emailAddress = footer?.emailAddress || cms?.site?.supportEmail || "sanchoybondhu@gmail.com";
+  const copyright = footer?.copyright || (language === "bn" ? "© ২০২৫ সঞ্চয় বন্ধু সম্প্রদায়। সর্বস্বত্ব সংরক্ষিত। বাংলাদেশ।" : "© 2025 Sonchoy Bondhu Community. All rights reserved. Bangladesh.");
 
   return (
     <footer className="bg-background border-t border-border relative overflow-hidden">
@@ -258,13 +155,13 @@ const Footer = () => {
             <motion.div variants={itemVariants}>
               <Link href="/" className="inline-block mb-4">
                 <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                  <span className="text-primary">{(cms?.site?.name || t('brandName')).split(" ")[0]}</span>
-                  <span className="text-foreground"> {(cms?.site?.name || t('brandName')).split(" ").slice(1).join(" ")}</span>
+                  <span className="text-primary">{brandName.split(" ")[0]}</span>
+                  <span className="text-foreground"> {brandName.split(" ").slice(1).join(" ")}</span>
                 </h2>
               </Link>
               
               <p className="text-foreground/70 text-sm sm:text-base leading-relaxed mb-6 max-w-md">
-                {cms?.site?.tagline || t('brandDesc')}
+                {brandDesc}
               </p>
 
               {/* Important Announcement */}
@@ -273,8 +170,8 @@ const Footer = () => {
                   <Shield className="text-primary shrink-0 mt-0.5" size={18} />
                   <div>
                     <p className="text-xs text-red-400 leading-relaxed">
-                      <span className="font-semibold text-red-400">{t('announcementBadge')}</span>{" "}
-                      {announcement?.text || t('announcementText')}
+                      <span className="font-semibold text-red-400">{announcementBadge}</span>{" "}
+                      {announcement?.text || announcementText}
                     </p>
                   </div>
                 </div>
@@ -301,23 +198,21 @@ const Footer = () => {
                 {section.links.map((link, linkIdx) => (
                   <motion.li key={linkIdx} variants={itemVariants}>
                     {link.isScroll ? (
-                      // Scroll link for Savings Plan
                       <a
-                        href={link.href}
+                        href={link.url}
                         onClick={(e) => handleScrollToSection(e, link.targetId)}
                         className="text-foreground/60 text-sm hover:text-primary transition-colors duration-200 flex items-center gap-1 group cursor-pointer"
                       >
                         <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                        {link.name}
+                        {link.label}
                       </a>
                     ) : (
-                      // Normal links
                       <Link
-                        href={link.href}
+                        href={link.url}
                         className="text-foreground/60 text-sm hover:text-primary transition-colors duration-200 flex items-center gap-1 group"
                       >
                         <ChevronRight size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                        {link.name}
+                        {link.label}
                       </Link>
                     )}
                   </motion.li>
@@ -340,7 +235,7 @@ const Footer = () => {
                 <Phone size={18} className="text-primary" />
               </div>
               <div>
-                <p className="text-xs text-foreground/60">{t('supportLabel')}</p>
+                <p className="text-xs text-foreground/60">{supportLabel}</p>
                 <p className="text-foreground font-semibold text-sm">{cms?.site?.supportPhone || "+880 1XXX-XXXXXX"}</p>
               </div>
             </div>
@@ -350,8 +245,8 @@ const Footer = () => {
                 <Mail size={18} className="text-primary" />
               </div>
               <div>
-                <p className="text-xs text-foreground/60">{t('emailLabel')}</p>
-                <p className="text-foreground font-semibold text-sm">{cms?.site?.supportEmail || t('emailAddress')}</p>
+                <p className="text-xs text-foreground/60">{emailLabel}</p>
+                <p className="text-foreground font-semibold text-sm">{emailAddress}</p>
               </div>
             </div>
           </div>
@@ -384,7 +279,7 @@ const Footer = () => {
         >
           <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
             <p className="text-xs text-foreground/50">
-              {cms?.footer?.copyright || t('copyright')}
+              {copyright}
             </p>
             
             <div className="flex flex-wrap justify-center gap-4">
