@@ -324,7 +324,7 @@ const DashboardPage = () => {
   const fetchUserData = useCallback(async () => {
     if (!userId) return;
     try {
-      const res = await axiosInstance.get(`/users/${userId}`);
+      const res = await axiosInstance.get("/users/me");
       if (res.data.success) {
         setUserData(res.data.data);
       }
@@ -449,12 +449,43 @@ const DashboardPage = () => {
   const fetchSavingsHistory = useCallback(async () => {
     if (!userId) return;
     try {
-      const res = await axiosInstance.get(`/users/${userId}/savings-history`);
-      if (res.data.success) {
-        setSavingsHistory(res.data.data || []);
-      } else {
+      const res = await axiosInstance.get("/deposits?limit=200");
+      if (!res.data.success) {
         generateDemoHistory();
+        return;
       }
+
+      const deposits = res.data.data?.deposits || res.data.data || [];
+      const approvedDeposits = deposits.filter(
+        (d) => String(d.status || "").toLowerCase() === "approved",
+      );
+
+      const monthlyTotals = approvedDeposits.reduce((acc, deposit) => {
+        const dateValue = deposit.approvedAt || deposit.createdAt;
+        if (!dateValue) return acc;
+
+        const date = new Date(dateValue);
+        if (Number.isNaN(date.getTime())) return acc;
+
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        const amount = Number(deposit.depositAmount || deposit.amount || 0);
+        acc[key] = (acc[key] || 0) + amount;
+        return acc;
+      }, {});
+
+      const monthKeys = Object.keys(monthlyTotals).sort();
+      const recentMonthKeys = monthKeys.slice(-6);
+      const formattedHistory = recentMonthKeys.map((key) => {
+        const [yearStr, monthStr] = key.split("-");
+        const year = Number(yearStr);
+        const month = Number(monthStr) - 1;
+        return {
+          month: new Date(year, month, 1).toLocaleString("en-US", { month: "short" }),
+          amount: Math.round(monthlyTotals[key] || 0),
+        };
+      });
+
+      setSavingsHistory(formattedHistory);
     } catch (error) {
       console.error("Failed to fetch savings history:", error);
       generateDemoHistory();

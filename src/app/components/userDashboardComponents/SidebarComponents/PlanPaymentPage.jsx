@@ -306,7 +306,8 @@ const PlanPaymentPage = () => {
       if (screenshot) {
         const formData = new FormData();
         formData.append("file", screenshot);
-        const uploadRes = await axiosInstance.post("/upload", formData, {
+        // Use authenticated single-file upload route on the server (call API path explicitly)
+        const uploadRes = await axiosInstance.post("/upload/single/payment_screenshots", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
         if (uploadRes.data.success) {
