@@ -310,6 +310,7 @@ const HelpPage = () => {
     if (socketMessages.length > 0) {
       requestAnimationFrame(() => {
         const lastMsg = socketMessages[socketMessages.length - 1];
+        if (lastMsg?.ticketId) return;
         setChatMessages((prev) => {
           const exists = prev.find((m) => m._id === lastMsg._id);
           if (exists) return prev;
@@ -575,16 +576,7 @@ const HelpPage = () => {
     if (!chatInput.trim() || !currentUserId) return;
     
     sendMessage("admin", chatInput.trim(), "user");
-    
-    setChatMessages((prev) => [
-      ...prev,
-      {
-        _id: Date.now().toString(),
-        message: chatInput.trim(),
-        sender: "user",
-        createdAt: new Date(),
-      },
-    ]);
+
     setChatInput("");
   };
   

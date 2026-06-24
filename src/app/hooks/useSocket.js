@@ -53,7 +53,11 @@ export const useSocket = (userId, userType = "user") => {
     // Receive message
     socketInstance.on("receive_message", (data) => {
       console.log("Received message:", data);
-      setMessages((prev) => [...prev, data]);
+      setMessages((prev) => {
+        const existsById = data?._id && prev.some((m) => String(m._id) === String(data._id));
+        if (existsById) return prev;
+        return [...prev, data];
+      });
       
       // Also add to notifications if it's a ticket message
       if (data.ticketId) {
@@ -71,6 +75,22 @@ export const useSocket = (userId, userType = "user") => {
           ...prev,
         ]);
       }
+    });
+
+    socketInstance.on("ticket_reply", (data) => {
+      if (!data?.ticketId || !data?.reply) return;
+      setNotifications((prev) => [
+        {
+          _id: Date.now().toString(),
+          type: "ticket_reply",
+          title: "New Reply",
+          message: data.reply.message,
+          ticketId: data.ticketId,
+          read: false,
+          createdAt: data.reply.createdAt || new Date(),
+        },
+        ...prev,
+      ]);
     });
 
     // New ticket notification
@@ -149,16 +169,6 @@ export const useSocket = (userId, userType = "user") => {
 
       socketRef.current.emit("send_message", messageData);
       console.log("Message sent:", messageData);
-
-      // Add to local messages
-      setMessages((prev) => [
-        ...prev,
-        {
-          ...messageData,
-          _id: Date.now().toString(),
-          createdAt: new Date(),
-        },
-      ]);
     },
     [userId, isConnected]
   );

@@ -210,6 +210,16 @@ const getCategoryIcon = (category) => {
   return icons[category?.toLowerCase()] || "🎫";
 };
 
+const normalizeId = (value) => {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    if (value.$oid) return String(value.$oid);
+    if (value.toString) return value.toString();
+  }
+  return String(value);
+};
+
 const AdminSupportPage = () => {
   const [isDark, setIsDark] = useState(false);
   const [lang, setLang] = useState("bn");
@@ -291,7 +301,14 @@ const AdminSupportPage = () => {
         }
         
         // Update conversation messages if viewing a conversation
-        if (selectedConversation && lastMsg.senderId === selectedConversation.userId) {
+        const selectedUserId = normalizeId(selectedConversation?.userId);
+        const senderId = normalizeId(lastMsg?.senderId);
+        const receiverId = normalizeId(lastMsg?.receiverId);
+        const isLiveMessage = !lastMsg?.ticketId;
+        const belongsToSelectedConversation =
+          isLiveMessage && selectedUserId && (senderId === selectedUserId || receiverId === selectedUserId);
+
+        if (selectedConversation && belongsToSelectedConversation) {
           setConversationMessages(prev => {
             const exists = prev.find(m => m._id === lastMsg._id);
             if (exists) return prev;
@@ -320,12 +337,12 @@ const AdminSupportPage = () => {
         }));
         
         // Update conversation list
-        if (lastMsg.senderId) {
+        if (!lastMsg?.ticketId && senderId) {
           setConversations(prev => {
-            const exists = prev.find(c => c.userId === lastMsg.senderId);
+            const exists = prev.find(c => normalizeId(c.userId) === senderId);
             if (exists) {
               return prev.map(c => 
-                c.userId === lastMsg.senderId 
+                normalizeId(c.userId) === senderId
                   ? { ...c, lastMessage: lastMsg.message, lastMessageTime: lastMsg.createdAt, hasUnread: lastMsg.senderRole !== "admin" }
                   : c
               );
@@ -634,24 +651,7 @@ const AdminSupportPage = () => {
         { headers: getAuthHeaders() }
       );
 
-      if (isConnected && selectedTicket.userId && sendMessage) {
-        sendMessage(
-          selectedTicket.userId,
-          replyText.trim(),
-          "admin",
-          selectedTicket.ticketId
-        );
-      }
-
-      const newMessage = {
-        _id: Date.now().toString(),
-        message: replyText.trim(),
-        sender: "admin",
-        senderName: "Admin",
-        createdAt: new Date(),
-        isAdmin: true,
-      };
-      setTicketMessages(prev => [...prev, newMessage]);
+      await loadTicketMessages(selectedTicket.ticketId);
 
       setTickets(prev => prev.map(ticket => {
         if (ticket.ticketId === selectedTicket.ticketId) {
@@ -693,15 +693,6 @@ const AdminSupportPage = () => {
     try {
       await updateTicketStatus(ticket.ticketId, "resolved");
       
-      if (isConnected && ticket.userId && sendMessage) {
-        sendMessage(
-          ticket.userId,
-          `Your ticket "${ticket.subject}" has been resolved. ✅`,
-          "admin",
-          ticket.ticketId
-        );
-      }
-      
       showToast(t('ticketResolved'));
       fetchTickets(1);
     } catch (err) {
@@ -710,14 +701,6 @@ const AdminSupportPage = () => {
   };
 
   const escalateTicket = (ticket) => {
-    if (isConnected && ticket.userId && sendMessage) {
-      sendMessage(
-        ticket.userId,
-        `Your ticket "${ticket.subject}" has been escalated to senior admin.`,
-        "admin",
-        ticket.ticketId
-      );
-    }
     showToast(t('ticketEscalated'));
   };
 
@@ -759,7 +742,7 @@ const AdminSupportPage = () => {
     
     // Load messages for this user from the messages API
     try {
-      const res = await axiosInstance.get(`/help/admin/messages/${conversation.userId}`, {
+      const res = await axiosInstance.get(`/help/admin/messages/${conversation.userId}?chatType=live`, {
         headers: getAuthHeaders(),
       });
       
@@ -802,14 +785,6 @@ const AdminSupportPage = () => {
       }
     }
     
-    // Join ticket room if there's a ticket
-    if (conversation.tickets && conversation.tickets.length > 0) {
-      const ticketId = conversation.tickets[0].ticketId || conversation.tickets[0].id;
-      if (joinTicketRoom && ticketId) {
-        joinTicketRoom(ticketId);
-      }
-    }
-    
     // Focus on message input
     setTimeout(() => {
       if (messageInputRef.current) {
@@ -825,39 +800,21 @@ const AdminSupportPage = () => {
     }
 
     try {
-      // Send via Socket.IO first (real-time)
+      // Send via Socket.IO first (real-time + persistence handled on server)
       if (isConnected && sendMessage) {
         sendMessage(
           selectedConversation.userId,
           messageInput.trim(),
           "admin",
-          selectedConversation.tickets?.[0]?.ticketId || null
+          null
         );
-      }
-
-      // Also save via API for persistence
-      try {
+      } else {
         await axiosInstance.post(
-          `/help/admin/messages/${selectedConversation.userId}`,
-          { 
-            message: messageInput.trim(),
-            ticketId: selectedConversation.tickets?.[0]?.ticketId || null 
-          },
+          `/help/admin/messages/${selectedConversation.userId}?chatType=live`,
+          { message: messageInput.trim() },
           { headers: getAuthHeaders() }
         );
-      } catch (apiErr) {
-        console.warn("API message save failed, but socket message sent:", apiErr);
       }
-
-      const newMessage = {
-        _id: Date.now().toString(),
-        message: messageInput.trim(),
-        sender: "admin",
-        senderName: "Admin",
-        createdAt: new Date(),
-        isAdmin: true,
-      };
-      setConversationMessages(prev => [...prev, newMessage]);
       
       // Update conversation list
       setConversations(prev => prev.map(c => 
