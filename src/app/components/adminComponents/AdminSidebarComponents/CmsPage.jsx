@@ -15,6 +15,8 @@ import {
   Loader2,
   Plus,
   Info,
+  Trash2,
+  Phone,
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
@@ -203,6 +205,15 @@ const translations = {
     faqPageCTA: "📢 CTA",
     faqPageTags: "🏷️ Tags",
     
+    // Contact Page Tab
+    contactPage: "📞 Contact Page",
+    contactPageHero: "🦸 Hero Section",
+    contactPageCards: "📇 Contact Cards",
+    contactPageHours: "🕐 Support Hours",
+    contactPageForm: "📝 Contact Form",
+    contactPageLinks: "🔗 Links",
+    linkUrl: "Link URL",
+    
     savedSuccessfully: "✅ Saved! Changes will apply to all pages.",
     resetConfirm: "Reset all settings? This will remove all customizations.",
     reloading: "🔄 Reloading...",
@@ -345,6 +356,15 @@ const translations = {
     faqPageCTA: "📢 CTA",
     faqPageTags: "🏷️ ট্যাগ",
     
+    // Contact Page Tab
+    contactPage: "📞 যোগাযোগ পেজ",
+    contactPageHero: "🦸 Hero Section",
+    contactPageCards: "📇 যোগাযোগ কার্ড",
+    contactPageHours: "🕐 সাপোর্ট সময়",
+    contactPageForm: "📝 যোগাযোগ ফর্ম",
+    contactPageLinks: "🔗 লিংক",
+    linkUrl: "লিংক URL",
+    
     savedSuccessfully: "✅ সংরক্ষণ হয়েছে! পরিবর্তন সব পেজে apply হবে।",
     resetConfirm: "সব সেটিংস রিসেট করতে চান? এটি পূর্বের সব কাস্টমাইজেশন মুছে দেবে।",
     reloading: "🔄 Reloading...",
@@ -479,6 +499,7 @@ const CmsPage = () => {
     { id: "footer",        label: t('footer'),           icon: <LinkIcon size={16} /> },
     { id: "aboutUs",       label: t('aboutUs'),        icon: <Info size={16} /> },
     { id: "faqPage",       label: t('faqPage'),        icon: <HelpCircle size={16} /> },
+    { id: "contactPage",   label: t('contactPage'),    icon: <Phone size={16} /> },
   ];
 
   const renderSiteTab = () => (
@@ -2215,6 +2236,433 @@ const CmsPage = () => {
     );
   };
 
+  const renderContactPageTab = () => {
+    const contact = cmsData?.contactPage || {};
+
+    const updateContactField = (key, lang, value) => {
+      setCmsData((prev) => ({
+        ...prev,
+        contactPage: {
+          ...(prev.contactPage || {}),
+          [key]: { ...(prev.contactPage?.[key] || {}), [lang]: value },
+        },
+      }));
+    };
+
+    const updateContactLinkField = (key, value) => {
+      setCmsData((prev) => ({
+        ...prev,
+        contactPage: { ...(prev.contactPage || {}), [key]: value },
+      }));
+    };
+
+    const BilingualInput = ({ label, value, onChangeEn, onChangeBn, rows = 1 }) => (
+      <div className="space-y-2">
+        <label className="block text-xs font-semibold text-foreground/60 mb-1">{label}</label>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="border border-border/50 rounded-lg p-2 bg-background/50">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-1">{t('english')}</div>
+            {rows > 1 ? (
+              <textarea
+                rows={rows}
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+                value={value?.en || ""}
+                onChange={onChangeEn}
+              />
+            ) : (
+              <input
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={value?.en || ""}
+                onChange={onChangeEn}
+              />
+            )}
+          </div>
+          <div className="border border-border/50 rounded-lg p-2 bg-background/50">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-1">{t('bengali')}</div>
+            {rows > 1 ? (
+              <textarea
+                rows={rows}
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+                value={value?.bn || ""}
+                onChange={onChangeBn}
+              />
+            ) : (
+              <input
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={value?.bn || ""}
+                onChange={onChangeBn}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+
+    const LinkInput = ({ label, value, onChange }) => (
+      <div>
+        <label className="block text-xs font-semibold text-foreground/60 mb-1">{label}</label>
+        <input
+          className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+          value={value || ""}
+          onChange={onChange}
+        />
+      </div>
+    );
+
+    return (
+      <div className="space-y-5">
+        {/* Hero Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('contactPageHero')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('heroTitle')}
+              value={contact.heroBadge}
+              onChangeEn={(e) => updateContactField("heroBadge", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("heroBadge", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('title')}
+              value={contact.heroTitle}
+              onChangeEn={(e) => updateContactField("heroTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("heroTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('description')}
+              value={contact.heroDesc}
+              onChangeEn={(e) => updateContactField("heroDesc", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("heroDesc", "bn", e.target.value)}
+              rows={3}
+            />
+          </div>
+        </div>
+
+        {/* Contact Cards Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('contactPageCards')}</h3>
+          <div className="space-y-3">
+            {/* WhatsApp */}
+            <BilingualInput
+              label={t('whatsappLabel')}
+              value={contact.whatsappLabel}
+              onChangeEn={(e) => updateContactField("whatsappLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("whatsappLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('whatsappValue')}
+              value={contact.whatsappValue}
+              onChangeEn={(e) => updateContactField("whatsappValue", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("whatsappValue", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('whatsappNote')}
+              value={contact.whatsappNote}
+              onChangeEn={(e) => updateContactField("whatsappNote", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("whatsappNote", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('whatsappButton')}
+              value={contact.whatsappButton}
+              onChangeEn={(e) => updateContactField("whatsappButton", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("whatsappButton", "bn", e.target.value)}
+            />
+            {/* Email */}
+            <BilingualInput
+              label={t('emailLabel')}
+              value={contact.emailLabel}
+              onChangeEn={(e) => updateContactField("emailLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("emailLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('emailValue')}
+              value={contact.emailValue}
+              onChangeEn={(e) => updateContactField("emailValue", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("emailValue", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('emailNote')}
+              value={contact.emailNote}
+              onChangeEn={(e) => updateContactField("emailNote", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("emailNote", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('emailButton')}
+              value={contact.emailButton}
+              onChangeEn={(e) => updateContactField("emailButton", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("emailButton", "bn", e.target.value)}
+            />
+            {/* Address */}
+            <BilingualInput
+              label={t('addressLabel')}
+              value={contact.addressLabel}
+              onChangeEn={(e) => updateContactField("addressLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("addressLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('addressValue')}
+              value={contact.addressValue}
+              onChangeEn={(e) => updateContactField("addressValue", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("addressValue", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('addressNote')}
+              value={contact.addressNote}
+              onChangeEn={(e) => updateContactField("addressNote", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("addressNote", "bn", e.target.value)}
+              rows={2}
+            />
+            {/* Social */}
+            <BilingualInput
+              label={t('socialLabel')}
+              value={contact.socialLabel}
+              onChangeEn={(e) => updateContactField("socialLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("socialLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('socialValue')}
+              value={contact.socialValue}
+              onChangeEn={(e) => updateContactField("socialValue", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("socialValue", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('socialNote')}
+              value={contact.socialNote}
+              onChangeEn={(e) => updateContactField("socialNote", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("socialNote", "bn", e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+
+        {/* Links Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('contactPageLinks')}</h3>
+          <div className="grid md:grid-cols-2 gap-3">
+            <LinkInput
+              label={t('whatsappLink')}
+              value={contact.whatsappLink}
+              onChange={(e) => updateContactLinkField("whatsappLink", e.target.value)}
+            />
+            <LinkInput
+              label={t('emailLink')}
+              value={contact.emailLink}
+              onChange={(e) => updateContactLinkField("emailLink", e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Support Hours Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('contactPageHours')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('supportHoursTitle')}
+              value={contact.supportHoursTitle}
+              onChangeEn={(e) => updateContactField("supportHoursTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("supportHoursTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('sundayThursday')}
+              value={contact.sundayThursday}
+              onChangeEn={(e) => updateContactField("sundayThursday", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("sundayThursday", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('friday')}
+              value={contact.friday}
+              onChangeEn={(e) => updateContactField("friday", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("friday", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('saturday')}
+              value={contact.saturday}
+              onChangeEn={(e) => updateContactField("saturday", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("saturday", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('whatsappUrgent')}
+              value={contact.whatsappUrgent}
+              onChangeEn={(e) => updateContactField("whatsappUrgent", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("whatsappUrgent", "bn", e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+
+        {/* Form Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('contactPageForm')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('formTitle')}
+              value={contact.formTitle}
+              onChangeEn={(e) => updateContactField("formTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("formTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('formDesc')}
+              value={contact.formDesc}
+              onChangeEn={(e) => updateContactField("formDesc", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("formDesc", "bn", e.target.value)}
+              rows={3}
+            />
+            <BilingualInput
+              label={t('nameLabel')}
+              value={contact.nameLabel}
+              onChangeEn={(e) => updateContactField("nameLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("nameLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('namePlaceholder')}
+              value={contact.namePlaceholder}
+              onChangeEn={(e) => updateContactField("namePlaceholder", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("namePlaceholder", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('phoneLabel')}
+              value={contact.phoneLabel}
+              onChangeEn={(e) => updateContactField("phoneLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("phoneLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('phonePlaceholder')}
+              value={contact.phonePlaceholder}
+              onChangeEn={(e) => updateContactField("phonePlaceholder", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("phonePlaceholder", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('emailLabel')}
+              value={contact.emailLabel}
+              onChangeEn={(e) => updateContactField("emailLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("emailLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('emailPlaceholder')}
+              value={contact.emailPlaceholder}
+              onChangeEn={(e) => updateContactField("emailPlaceholder", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("emailPlaceholder", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('topicLabel')}
+              value={contact.topicLabel}
+              onChangeEn={(e) => updateContactField("topicLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("topicLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('topicPlaceholder')}
+              value={contact.topicPlaceholder}
+              onChangeEn={(e) => updateContactField("topicPlaceholder", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("topicPlaceholder", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('topicAccount')}
+              value={contact.topicAccount}
+              onChangeEn={(e) => updateContactField("topicAccount", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("topicAccount", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('topicDeposit')}
+              value={contact.topicDeposit}
+              onChangeEn={(e) => updateContactField("topicDeposit", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("topicDeposit", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('topicPlan')}
+              value={contact.topicPlan}
+              onChangeEn={(e) => updateContactField("topicPlan", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("topicPlan", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('topicCircle')}
+              value={contact.topicCircle}
+              onChangeEn={(e) => updateContactField("topicCircle", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("topicCircle", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('topicTechnical')}
+              value={contact.topicTechnical}
+              onChangeEn={(e) => updateContactField("topicTechnical", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("topicTechnical", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('topicOther')}
+              value={contact.topicOther}
+              onChangeEn={(e) => updateContactField("topicOther", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("topicOther", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('messageLabel')}
+              value={contact.messageLabel}
+              onChangeEn={(e) => updateContactField("messageLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("messageLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('messagePlaceholder')}
+              value={contact.messagePlaceholder}
+              onChangeEn={(e) => updateContactField("messagePlaceholder", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("messagePlaceholder", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('sendButton')}
+              value={contact.sendButton}
+              onChangeEn={(e) => updateContactField("sendButton", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("sendButton", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('sending')}
+              value={contact.sending}
+              onChangeEn={(e) => updateContactField("sending", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("sending", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('successTitle')}
+              value={contact.successTitle}
+              onChangeEn={(e) => updateContactField("successTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("successTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('successDesc')}
+              value={contact.successDesc}
+              onChangeEn={(e) => updateContactField("successDesc", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("successDesc", "bn", e.target.value)}
+              rows={3}
+            />
+            <BilingualInput
+              label={t('requiredFields')}
+              value={contact.requiredFields}
+              onChangeEn={(e) => updateContactField("requiredFields", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("requiredFields", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('failedToSend')}
+              value={contact.failedToSend}
+              onChangeEn={(e) => updateContactField("failedToSend", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("failedToSend", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('footerText')}
+              value={contact.footer}
+              onChangeEn={(e) => updateContactField("footer", "en", e.target.value)}
+              onChangeBn={(e) => updateContactField("footer", "bn", e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderActiveTab = () => {
     switch (activeTab) {
       case "site":          return renderSiteTab();
@@ -2227,6 +2675,7 @@ const CmsPage = () => {
       case "footer":        return renderFooterTab();
       case "aboutUs":       return renderAboutUsTab();
       case "faqPage":       return renderFaqPageTab();
+      case "contactPage":   return renderContactPageTab();
       default:              return renderSiteTab();
     }
   };
