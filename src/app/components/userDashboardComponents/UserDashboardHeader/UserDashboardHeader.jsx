@@ -116,9 +116,7 @@ const UserDashboardHeader = ({ openSidebar }) => {
 
   // Sync socket unread count
   useEffect(() => {
-    if (socketUnreadCount > 0) {
-      setUnreadCount(socketUnreadCount);
-    }
+    setUnreadCount(socketUnreadCount || 0);
   }, [socketUnreadCount]);
 
   // Dynamic title mapping based on pathname

@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 import Swal from "sweetalert2";
+import useSocket from "../../../hooks/useSocket";
 
 // Translations
 const translations = {
@@ -156,6 +157,9 @@ const NotificationsPage = () => {
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
   const [selectedWithdrawal, setSelectedWithdrawal] = useState(null);
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
+  const { notifications: socketNotifications = [] } = useSocket(currentUserId, "user");
 
   const t = (key, params = {}) => {
     let text = translations[lang]?.[key] || translations.en[key] || key;
@@ -168,6 +172,16 @@ const NotificationsPage = () => {
   useEffect(() => {
     const savedLang = localStorage.getItem('appLanguage') || 'en';
     setLang(savedLang);
+
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setCurrentUserId(parsedUser?._id || parsedUser?.id || null);
+      } catch (error) {
+        console.error("Failed to parse user from localStorage:", error);
+      }
+    }
   }, []);
 
   const fetchNotifications = async (page = 1) => {
@@ -191,6 +205,17 @@ const NotificationsPage = () => {
   useEffect(() => {
     fetchNotifications();
   }, [activeTab]);
+
+  useEffect(() => {
+    if (!socketNotifications.length) return;
+    const hasRealtimeUserNotification = socketNotifications.some(
+      (item) => item && (item.type === "deposit" || item.type === "withdrawal" || item.type === "transfer" || item.type === "bonus" || item.type === "goal" || item.type === "milestone")
+    );
+
+    if (hasRealtimeUserNotification) {
+      fetchNotifications(pagination.currentPage || 1);
+    }
+  }, [socketNotifications]);
 
   const markAsRead = async (id) => {
     try {

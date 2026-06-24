@@ -9,6 +9,7 @@ export const useSocket = (userId, userType = "user") => {
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState([]);
   const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [typingUser, setTypingUser] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const socketRef = useRef(null);
@@ -38,6 +39,9 @@ export const useSocket = (userId, userType = "user") => {
       setIsConnected(true);
       // Join user room
       socketInstance.emit("join", userId);
+      if (userType === "admin") {
+        socketInstance.emit("join_admin_room", { adminId: userId });
+      }
     });
 
     socketInstance.on("disconnect", () => {
@@ -79,36 +83,69 @@ export const useSocket = (userId, userType = "user") => {
 
     socketInstance.on("ticket_reply", (data) => {
       if (!data?.ticketId || !data?.reply) return;
-      setNotifications((prev) => [
-        {
-          _id: Date.now().toString(),
-          type: "ticket_reply",
-          title: "New Reply",
-          message: data.reply.message,
-          ticketId: data.ticketId,
-          read: false,
-          createdAt: data.reply.createdAt || new Date(),
-        },
-        ...prev,
-      ]);
+      const replyNotification = {
+        _id: Date.now().toString(),
+        type: "ticket_reply",
+        title: "New Reply",
+        message: data.reply.message,
+        ticketId: data.ticketId,
+        read: false,
+        createdAt: data.reply.createdAt || new Date(),
+      };
+      setNotifications((prev) => [replyNotification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
     });
 
     // New ticket notification
     socketInstance.on("new_ticket", (data) => {
       console.log("New ticket:", data);
-      setNotifications((prev) => [
-        {
-          _id: data._id || Date.now().toString(),
-          type: "new_ticket",
-          title: "New Support Ticket",
-          message: data.subject || "New ticket created",
-          ticketId: data.ticketId,
-          userId: data.userId,
-          read: false,
-          createdAt: data.createdAt || new Date(),
-        },
-        ...prev,
-      ]);
+      const ticketNotification = {
+        _id: data._id || Date.now().toString(),
+        type: "new_ticket",
+        title: "New Support Ticket",
+        message: data.subject || "New ticket created",
+        ticketId: data.ticketId,
+        userId: data.userId,
+        read: false,
+        createdAt: data.createdAt || new Date(),
+      };
+      setNotifications((prev) => [ticketNotification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    });
+
+    // Notification for end-users
+    socketInstance.on("notification", (data) => {
+      if (!data) return;
+      setNotifications((prev) => {
+        const existsById = data?._id && prev.some((n) => String(n._id) === String(data._id));
+        if (existsById) return prev;
+        return [
+          {
+            ...data,
+            read: typeof data.read === "boolean" ? data.read : false,
+            createdAt: data.createdAt || new Date(),
+          },
+          ...prev,
+        ];
+      });
+      if (!data.read) {
+        setUnreadCount((prev) => prev + 1);
+      }
+    });
+
+    // Notification for admins
+    socketInstance.on("admin_notification", (data) => {
+      if (!data) return;
+      const normalized = {
+        ...data,
+        _id: data._id || `${Date.now()}_${Math.random().toString(16).slice(2)}`,
+        read: typeof data.read === "boolean" ? data.read : false,
+        createdAt: data.createdAt || new Date(),
+      };
+      setNotifications((prev) => [normalized, ...prev]);
+      if (!normalized.read) {
+        setUnreadCount((prev) => prev + 1);
+      }
     });
 
     // User typing
@@ -127,19 +164,18 @@ export const useSocket = (userId, userType = "user") => {
     // Ticket update notification
     socketInstance.on("ticket_updated", (data) => {
       console.log("Ticket updated:", data);
-      setNotifications((prev) => [
-        {
-          _id: data._id || Date.now().toString(),
-          type: "ticket_updated",
-          title: "Ticket Updated",
-          message: data.message || `Ticket ${data.ticketId} has been updated`,
-          ticketId: data.ticketId,
-          userId: data.userId,
-          read: false,
-          createdAt: data.createdAt || new Date(),
-        },
-        ...prev,
-      ]);
+      const updateNotification = {
+        _id: data._id || Date.now().toString(),
+        type: "ticket_updated",
+        title: "Ticket Updated",
+        message: data.message || `Ticket ${data.ticketId} has been updated`,
+        ticketId: data.ticketId,
+        userId: data.userId,
+        read: false,
+        createdAt: data.createdAt || new Date(),
+      };
+      setNotifications((prev) => [updateNotification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
     });
 
     return () => {
@@ -228,11 +264,20 @@ export const useSocket = (userId, userType = "user") => {
   // Mark notification as read
   const markNotificationAsRead = useCallback(
     (notificationId) => {
+      let didMarkUnread = false;
       setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === notificationId ? { ...n, read: true } : n
-        )
+        prev.map((n) => {
+          if (n._id === notificationId && !n.read) {
+            didMarkUnread = true;
+            return { ...n, read: true };
+          }
+          return n;
+        })
       );
+
+      if (didMarkUnread) {
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      }
     },
     []
   );
@@ -240,6 +285,7 @@ export const useSocket = (userId, userType = "user") => {
   // Clear all notifications
   const clearNotifications = useCallback(() => {
     setNotifications([]);
+    setUnreadCount(0);
   }, []);
 
   return {
@@ -247,6 +293,7 @@ export const useSocket = (userId, userType = "user") => {
     isConnected,
     messages,
     notifications,
+    unreadCount,
     typingUser,
     onlineUsers,
     sendMessage,
