@@ -450,6 +450,49 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Update plan
+  const updatePlan = async (planData) => {
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.put("/users/plan", planData);
+
+      if (response.data.success) {
+        const { user: updatedUser, token: newToken } = response.data.data;
+        setUser(updatedUser);
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        localStorage.setItem("token", newToken);
+        axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
+        Swal.fire({
+          title: "Plan Updated",
+          text: response.data.message,
+          icon: "success",
+          confirmButtonColor: "#059669",
+          confirmButtonText: "OK",
+        });
+        return { success: true, user: updatedUser };
+      } else {
+        return { success: false, message: response.data.message };
+      }
+    } catch (error) {
+      console.error("Update plan error:", error);
+      let message = "Failed to update plan.";
+      if (error.response?.data?.message) {
+        message = error.response.data.message;
+      }
+      Swal.fire({
+        title: "Update Failed",
+        text: message,
+        icon: "error",
+        confirmButtonColor: "#059669",
+        confirmButtonText: "OK",
+      });
+      return { success: false, message };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Update payment method
   const updatePaymentMethod = async (paymentData) => {
     setIsLoading(true);
@@ -548,6 +591,7 @@ export const AuthProvider = ({ children }) => {
     updateKycDocuments,
     updateNominee,
     updatePaymentMethod,
+    updatePlan,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { 
   Moon, Sun, Bell, BellRing, Mail, Sms, Shield, 
   Fingerprint, Clock, Download, Trash2, Loader2,
-  CheckCircle, XCircle, Globe, Smartphone, Laptop
+  CheckCircle, XCircle, Globe, Smartphone, Laptop,
+  Sparkles
 } from "lucide-react";
 import useAuth from "../../../hooks/useAuth";
 
@@ -64,6 +65,13 @@ const translations = {
     exportTransactions: "Export Transactions",
     supportTicket: "Support Ticket",
     installApp: "Install App",
+    
+    // Plan & Subscription
+    planSubscription: "💎 Plan & Subscription",
+    currentPlan: "Current Plan",
+    upgradePlan: "Upgrade Plan",
+    planFee: "Plan Fee",
+    planExpiry: "Plan Expires",
     
     // Danger Zone
     dangerZone: "⚠️ Danger Zone",
@@ -178,6 +186,13 @@ const translations = {
     exportTransactions: "লেনদেন এক্সপোর্ট করুন",
     supportTicket: "সাপোর্ট টিকেট",
     installApp: "অ্যাপ ইনস্টল করুন",
+    
+    // Plan & Subscription
+    planSubscription: "💎 প্ল্যান ও সাবস্ক্রিপশন",
+    currentPlan: "বর্তমান প্ল্যান",
+    upgradePlan: "প্ল্যান আপগ্রেড করুন",
+    planFee: "প্ল্যান ফি",
+    planExpiry: "প্ল্যানের মেয়াদ শেষ",
     
     // Danger Zone
     dangerZone: "⚠️ বিপদ অঞ্চল",
@@ -672,6 +687,37 @@ const SettingsPage = () => {
                   <div className={`absolute w-5 h-5 rounded-full bg-white top-0.5 transition ${appSettings.autoLock ? "right-0.5" : "left-0.5"}`} />
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Plan & Subscription Card */}
+          <div className="bg-card border border-border rounded-xl p-5">
+            <div className="font-bold text-foreground mb-4 flex items-center gap-2">{t('planSubscription')}</div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <div>
+                  <div className="font-semibold text-sm text-foreground">{t('currentPlan')}</div>
+                  <div className="text-xs text-foreground/50 capitalize">{user?.selectedPlan || "Bronze"} {user?.billingCycle === "yearly" ? "(Yearly)" : "(Monthly)"}</div>
+                </div>
+                <div className="text-sm font-bold text-primary">
+                  ৳{user?.planFee || 0}
+                </div>
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-border">
+                <div>
+                  <div className="font-semibold text-sm text-foreground">{t('planExpiry')}</div>
+                  <div className="text-xs text-foreground/50">
+                    {user?.planExpiry ? new Date(user.planExpiry).toLocaleDateString() : "N/A"}
+                  </div>
+                </div>
+              </div>
+              <a 
+                href="/dashboard/plan"
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-primary to-primary-light text-white font-semibold text-sm hover:opacity-90 transition"
+              >
+                <Sparkles size={16} />
+                {t('upgradePlan')}
+              </a>
             </div>
           </div>
 

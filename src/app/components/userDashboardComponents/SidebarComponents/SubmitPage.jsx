@@ -72,6 +72,7 @@ const translations = {
     minDepositError: "Minimum deposit amount is ৳100",
     selectPaymentError: "Please select a payment method",
     uploadScreenshotError: "Please upload transaction screenshot",
+    upgradePlan: "Upgrade Plan",
     
     // Success
     success: "Success!",
@@ -143,6 +144,7 @@ const translations = {
     minDepositError: "সর্বনিম্ন ডিপোজিট পরিমাণ ৳১০০",
     selectPaymentError: "দয়া করে একটি পেমেন্ট পদ্ধতি নির্বাচন করুন",
     uploadScreenshotError: "দয়া করে লেনদেনের স্ক্রিনশট আপলোড করুন",
+    upgradePlan: "প্ল্যান আপগ্রেড করুন",
     
     // Success
     success: "সফল!",
@@ -471,12 +473,33 @@ const SubmitPage = () => {
       }
     } catch (error) {
       console.error("Submit deposit error:", error);
-      Swal.fire({
-        title: t('error'),
-        text: error.response?.data?.message || "Failed to submit deposit request",
-        icon: "error",
-        confirmButtonColor: "#059669",
-      });
+      const errorMessage = error.response?.data?.message || "Failed to submit deposit request";
+      const canUpgrade = error.response?.data?.data?.canUpgrade;
+      const suggestedPlan = error.response?.data?.data?.suggestedPlan;
+      
+      if (canUpgrade && suggestedPlan) {
+        Swal.fire({
+          title: t('error'),
+          text: errorMessage,
+          icon: "error",
+          showCancelButton: true,
+          confirmButtonColor: "#059669",
+          cancelButtonColor: "#6c757d",
+          confirmButtonText: t('upgradePlan'),
+          cancelButtonText: t('cancel'),
+        }).then((result) => {
+          if (result.isConfirmed) {
+            router.push("/dashboard/plan");
+          }
+        });
+      } else {
+        Swal.fire({
+          title: t('error'),
+          text: errorMessage,
+          icon: "error",
+          confirmButtonColor: "#059669",
+        });
+      }
     } finally {
       setSubmitting(false);
     }

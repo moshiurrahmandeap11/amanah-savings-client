@@ -25,6 +25,7 @@ import {
   LogOut,
   Moon,
   Sun,
+  CreditCard,
   Globe,
 } from "lucide-react";
 import useAuth from "../../../hooks/useAuth";
@@ -70,6 +71,7 @@ const translations = {
     navProfile: "Profile & KYC",
     navSecurity: "Security",
     navSettings: "Settings",
+    navPlan: "Plan Upgrade",
     navHelp: "Help Center",
     
     // Footer Buttons
@@ -115,6 +117,7 @@ const translations = {
     navProfile: "প্রোফাইল ও কেওয়াইসি",
     navSecurity: "নিরাপত্তা",
     navSettings: "সেটিংস",
+    navPlan: "প্ল্যান আপগ্রেড",
     navHelp: "সাহায্য কেন্দ্র",
     
     // Footer Buttons
@@ -281,6 +284,12 @@ const UserDashboardSidebar = ({ closeSidebar }) => {
           icon: <Settings size={18} />,
           path: "/dashboard/settings",
           id: "settings",
+        },
+        {
+          name: t('navPlan'),
+          icon: <CreditCard size={18} />,
+          path: "/dashboard/plan",
+          id: "plan",
         },
         {
           name: t('navHelp'),
