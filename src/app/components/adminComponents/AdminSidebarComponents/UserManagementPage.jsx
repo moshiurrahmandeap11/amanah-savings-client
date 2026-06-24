@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -81,6 +81,7 @@ const translations = {
     kycApproved: "KYC approved successfully",
     actionFailed: "Action failed",
     details: "Details",
+    activity: "Activity",
     userDetails: "User Details",
     close: "Close",
     goals: "Goals",
@@ -172,6 +173,7 @@ const translations = {
     kycApproved: "কেওয়াইসি অনুমোদিত হয়েছে",
     actionFailed: "অ্যাকশন ব্যর্থ হয়েছে",
     details: "বিস্তারিত",
+    activity: "অ্যাক্টিভিটি",
     userDetails: "ইউজার বিবরণ",
     close: "বন্ধ",
     goals: "গোলস",
@@ -282,6 +284,7 @@ const UserManagementPage = () => {
   const [detailsUser, setDetailsUser] = useState(null);
   const [detailsData, setDetailsData] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [detailsRefreshing, setDetailsRefreshing] = useState(false);
   const [detailsTab, setDetailsTab] = useState("overview");
 
   // Load language preference once
@@ -312,10 +315,10 @@ const UserManagementPage = () => {
     return method === "referral" || goalName === "referral bonus" || goalName === "referral";
   };
 
-  const getDepositGoalName = (entry, fallback = "N/A") => {
+  const getDepositGoalName = useCallback((entry, fallback = "N/A") => {
     if (isReferralDepositEntry(entry)) return t("referralDepositName");
     return entry?.goalName || fallback;
-  };
+  }, [t]);
 
   const formatDateInput = (date) => {
     if (!date) return "";
@@ -534,26 +537,52 @@ const UserManagementPage = () => {
   };
 
   // ==================== DETAILS MODAL FUNCTIONS ====================
-  const openDetailsModal = async (user) => {
-    setDetailsUser(user);
-    setShowDetailsModal(true);
-    setDetailsLoading(true);
-    setDetailsTab("overview");
-    document.body.style.overflow = "hidden";
+  const normalizeDetailsData = useCallback((rawData = {}) => {
+    const userData = rawData.user || {};
+    const mappedCircles = Array.isArray(rawData.circles) ? rawData.circles : [];
+
+    const fallbackCircles = Array.isArray(userData.circles)
+      ? userData.circles.map((c, idx) => ({
+          id: c.circleId || `${idx}`,
+          name: c.circleName || "Untitled Circle",
+          purpose: c.purpose || "General",
+          circleType: c.circleType || "public",
+          targetAmount: c.targetAmount || 0,
+          totalPool: c.totalPool || 0,
+          currentMembers: c.currentMembers || 0,
+          maxMembers: c.maxMembers || 0,
+          status: c.status || "active",
+          role: c.role || "member",
+          joinedAt: c.joinedAt || null,
+          createdAt: c.createdAt || null,
+        }))
+      : [];
+
+    return {
+      user: userData,
+      deposits: Array.isArray(rawData.deposits) ? rawData.deposits : [],
+      withdrawals: Array.isArray(rawData.withdrawals) ? rawData.withdrawals : [],
+      goals: Array.isArray(rawData.goals) ? rawData.goals : [],
+      loginHistory: Array.isArray(rawData.loginHistory) ? rawData.loginHistory : [],
+      transfers: Array.isArray(rawData.transfers) ? rawData.transfers : [],
+      circles: mappedCircles.length > 0 ? mappedCircles : fallbackCircles,
+    };
+  }, []);
+
+  const fetchUserDetails = useCallback(async (userId, withLoader = false) => {
+    if (!userId) return;
+    if (withLoader) {
+      setDetailsLoading(true);
+    } else {
+      setDetailsRefreshing(true);
+    }
 
     try {
-      const userId = user?.id || user?._id;
-      if (!userId) {
-        showToastMessage("Invalid user ID", "error");
-        setDetailsLoading(false);
-        return;
-      }
-      
       const res = await axiosInstance.get(`/admin/users/${userId}`, {
         headers: getAuthHeaders(),
       });
       if (res.data.success) {
-        setDetailsData(res.data.data);
+        setDetailsData(normalizeDetailsData(res.data.data));
       } else {
         showToastMessage(res.data.message || "Failed to load user details", "error");
       }
@@ -563,7 +592,25 @@ const UserManagementPage = () => {
       showToastMessage(`Error ${status ? `(${status})` : ""}: ${message}`, "error");
     } finally {
       setDetailsLoading(false);
+      setDetailsRefreshing(false);
     }
+  }, [normalizeDetailsData, showToastMessage]);
+
+  const openDetailsModal = async (user) => {
+    setDetailsUser(user);
+    setShowDetailsModal(true);
+    setDetailsLoading(true);
+    setDetailsTab("overview");
+    document.body.style.overflow = "hidden";
+
+    const userId = user?.id || user?._id;
+    if (!userId) {
+      showToastMessage("Invalid user ID", "error");
+      setDetailsLoading(false);
+      return;
+    }
+
+    await fetchUserDetails(userId, true);
   };
 
   const closeDetailsModal = () => {
@@ -573,6 +620,61 @@ const UserManagementPage = () => {
     setDetailsTab("overview");
     document.body.style.overflow = "auto";
   };
+
+  useEffect(() => {
+    if (!showDetailsModal || !detailsUser) return;
+    const userId = detailsUser?.id || detailsUser?._id;
+    if (!userId) return;
+
+    // Refresh details when tab changes so circles/activity always stay fresh.
+    if (!detailsLoading) {
+      queueMicrotask(() => {
+        fetchUserDetails(userId, false);
+      });
+    }
+
+    // Live refresh while modal is open.
+    const interval = setInterval(() => {
+      fetchUserDetails(userId, false);
+    }, 12000);
+
+    return () => clearInterval(interval);
+  }, [showDetailsModal, detailsUser, detailsTab, detailsLoading, fetchUserDetails]);
+
+  const activityRows = useMemo(() => {
+    if (!detailsData) return [];
+
+    const fromDeposits = (detailsData.deposits || []).map((d) => ({
+      id: `dep-${d.id || d.createdAt}`,
+      type: "deposit",
+      activity: `Deposit to ${getDepositGoalName(d, "Goal")}`,
+      amount: d.amount,
+      status: d.status,
+      createdAt: d.createdAt,
+    }));
+
+    const fromWithdrawals = (detailsData.withdrawals || []).map((w) => ({
+      id: `wd-${w.id || w.createdAt}`,
+      type: "withdrawal",
+      activity: `Withdrawal from ${w.goalName || "Goal"}`,
+      amount: w.amount,
+      status: w.status,
+      createdAt: w.createdAt,
+    }));
+
+    const fromTransfers = (detailsData.transfers || []).map((tr) => ({
+      id: `tr-${tr.id || tr.createdAt}`,
+      type: tr.type || "transfer",
+      activity: `Transfer ${tr.fromGoalName || "Goal"} -> ${tr.toGoalName || "Goal"}`,
+      amount: tr.amount,
+      status: tr.status,
+      createdAt: tr.createdAt,
+    }));
+
+    const rows = [...fromDeposits, ...fromWithdrawals, ...fromTransfers];
+    rows.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    return rows;
+  }, [detailsData, getDepositGoalName]);
 
   const exportToExcel = async () => {
     setExporting(true);
@@ -696,6 +798,7 @@ const UserManagementPage = () => {
   // Details modal tabs
   const detailTabs = [
     { id: "overview", label: t('overview'), icon: Activity },
+    { id: "activity", label: t('activity'), icon: TrendingUp },
     { id: "goals", label: t('goals'), icon: Target },
     { id: "deposits", label: t('deposits'), icon: ArrowDownLeft },
     { id: "withdrawals", label: t('withdrawals'), icon: ArrowUpRight },
@@ -1071,6 +1174,21 @@ const UserManagementPage = () => {
                           </div>
                         </div>
                       </div>
+                    )}
+
+                    {/* GOALS TAB */}
+                    {detailsTab === "activity" && (
+                      <DataTable
+                        columns={[
+                          { key: "activity", label: t('recentActivity') },
+                          { key: "type", label: t('transferType') },
+                          { key: "amount", label: t('amount'), format: (v) => formatCurrency(v) },
+                          { key: "status", label: t('status'), badge: true },
+                          { key: "createdAt", label: t('date'), format: (v) => formatDateTime(v) },
+                        ]}
+                        data={activityRows}
+                        emptyText={t('noData')}
+                      />
                     )}
 
                     {/* GOALS TAB */}

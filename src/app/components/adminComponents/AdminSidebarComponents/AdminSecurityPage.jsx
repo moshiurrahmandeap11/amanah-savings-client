@@ -40,6 +40,11 @@ const translations = {
     // Messages
     failedToLoad: "Failed to load security events",
     noEvents: "No security events found",
+    showing: "Showing",
+    of: "of",
+    previous: "Previous",
+    next: "Next",
+    page: "Page",
   },
   bn: {
     // Page Title
@@ -66,6 +71,11 @@ const translations = {
     // Messages
     failedToLoad: "নিরাপত্তা ইভেন্ট লোড করতে ব্যর্থ হয়েছে",
     noEvents: "কোন নিরাপত্তা ইভেন্ট পাওয়া যায়নি",
+    showing: "দেখানো হচ্ছে",
+    of: "মোট",
+    previous: "পূর্ববর্তী",
+    next: "পরবর্তী",
+    page: "পৃষ্ঠা",
   }
 };
 
@@ -74,36 +84,55 @@ const getAuthHeaders = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
+const getInitialAdminLang = () => {
+  if (typeof window === "undefined") return "bn";
+  return localStorage.getItem("admin_lang") || "bn";
+};
+
 const AdminSecurityPage = () => {
   const [toast, setToast] = useState({ show: false, message: "" });
   const [stats, setStats] = useState([]);
   const [securityEvents, setSecurityEvents] = useState([]);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalItems: 0,
+    itemsPerPage: 20,
+  });
   const [loading, setLoading] = useState(false);
-  const [lang, setLang] = useState("bn");
+  const [lang, setLang] = useState(getInitialAdminLang);
 
   // Translation function
-  const t = (key, params = {}) => {
+  const t = useCallback((key, params = {}) => {
     let text = translations[lang]?.[key] || translations.en[key] || key;
     Object.keys(params).forEach(param => {
       text = text.replace(`{${param}}`, params[param]);
     });
     return text;
+  }, [lang]);
+
+  const showToast = (message) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: "" }), 3000);
   };
 
-  // Load language preference
-  useEffect(() => {
-    const savedLang = localStorage.getItem("admin_lang") || "bn";
-    setLang(savedLang);
-  }, []);
-
-  const fetchEvents = useCallback(async () => {
+  const fetchEvents = useCallback(async (page = 1) => {
     setLoading(true);
     try {
-      const res = await axiosInstance.get("/admin/security/events?page=1&limit=50", {
+      const limit = pagination.itemsPerPage;
+      const res = await axiosInstance.get(`/admin/security/events?page=${page}&limit=${limit}`, {
         headers: getAuthHeaders(),
       });
       if (res.data.success) {
         setSecurityEvents(res.data.data.events || []);
+        setPagination(
+          res.data.data.pagination || {
+            currentPage: page,
+            totalPages: 1,
+            totalItems: 0,
+            itemsPerPage: limit,
+          },
+        );
         const s = res.data.data.stats || {};
         setStats([
           {
@@ -139,16 +168,13 @@ const AdminSecurityPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [pagination.itemsPerPage, t]);
 
   useEffect(() => {
-    fetchEvents();
+    queueMicrotask(() => {
+      fetchEvents(1);
+    });
   }, [fetchEvents]);
-
-  const showToast = (message) => {
-    setToast({ show: true, message });
-    setTimeout(() => setToast({ show: false, message: "" }), 3000);
-  };
 
   const getStatusColor = (statusColor) => {
     switch (statusColor) {
@@ -277,6 +303,34 @@ const AdminSecurityPage = () => {
           </table>
         </div>
       </div>
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="mt-4 bg-card border border-border rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="text-xs sm:text-sm text-foreground/60">
+            {t('showing')} {securityEvents.length} {t('of')} {pagination.totalItems}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => fetchEvents(pagination.currentPage - 1)}
+              disabled={pagination.currentPage <= 1 || loading}
+              className="px-3 py-1.5 rounded-lg border border-border text-xs sm:text-sm font-semibold hover:border-primary/50 hover:bg-primary/5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('previous')}
+            </button>
+            <span className="text-xs sm:text-sm text-foreground/70 px-2">
+              {t('page')} {pagination.currentPage} / {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => fetchEvents(pagination.currentPage + 1)}
+              disabled={pagination.currentPage >= pagination.totalPages || loading}
+              className="px-3 py-1.5 rounded-lg border border-border text-xs sm:text-sm font-semibold hover:border-primary/50 hover:bg-primary/5 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {t('next')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       <AnimatePresence>
