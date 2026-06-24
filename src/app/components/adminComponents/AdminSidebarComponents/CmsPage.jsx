@@ -14,7 +14,7 @@ import {
   Link as LinkIcon,
   Loader2,
   Plus,
-  Trash2,
+  Info,
 } from "lucide-react";
 import axiosInstance from "../../../components/shared/AxiosInstance/AxiosInstance";
 
@@ -170,7 +170,39 @@ const translations = {
     isScroll: "Scroll?",
     targetId: "Target ID",
     
-    // Toast Messages
+    // About Us Tab
+    aboutUs: "📝 About Us",
+    aboutUsHero: "🦸 Hero Section",
+    aboutUsStats: "📊 Stats",
+    aboutUsMission: "🎯 Mission",
+    aboutUsValues: "💎 Values",
+    aboutUsTeam: "👥 Team",
+    aboutUsTimeline: "📅 Timeline",
+    aboutUsCTA: "📢 CTA",
+    english: "English",
+    bengali: "Bengali",
+    addStat: "Add Stat",
+    addValue: "Add Value",
+    addTeamMember: "Add Team Member",
+    addTimelineItem: "Add Timeline Item",
+    iconName: "Icon",
+    valueText: "Value",
+    paragraph: "Paragraph",
+    memberName: "Name",
+    memberRole: "Role",
+    memberBio: "Bio",
+    year: "Year",
+    title: "Title",
+    description: "Description",
+    buttonText: "Button Text",
+    
+    // FAQ Page Tab
+    faqPage: "❓ FAQ Page",
+    faqPageHero: "🦸 Hero Section",
+    faqPageCategories: "📂 Categories",
+    faqPageCTA: "📢 CTA",
+    faqPageTags: "🏷️ Tags",
+    
     savedSuccessfully: "✅ Saved! Changes will apply to all pages.",
     resetConfirm: "Reset all settings? This will remove all customizations.",
     reloading: "🔄 Reloading...",
@@ -280,7 +312,39 @@ const translations = {
     labelPlaceholder: "Label",
     urlPlaceholder: "/page",
     
-    // Toast Messages
+    // About Us Tab
+    aboutUs: "📝 আমাদের সম্পর্কে",
+    aboutUsHero: "🦸 Hero Section",
+    aboutUsStats: "📊 পরিসংখ্যান",
+    aboutUsMission: "🎯 লক্ষ্য",
+    aboutUsValues: "💎 মূল্যবোধ",
+    aboutUsTeam: "👥 দল",
+    aboutUsTimeline: "📅 টাইমলাইন",
+    aboutUsCTA: "📢 CTA",
+    english: "English",
+    bengali: "বাংলা",
+    addStat: "Stat যোগ করুন",
+    addValue: "Value যোগ করুন",
+    addTeamMember: "দলের সদস্য যোগ করুন",
+    addTimelineItem: "টাইমলাইন আইটেম যোগ করুন",
+    iconName: "আইকন",
+    valueText: "মান",
+    paragraph: "প্যারাগ্রাফ",
+    memberName: "নাম",
+    memberRole: "ভূমিকা",
+    memberBio: "জীবনী",
+    year: "বছর",
+    title: "শিরোনাম",
+    description: "বিবরণ",
+    buttonText: "বাটন টেক্সট",
+    
+    // FAQ Page Tab
+    faqPage: "❓ FAQ পেজ",
+    faqPageHero: "🦸 Hero Section",
+    faqPageCategories: "📂 ক্যাটেগরি",
+    faqPageCTA: "📢 CTA",
+    faqPageTags: "🏷️ ট্যাগ",
+    
     savedSuccessfully: "✅ সংরক্ষণ হয়েছে! পরিবর্তন সব পেজে apply হবে।",
     resetConfirm: "সব সেটিংস রিসেট করতে চান? এটি পূর্বের সব কাস্টমাইজেশন মুছে দেবে।",
     reloading: "🔄 Reloading...",
@@ -413,6 +477,8 @@ const CmsPage = () => {
     { id: "faq",           label: t('faq'),              icon: <HelpCircle size={16} /> },
     { id: "announcements", label: t('announcements'),           icon: <Megaphone size={16} /> },
     { id: "footer",        label: t('footer'),           icon: <LinkIcon size={16} /> },
+    { id: "aboutUs",       label: t('aboutUs'),        icon: <Info size={16} /> },
+    { id: "faqPage",       label: t('faqPage'),        icon: <HelpCircle size={16} /> },
   ];
 
   const renderSiteTab = () => (
@@ -1360,6 +1426,795 @@ const CmsPage = () => {
     </div>
   );
 
+  const renderAboutUsTab = () => {
+    const about = cmsData?.aboutUs || {};
+
+    const updateAboutField = (key, value) => {
+      setCmsData((prev) => ({
+        ...prev,
+        aboutUs: { ...(prev.aboutUs || {}), [key]: value },
+      }));
+    };
+
+    const updateAboutBilingualField = (key, lang, value) => {
+      setCmsData((prev) => ({
+        ...prev,
+        aboutUs: {
+          ...(prev.aboutUs || {}),
+          [key]: { ...(prev.aboutUs?.[key] || {}), [lang]: value },
+        },
+      }));
+    };
+
+    const updateAboutArrayItem = (arrKey, index, key, value) => {
+      setCmsData((prev) => {
+        const arr = [...(prev.aboutUs?.[arrKey] || [])];
+        arr[index] = { ...arr[index], [key]: value };
+        return { ...prev, aboutUs: { ...(prev.aboutUs || {}), [arrKey]: arr } };
+      });
+    };
+
+    const updateAboutArrayBilingualItem = (arrKey, index, key, lang, value) => {
+      setCmsData((prev) => {
+        const arr = [...(prev.aboutUs?.[arrKey] || [])];
+        arr[index] = {
+          ...arr[index],
+          [key]: { ...(arr[index]?.[key] || {}), [lang]: value },
+        };
+        return { ...prev, aboutUs: { ...(prev.aboutUs || {}), [arrKey]: arr } };
+      });
+    };
+
+    const BilingualInput = ({ label, value, onChangeEn, onChangeBn, rows = 1 }) => (
+      <div className="space-y-2">
+        <label className="block text-xs font-semibold text-foreground/60 mb-1">{label}</label>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="border border-border/50 rounded-lg p-2 bg-background/50">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-1">{t('english')}</div>
+            {rows > 1 ? (
+              <textarea
+                rows={rows}
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+                value={value?.en || ""}
+                onChange={onChangeEn}
+              />
+            ) : (
+              <input
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={value?.en || ""}
+                onChange={onChangeEn}
+              />
+            )}
+          </div>
+          <div className="border border-border/50 rounded-lg p-2 bg-background/50">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-1">{t('bengali')}</div>
+            {rows > 1 ? (
+              <textarea
+                rows={rows}
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+                value={value?.bn || ""}
+                onChange={onChangeBn}
+              />
+            ) : (
+              <input
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={value?.bn || ""}
+                onChange={onChangeBn}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="space-y-5">
+        {/* Hero Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('aboutUsHero')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('heroTitle')}
+              value={about.heroBadge}
+              onChangeEn={(e) => updateAboutBilingualField("heroBadge", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("heroBadge", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('heroTitle')}
+              value={about.heroTitle}
+              onChangeEn={(e) => updateAboutBilingualField("heroTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("heroTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('heroSubtitle')}
+              value={about.heroDesc}
+              onChangeEn={(e) => updateAboutBilingualField("heroDesc", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("heroDesc", "bn", e.target.value)}
+              rows={3}
+            />
+          </div>
+        </div>
+
+        {/* Stats Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-foreground">{t('aboutUsStats')}</h3>
+            <button
+              onClick={() =>
+                setCmsData((prev) => ({
+                  ...prev,
+                  aboutUs: {
+                    ...(prev.aboutUs || {}),
+                    stats: [...(prev.aboutUs?.stats || []), { label: { en: "", bn: "" }, value: "", icon: "" }],
+                  },
+                }))
+              }
+              className="text-xs text-primary flex items-center gap-1 hover:underline"
+            >
+              <Plus size={12} /> {t('addStat')}
+            </button>
+          </div>
+          <div className="space-y-4">
+            {(about.stats || []).map((stat, i) => (
+              <div key={i} className="border border-border rounded-lg p-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold text-foreground/50">{t('stat')} #{i + 1}</span>
+                  <button
+                    onClick={() =>
+                      setCmsData((prev) => ({
+                        ...prev,
+                        aboutUs: {
+                          ...(prev.aboutUs || {}),
+                          stats: (prev.aboutUs?.stats || []).filter((_, si) => si !== i),
+                        },
+                      }))
+                    }
+                    className="text-red-400 hover:text-red-500 p-1"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-xs text-foreground/50 mb-1">{t('iconName')}</label>
+                    <input
+                      className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
+                      value={stat.icon || ""}
+                      onChange={(e) => updateAboutArrayItem("stats", i, "icon", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-foreground/50 mb-1">{t('valueText')}</label>
+                    <input
+                      className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
+                      value={stat.value || ""}
+                      onChange={(e) => updateAboutArrayItem("stats", i, "value", e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-foreground/50 mb-1">{t('label')}</label>
+                    <input
+                      className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
+                      value={stat.label?.en || ""}
+                      onChange={(e) => updateAboutArrayBilingualItem("stats", i, "label", "en", e.target.value)}
+                      placeholder="EN"
+                    />
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <input
+                    className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
+                    value={stat.label?.bn || ""}
+                    onChange={(e) => updateAboutArrayBilingualItem("stats", i, "label", "bn", e.target.value)}
+                    placeholder="BN"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Mission Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('aboutUsMission')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('label')}
+              value={about.missionLabel}
+              onChangeEn={(e) => updateAboutBilingualField("missionLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("missionLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('title')}
+              value={about.missionTitle}
+              onChangeEn={(e) => updateAboutBilingualField("missionTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("missionTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={`${t('paragraph')} 1`}
+              value={about.missionP1}
+              onChangeEn={(e) => updateAboutBilingualField("missionP1", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("missionP1", "bn", e.target.value)}
+              rows={3}
+            />
+            <BilingualInput
+              label={`${t('paragraph')} 2`}
+              value={about.missionP2}
+              onChangeEn={(e) => updateAboutBilingualField("missionP2", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("missionP2", "bn", e.target.value)}
+              rows={3}
+            />
+            <BilingualInput
+              label={`${t('paragraph')} 3`}
+              value={about.missionP3}
+              onChangeEn={(e) => updateAboutBilingualField("missionP3", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("missionP3", "bn", e.target.value)}
+              rows={3}
+            />
+            <BilingualInput
+              label={t('heroTitle')}
+              value={about.missionBadge}
+              onChangeEn={(e) => updateAboutBilingualField("missionBadge", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("missionBadge", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('heroSubtitle')}
+              value={about.missionSub}
+              onChangeEn={(e) => updateAboutBilingualField("missionSub", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("missionSub", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('announcementContent')}
+              value={about.missionTransparent}
+              onChangeEn={(e) => updateAboutBilingualField("missionTransparent", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("missionTransparent", "bn", e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+
+        {/* Values Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-foreground">{t('aboutUsValues')}</h3>
+            <button
+              onClick={() =>
+                setCmsData((prev) => ({
+                  ...prev,
+                  aboutUs: {
+                    ...(prev.aboutUs || {}),
+                    values: [...(prev.aboutUs?.values || []), { icon: "", title: { en: "", bn: "" }, desc: { en: "", bn: "" } }],
+                  },
+                }))
+              }
+              className="text-xs text-primary flex items-center gap-1 hover:underline"
+            >
+              <Plus size={12} /> {t('addValue')}
+            </button>
+          </div>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('label')}
+              value={about.valuesLabel}
+              onChangeEn={(e) => updateAboutBilingualField("valuesLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("valuesLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('title')}
+              value={about.valuesTitle}
+              onChangeEn={(e) => updateAboutBilingualField("valuesTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("valuesTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            {(about.values || []).map((val, i) => (
+              <div key={i} className="border border-border rounded-lg p-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold text-foreground/50">{t('valueText')} #{i + 1}</span>
+                  <button
+                    onClick={() =>
+                      setCmsData((prev) => ({
+                        ...prev,
+                        aboutUs: {
+                          ...(prev.aboutUs || {}),
+                          values: (prev.aboutUs?.values || []).filter((_, vi) => vi !== i),
+                        },
+                      }))
+                    }
+                    className="text-red-400 hover:text-red-500 p-1"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs text-foreground/50 mb-1">{t('iconName')}</label>
+                    <input
+                      className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
+                      value={val.icon || ""}
+                      onChange={(e) => updateAboutArrayItem("values", i, "icon", e.target.value)}
+                    />
+                  </div>
+                  <BilingualInput
+                    label={t('title')}
+                    value={val.title}
+                    onChangeEn={(e) => updateAboutArrayBilingualItem("values", i, "title", "en", e.target.value)}
+                    onChangeBn={(e) => updateAboutArrayBilingualItem("values", i, "title", "bn", e.target.value)}
+                  />
+                  <BilingualInput
+                    label={t('description')}
+                    value={val.desc}
+                    onChangeEn={(e) => updateAboutArrayBilingualItem("values", i, "desc", "en", e.target.value)}
+                    onChangeBn={(e) => updateAboutArrayBilingualItem("values", i, "desc", "bn", e.target.value)}
+                    rows={2}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Team Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-foreground">{t('aboutUsTeam')}</h3>
+            <button
+              onClick={() =>
+                setCmsData((prev) => ({
+                  ...prev,
+                  aboutUs: {
+                    ...(prev.aboutUs || {}),
+                    team: [
+                      ...(prev.aboutUs?.team || []),
+                      { icon: "", name: { en: "", bn: "" }, role: { en: "", bn: "" }, bio: { en: "", bn: "" } },
+                    ],
+                  },
+                }))
+              }
+              className="text-xs text-primary flex items-center gap-1 hover:underline"
+            >
+              <Plus size={12} /> {t('addTeamMember')}
+            </button>
+          </div>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('label')}
+              value={about.teamLabel}
+              onChangeEn={(e) => updateAboutBilingualField("teamLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("teamLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('title')}
+              value={about.teamTitle}
+              onChangeEn={(e) => updateAboutBilingualField("teamTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("teamTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('description')}
+              value={about.teamDesc}
+              onChangeEn={(e) => updateAboutBilingualField("teamDesc", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("teamDesc", "bn", e.target.value)}
+              rows={3}
+            />
+            {(about.team || []).map((member, i) => (
+              <div key={i} className="border border-border rounded-lg p-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold text-foreground/50">{t('memberName')} #{i + 1}</span>
+                  <button
+                    onClick={() =>
+                      setCmsData((prev) => ({
+                        ...prev,
+                        aboutUs: {
+                          ...(prev.aboutUs || {}),
+                          team: (prev.aboutUs?.team || []).filter((_, ti) => ti !== i),
+                        },
+                      }))
+                    }
+                    className="text-red-400 hover:text-red-500 p-1"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  <div>
+                    <label className="block text-xs text-foreground/50 mb-1">{t('iconName')}</label>
+                    <input
+                      className="w-full p-1.5 rounded border border-border bg-background text-foreground text-sm outline-none focus:border-primary"
+                      value={member.icon || ""}
+                      onChange={(e) => updateAboutArrayItem("team", i, "icon", e.target.value)}
+                    />
+                  </div>
+                  <BilingualInput
+                    label={t('memberName')}
+                    value={member.name}
+                    onChangeEn={(e) => updateAboutArrayBilingualItem("team", i, "name", "en", e.target.value)}
+                    onChangeBn={(e) => updateAboutArrayBilingualItem("team", i, "name", "bn", e.target.value)}
+                  />
+                  <BilingualInput
+                    label={t('memberRole')}
+                    value={member.role}
+                    onChangeEn={(e) => updateAboutArrayBilingualItem("team", i, "role", "en", e.target.value)}
+                    onChangeBn={(e) => updateAboutArrayBilingualItem("team", i, "role", "bn", e.target.value)}
+                  />
+                  <BilingualInput
+                    label={t('memberBio')}
+                    value={member.bio}
+                    onChangeEn={(e) => updateAboutArrayBilingualItem("team", i, "bio", "en", e.target.value)}
+                    onChangeBn={(e) => updateAboutArrayBilingualItem("team", i, "bio", "bn", e.target.value)}
+                    rows={3}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Timeline Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-bold text-foreground">{t('aboutUsTimeline')}</h3>
+            <button
+              onClick={() =>
+                setCmsData((prev) => ({
+                  ...prev,
+                  aboutUs: {
+                    ...(prev.aboutUs || {}),
+                    timeline: [
+                      ...(prev.aboutUs?.timeline || []),
+                      { year: { en: "", bn: "" }, title: { en: "", bn: "" }, desc: { en: "", bn: "" } },
+                    ],
+                  },
+                }))
+              }
+              className="text-xs text-primary flex items-center gap-1 hover:underline"
+            >
+              <Plus size={12} /> {t('addTimelineItem')}
+            </button>
+          </div>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('label')}
+              value={about.timelineLabel}
+              onChangeEn={(e) => updateAboutBilingualField("timelineLabel", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("timelineLabel", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('title')}
+              value={about.timelineTitle}
+              onChangeEn={(e) => updateAboutBilingualField("timelineTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("timelineTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            {(about.timeline || []).map((item, i) => (
+              <div key={i} className="border border-border rounded-lg p-3">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs font-semibold text-foreground/50">{t('title')} #{i + 1}</span>
+                  <button
+                    onClick={() =>
+                      setCmsData((prev) => ({
+                        ...prev,
+                        aboutUs: {
+                          ...(prev.aboutUs || {}),
+                          timeline: (prev.aboutUs?.timeline || []).filter((_, ti) => ti !== i),
+                        },
+                      }))
+                    }
+                    className="text-red-400 hover:text-red-500 p-1"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  <BilingualInput
+                    label={t('year')}
+                    value={item.year}
+                    onChangeEn={(e) => updateAboutArrayBilingualItem("timeline", i, "year", "en", e.target.value)}
+                    onChangeBn={(e) => updateAboutArrayBilingualItem("timeline", i, "year", "bn", e.target.value)}
+                  />
+                  <BilingualInput
+                    label={t('title')}
+                    value={item.title}
+                    onChangeEn={(e) => updateAboutArrayBilingualItem("timeline", i, "title", "en", e.target.value)}
+                    onChangeBn={(e) => updateAboutArrayBilingualItem("timeline", i, "title", "bn", e.target.value)}
+                  />
+                  <BilingualInput
+                    label={t('description')}
+                    value={item.desc}
+                    onChangeEn={(e) => updateAboutArrayBilingualItem("timeline", i, "desc", "en", e.target.value)}
+                    onChangeBn={(e) => updateAboutArrayBilingualItem("timeline", i, "desc", "bn", e.target.value)}
+                    rows={2}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('aboutUsCTA')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('title')}
+              value={about.ctaTitle}
+              onChangeEn={(e) => updateAboutBilingualField("ctaTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("ctaTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('description')}
+              value={about.ctaDesc}
+              onChangeEn={(e) => updateAboutBilingualField("ctaDesc", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("ctaDesc", "bn", e.target.value)}
+              rows={3}
+            />
+            <BilingualInput
+              label={t('buttonText')}
+              value={about.ctaButton}
+              onChangeEn={(e) => updateAboutBilingualField("ctaButton", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("ctaButton", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={`${t('buttonText')} 2`}
+              value={about.ctaButton2}
+              onChangeEn={(e) => updateAboutBilingualField("ctaButton2", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("ctaButton2", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('footerText')}
+              value={about.footer}
+              onChangeEn={(e) => updateAboutBilingualField("footer", "en", e.target.value)}
+              onChangeBn={(e) => updateAboutBilingualField("footer", "bn", e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderFaqPageTab = () => {
+    const faq = cmsData?.faqPage || {};
+
+    const updateFaqPageField = (key, lang, value) => {
+      setCmsData((prev) => ({
+        ...prev,
+        faqPage: {
+          ...(prev.faqPage || {}),
+          [key]: { ...(prev.faqPage?.[key] || {}), [lang]: value },
+        },
+      }));
+    };
+
+    const BilingualInput = ({ label, value, onChangeEn, onChangeBn, rows = 1 }) => (
+      <div className="space-y-2">
+        <label className="block text-xs font-semibold text-foreground/60 mb-1">{label}</label>
+        <div className="grid grid-cols-2 gap-2">
+          <div className="border border-border/50 rounded-lg p-2 bg-background/50">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-1">{t('english')}</div>
+            {rows > 1 ? (
+              <textarea
+                rows={rows}
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+                value={value?.en || ""}
+                onChange={onChangeEn}
+              />
+            ) : (
+              <input
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={value?.en || ""}
+                onChange={onChangeEn}
+              />
+            )}
+          </div>
+          <div className="border border-border/50 rounded-lg p-2 bg-background/50">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/40 mb-1">{t('bengali')}</div>
+            {rows > 1 ? (
+              <textarea
+                rows={rows}
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary resize-none text-sm"
+                value={value?.bn || ""}
+                onChange={onChangeBn}
+              />
+            ) : (
+              <input
+                className="w-full p-2 rounded-lg border border-border bg-background text-foreground outline-none focus:border-primary text-sm"
+                value={value?.bn || ""}
+                onChange={onChangeBn}
+              />
+            )}
+          </div>
+        </div>
+      </div>
+    );
+
+    return (
+      <div className="space-y-5">
+        {/* Hero Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('faqPageHero')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('heroTitle')}
+              value={faq.heroBadge}
+              onChangeEn={(e) => updateFaqPageField("heroBadge", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("heroBadge", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('title')}
+              value={faq.heroTitle}
+              onChangeEn={(e) => updateFaqPageField("heroTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("heroTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('description')}
+              value={faq.heroDesc}
+              onChangeEn={(e) => updateFaqPageField("heroDesc", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("heroDesc", "bn", e.target.value)}
+              rows={3}
+            />
+            <BilingualInput
+              label={t('searchPlaceholder')}
+              value={faq.searchPlaceholder}
+              onChangeEn={(e) => updateFaqPageField("searchPlaceholder", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("searchPlaceholder", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('found')}
+              value={faq.found}
+              onChangeEn={(e) => updateFaqPageField("found", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("found", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('noQuestions')}
+              value={faq.noQuestions}
+              onChangeEn={(e) => updateFaqPageField("noQuestions", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("noQuestions", "bn", e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+
+        {/* Categories Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('faqPageCategories')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('categoryAll')}
+              value={faq.categoryAll}
+              onChangeEn={(e) => updateFaqPageField("categoryAll", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("categoryAll", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('categoryAccount')}
+              value={faq.categoryAccount}
+              onChangeEn={(e) => updateFaqPageField("categoryAccount", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("categoryAccount", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('categorySavings')}
+              value={faq.categorySavings}
+              onChangeEn={(e) => updateFaqPageField("categorySavings", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("categorySavings", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('categoryPlans')}
+              value={faq.categoryPlans}
+              onChangeEn={(e) => updateFaqPageField("categoryPlans", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("categoryPlans", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('categoryCircles')}
+              value={faq.categoryCircles}
+              onChangeEn={(e) => updateFaqPageField("categoryCircles", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("categoryCircles", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('categoryIslamic')}
+              value={faq.categoryIslamic}
+              onChangeEn={(e) => updateFaqPageField("categoryIslamic", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("categoryIslamic", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('categorySecurity')}
+              value={faq.categorySecurity}
+              onChangeEn={(e) => updateFaqPageField("categorySecurity", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("categorySecurity", "bn", e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('faqPageCTA')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('title')}
+              value={faq.ctaTitle}
+              onChangeEn={(e) => updateFaqPageField("ctaTitle", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("ctaTitle", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('description')}
+              value={faq.ctaDesc}
+              onChangeEn={(e) => updateFaqPageField("ctaDesc", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("ctaDesc", "bn", e.target.value)}
+              rows={3}
+            />
+            <BilingualInput
+              label={t('ctaWhatsApp')}
+              value={faq.ctaWhatsApp}
+              onChangeEn={(e) => updateFaqPageField("ctaWhatsApp", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("ctaWhatsApp", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('ctaMessage')}
+              value={faq.ctaMessage}
+              onChangeEn={(e) => updateFaqPageField("ctaMessage", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("ctaMessage", "bn", e.target.value)}
+              rows={2}
+            />
+            <BilingualInput
+              label={t('footerText')}
+              value={faq.footer}
+              onChangeEn={(e) => updateFaqPageField("footer", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("footer", "bn", e.target.value)}
+              rows={2}
+            />
+          </div>
+        </div>
+
+        {/* Tags Section */}
+        <div className="bg-card border border-border rounded-xl p-5">
+          <h3 className="font-bold text-foreground mb-4">{t('faqPageTags')}</h3>
+          <div className="space-y-3">
+            <BilingualInput
+              label={t('tagAccount')}
+              value={faq.tagAccount}
+              onChangeEn={(e) => updateFaqPageField("tagAccount", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("tagAccount", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('tagSavings')}
+              value={faq.tagSavings}
+              onChangeEn={(e) => updateFaqPageField("tagSavings", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("tagSavings", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('tagPlans')}
+              value={faq.tagPlans}
+              onChangeEn={(e) => updateFaqPageField("tagPlans", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("tagPlans", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('tagCircles')}
+              value={faq.tagCircles}
+              onChangeEn={(e) => updateFaqPageField("tagCircles", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("tagCircles", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('tagIslamic')}
+              value={faq.tagIslamic}
+              onChangeEn={(e) => updateFaqPageField("tagIslamic", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("tagIslamic", "bn", e.target.value)}
+            />
+            <BilingualInput
+              label={t('tagSecurity')}
+              value={faq.tagSecurity}
+              onChangeEn={(e) => updateFaqPageField("tagSecurity", "en", e.target.value)}
+              onChangeBn={(e) => updateFaqPageField("tagSecurity", "bn", e.target.value)}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const renderActiveTab = () => {
     switch (activeTab) {
       case "site":          return renderSiteTab();
@@ -1370,6 +2225,8 @@ const CmsPage = () => {
       case "faq":           return renderFaqTab();
       case "announcements": return renderAnnouncementTab();
       case "footer":        return renderFooterTab();
+      case "aboutUs":       return renderAboutUsTab();
+      case "faqPage":       return renderFaqPageTab();
       default:              return renderSiteTab();
     }
   };

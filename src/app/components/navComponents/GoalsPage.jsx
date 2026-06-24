@@ -311,7 +311,7 @@ const getAuthToken = () => (typeof window !== "undefined" ? localStorage.getItem
 const getShareUrl = (item) => {
   if (typeof window === "undefined") return "";
   const origin = window.location.origin;
-  if (item?.source === "circle") return `${origin}/dashboard/circles/${item.id}`;
+  if (item?.source === "circle") return `${origin}/goals/circles/${item.id}`;
   return `${origin}/goals-circles?goal=${item?.id || ""}`;
 };
 
@@ -619,7 +619,6 @@ const GoalsPage = () => {
   const [joinedCircleIds, setJoinedCircleIds] = useState(new Set());
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [joiningCircle, setJoiningCircle] = useState(false);
   const [joinMessage, setJoinMessage] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
@@ -697,60 +696,40 @@ const GoalsPage = () => {
   };
 
   const openDetails = (item) => {
-    const token = getAuthToken();
-    setIsLoggedIn(Boolean(token));
-
-    if (item.source === "circle") {
-      if (!token) {
-        setJoinMessage("Please register or login first to view circle details.");
-        setJoinModalOpen(item.id);
-        return;
-      }
-      window.location.href = `/dashboard/circles/${item.id}`;
+    // Always navigate directly to public circle details page
+    if (item?.source === "circle") {
+      window.location.href = `/goals/circles/${item.id}`;
       return;
     }
-
+    // For goals, navigate to goals page
+    const token = getAuthToken();
+    if (token) {
+      window.location.href = "/dashboard/goals";
+      return;
+    }
     window.location.href = "/dashboard/goals";
   };
 
   const openJoinFlow = async (itemId) => {
     const item = goals.find((goal) => goal.id === itemId);
+
+    // Always navigate directly to public circle details page for circles
+    if (item?.source === "circle") {
+      window.location.href = `/goals/circles/${itemId}`;
+      return;
+    }
+
+    // For goals
     const token = getAuthToken();
-    setIsLoggedIn(Boolean(token));
-
-    if (item?.source === "circle" && item.joined) {
-      setJoinMessage("You are already joined in this circle.");
-      setJoinModalOpen(itemId);
+    if (token) {
+      window.location.href = "/dashboard/goals";
       return;
     }
 
-    if (!token || item?.source !== "circle") {
-      setJoinMessage("");
-      setJoinModalOpen(itemId);
-      return;
-    }
-
-    setJoiningCircle(true);
-    try {
-      const response = await axiosInstance.post(
-        `/circles/${itemId}/join`,
-        {},
-        { headers: { Authorization: `Bearer ${token}` } },
-      );
-
-      setJoinMessage(response.data?.message || "Successfully joined the circle");
-      setJoinModalOpen(itemId);
-
-      const circlesResponse = await axiosInstance.get("/circles/public", {
-        params: { limit: 100 },
-      });
-      setPublicCircles(circlesResponse.data?.data?.circles || []);
-    } catch (error) {
-      setJoinMessage(error.response?.data?.message || "Failed to join circle");
-      setJoinModalOpen(itemId);
-    } finally {
-      setJoiningCircle(false);
-    }
+    // Not logged in - show modal for goals
+    setIsLoggedIn(false);
+    setJoinMessage("");
+    setJoinModalOpen(itemId);
   };
 
   const rememberCircleBeforeRegister = () => {
@@ -1184,31 +1163,19 @@ const GoalsPage = () => {
               {t('joinLocked')}
             </div>
             <div className="flex flex-col gap-2.5">
-              {isLoggedIn && selectedGoal?.source === "circle" ? (
-                <button
-                  type="button"
-                  onClick={() => setJoinModalOpen(null)}
-                  className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
-                >
-                  Close
-                </button>
-              ) : (
-                <>
-                  <Link
-                    href={selectedGoal?.source === "circle" ? `/register?circleId=${selectedGoal.id}` : "/register"}
-                    onClick={rememberCircleBeforeRegister}
-                    className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
-                  >
-                    {joiningCircle ? "Joining..." : t('joinButton')}
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="rounded-[11px] border-[1.5px] border-[#e2e8f0] bg-white p-3 text-center text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
-                  >
-                    {t('joinButton2')}
-                  </Link>
-                </>
-              )}
+              <Link
+                href={selectedGoal?.source === "circle" ? `/register?circleId=${selectedGoal.id}` : "/register"}
+                onClick={rememberCircleBeforeRegister}
+                className="rounded-[11px] bg-[linear-gradient(135deg,#059669,#0891b2)] p-[13px] text-center text-sm font-bold text-white shadow-[0_4px_14px_rgba(5,150,105,.3)]"
+              >
+                {t('joinButton')}
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-[11px] border-[1.5px] border-[#e2e8f0] bg-white p-3 text-center text-sm font-semibold text-[#0f172a] transition hover:border-[#059669] hover:text-[#059669] dark:border-[#1e2d3d] dark:bg-[#0a0f1e] dark:text-[#f1f5f9]"
+              >
+                {t('joinButton2')}
+              </Link>
             </div>
           </div>
         </div>
