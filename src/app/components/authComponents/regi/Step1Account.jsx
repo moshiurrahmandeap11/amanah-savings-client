@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Eye, EyeOff, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
-import axiosInstance from "../shared/AxiosInstance/AxiosInstance";
+import axiosInstance from "../../shared/AxiosInstance/AxiosInstance";
 
 // Translations
 const translations = {
