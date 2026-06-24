@@ -13,6 +13,7 @@ const translations = {
     reviewAndApprove: "Review and approve member deposit screenshots",
     all: "All",
     pending: "Pending",
+    referralDeposit: "Referral Deposit",
     approved: "Approved",
     rejected: "Rejected",
     pendingReview: "Pending Review",
@@ -57,6 +58,7 @@ const translations = {
     reviewAndApprove: "সদস্যদের ডিপোজিট স্ক্রিনশট রিভিউ ও অনুমোদন করুন",
     all: "সব",
     pending: "পেন্ডিং",
+    referralDeposit: "রেফারেল ডিপোজিট",
     approved: "অনুমোদিত",
     rejected: "প্রত্যাখ্যাত",
     pendingReview: "পেন্ডিং রিভিউ",
@@ -130,6 +132,7 @@ const DepositsApprovals = () => {
   const filters = [
     { id: "all", label: t('all') },
     { id: "pending", label: t('pending') },
+    { id: "referral", label: t('referralDeposit') },
     { id: "approved", label: t('approved') },
     { id: "rejected", label: t('rejected') },
   ];
@@ -152,11 +155,33 @@ const DepositsApprovals = () => {
     other: "🎯",
   };
 
+  const isReferralDeposit = (deposit) => {
+    const goalName = String(deposit?.goalName || "").toLowerCase();
+    const goalType = String(deposit?.goalType || "").toLowerCase();
+    const paymentMethod = String(deposit?.paymentMethod || "").toLowerCase();
+    const bonusType = String(deposit?.bonusType || "").toLowerCase();
+
+    return (
+      deposit?.isBonus === true ||
+      bonusType === "referral" ||
+      paymentMethod === "referral" ||
+      goalType === "bonus" ||
+      goalName === "referral bonus"
+    );
+  };
+
+  function showToastMessage(message, type = "success") {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
+  }
+
   const fetchDeposits = async (status = "all", page = 1) => {
     try {
       setLoading(true);
       let url = `/deposits/admin/all?page=${page}&limit=20`;
-      if (status !== "all") {
+      if (status === "referral") {
+        url += `&category=referral`;
+      } else if (status !== "all") {
         url += `&status=${status}`;
       }
       
@@ -182,10 +207,25 @@ const DepositsApprovals = () => {
     fetchDeposits(activeFilter, pagination.currentPage);
   }, [activeFilter, pagination.currentPage]);
 
-  const showToastMessage = (message, type = "success") => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: "", type: "" }), 3000);
-  };
+  // Keep referral approvals fresh so new referral deposits appear without manual reload.
+  useEffect(() => {
+    if (activeFilter !== "referral") return undefined;
+
+    const intervalId = setInterval(() => {
+      if (!processing) {
+        fetchDeposits("referral", pagination.currentPage);
+      }
+    }, 15000);
+
+    return () => clearInterval(intervalId);
+  }, [activeFilter, pagination.currentPage, processing]);
+
+  const visibleDeposits =
+    activeFilter === "referral"
+      ? deposits.filter(isReferralDeposit)
+      : activeFilter === "all"
+        ? deposits.filter((deposit) => !isReferralDeposit(deposit))
+        : deposits;
 
   const approveDeposit = async (deposit) => {
     if (processing) return;
@@ -483,13 +523,13 @@ const DepositsApprovals = () => {
 
       {/* Deposit Items */}
       <div className="space-y-3">
-        {deposits.length === 0 ? (
+        {visibleDeposits.length === 0 ? (
           <div className="text-center py-12 bg-card rounded-xl border border-border">
             <div className="text-4xl mb-3">📭</div>
             <div className="text-foreground/50">{t('noDeposits')}</div>
           </div>
         ) : (
-          deposits.map((deposit) => {
+          visibleDeposits.map((deposit) => {
             const statusBadge = getStatusBadge(deposit.status);
             const StatusIcon = statusBadge.icon;
             

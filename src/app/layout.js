@@ -9,6 +9,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { getMessages } from "next-intl/server";
 import { AuthProvider } from "./hooks/useAuth";
 import { NextIntlClientProvider } from "next-intl";
+import MaintenanceGate from "./components/shared/MaintenanceGate/MaintenanceGate";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,7 +64,7 @@ export default async function RootLayout({ children }) {
             disableTransitionOnChange
           >
             <NextIntlClientProvider messages={messages}>
-              {children}
+              <MaintenanceGate>{children}</MaintenanceGate>
             </NextIntlClientProvider>
           </ThemeProvider>
         </AuthProvider>

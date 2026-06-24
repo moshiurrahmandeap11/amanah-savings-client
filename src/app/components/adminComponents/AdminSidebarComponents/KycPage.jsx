@@ -234,7 +234,7 @@ const translations = {
 // ==================== COMPONENT ====================
 const KycPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState("All");
+  const [activeFilter, setActiveFilter] = useState("all");
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [selectedKyc, setSelectedKyc] = useState(null);
   const [showDocModal, setShowDocModal] = useState(false);
@@ -260,7 +260,7 @@ const KycPage = () => {
 
   const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
-  const filters = [t("all"), t("pending"), t("approved"), t("rejected")];
+  const filters = ["all", "pending", "approved", "rejected"];
 
   const getAuthHeaders = () => {
     const token = localStorage.getItem("token");
@@ -282,8 +282,7 @@ const KycPage = () => {
         params.append("page", page);
         params.append("limit", pagination.itemsPerPage);
         if (searchQuery) params.append("search", searchQuery);
-        if (activeFilter !== t("all"))
-          params.append("status", activeFilter.toLowerCase());
+        if (activeFilter !== "all") params.append("status", activeFilter);
 
         const res = await axiosInstance.get(`/admin/kyc?${params.toString()}`, {
           headers: getAuthHeaders(),
@@ -638,7 +637,7 @@ const KycPage = () => {
           />
         </div>
         <div className="flex flex-wrap gap-2">
-          {["All", "Pending", "Approved", "Rejected"].map((filter) => (
+          {filters.map((filter) => (
             <button
               key={filter}
               onClick={() => {
@@ -651,7 +650,7 @@ const KycPage = () => {
                   : "border-border bg-card text-foreground/60 hover:border-primary"
               }`}
             >
-              {t(filter.toLowerCase())}
+              {t(filter)}
             </button>
           ))}
         </div>

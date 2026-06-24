@@ -113,6 +113,7 @@ const translations = {
     from: "From",
     to: "To",
     note: "Note",
+    referralDepositName: "Referral Bonus",
     admin: "Admin",
     memberRole: "Member",
     loadingDetails: "Loading details...",
@@ -203,6 +204,7 @@ const translations = {
     from: "থেকে",
     to: "প্রতি",
     note: "নোট",
+    referralDepositName: "রেফারেল বোনাস",
     admin: "অ্যাডমিন",
     memberRole: "সদস্য",
     loadingDetails: "বিস্তারিত লোড হচ্ছে...",
@@ -299,7 +301,20 @@ const UserManagementPage = () => {
 
   const formatCurrency = (amount) => {
     if (amount == null) return "৳0";
-    return `৳${Number(amount).toLocaleString("en-BD")}`;
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount)) return "৳0";
+    return `৳${numericAmount.toLocaleString("en-BD")}`;
+  };
+
+  const isReferralDepositEntry = (entry) => {
+    const method = String(entry?.method || entry?.paymentMethod || "").toLowerCase();
+    const goalName = String(entry?.goalName || "").toLowerCase();
+    return method === "referral" || goalName === "referral bonus" || goalName === "referral";
+  };
+
+  const getDepositGoalName = (entry, fallback = "N/A") => {
+    if (isReferralDepositEntry(entry)) return t("referralDepositName");
+    return entry?.goalName || fallback;
   };
 
   const formatDateInput = (date) => {
@@ -1030,7 +1045,7 @@ const UserManagementPage = () => {
                               <div key={d.id} className="flex items-center justify-between p-2.5 rounded-lg bg-card/50 border border-border/30">
                                 <div className="flex items-center gap-2">
                                   <ArrowDownLeft size={14} className="text-emerald-500" />
-                                  <span className="text-sm text-foreground">Deposit to {d.goalName || "Goal"}</span>
+                                  <span className="text-sm text-foreground">Deposit to {getDepositGoalName(d, "Goal")}</span>
                                 </div>
                                 <div className="flex items-center gap-3">
                                   <span className="text-sm font-bold text-emerald-600">{formatCurrency(d.amount)}</span>
@@ -1097,7 +1112,7 @@ const UserManagementPage = () => {
                     {detailsTab === "deposits" && (
                       <DataTable
                         columns={[
-                          { key: "goalName", label: t('goalName') },
+                          { key: "goalName", label: t('goalName'), format: (_v, row) => getDepositGoalName(row, "N/A") },
                           { key: "amount", label: t('amount'), format: (v) => formatCurrency(v) },
                           { key: "method", label: t('method') },
                           { key: "status", label: t('status'), badge: true },
@@ -1384,7 +1399,7 @@ function DataTable({ columns, data, emptyText }) {
             <tr key={row.id || idx} className="hover:bg-primary/5 transition-colors">
               {columns.map((col) => {
                 const rawValue = row[col.key];
-                const displayValue = col.format ? col.format(rawValue) : rawValue || "N/A";
+                const displayValue = col.format ? col.format(rawValue, row) : rawValue || "N/A";
                 const badgeColor = col.badgeColor ? col.badgeColor(rawValue) : getStatusBadge(rawValue);
 
                 return (

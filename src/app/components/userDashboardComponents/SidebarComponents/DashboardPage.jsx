@@ -174,7 +174,7 @@ const translations = {
     keepStreakAlive: "আপনার স্ট্রিক বজায় রাখুন!",
     
     // Quick Actions
-    deposit: "জমা করুন",
+    deposit: "জমা করেছেন",
     withdraw: "তোলার অনুরোধ",
     transfer: "ট্রান্সফার",
     autoSave: "অটো-সেভ",
