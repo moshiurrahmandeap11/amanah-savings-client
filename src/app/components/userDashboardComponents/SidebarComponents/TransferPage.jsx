@@ -133,6 +133,7 @@ const TransferPage = () => {
   const [note, setNote] = useState("");
   const [activeStep, setActiveStep] = useState(1);
   const [showModal, setShowModal] = useState(false);
+  const [transferResult, setTransferResult] = useState(null);
   const [toast, setToast] = useState({ show: false, message: "", type: "" });
   const [isDark, setIsDark] = useState(() => {
     if (typeof window === "undefined") return false;
