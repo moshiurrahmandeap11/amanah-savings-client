@@ -260,6 +260,42 @@ const KycPage = () => {
 
   const t = (key) => translations[lang]?.[key] || translations.en[key] || key;
 
+  const normalizeImageUrl = useCallback((input) => {
+    if (!input) return null;
+
+    let raw = input;
+    if (typeof input === "object") {
+      raw = input.url || input.secure_url || input.path || input.src || null;
+    }
+
+    if (typeof raw !== "string") return null;
+
+    const trimmed = raw.trim();
+    if (!trimmed) return null;
+
+    if (trimmed.startsWith("https://")) return trimmed;
+    if (trimmed.startsWith("http://")) return trimmed.replace(/^http:\/\//i, "https://");
+    if (trimmed.startsWith("//")) return `https:${trimmed}`;
+
+    const base = (process.env.NEXT_PUBLIC_BASE_URL || "").trim().replace(/\/$/, "");
+    if (!base) return trimmed;
+    return `${base}${trimmed.startsWith("/") ? "" : "/"}${trimmed}`;
+  }, []);
+
+  const normalizeApplicationDocs = useCallback((kyc) => {
+    if (!kyc) return kyc;
+    return {
+      ...kyc,
+      nidFrontUrl: normalizeImageUrl(kyc.nidFrontUrl || kyc.nidFrontImage),
+      nidBackUrl: normalizeImageUrl(kyc.nidBackUrl || kyc.nidBackImage),
+      selfieUrl: normalizeImageUrl(kyc.selfieUrl || kyc.selfieImage),
+      birthCertificateUrl: normalizeImageUrl(
+        kyc.birthCertificateUrl || kyc.birthCertificateImage,
+      ),
+      passportUrl: normalizeImageUrl(kyc.passportUrl || kyc.passportImage),
+    };
+  }, [normalizeImageUrl]);
+
   const filters = ["all", "pending", "approved", "rejected"];
 
   const getAuthHeaders = () => {
@@ -289,7 +325,10 @@ const KycPage = () => {
         });
 
         if (res.data.success) {
-          setApplications(res.data.data.applications);
+          const normalizedApplications = (res.data.data.applications || []).map(
+            normalizeApplicationDocs,
+          );
+          setApplications(normalizedApplications);
           setPagination(res.data.data.pagination);
         }
       } catch (err) {
@@ -351,7 +390,7 @@ const KycPage = () => {
   };
 
   const viewDocuments = (kyc) => {
-    setSelectedKyc(kyc);
+    setSelectedKyc(normalizeApplicationDocs(kyc));
     setShowDocModal(true);
     setActiveDocTab("all");
     setImageZoom(1);
